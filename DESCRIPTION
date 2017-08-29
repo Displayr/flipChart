@@ -1,0 +1,36 @@
+Package: flipChart
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Displayr <opensource@displayr.com>
+Maintainer: Displayr <opensource@displayr.com>
+Description: Wrapper for other chart functions, presenting a consistent API.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    dplyr,
+    grDevices,
+    flipExampleData,
+    flipTransformations,
+    ggplot2movies,
+    testthat
+Imports:
+    d3vennR,
+    graphics,
+    methods,
+    flipData,
+    flipFormat,
+    flipTime,
+    flipU,
+    htmlwidgets,
+    rhtmlLabeledScatter,
+    stats,
+    streamgraph
+Remotes:
+    Displayr/flipData,
+    Displayr/flipFormat,
+    Displayr/flipTime,
+    Displayr/flipU
+    Displayr/rhtmlLabeledScatter
+RoxygenNote: 6.0.1
