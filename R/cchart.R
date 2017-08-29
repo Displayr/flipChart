@@ -15,18 +15,17 @@ CChart <- function(chart.type, x,  ...)
     chart.type <- gsub('"', "", chart.type, fixed = TRUE) # fixing mess created when 'type' is already a character
     loadPackage(chart.type)
     chart.function <- get0(chart.type, mode = "function")
-    first.parameter.name <- formalArgs(chart.function)[1]
-    arguments <- list(...)
-#    parameters <- formals(chart.function)
-#substituteArgumentNames <- function(parameters, arguments)
+    parameters <- formalArgs(chart.function)
+    first.parameter.name <- parameters[1]
+    arguments <- substituteArgumentNames(parameters, list(...))
     args <- paste0("c(list(", first.parameter.name, " = x), arguments)")
     do.call(chart.type, eval(parse(text = args)))
 }
 
-substituteArgumentNames <- function(parameters, arguments)
+substituteArgumentNames <- function(parameter.names, arguments)
 {
     a.names <- names(arguments)
-    p.names <- names(parameters)
+    p.names <- parameter.names
     a.unmatched <- a.names[!a.names %in% p.names]
     if (length(a.unmatched) == 0)
         return(arguments)
@@ -34,23 +33,31 @@ substituteArgumentNames <- function(parameters, arguments)
     # Substituting exact matches (after substitution and reordering).
     for (a in a.unmatched)
         for(p in p.unmatched)
+        {
             if (parametersEqual(p, a) || parametersEqualAfterSubstitution(p, a))
+            {
+                #cat(p, "<=", a, "\n")
                 a.names[match(a, a.names)] <- p
+
+            }
+        }
+
     a.unmatched <- a.names[!a.names %in% p.names]
-    if (length(a.unmatched) > 0)
-    {
-        p.unmatched <- p.names[!p.names %in% a.names]
-        # Substituting subordinate matches
-        for (a in a.unmatched)
-            for(p in p.unmatched)
-                if (recipientIsSubordinateOrEqual(p, a) || recipientIsSubordinateOrEqualAfterSubstitution(p, a))
-                    a.names[match(a, a.names)] <- p
-        # Checking to see if there are any unmatched arguments
-        a.unmatched <- a.names[!a.names %in% p.names]
-        if (length(a.unmatched) > 0)
-            paste0("The following arguments have been provided but may not be supported: ", paste0(a.unmatched, collapse = ", "))
-    }
-    names(arguments) <- a.names
+    # if (length(a.unmatched) > 0)
+    # {
+    #     p.unmatched <- p.names[!p.names %in% a.names]
+    #     # Substituting subordinate matches
+    #     for (a in a.unmatched)
+    #         for(p in p.unmatched)
+    #             if (recipientIsSubordinateOrEqual(p, a) || recipientIsSubordinateOrEqualAfterSubstitution(p, a))
+    #                 a.names[match(a, a.names)] <- p
+    #     # Checking to see if there are any unmatched arguments
+    #     a.unmatched <- a.names[!a.names %in% p.names]
+    #     if (length(a.unmatched) > 0)
+    #         paste0("The following arguments have been provided but may not be supported: ", paste0(a.unmatched, collapse = ", "))
+    # }
+    # names(arguments) <- a.names
+    #print(arguments)
     arguments
 }
 
@@ -70,33 +77,7 @@ s.vector <- unlist(synonyms)
 s.lookup <- rep(1:length(synonyms), lapply(synonyms, length))
 
 
-#' recipientIsSubordinateOrEqual
-#'
-#' All the sub.parts of the donor are in the recipient
-#' @param recipient The name of the parameter in the function.
-#' @param donor The provided name of the parameter.
-recipientIsSubordinateOrEqual <- function(recipient, donor) #, require.equal = FALSE)
-{
-    recipient.split <- strsplit(recipient, ".", fixed = TRUE)[[1]]
-    donor.split <- strsplit(donor, ".", fixed = TRUE)[[1]]
-    all(donor.split %in% recipient.split)
-}
 
-#' recipientIsSubordinateOrEqualAfterSubstitution
-#'
-#' All the sub.parts of the donor are in the recipient
-#' @param recipient The name of the parameter in the function.
-#' @param donor The provided name of the parameter.
-recipientIsSubordinateOrEqualAfterSubstitution <- function(recipient, donor) #, require.equal = FALSE)
-{
-    i <- s.lookup[match(recipient, s.vector)]
-    if (!is.na(i))
-    {
-        for (d in synonyms[[i]])
-            if (parametersEqualAfterSubstitution(recipient, d))
-                return(TRUE)
-    }
-    return(FALSE)}
 
 #' parametersEqual
 #'
@@ -124,16 +105,105 @@ parametersEqual <- function(recipient, donor)
 #' @param donor The provided name of the parameter.
 parametersEqualAfterSubstitution <- function(recipient, donor)
 {
-    i <- s.lookup[match(recipient, s.vector)]
+    i <- s.lookup[match(donor, s.vector)]
     if (!is.na(i))
     {
         for (d in synonyms[[i]])
             if (parametersEqual(recipient, d))
                 return(TRUE)
     }
+    # Matching after re-ordering full stops
+
+    recipient.split <- strsplit(recipient, ".", fixed = TRUE)[[1]]
+    donor.split <- strsplit(donor, ".", fixed = TRUE)[[1]]
+    if(length(recipient.split) == length(donor.split))
+        return((all(recipient.split == donor.split)))
     return(FALSE)
 }
 
+
+
+#' getChartFunction
+#' @param type The type of chart (i.e., function name mainly)
+#' Returns the function that creates the chart
+getChartFunction <- function(type)
+{
+
+    if (missing(type) | !is.character(type))
+        type <- deparse(substitute(type))
+    if (!exists(eval(parse(text=type)), mode = "function"))
+    {
+        #print("dog")
+        loadPackage(type)
+        #type <- replaceChartSynonyms(type)
+    }
+    if (!exists(eval(parse(text=type)), mode = "function"))
+        stop(paste0("Chart type '", type, " not found."))
+    get0(type, mode = "function")
+}
+
+
+#' loadPackage
+#'
+#' Loads the package in which a chart is located. Only does this if the chart's function is registerd
+#' in this function as having a package requiring loading.
+#'
+#' @param chart.type The name of the function of the chart type to be loaded.
+#' @importFrom flipU LookupName
+loadPackage <- function(chart.type)
+{
+    # Make sure that the package is specified in suggest in the descriptoins file
+    #
+    #              package           chart function
+    package.type.lookup <- c("rhtmlMoonPlot" = "moonplot",
+                  "rhtmlLabeledScatter" = "LabeledScatter",
+                  "flipStandardCharts" = "Chart")
+    package <- LookupName(chart.type, package.type.lookup)
+    if (!is.null(package))
+        requireNamespace(package)
+}
+
+#' #' replaceChartSynonyms
+#' #'
+#' #' @param type The name of the chart type.
+#' replaceChartSynonyms <- function(type)
+#' {
+#'     d <- list(barplot = c("barchart", "bar chart", "bar plot"),
+#'               radarChart = c("radar","spider"),
+#'               pieChart = c("Pie Chart", "pie chart", "pie plot"),
+#'               pie = "pie"
+#'               )
+#'
+#' }
+
+
+#' #' recipientIsSubordinateOrEqual
+#' #'
+#' #' All the sub.parts of the donor are in the recipient
+#' #' @param recipient The name of the parameter in the function.
+#' #' @param donor The provided name of the parameter.
+#' recipientIsSubordinateOrEqual <- function(recipient, donor) #, require.equal = FALSE)
+#' {
+#'     recipient.split <- strsplit(recipient, ".", fixed = TRUE)[[1]]
+#'     donor.split <- strsplit(donor, ".", fixed = TRUE)[[1]]
+#'     all(donor.split %in% recipient.split)
+#' }
+#'
+#' #' recipientIsSubordinateOrEqualAfterSubstitution
+#' #'
+#' #' All the sub.parts of the donor are in the recipient
+#' #' @param recipient The name of the parameter in the function.
+#' #' @param donor The provided name of the parameter.
+#' recipientIsSubordinateOrEqualAfterSubstitution <- function(recipient, donor) #, require.equal = FALSE)
+#' {
+#'     i <- s.lookup[match(recipient, s.vector)]
+#'     if (!is.na(i))
+#'     {
+#'         for (d in synonyms[[i]])
+#'             if (parametersEqualAfterSubstitution(recipient, d))
+#'                 return(TRUE)
+#'     }
+#'     return(FALSE)}
 
 
 
@@ -175,56 +245,3 @@ parametersEqualAfterSubstitution <- function(recipient, donor)
 #
 #
 # }
-
-#' getChartFunction
-#' @param type The type of chart (i.e., function name mainly)
-#' Returns the function that creates the chart
-getChartFunction <- function(type)
-{
-
-    if (missing(type) | !is.character(type))
-        type <- deparse(substitute(type))
-    if (!exists(eval(parse(text=type)), mode = "function"))
-    {
-        print("dog")
-        loadPackage(type)
-        type <- replaceChartSynonyms(type)
-    }
-    if (!exists(eval(parse(text=type)), mode = "function"))
-        stop(paste0("Chart type '", type, " not found."))
-    get0(type, mode = "function")
-}
-
-
-#' loadPackage
-#'
-#' Loads the package in which a chart is located. Only does this if the chart's function is registerd
-#' in this function as having a package requiring loading.
-#'
-#' @param chart.type The name of the function of the chart type to be loaded.
-#' @importFrom flipU LookupName
-loadPackage <- function(chart.type)
-{
-    # Make sure that the package is specified in suggest in the descriptoins file
-    #
-    #              package           chart function
-    package.type.lookup <- c("rhtmlMoonPlot" = "moonplot",
-                  "rhtmlLabeledScatter" = "LabeledScatter ")
-    package <- LookupName(chart.type, package.type.lookup)
-    if (!is.null(package))
-        requireNamespace(package)
-}
-
-#' replaceChartSynonyms
-#'
-#' @param type The name of the chart type.
-replaceChartSynonyms <- function(type)
-{
-    d <- list(barplot = c("barchart", "bar chart", "bar plot"),
-              radarChart = c("radar","spider"),
-              pieChart = c("Pie Chart", "pie chart", "pie plot"),
-              pie = "pie"
-              )
-
-}
-

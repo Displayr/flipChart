@@ -12,6 +12,7 @@ Suggests:
     dplyr,
     grDevices,
     flipExampleData,
+    flipStandardCharts,
     flipTransformations,
     ggplot2movies,
     testthat
