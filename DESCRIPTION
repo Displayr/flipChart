@@ -31,6 +31,6 @@ Remotes:
     Displayr/flipData,
     Displayr/flipFormat,
     Displayr/flipTime,
-    Displayr/flipU
+    Displayr/flipU,
     Displayr/rhtmlLabeledScatter
 RoxygenNote: 6.0.1
