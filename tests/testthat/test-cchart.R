@@ -6,29 +6,22 @@ test_that("flipStandardCharts::Chart chart functions",{
     # Data
     pie.sales <- c(0.12, 0.3, 0.26, 0.16, 0.04, 0.12)
     names(pie.sales) <- c("Blueberry", "Cherry", "Apple", "Boston Cream", "Other", "Vanilla Cream")
-    # Example 1
+    # Chart
     print(Chart(pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    # CChart
     print(CChart("Chart", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
-    # print(CChart("Chart", pie.sales, title = "My pie sales", font.title.size = 20, title.color.font = "red", title.x = "Pie type", font.color.x.title = "brown"))
-    #
-    #
-    #     print(CChart("Chart", pie.sales, title.size.font = 20, font.title.color = "red"))
-    #
-    #     print(Chart(pie.sales, title = "My pie sales", title.size.font = 20, font.title.color = "red"))
-    #
-    #     print(CChart("Chart", pie.sales, main = "My pie sales", font.size.main = 20, main.font.colour = "red"))
-    #
-    #
-    #
-    #     print(CChart("Chart", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red"))
-    # print(CChart("Chart", pie.sales, main = "My pie sales"))
-    # print(CChart("Chart", pie.sales, main = "My pie sales", color = "red"))
-    #
-    #
-    #
-    # Chart(pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red")
-
-
+    # Capitalization
+    print(CChart("Chart", pie.sales, title = "My pie sales", title.font.Size = 20, title.Font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    # Re-ordering
+    print(CChart("Chart", pie.sales, title = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    # Substitution of parameter name
+    print(CChart("Chart", pie.sales, main = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    # Substitution of part of a parameter name (within . as a delimiter)
+    print(CChart("Chart", pie.sales, main = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown"))
+    # Non-supported arugment
+    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown")))
+    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales")))
+    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
 })
 
 test_that("Comparing parameters",{
@@ -40,65 +33,7 @@ test_that("Comparing parameters",{
     expect_false(flipChart:::parametersEqual("x.axis.title", "x.title"))
     expect_false(flipChart:::parametersEqual("x.axis.title", "axis.title"))
     expect_false(flipChart:::parametersEqual("colors", "main"))
-    # Exactly equal with substitution
-    expect_true(flipChart:::parametersEqualAfterSubstitution("x.axis.title", "x.axis.title"))
-#expect_true(flipChart:::parametersEqualAfterSubstitution("x.axis.title", "axis.x.title"))
-    expect_true(flipChart:::parametersEqualAfterSubstitution("x.axis.title", "xlab"))
-    expect_true(flipChart:::parametersEqualAfterSubstitution("xlab", "x.axis.title"))
-    expect_true(flipChart:::parametersEqualAfterSubstitution("x.axis.title", "x.title"))
-#expect_true(flipChart:::parametersEqualAfterSubstitution("x.axis.title", "axis.title"))
-    expect_false(flipChart:::parametersEqualAfterSubstitution("colors", "main"))
-    # # Subordinate
-    # expect_true(flipChart:::recipientIsSubordinateOrEqual("x.axis.title", "x.axis.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqual("x.axis.title", "axis.x.title"))
-    # expect_false(flipChart:::recipientIsSubordinateOrEqual("x.axis.title", "xlab"))
-    # expect_false(flipChart:::recipientIsSubordinateOrEqual("xlab", "x.axis.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqual("x.axis.title", "x.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqual("x.axis.title", "axis.title"))
-    # expect_false(flipChart:::recipientIsSubordinateOrEqual("colors", "main"))
-    # # Subordinate with substitution
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("x.axis.title", "x.axis.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("x.axis.title", "axis.x.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("x.axis.title", "xlab"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("xlab", "x.axis.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("x.axis.title", "x.title"))
-    # expect_true(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("x.axis.title", "axis.title"))
-    # expect_false(flipChart:::recipientIsSubordinateOrEqualAfterSubstitution("colors", "main"))
-})
-
-#
-# test_that("Substituting parameter names",{
-#     p = list("x.axis.title" = 1)
-#     a = list("x.axis.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("axis.x.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("xlab" = 1)
-#     a = list("axis.x.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("xlab" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("axis.x.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("axis.x.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("x.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.axis.title" = 1)
-#     a = list("axis.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("x.title" = 1)
-#     a = list("x.axis.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), p)
-#     p = list("axis.title" = 1)
-#     a = list("x.axis.title" = 1)
-#     expect_equal(flipChart:::substituteArgumentNames(names(p), a), a)
-# })
+ })
 
 
 test_that("selecting chart functions",{

@@ -4,7 +4,7 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, ...)
+CChart(chart.type, x, ..., warn.if.no.match = TRUE)
 }
 \arguments{
 \item{chart.type}{The name of the function, used for creating the chart (aka plot).}
@@ -12,6 +12,8 @@ CChart(chart.type, x, ...)
 \item{x}{The data to be plotted.}
 
 \item{...}{Arguments to the function \code{chart.type}}
+
+\item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
 }
 \description{
 Creates charts

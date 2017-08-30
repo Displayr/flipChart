@@ -3,12 +3,16 @@
 \docType{data}
 \name{synonyms}
 \alias{synonyms}
-\title{We do not change out the first parameter, as there is no good name for it. E.g., height in barplot, y in Chart, x in pie.}
-\format{An object of class \code{list} of length 7.}
+\title{Make sure that the first synonym is the briefiest, and from there they are ordered from
+most more verbose to any roots.
+These are swapped out in order. E.g., after the first line, all "colours" will be changed to 'col'.}
+\format{An object of class \code{list} of length 8.}
 \usage{
 synonyms
 }
 \description{
-We do not change out the first parameter, as there is no good name for it. E.g., height in barplot, y in Chart, x in pie.
+Make sure that the first synonym is the briefiest, and from there they are ordered from
+most more verbose to any roots.
+These are swapped out in order. E.g., after the first line, all "colours" will be changed to 'col'.
 }
 \keyword{datasets}
