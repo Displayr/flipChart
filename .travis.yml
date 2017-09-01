@@ -18,16 +18,13 @@ r_packages:
 
 r_github_packages:
   - Displayr/travisCI
+  - Displayr/flipExampleData
+  - Displayr/flipStandardCharts
+  - Displayr/flipTransformations
 
-# install target package and then install suggested packages
-# it is important suggested packages are installed afterwards to prevent dependency loops
 script:
   - R CMD build --no-manual --no-build-vignettes --no-resave-data .
-  - sudo Rscript -e 'require(devtools); install_github("Displayr/flipExampleData")'
-  - sudo Rscript -e 'require(devtools); install_github("Displayr/flipStandardCharts")'
-  - sudo Rscript -e 'require(devtools); install_github("Displayr/flipTransformations")'
   - R CMD check --as-cran --no-manual --no-build-vignettes --no-tests *.tar.gz
-  - sudo Rscript -e 'install.packages("roxygen2")'
   - if [ -d tests/testthat ]; then Rscript --default-packages='datasets,utils,grDevices,graphics,stats,methods' -e 'res<-devtools::test(); df <- as.data.frame(res); pass <- sum(df$failed)==0 && all(!df$error); write.csv(df, file="test_results.csv"); quit(status=1-pass, save="no")'; fi
 
 notifications:
