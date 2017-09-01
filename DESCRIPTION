@@ -29,6 +29,8 @@ Imports:
     stats,
     streamgraph
 Remotes:
+    timelyportfolio/d3vennR,
+    hrbrmstr/streamgraph,
     Displayr/flipData,
     Displayr/flipFormat,
     Displayr/flipTime,
