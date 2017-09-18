@@ -4,10 +4,10 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.function, x, ..., warn.if.no.match = TRUE)
+CChart(chart.function.name, x, ..., warn.if.no.match = TRUE)
 }
 \arguments{
-\item{chart.function}{The name of the function, or the function itself, used for creating the chart (aka plot).}
+\item{chart.function.name}{The name of the function used for creating the chart (aka plot).}
 
 \item{x}{The data to be plotted.}
 
