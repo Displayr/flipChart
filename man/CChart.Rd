@@ -4,10 +4,10 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, ..., warn.if.no.match = TRUE)
+CChart(chart.function, x, ..., warn.if.no.match = TRUE)
 }
 \arguments{
-\item{chart.type}{The name of the function, used for creating the chart (aka plot).}
+\item{chart.function}{The name of the function, or the function itself, used for creating the chart (aka plot).}
 
 \item{x}{The data to be plotted.}
 
@@ -15,9 +15,13 @@ CChart(chart.type, x, ..., warn.if.no.match = TRUE)
 
 \item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
 }
+\value{
+A chart object that can be printed. Most often, a plotly object.
+}
 \description{
 Creates charts
 }
 \details{
-Where \code{chart.type} is not the name of an existing function, ea c
+Where \code{chart.type} is not the name of an existing function. It is always assumed that the first parameter
+in the signature is a data object, which is assigned the value of \code{x}.
 }

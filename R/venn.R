@@ -6,9 +6,9 @@
 #'
 #' @param x A \link{data.frame} \code{logical} (converted to logical using >= 1 if not) or a JSON-like list.
 #' @param weights An optional vector of weights, or, the name or, the name of a variable in \code{x}. It may not be an expression.
-#' @param label.font.size The font size of the labels. Defaults to 10.
-#' @param as.percent Show percentages in the Venn diagram (without the percentage signs). These do not necessarily add up to 100\%. This option only applies when x is a matrix.
-#' @param n.decimals Number of decimal places.
+#' @param data.label.font.size The font size of the labels. Defaults to 10.
+#' @param as.percentages Show percentages in the Venn diagram (without the percentage signs). These do not necessarily add up to 100\%. This option only applies when x is a matrix.
+#' @param data.label.decimals Number of decimal places.
 #' @examples
 #' Venn(list(
 #'    list("sets"= list(0), "label"= "Like", "size"= 100),
@@ -24,9 +24,9 @@
 #' @export
 Venn <- function(x = NULL,
                         weights = NULL,
-                        label.font.size = 20,
-                        as.percent = TRUE,
-                        n.decimals = 0)
+                        data.label.font.size = 20,
+                        as.percentages = TRUE,
+                        data.label.decimals = 0)
 {
     if (is.numeric(x))
         x <- as.data.frame(x)
@@ -35,14 +35,14 @@ Venn <- function(x = NULL,
         nms = Labels(x)
         if (is.null(weights))
             weights <- rep(1, nrow(x))
-        if (as.percent)
+        if (as.percentages)
             weights <- weights / sum(weights) * 100
         if (!is.logical(x[,1]))
             x <- as.data.frame(x >= 1)
-        x <- convertDataFrameIntoJSON(x, nms, weights, n.decimals)
+        x <- convertDataFrameIntoJSON(x, nms, weights, data.label.decimals)
     }
     # Creating the Venn diagram
-    venn_tooltip(d3vennR(data = x, fontSize = label.font.size))
+    venn_tooltip(d3vennR(data = x, fontSize = data.label.font.size))
 }
 
 #' venn_tooltip
@@ -118,10 +118,10 @@ venn_tooltip <- function( venn ){
 #' @param x The data.frame.
 #' @param nms The names of the labels
 #' @param weights Vector of weights
-#' @param n.decimals number of decimal places.
-convertDataFrameIntoJSON <- function(x, nms, weights, n.decimals)
+#' @param data.label.decimals number of decimal places.
+convertDataFrameIntoJSON <- function(x, nms, weights, data.label.decimals)
 {
-    .sum <- function(cols)  {round(sum(weights[apply(x[,cols + 1, drop = FALSE], 1, all)]), n.decimals)}
+    .sum <- function(cols)  {round(sum(weights[apply(x[,cols + 1, drop = FALSE], 1, all)]), data.label.decimals)}
     .nm <- function(col) {nms[col + 1]}
     nms <- as.character(nms)
     k <- ncol(x)

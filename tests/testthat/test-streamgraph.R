@@ -25,7 +25,7 @@ test_that("Streamgraph", #devtools::install_github("hrbrmstr/streamgraph")
               rownames(dat) <- dat[,1]
               dat <- dat[, -1:-2]
               # Date
-              Streamgraph(t(dat), x.tick.interval = 20, x.number.format = "%y")
+              Streamgraph(t(dat)[, 1:20], x.tick.interval = 6, x.number.format = "%y")
               # Number
               Streamgraph(t(dat), x.tick.interval = 20, x.number.format = "Number")
           })

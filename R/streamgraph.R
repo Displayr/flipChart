@@ -1,7 +1,7 @@
 #' Streamgraph
 #'
 #' Area chart centerd around the x-axis rather than on top of it.
-#' @param x A BasicTable, with columns containing the dates or other numericx-axis variable.
+#' @param x A \code{matrix}, with columns containing the dates or other numericx-axis variable.
 #' @param colors The colors of the streams.
 #' @param y.axis.show If FALSE, the y-axis is not shown.
 #' @param y.number.ticks The total number of ticks on the y-axis.

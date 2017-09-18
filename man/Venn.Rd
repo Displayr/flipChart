@@ -4,19 +4,19 @@
 \alias{Venn}
 \title{\code{Venn}}
 \usage{
-Venn(x = NULL, weights = NULL, label.font.size = 20, as.percent = TRUE,
-  n.decimals = 0)
+Venn(x = NULL, weights = NULL, data.label.font.size = 20,
+  as.percentages = TRUE, data.label.decimals = 0)
 }
 \arguments{
 \item{x}{A \link{data.frame} \code{logical} (converted to logical using >= 1 if not) or a JSON-like list.}
 
 \item{weights}{An optional vector of weights, or, the name or, the name of a variable in \code{x}. It may not be an expression.}
 
-\item{label.font.size}{The font size of the labels. Defaults to 10.}
+\item{data.label.font.size}{The font size of the labels. Defaults to 10.}
 
-\item{as.percent}{Show percentages in the Venn diagram (without the percentage signs). These do not necessarily add up to 100\%. This option only applies when x is a matrix.}
+\item{as.percentages}{Show percentages in the Venn diagram (without the percentage signs). These do not necessarily add up to 100\%. This option only applies when x is a matrix.}
 
-\item{n.decimals}{Number of decimal places.}
+\item{data.label.decimals}{Number of decimal places.}
 }
 \description{
 Venn diagram (also known as Euler diagram). Minimizes sum of squared residuals to find the best overlap. Where no diagram appears,

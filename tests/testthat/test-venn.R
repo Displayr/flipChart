@@ -122,7 +122,7 @@ test_that("Venn",
                         list("sets"= list(2, 7, 8), "size"= 72))
                 Venn(r.output)
                 # Setting font size
-                Venn(r.output, label.font.size = 6)
+                Venn(r.output, data.label.font.size = 6)
                 # Numeric inptuts
                 data("cola", package = "flipExampleData")
                 x <- cola[,c("Q6_A", "Q6_B", "Q6_C", "Q6_D", "Q6_E", "Q6_F")]

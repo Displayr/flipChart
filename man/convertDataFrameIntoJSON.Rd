@@ -4,7 +4,7 @@
 \alias{convertDataFrameIntoJSON}
 \title{convertDataFrameIntoJSON}
 \usage{
-convertDataFrameIntoJSON(x, nms, weights, n.decimals)
+convertDataFrameIntoJSON(x, nms, weights, data.label.decimals)
 }
 \arguments{
 \item{x}{The data.frame.}
@@ -13,7 +13,7 @@ convertDataFrameIntoJSON(x, nms, weights, n.decimals)
 
 \item{weights}{Vector of weights}
 
-\item{n.decimals}{number of decimal places.}
+\item{data.label.decimals}{number of decimal places.}
 }
 \description{
 Creating JSON-like list from data frane

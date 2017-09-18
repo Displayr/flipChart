@@ -1,29 +1,78 @@
 #' CChart
 #'
 #' Creates charts
-#' @param chart.type The name of the function, used for creating the chart (aka plot).
+#' @param chart.function The name of the function, or the function itself, used for creating the chart (aka plot).
 #' @param x The data to be plotted.
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
-#' @details Where \code{chart.type} is not the name of an existing function, ea c
+#' @details Where \code{chart.type} is not the name of an existing function. It is always assumed that the first parameter
+#' in the signature is a data object, which is assigned the value of \code{x}.
 #' @importFrom methods formalArgs
+#' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE)
+CChart <- function(chart.function, x,  ..., warn.if.no.match = TRUE)
 {
-    # Getting the function.
-    chart.type <- deparse(substitute(chart.type)) # converting to a character
-    chart.type <- gsub('"', "", chart.type, fixed = TRUE) # fixing mess created when 'type' is already a character
-    loadPackage(chart.type)
-    chart.function <- get0(chart.type, mode = "function")
-    if (!is.function(chart.function))
-        stop(paste0("Cannot find ", chart.type,"."))
-    parameters <- formalArgs(chart.function)
-    first.parameter.name <- parameters[1]
-    arguments <- substituteArgumentNames(parameters, list(...), warn.if.no.match)
-    args <- paste0("c(list(", first.parameter.name, " = x), arguments)")
-    do.call(chart.type, eval(parse(text = args)))
+    chart.function.name <- deparse(substitute(chart.function)) # converting to a character
+    fun.and.pars <- getFunctionAndParameters(chart.function.name)
+    arguments <- substituteArgumentNames(fun.and.pars$parameters.o, list(...), warn.if.no.match)
+    args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
+    do.call(fun.and.pars$chart.function, eval(parse(text = args)))
 }
+
+#' getFunctionNameAndParameters
+#'
+#' Gets the function, loading parameters if necessary, and the parameters of the function.
+#' @param chart.function.name The name of the function used for creating the chart (aka plot).
+#' @return A list witht he following elements:
+#' \item{\code{chart.function}}{The function}.
+#' \item{\code{parameter.1}}{The first parameter in \code{chart.function}}.
+#' \item{\code{parameter.o}}{The other parameters in \code{chart.function}}.
+#' @export
+
+getFunctionAndParameters <- function(chart.function.name)
+{
+    if (!is.character(chart.function.name))
+        stop("'chart.function.name' must be of type 'character'.")
+
+    # Getting the function.
+    chart.function <- gsub('"', "", chart.function.name, fixed = TRUE) # fixing mess created when 'type' is already a character
+    loadPackage(chart.function)
+    chart.function <- get0(chart.function, mode = "function")
+    if (!is.function(chart.function))
+        stop(paste0("Cannot find ", chart.function,"."))
+    parameters <- formalArgs(chart.function)
+    list(chart.function = chart.function, parameter.1 = parameters[1], parameters.o = parameters[-1])
+}
+
+
+#' RGUIControls
+#'
+#' Writes the JavaScript to create the RGUI Controls for Displayr and Q. Note that the first parameter of the function
+#' is not automatically written (as it is assumed to be data, to be  addressed by the remaining arguments).
+#' @param chart.function.name The name of the function used for creating the chart (aka plot).
+#' @param vector \code{TRUE} if the function accepts a vector as the sole data input.
+#' @param matrix \code{TRUE} if the function accepts a \code{matrix} as the sole data input.
+#' @param raw.data.1 \code{TRUE} if the function accepts a single variable of 'raw' (non-aggregated) data as an input.
+#' @param raw.data.2 \code{TRUE} if the function accepts a pair of variables of 'raw' data.
+#' @param raw.data.multi \code{TRUE} if the function accepts multiple variables of 'raw' data as an input.
+#' @return A \code{character} object of JavaScript code.
+#' @export
+
+RGUIControls <- function(chart.function.name,
+                         vector = FALSE,
+                         matrix = FALSE,
+                         raw.data.1 = FALSE,
+                         raw.data.2 = FALSE,
+                         raw.data.multi = FALSE,
+                         r.object = FALSE,
+                         scalar = FALSE)
+{
+    parameters <- getFunctionAndParameters(chart.function.name)$parameters.o
+    parameters
+}
+
+
 
 #' substituteArgumentNames
 #'
