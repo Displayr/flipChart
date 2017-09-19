@@ -27,13 +27,21 @@ Streamgraph <- function(x,
                         margin.bottom = 30,
                         margin.right = 40)
 {
-print("in Streamgraph")
     is.date <- isDate(x.number.format)
     if (!is.date && x.number.format != "Number")
         warning("Streamgraph only supports interger and date x-axes.")
     x <- round(x, hover.decimals)
     columns <- colnames(x)
-    columns <- if(is.date) ParseDates(columns) else as.integer(columns)
+    if (is.date)
+    {
+        columns <- ParseDates(columns)
+    }
+    else
+    {
+        columns <- suppressWarnings(as.integer(x))
+        if (!(is.integer(columns)))
+            columns <- 1:ncol(x)
+    }
     df <- data.frame(value = as.numeric(t(x)), date = columns, key = rep(rownames(x), rep(ncol(x), nrow(x))))
     sg <- streamgraph(data = df,
                 key = "key",
