@@ -1,7 +1,7 @@
 #' CChart
 #'
 #' Creates charts
-#' @param chart.function.name The name of the function used for creating the chart (aka plot).
+#' @param chart The name of the function used for creating the chart (aka plot).
 #' @param x The data to be plotted.
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
@@ -12,9 +12,9 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.function.name, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart <- function(chart, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
-    fun.and.pars <- getFunctionAndParameters(chart.function.name)
+    fun.and.pars <- getFunctionAndParameters(chart)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, list(...), warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
     if (!append.data)
