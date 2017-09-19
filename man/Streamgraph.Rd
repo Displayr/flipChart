@@ -7,8 +7,9 @@
 Streamgraph(x, colors = c("#5C9AD3", "#ED7D31", "#A5A5A5", "#FFC000",
   "#4473C5", "#70AD46", "#255F91", "#9E480D", "#636365", "#987300", "#26408B",
   "#42682B"), y.axis.show = TRUE, y.number.ticks = 5, hover.decimals = 2,
-  x.tick.interval = 1, x.number.format = "\%d \%b \%y", margin.top = 20,
-  margin.left = 50, margin.bottom = 30, margin.right = 40)
+  x.tick.interval = 1, x.tick.units = "Month",
+  x.number.format = "\%d \%b \%y", margin.top = 20, margin.left = 50,
+  margin.bottom = 30, margin.right = 40)
 }
 \arguments{
 \item{x}{A \code{matrix}, with columns containing the dates or other numericx-axis variable.}
@@ -22,6 +23,8 @@ Streamgraph(x, colors = c("#5C9AD3", "#ED7D31", "#A5A5A5", "#FFC000",
 \item{hover.decimals}{The number of decimals to show in hovers.}
 
 \item{x.tick.interval}{The frequency of ticks on the x-axis. Where the data crosses multiple years, re-starts at each year.}
+
+\item{x.tick.units}{"Number", "Month" or "Year".}
 
 \item{x.number.format}{THe number format of the x-axis. Only integers ('Number') and dates are supported.}
 

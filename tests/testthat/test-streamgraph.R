@@ -23,10 +23,65 @@ test_that("Streamgraph", #devtools::install_github("hrbrmstr/streamgraph")
                   group_by(year) %>% as.data.frame  -> dat
               dat <- aggregate.data.frame(dat, list(dat$year), sum)
               rownames(dat) <- dat[,1]
-              dat <- dat[, -1:-2]
-              # Date
-              Streamgraph(t(dat)[, 1:20], x.tick.interval = 6, x.number.format = "%y")
-              # Number
-              Streamgraph(t(dat), x.tick.interval = 20, x.number.format = "Number")
+              dat <- t(dat[, -1:-2])
+              # Yearly data
+
+              Streamgraph(dat, x.tick.interval = 6, x.tick.unit = "year", x.number.format = "%y")
+              Streamgraph(dat, x.tick.interval = 10, x.tick.unit = "year", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %b %y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %B %y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %m %y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %b %Y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %B %Y")
+              Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %m %Y")
+
+              Streamgraph(dat[,1:10], x.tick.interval = 12, x.tick.unit = "month", x.number.format = "%d %m %Y")
+              # Monthly data
+
+              colnames(dat) <- as.character(seq.Date(as.Date("2000/1/1"), by = "month", length.out = ncol(dat)))
+              dat = dat[, 1:80]
+
+              Streamgraph(dat, x.tick.interval = 3, x.tick.unit = "year", x.number.format = "%y")
+              Streamgraph(dat, x.tick.interval = 3, x.tick.unit = "year", x.number.format = "%d %B %Y")
+
+              Streamgraph(dat, x.tick.interval = 6, x.tick.unit = "month", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 12, x.tick.unit = "month", x.number.format = "%d %b %y")
+
+              # Weekly data
+
+              colnames(dat) <- as.character(seq.Date(as.Date("2000/1/1"), by = "week", length.out = ncol(dat)))
+              dat = dat[, 1:80]
+
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "year", x.number.format = "%y")
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "year", x.number.format = "%d %B %Y")
+
+              Streamgraph(dat, x.tick.interval = 2, x.tick.units = "month", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 2, x.tick.units = "month", x.number.format = "%d %b %y")
+
+
+              Streamgraph(dat, x.tick.interval = 52, x.tick.unit = "day", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 200, x.tick.unit = "day", x.number.format = "%d %b %y")
+
+              # Daily data
+
+              colnames(dat) <- as.character(seq.Date(as.Date("2000/1/1"), by = "day", length.out = ncol(dat)))
+              dat = dat[, 1:80]
+
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "year", x.number.format = "%y")
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "year", x.number.format = "%d %B %Y")
+
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "month", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 1, x.tick.units = "month", x.number.format = "%d %b %y")
+
+              Streamgraph(dat, x.tick.interval = 8, x.tick.units = "day", x.number.format = "%Y")
+              Streamgraph(dat, x.tick.interval = 8, x.tick.units = "day", x.number.format = "%d %b %y")
+
+              # Integers
+
+              colnames(dat) <- 0:(ncol(dat) - 1)
+              Streamgraph(dat, x.tick.interval = 3, x.number.format = "Number")
+              Streamgraph(dat, x.tick.interval = 5, x.number.format = "Number")
+              Streamgraph(dat, x.tick.interval = 10, x.number.format = "Number")
+              Streamgraph(dat, x.tick.interval = 12, x.number.format = "Number")
           })
 

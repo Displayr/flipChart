@@ -74,19 +74,22 @@ test_that("selecting chart functions",{
     cols = c("deepskyblue", "yellow", "yellow3")
     CChart("pie", dt, init.angle = 315, col = cols, border = FALSE)
 
-#    CChart("Chart", type = "Pie", dt, colors = cols)
-#    CChart("Chart", type = "Column", dt)
-#    CChart("Chart", type = "Bar", dt, data.label.show = FALSE)
-
- #   recipient <- "y.axis.title"
- #   donor <- "axis.title.y"
-
-
-
-
-
-
 })
+
+test_that("Appending data",{
+
+    ####    Reproducing pie charts, with focus on classic pie charts
+    requireNamespace("grDevices")
+    z = CChart("Chart", rep(1, 24), append.data = TRUE, warn.if.no.match = FALSE)
+    expect_true(!is.null(attr(z, "ChartData")))
+    z = CChart("Chart", rep(1, 24), append.data = FALSE, warn.if.no.match = FALSE)
+    expect_true(is.null(attr(z, "ChartData")))
+    expect_error(CChart("pie", rep(1, 24), append.data = TRUE, warn.if.no.match = FALSE))
+    z = CChart("pie", rep(1, 24), append.data = FALSE, warn.if.no.match = FALSE)
+    expect_true(is.null(attr(z, "ChartData")))
+})
+
+
 
 
 

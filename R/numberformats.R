@@ -27,4 +27,4 @@ NumberFormats <- c("Number" = "Number",
     "DD MMM YY" = "%d %b %y",
     "DD MMMM YY " = "%d %B %y")
 
-isDate <- function(x) {match(x, NumberFormats) > match("Custom", NumberFormats)}
+isDateFormat <- function(x) {match(x, NumberFormats) > match("Custom", NumberFormats)}

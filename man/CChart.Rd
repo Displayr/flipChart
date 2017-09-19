@@ -4,7 +4,8 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.function.name, x, ..., warn.if.no.match = TRUE)
+CChart(chart.function.name, x, ..., warn.if.no.match = TRUE,
+  append.data = FALSE)
 }
 \arguments{
 \item{chart.function.name}{The name of the function used for creating the chart (aka plot).}
@@ -14,6 +15,8 @@ CChart(chart.function.name, x, ..., warn.if.no.match = TRUE)
 \item{...}{Arguments to the function \code{chart.type}}
 
 \item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
+
+\item{append.data}{If TRUE, appends the chart data as an attribute called "ChartData".}
 }
 \value{
 A chart object that can be printed. Most often, a plotly object.

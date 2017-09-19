@@ -7,6 +7,7 @@
 #' @param y.number.ticks The total number of ticks on the y-axis.
 #' @param hover.decimals The number of decimals to show in hovers.
 #' @param x.tick.interval The frequency of ticks on the x-axis. Where the data crosses multiple years, re-starts at each year.
+#' @param x.tick.units "Number", "Month" or "Year".
 #' @param x.number.format THe number format of the x-axis. Only integers ('Number') and dates are supported.
 #' @param margin.top Top margin (default should be fine, this allows for fine-tuning plot space)
 #' @param margin.right Right margin (default should be fine, this allows for fine-tuning plot space)
@@ -21,29 +22,34 @@ Streamgraph <- function(x,
                         y.number.ticks = 5,
                         hover.decimals = 2,
                         x.tick.interval = 1,
+                        x.tick.units = "Month",
                         x.number.format = "%d %b %y",
                         margin.top = 20,
                         margin.left = 50,
                         margin.bottom = 30,
                         margin.right = 40)
 {
-    is.date <- isDate(x.number.format)
-    if (!is.date && x.number.format != "Number")
-        warning("Streamgraph only supports interger and date x-axes.")
-    x <- round(x, hover.decimals)
     columns <- colnames(x)
-    if (is.date)
+    if (x.number.format == "Number")
     {
-        columns <- ParseDates(columns)
+        # x.number.format = "%y"
+        # x.tick.units = "Year"
+        columns <- suppressWarnings(as.integer(columns))
+        if (any(is.na((columns))))
+            columns <- 1:ncol(x)
+        # columns <- as.Date(paste0(columns, "/1/1"))
     }
     else
     {
-        columns <- suppressWarnings(as.integer(x))
+        columns <- ParseDates(columns)
+        is.date <- isDateFormat(x.number.format)
+        if (!is.date && x.number.format != "Number")
+            warning("Streamgraph only supports interger and date x-axes.")
+
     }
-    if (any(is.na((columns))))
-        columns <- 1:ncol(x)
+    x <- round(x, hover.decimals)
     df <- data.frame(value = as.numeric(t(x)), date = columns, key = rep(rownames(x), rep(ncol(x), nrow(x))))
-    print(df)
+    #print(df)
     sg <- streamgraph(data = df,
                 key = "key",
                 value = "value",
@@ -51,7 +57,7 @@ Streamgraph <- function(x,
                 offset = "silhouette",
                 interpolate = "cardinal",
                 interactive = TRUE,
-                scale = "date",
+                scale = if(x.number.format == "Number") "continuous" else "date",
                 top = margin.top,
                 right = margin.right,
                 left = margin.left,
@@ -61,6 +67,10 @@ Streamgraph <- function(x,
         sg <- sg_axis_y(sg, 0)
     else
         sg <- sg_axis_y(sg, tick_count = y.number.ticks)
-    sg <- sg_axis_x(sg, tick_interval = x.tick.interval, tick_format = if (is.date) x.number.format else NULL)
+    if (x.number.format == "Number")
+        sg <- sg_axis_x(sg, tick_interval = x.tick.interval, tick_units = x.tick.units, tick_format = "f")#tick_format = if (is.date) x.number.format else NULL)
+    else
+        sg <- sg_axis_x(sg, tick_interval = x.tick.interval, tick_units = x.tick.units, tick_format = x.number.format)#tick_format = if (is.date) x.number.format else NULL)
+
     sg
     }
