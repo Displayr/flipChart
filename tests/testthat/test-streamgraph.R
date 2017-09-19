@@ -36,6 +36,7 @@ test_that("Streamgraph", #devtools::install_github("hrbrmstr/streamgraph")
               Streamgraph(dat, x.tick.interval = 20, x.tick.unit = "year", x.number.format = "%d %m %Y")
 
               Streamgraph(dat[,1:10], x.tick.interval = 12, x.tick.unit = "month", x.number.format = "%d %m %Y")
+
               # Monthly data
 
               colnames(dat) <- as.character(seq.Date(as.Date("2000/1/1"), by = "month", length.out = ncol(dat)))
@@ -43,6 +44,7 @@ test_that("Streamgraph", #devtools::install_github("hrbrmstr/streamgraph")
 
               Streamgraph(dat, x.tick.interval = 3, x.tick.unit = "year", x.number.format = "%y")
               Streamgraph(dat, x.tick.interval = 3, x.tick.unit = "year", x.number.format = "%d %B %Y")
+              Streamgraph(dat, x.tick.interval = 3, x.tick.unit = "year", x.number.format = "%B %d %Y")
 
               Streamgraph(dat, x.tick.interval = 6, x.tick.unit = "month", x.number.format = "%Y")
               Streamgraph(dat, x.tick.interval = 12, x.tick.unit = "month", x.number.format = "%d %b %y")
