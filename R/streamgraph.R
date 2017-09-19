@@ -39,9 +39,9 @@ Streamgraph <- function(x,
     else
     {
         columns <- suppressWarnings(as.integer(x))
-        if (!(is.integer(columns)))
-            columns <- 1:ncol(x)
     }
+    if (any(is.na((columns))))
+        columns <- 1:ncol(x)
     df <- data.frame(value = as.numeric(t(x)), date = columns, key = rep(rownames(x), rep(ncol(x), nrow(x))))
     print(df)
     sg <- streamgraph(data = df,
