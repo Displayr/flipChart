@@ -27,7 +27,7 @@ Streamgraph <- function(x,
                         margin.bottom = 30,
                         margin.right = 40)
 {
-
+print("in Streamgraph")
     is.date <- isDate(x.number.format)
     if (!is.date && x.number.format != "Number")
         warning("Streamgraph only supports interger and date x-axes.")
