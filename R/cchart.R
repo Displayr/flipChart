@@ -16,7 +16,9 @@ CChart <- function(chart.function.name, x,  ..., warn.if.no.match = TRUE)
     fun.and.pars <- getFunctionAndParameters(chart.function.name)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, list(...), warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
-    do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    attr(result,  "ChartData") <- x #Used by Displayr to permit exporting of the raw data.
+    result
 }
 
 #' getFunctionNameAndParameters
