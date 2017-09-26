@@ -1,7 +1,7 @@
 #' CChart
 #'
 #' Creates charts
-#' @param chart The name of the function used for creating the chart (aka plot).
+#' @param chart.type The name of plot to create, e.g "100\% Stacked Column Chart"
 #' @param x The data to be plotted.
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
@@ -12,11 +12,17 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
-    fun.and.pars <- getFunctionAndParameters(chart)
-    arguments <- substituteArgumentNames(fun.and.pars$parameters.o, list(...), warn.if.no.match)
+    user.args <- list(...)
+    chart.function <- getChartFunction(chart.type)
+    if (chart.function != chart.type)
+        user.args <- c(user.args, type=chart.type)
+
+    fun.and.pars <- getFunctionAndParameters(chart.function)
+    arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
+
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
@@ -39,8 +45,9 @@ getFunctionAndParameters <- function(chart.function.name)
     if (!is.character(chart.function.name))
         stop("'chart.function.name' must be of type 'character'.")
 
-    # Getting the function.
     chart.function <- gsub('"', "", chart.function.name, fixed = TRUE) # fixing mess created when 'type' is already a character
+
+    # Getting the function
     loadPackage(chart.function)
     chart.function <- get0(chart.function, mode = "function")
     if (!is.function(chart.function))
@@ -174,15 +181,30 @@ parametersEqual <- function(recipient, donor)
 #' Returns the function that creates the chart
 getChartFunction <- function(type)
 {
+    # Note that the order of the list is important
+    # Some types will match multiple functions (e.g. 'LabeledScatter' matched both
+    # 'LabeledScatter' and 'Scatter'. But only the first match is returned)
 
-    if (missing(type) | !is.character(type))
-        type <- deparse(substitute(type))
+    c.funcs <- c('Area' = 'AreaChart',
+                 'Bar' = 'BarChart',
+                 'Column' = 'ColumnChart',
+                 'Donut' = 'PieChart',
+                 'Labeled' = 'LabeledScatterChart',
+                 'Line' = 'LineChart',
+                 'Pie' = 'PieChart',
+                 'Radar' = 'RadarChart',
+                 'Scatter' = 'ScatterChart',
+                 'Stream' = 'Streamgraph',
+                 'Venn' = 'Venn')
 
-    if (!exists(eval(parse(text=type)), mode = "function"))
-        loadPackage(type)
-    if (!exists(eval(parse(text=type)), mode = "function"))
-        stop(paste0("Chart type '", type, " not found."))
-    get0(type, mode = "function")
+    for (i in 1:length(c.funcs))
+    {
+        if (grepl(names(c.funcs)[i], type, ignore.case=F))
+            return(c.funcs[i])
+    }
+
+    # if nothing matches
+    return(type)
 }
 
 
@@ -195,13 +217,15 @@ getChartFunction <- function(type)
 #' @importFrom flipU LookupName
 loadPackage <- function(chart.type)
 {
-    # Make sure that the package is specified in suggest in the descriptoins file
+    # Make sure that the package is specified in suggest in the descriptions file
     #
     #              package           chart function
     package.type.lookup <- c("rhtmlMoonPlot" = "moonplot",
                   "rhtmlLabeledScatter" = "LabeledScatter",
                   "flipStandardCharts" = "Chart")
     package <- LookupName(chart.type, package.type.lookup)
+    if (is.null(package))
+        package <- "flipStandardCharts"
     if (!is.null(package))
         require(package, character.only = TRUE)
 }

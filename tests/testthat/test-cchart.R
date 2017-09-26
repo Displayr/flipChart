@@ -7,21 +7,21 @@ test_that("flipStandardCharts::Chart chart functions",{
     pie.sales <- c(0.12, 0.3, 0.26, 0.16, 0.04, 0.12)
     names(pie.sales) <- c("Blueberry", "Cherry", "Apple", "Boston Cream", "Other", "Vanilla Cream")
     # Chart
-    print(Chart(pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    #print(Chart(pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
     # CChart
-    print(CChart("Chart", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Capitalization
-    print(CChart("Chart", pie.sales, title = "My pie sales", title.font.Size = 20, title.Font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.Size = 20, title.Font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Re-ordering
-    print(CChart("Chart", pie.sales, title = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Substitution of parameter name
-    print(CChart("Chart", pie.sales, main = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown"))
+    print(CChart("Pie Chart", pie.sales, main = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Substitution of part of a parameter name (within . as a delimiter)
-    print(CChart("Chart", pie.sales, main = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown"))
+    print(CChart("Pie Chart", pie.sales, main = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Non-supported arugment
-    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown")))
-    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales")))
-    expect_warning(print(CChart("Chart", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
+    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown")))
+    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales")))
+    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
 })
 
 test_that("Comparing parameters",{
@@ -34,7 +34,6 @@ test_that("Comparing parameters",{
     expect_false(flipChart:::parametersEqual("x.axis.title", "axis.title"))
     expect_false(flipChart:::parametersEqual("colors", "main"))
  })
-
 
 test_that("selecting chart functions",{
 
@@ -80,9 +79,9 @@ test_that("Appending data",{
 
     ####    Reproducing pie charts, with focus on classic pie charts
     requireNamespace("grDevices")
-    z = CChart("Chart", rep(1, 24), append.data = TRUE, warn.if.no.match = FALSE)
+    z = CChart("Pie", rep(1, 24), append.data = TRUE, warn.if.no.match = FALSE)
     expect_true(!is.null(attr(z, "ChartData")))
-    z = CChart("Chart", rep(1, 24), append.data = FALSE, warn.if.no.match = FALSE)
+    z = CChart("Pie", rep(1, 24), append.data = FALSE, warn.if.no.match = FALSE)
     expect_true(is.null(attr(z, "ChartData")))
     expect_error(CChart("pie", rep(1, 24), append.data = TRUE, warn.if.no.match = FALSE))
     z = CChart("pie", rep(1, 24), append.data = FALSE, warn.if.no.match = FALSE)

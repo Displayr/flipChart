@@ -4,10 +4,10 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart, x, ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE)
 }
 \arguments{
-\item{chart}{The name of the function used for creating the chart (aka plot).}
+\item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
 
 \item{x}{The data to be plotted.}
 
