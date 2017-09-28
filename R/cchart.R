@@ -148,14 +148,15 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
 #' most more verbose to any roots.
 #' These are swapped out in order. E.g., after the first line, all "colours" will be changed to 'col'.
 synonyms <- list(c("col", "colours", "colour", "colors", "color"),
-      c("size", "sizes"),
-      c("label", "labels"),
-      c("xtitle", "x.axis.title",  "x.title",   "xlab"),
-      c("ytitle", "y.axis.title",  "y.title",  "ylab"),
-      c("title", "main"),
-      c("label.show", "data.label.show"),
-      c("fontsize", "font.size")
-    )
+                 c("size", "sizes"),
+                 c("label", "labels"),
+                 c("x", "x.axis", "xaxis"),
+                 c("xtitle",  "x.title",   "xlab"),
+                 c("ytitle", "y.title",  "ylab"),
+                 c("title", "main"),
+                 c("label.show", "data.label.show"),
+                 c("fontsize", "font.size")
+)
 
 #' parametersEqual
 #'

@@ -6,7 +6,7 @@
 \title{Make sure that the first synonym is the briefiest, and from there they are ordered from
 most more verbose to any roots.
 These are swapped out in order. E.g., after the first line, all "colours" will be changed to 'col'.}
-\format{An object of class \code{list} of length 8.}
+\format{An object of class \code{list} of length 9.}
 \usage{
 synonyms
 }
