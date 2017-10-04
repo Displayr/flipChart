@@ -190,10 +190,11 @@ getChartFunction <- function(type)
                  'Bar' = 'BarChart',
                  'Column' = 'ColumnChart',
                  'Donut' = 'PieChart',
+                 'Labeled' = 'LabeledScatterChart',
                  'Line' = 'LineChart',
                  'Pie' = 'PieChart',
                  'Radar' = 'RadarChart',
-                 'Scatter' = 'ScatterPlot',
+                 'Scatter' = 'ScatterChart',
                  'Stream' = 'Streamgraph',
                  'Venn' = 'Venn')
 
