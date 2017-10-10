@@ -42,10 +42,6 @@ Streamgraph <- function(x,
     else
     {
         columns <- ParseDates(columns)
-        # is.date <- isDateFormat(x.number.format)
-        # if (!is.date && x.number.format != "Number")
-        #     warning("Streamgraph only supports interger and date x-axes.")
-
     }
     x <- round(x, hover.decimals)
     df <- data.frame(value = as.numeric(t(x)), date = columns, key = rep(rownames(x), rep(ncol(x), nrow(x))))
