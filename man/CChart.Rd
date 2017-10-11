@@ -4,7 +4,8 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE,
+  scatter.labels.as.hovertext = TRUE)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
@@ -16,6 +17,8 @@ CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE)
 \item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
 
 \item{append.data}{If TRUE, appends the chart data as an attribute called "ChartData".}
+
+\item{scatter.labels.as.hovertext}{Option to use ScatterChart instead of LabeledScatterChart}
 }
 \value{
 A chart object that can be printed. Most often, a plotly object.
@@ -24,6 +27,7 @@ A chart object that can be printed. Most often, a plotly object.
 Creates charts
 }
 \details{
-Where \code{chart.type} is not the name of an existing function. It is always assumed that the first parameter
-in the signature is a data object, which is assigned the value of \code{x}.
+Where \code{chart.type} is not the name of an existing function. It is
+  always assumed that the first parameter
+  in the signature is a data object, which is assigned the value of \code{x}.
 }

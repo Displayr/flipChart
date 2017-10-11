@@ -2,18 +2,7 @@
 % Please edit documentation in R/cchart.R
 \name{substituteArgumentNames}
 \alias{substituteArgumentNames}
-\title{#' RGUIControls
-#'
-#' Writes the JavaScript to create the RGUI Controls for Displayr and Q. Note that the first parameter of the function
-#' is not automatically written (as it is assumed to be data, to be  addressed by the remaining arguments).
-#' @param chart.function.name The name of the function used for creating the chart (aka plot).
-#' @param vector \code{TRUE} if the function accepts a vector as the sole data input.
-#' @param matrix \code{TRUE} if the function accepts a \code{matrix} as the sole data input.
-#' @param raw.data.1 \code{TRUE} if the function accepts a single variable of 'raw' (non-aggregated) data as an input.
-#' @param raw.data.2 \code{TRUE} if the function accepts a pair of variables of 'raw' data.
-#' @param raw.data.multi \code{TRUE} if the function accepts multiple variables of 'raw' data as an input.
-#' @return A \code{character} object of JavaScript code.
-#' @export}
+\title{substituteArgumentNames}
 \usage{
 substituteArgumentNames(parameter.names, arguments, warn.if.no.match = TRUE)
 }
@@ -25,19 +14,5 @@ substituteArgumentNames(parameter.names, arguments, warn.if.no.match = TRUE)
 \item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
 }
 \description{
-RGUIControls <- function(chart.function.name,
-                         vector = FALSE,
-                         matrix = FALSE,
-                         raw.data.1 = FALSE,
-                         raw.data.2 = FALSE,
-                         raw.data.multi = FALSE,
-                         r.object = FALSE,
-                         scalar = FALSE)
-{
-    parameters <- getFunctionAndParameters(chart.function.name)$parameters.o
-    parameters
-}
-}
-\details{
 substituteArgumentNames
 }

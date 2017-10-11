@@ -6,20 +6,27 @@
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data If TRUE, appends the chart data as an attribute called "ChartData".
-#' @details Where \code{chart.type} is not the name of an existing function. It is always assumed that the first parameter
-#' in the signature is a data object, which is assigned the value of \code{x}.
+#' @param scatter.labels.as.hovertext Option to use ScatterChart instead of LabeledScatterChart
+#' @details Where \code{chart.type} is not the name of an existing function. It is
+#'   always assumed that the first parameter
+#'   in the signature is a data object, which is assigned the value of \code{x}.
 #' @importFrom methods formalArgs
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE,
+                   scatter.labels.as.hovertext = TRUE)
 {
     user.args <- list(...)
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
         user.args <- c(user.args, type=chart.type)
+    if (chart.function == "Scatter Plot" && !scatter.labels.as.hovertext &&
+        (!is.null(rownames(x)) || (length(dim(x)) < 2 && !is.null(x))))
+        chart.function <- "LabeledScatterChart"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
+    user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
@@ -57,32 +64,59 @@ getFunctionAndParameters <- function(chart.function.name)
 }
 
 
-#' #' RGUIControls
-#' #'
-#' #' Writes the JavaScript to create the RGUI Controls for Displayr and Q. Note that the first parameter of the function
-#' #' is not automatically written (as it is assumed to be data, to be  addressed by the remaining arguments).
-#' #' @param chart.function.name The name of the function used for creating the chart (aka plot).
-#' #' @param vector \code{TRUE} if the function accepts a vector as the sole data input.
-#' #' @param matrix \code{TRUE} if the function accepts a \code{matrix} as the sole data input.
-#' #' @param raw.data.1 \code{TRUE} if the function accepts a single variable of 'raw' (non-aggregated) data as an input.
-#' #' @param raw.data.2 \code{TRUE} if the function accepts a pair of variables of 'raw' data.
-#' #' @param raw.data.multi \code{TRUE} if the function accepts multiple variables of 'raw' data as an input.
-#' #' @return A \code{character} object of JavaScript code.
-#' #' @export
+# #' RGUIControls
+# #'
+# #' Writes the JavaScript to create the RGUI Controls for Displayr and Q. Note that the first parameter of the function
+# #' is not automatically written (as it is assumed to be data, to be  addressed by the remaining arguments).
+# #' @param chart.function.name The name of the function used for creating the chart (aka plot).
+# #' @param vector \code{TRUE} if the function accepts a vector as the sole data input.
+# #' @param matrix \code{TRUE} if the function accepts a \code{matrix} as the sole data input.
+# #' @param raw.data.1 \code{TRUE} if the function accepts a single variable of 'raw' (non-aggregated) data as an input.
+# #' @param raw.data.2 \code{TRUE} if the function accepts a pair of variables of 'raw' data.
+# #' @param raw.data.multi \code{TRUE} if the function accepts multiple variables of 'raw' data as an input.
+# #' @return A \code{character} object of JavaScript code.
+# #' @export
+#
+# RGUIControls <- function(chart.function.name,
+#                          vector = FALSE,
+#                          matrix = FALSE,
+#                          raw.data.1 = FALSE,
+#                          raw.data.2 = FALSE,
+#                          raw.data.multi = FALSE,
+#                          r.object = FALSE,
+#                          scalar = FALSE)
+# {
+#     parameters <- getFunctionAndParameters(chart.function.name)$parameters.o
+#     parameters
+# }
+#
+
+
+
+
+#' substituteAxisNames
 #'
-#' RGUIControls <- function(chart.function.name,
-#'                          vector = FALSE,
-#'                          matrix = FALSE,
-#'                          raw.data.1 = FALSE,
-#'                          raw.data.2 = FALSE,
-#'                          raw.data.multi = FALSE,
-#'                          r.object = FALSE,
-#'                          scalar = FALSE)
-#' {
-#'     parameters <- getFunctionAndParameters(chart.function.name)$parameters.o
-#'     parameters
-#' }
-#'
+#' Substitutes 'categories' or 'values' for 'x' and 'y'
+#' @param chart.function Name of charting function
+#' @param arguments List if arguments supplied by user
+substituteAxisNames <- function(chart.function, arguments)
+{
+    a.names <- names(arguments)
+
+    # constrain to only the first position to prevent excessive matching
+    if (grepl("Bar", chart.function))
+    {
+        a.names <- gsub("^categories", "y", a.names)
+        a.names <- gsub("^values", "x", a.names)
+
+    } else
+    {
+        a.names <- gsub("^categories", "x", a.names)
+        a.names <- gsub("^values", "y", a.names)
+    }
+    names(arguments) <- a.names
+    return(arguments)
+}
 
 
 #' substituteArgumentNames
