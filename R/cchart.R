@@ -21,8 +21,8 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
         user.args <- c(user.args, type=chart.type)
-    if (chart.function == "Scatter Plot" && !scatter.labels.as.hovertext &&
-        (!is.null(rownames(x)) || (length(dim(x)) < 2 && !is.null(x))))
+    if (grepl("Scatter", chart.function) && !scatter.labels.as.hovertext &&
+        (!is.null(rownames(x))|| (length(dim(x)) < 2 && !is.null(names(x)))))
         chart.function <- "LabeledScatterChart"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
