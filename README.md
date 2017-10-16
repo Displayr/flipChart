@@ -1,6 +1,6 @@
 [![](https://travis-ci.org/Displayr/flipChart.svg?branch=master)](https://travis-ci.org/Displayr/flipChart/)
 [![Coverage Status](https://coveralls.io/repos/github/Displayr/flipChart/badge.svg?branch=master)](https://coveralls.io/github/Displayr/flipChart?branch=master)
-# flipTables
+# flipChart
 
 Simple charts with a simplish API
 
