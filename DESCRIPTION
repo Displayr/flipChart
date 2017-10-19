@@ -1,7 +1,7 @@
 Package: flipChart
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0
+Version: 1.0.0
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
 Description: Wrapper for other chart functions, presenting a consistent API.
@@ -22,7 +22,7 @@ Imports:
     methods,
     flipData,
     flipFormat,
-    flipTime,
+    flipTime (>= 1.0.0),
     flipU,
     htmlwidgets,
     rhtmlLabeledScatter,
