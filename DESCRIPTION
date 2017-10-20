@@ -13,7 +13,6 @@ Suggests:
     grDevices,
     flipExampleData,
     flipStandardCharts,
-    flipTransformations,
     ggplot2movies,
     testthat
 Imports:
@@ -22,8 +21,12 @@ Imports:
     methods,
     flipData,
     flipFormat,
+    flipTransformations,
+    flipStatistics,
+    flipTables (>= 2.1.0),
     flipTime (>= 1.0.0),
     flipU,
+    flipChartBasics,
     htmlwidgets,
     rhtmlLabeledScatter,
     stats,
@@ -33,7 +36,11 @@ Remotes:
     hrbrmstr/streamgraph,
     Displayr/flipData,
     Displayr/flipFormat,
+    Displayr/flipTransformations,    
+    Displayr/flipTables,
+    Displayr/flipStatistics,
     Displayr/flipTime,
     Displayr/flipU,
     Displayr/rhtmlLabeledScatter
+    Displayr/flipChartBasics,
 RoxygenNote: 6.0.1
