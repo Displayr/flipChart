@@ -1,7 +1,7 @@
 Package: flipChart
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1.0
+Title: Single function for calling charts - CChart
+Version: 1.1.0
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
 Description: Wrapper for other chart functions, such that they can be access via a single function, CChart. The chief benefit of this is that a user can change chart type without having to change arguments (whcih are automatically mapped to the the appropriate parameters).
@@ -11,13 +11,22 @@ LazyData: true
 Suggests: 
     grDevices,
     flipExampleData,
-    flipStandardCharts,
-    testthat,
-    rhtmlLabeledScatter,
+    flipStandardCharts
 Imports:
     methods,
+    flipChartBasics,
+    flipData,
+    flipFormat,
+    flipStatistics,
+    flipTables,
+    flipTransformations,
     flipU
 Remotes:
-    Displayr/flipU,
-    Displayr/rhtmlLabeledScatter
+    Displayr/flipChartBasics,
+    Displayr/flipData,
+    Displayr/flipFormat,
+    Displayr/flipStatistics,
+    Displayr/flipTables,
+    Displayr/flipTransformations,
+    Displayr/flipU
 RoxygenNote: 6.0.1

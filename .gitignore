@@ -5,3 +5,6 @@ inst/doc
 
 # testthat artifact
 tests/testthat/Rplots.pdf
+
+# emacs file
+*~
