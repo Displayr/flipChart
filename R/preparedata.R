@@ -31,6 +31,9 @@
 #' @param col.names.to.remove character vector of column labels
 #'     specifying columns to remove from the returned table; default
 #'     is \code{c("NET", "SUM")}
+#' @param split Character delimiter to split \code{row.names.to.remove}
+#' and \code{col.names.to.remove} on. Default is to split on either of
+#' \code{","} or \code{";"}.
 #' @param show.labels logical; If \code{TRUE}, labels are used for
 #'     names in the data output if raw data is supplied
 #' @param as.percentages logical; If \code{TRUE}, aggregate values in the output table
@@ -55,7 +58,9 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
                         raw.data = NULL,
                         formTranspose = FALSE,
                         missing = "Exclude cases with missing data",
-                        row.names.to.remove = c("NET", "SUM"), col.names.to.remove = c("NET", "SUM"),
+                        row.names.to.remove = c("NET", "SUM"),
+                        col.names.to.remove = c("NET", "SUM"),
+                        split = "[;,]",
                         as.percentages = FALSE,
                         show.labels = TRUE)
 {
@@ -111,8 +116,6 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
     ## Aggregate if raw data or convert to tidy table(s)
     data <- if (is.raw.data)
             {
-                data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                               column.names.to.remove = col.names.to.remove)
                 if (show.labels)
                     names(data) <- Labels(data)
                 else
@@ -124,12 +127,13 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
             }
             else if(inherits(data, "list"))
             {  # user provided multiple existing tables
-                lapply(data, TidyTabularData, row.names.to.remove = row.names.to.remove,
-                       col.names.to.remove = col.names.to.remove)
+                lapply(data, TidyTabularData)
             }
             else
-                TidyTabularData(data, row.names.to.remove = row.names.to.remove,
-                             col.names.to.remove = col.names.to.remove)
+                TidyTabularData(data)
+
+      data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                     column.names.to.remove = col.names.to.remove, split = split)
 
     ## Switching rows and columns
     if (isTRUE(formTranspose))

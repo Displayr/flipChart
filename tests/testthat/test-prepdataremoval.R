@@ -397,12 +397,21 @@ test_that("PrepareData R+C removal: raw.data with missing vals",
     out <- PrepareData(raw.data = dat, formChartType = "Bubble Chart",
                                              col.names.to.remove = "Income")
     expect_is(out$data, "data.frame")
+    ## Bubble Charts don't have aggre. so will remove Income var.
+    expect_equal(ncol(out$data), ncol(dat) - 1)
     num.na <- sum(rowSums(is.na(dat)) > 0)
     expect_equal(dim(out$data), dim(dat) - c(num.na, 1))
-    expect_error(PrepareData(raw.data = dat, formChartType = "Bar Chart",
+    ## Bar Charts have aggregation, so Gender, Income aren't removed
+    ## as aggregation happens before removal
+    expect_silent(PrepareData(raw.data = dat, formChartType = "Bar Chart",
                              missing = "Use partial data",
-                             col.names.to.remove = c("Gender", "Income")),
-                 "empty input matrix")
+                             col.names.to.remove = c("Gender", "Income")))
+
+    out <- PrepareData(raw.data = dat, formChartType = "Bar Chart",
+                             missing = "Use partial data",
+                       col.names.to.remove = levels(dat[[2L]])[2:3],
+                       split = "$")  # don't split on "," since levels have commas
+    expect_equal(colnames(out$data), levels(dat[[2L]])[-(2:3)])
 })
 
 test_that("PrepareData R+C removal: 1D Q-Table",

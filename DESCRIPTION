@@ -22,7 +22,7 @@ Imports:
     flipFormat,
     flipTransformations,
     flipStatistics,
-    flipTables (>= 2.1.0),
+    flipTables (>= 2.2.0),
     flipTime (>= 1.0.0),
     flipU,
     flipChartBasics,
