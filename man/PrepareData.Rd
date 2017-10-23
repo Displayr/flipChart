@@ -9,7 +9,7 @@ PrepareData(formChartType, subset = TRUE, weights = NULL,
   pasted = list(NULL), raw.data = NULL, formTranspose = FALSE,
   missing = "Exclude cases with missing data",
   row.names.to.remove = c("NET", "SUM"), col.names.to.remove = c("NET",
-  "SUM"), as.percentages = FALSE, show.labels = TRUE)
+  "SUM"), split = "[;,]", as.percentages = FALSE, show.labels = TRUE)
 }
 \arguments{
 \item{formChartType}{character; chart type to be plotted}
@@ -52,6 +52,10 @@ specifying rows to remove from the returned table; default is
 \item{col.names.to.remove}{character vector of column labels
 specifying columns to remove from the returned table; default
 is \code{c("NET", "SUM")}}
+
+\item{split}{Character delimiter to split \code{row.names.to.remove}
+and \code{col.names.to.remove} on. Default is to split on either of
+\code{","} or \code{";"}.}
 
 \item{as.percentages}{logical; If \code{TRUE}, aggregate values in the output table
 are given as percentages summing to 100. If \code{FALSE}, column sums are given.}
