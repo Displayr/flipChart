@@ -9,19 +9,19 @@ test_that("flipStandardCharts::Chart chart functions",{
     # Chart
     #print(Chart(pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown"))
     # CChart
-    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
+    print(CChart("Pie", pie.sales, title = "My pie sales", title.font.size = 20, title.font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Capitalization
-    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.Size = 20, title.Font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
+    print(CChart("Pie", pie.sales, title = "My pie sales", title.font.Size = 20, title.Font.color = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Re-ordering
-    print(CChart("Pie Chart", pie.sales, title = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
+    print(CChart("Pie", pie.sales, title = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Substitution of parameter name
-    print(CChart("Pie Chart", pie.sales, main = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
+    print(CChart("Pie", pie.sales, main = "My pie sales", title.font.Size = 20, color.title.Font = "red", x.title = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Substitution of part of a parameter name (within . as a delimiter)
-    print(CChart("Pie Chart", pie.sales, main = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
+    print(CChart("Pie", pie.sales, main = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown", warn.if.no.match = F))
     # Non-supported arugment
-    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown")))
-    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales")))
-    expect_warning(print(CChart("Pie Chart", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
+    expect_warning(print(CChart("Pie", pie.sales, sfdsmain = "My pie sales", font.Size.main = 20, main.font.color = "red", xlab = "Pie type", x.title.font.color = "brown")))
+    expect_warning(print(CChart("Pie", pie.sales, sfdsmain = "My pie sales")))
+    expect_warning(print(CChart("Pie", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
 })
 
 test_that("Comparing parameters",{

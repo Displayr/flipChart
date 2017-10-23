@@ -26,7 +26,6 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
         chart.function <- "LabeledScatterChart"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
-    user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
@@ -90,33 +89,6 @@ getFunctionAndParameters <- function(chart.function.name)
 #     parameters
 # }
 #
-
-
-
-
-#' substituteAxisNames
-#'
-#' Substitutes 'categories' or 'values' for 'x' and 'y'
-#' @param chart.function Name of charting function
-#' @param arguments List if arguments supplied by user
-substituteAxisNames <- function(chart.function, arguments)
-{
-    a.names <- names(arguments)
-
-    # constrain to only the first position to prevent excessive matching
-    if (grepl("Bar", chart.function))
-    {
-        a.names <- gsub("^categories", "y", a.names)
-        a.names <- gsub("^values", "x", a.names)
-
-    } else
-    {
-        a.names <- gsub("^categories", "x", a.names)
-        a.names <- gsub("^values", "y", a.names)
-    }
-    names(arguments) <- a.names
-    return(arguments)
-}
 
 
 #' substituteArgumentNames
@@ -184,7 +156,8 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
 synonyms <- list(c("col", "colours", "colour", "colors", "color"),
                  c("size", "sizes"),
                  c("label", "labels"),
-                 c("x", "x.axis", "xaxis"),
+                 c("categories", "x", "categories", "x.axis", "xaxis"),
+                 c("values", "y", "values", "y.axis", "yaxis"),
                  c("xtitle",  "x.title",   "xlab"),
                  c("ytitle", "y.title",  "ylab"),
                  c("title", "main"),
@@ -220,17 +193,7 @@ getChartFunction <- function(type)
     # Some types will match multiple functions (e.g. 'LabeledScatter' matched both
     # 'LabeledScatter' and 'Scatter'. But only the first match is returned)
 
-    c.funcs <- c('Area' = 'AreaChart',
-                 'Bar' = 'BarChart',
-                 'Column' = 'ColumnChart',
-                 'Donut' = 'PieChart',
-                 'Labeled' = 'LabeledScatterChart',
-                 'Line' = 'LineChart',
-                 'Pie' = 'PieChart',
-                 'Radar' = 'RadarChart',
-                 'Scatter' = 'ScatterChart',
-                 'Stream' = 'Streamgraph',
-                 'Venn' = 'Venn')
+    c.funcs <- c('Donut' = 'PieChart')
 
     for (i in 1:length(c.funcs))
     {
