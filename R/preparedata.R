@@ -78,7 +78,7 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
     {
         labels <- raw.data$labels
         raw.data$labels <- NULL
-        if (formChartType == "Scatter Plot")
+        if (grepl("Scatter|Bubble", chart.function))
         {
             scatter.x.column <- 0 + (!is.null(raw.data$X))
             scatter.y.column <- 0 + (!is.null(raw.data$Y)) * (1 + (!is.null(raw.data$X)))
@@ -198,7 +198,7 @@ processDataArgs <- function(..., is.pasted = FALSE)
 aggregateDataForCharting <- function(data, weights, chart.type)
 {
     out <- data
-    if (!chart.type %in% c("Scatter Plot", "Bubble Chart"))
+    if (!grepl("Scatter|Bubble", chart.type))
     {
         # In tables that show aggregated tables, only the x-axis title is
         # taken from dimnames. But both names should be set in case

@@ -21,9 +21,9 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
         user.args <- c(user.args, type=chart.type)
-    if (grepl("Scatter", chart.function) && !scatter.labels.as.hovertext &&
+    if (grepl("Scatter|Bubble", chart.function) && !scatter.labels.as.hovertext &&
         (!is.null(rownames(x))|| (length(dim(x)) < 2 && !is.null(names(x)))))
-        chart.function <- "LabeledScatterChart"
+        chart.function <- "LabeledScatter"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
@@ -219,7 +219,7 @@ loadPackage <- function(chart.type)
     #
     #              package           chart function
     package.type.lookup <- c("rhtmlMoonPlot" = "moonplot",
-                  "rhtmlLabeledScatter" = "LabeledScatter",
+                  "flipStandardCharts" = "LabeledScatter",
                   "flipStandardCharts" = "Chart")
     package <- LookupName(chart.type, package.type.lookup)
     if (is.null(package))
