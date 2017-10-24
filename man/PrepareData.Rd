@@ -12,7 +12,7 @@ PrepareData(formChartType, subset = TRUE, weights = NULL,
   "SUM"), split = "[;,]", as.percentages = FALSE, show.labels = TRUE)
 }
 \arguments{
-\item{formChartType}{character; chart type to be plotted}
+\item{formChartType}{Character; chart type to be plotted.}
 
 \item{subset}{subset An optional vector specifying a subset of
 observations to be used in the fitting process, or, the name of
@@ -21,47 +21,49 @@ a variable in \code{data}. It may not be an expression.}
 \item{weights}{An optional vector of sampling weights, or, the name
 of a variable in \code{data}. It may not be an expression.}
 
-\item{formTable}{array; assumed to be a Qtable and will be
-processed using \code{\link[flipTables]{AsTidyTabularData}}}
+\item{formTable}{Array; assumed to be a Qtable and will be
+processed using \code{\link[flipTables]{AsTidyTabularData}}.}
 
-\item{formTables}{list of array; each component is assumed to be a
-Qtable and will be processed using
+\item{formTables}{List of array; each component is assumed to be a
+Qtable and will be processed using.
 \code{\link[flipTables]{AsTidyTabularData}}}
 
-\item{formBinary}{a PickAny Multi Q variable}
+\item{formBinary}{A PickAny Multi Q variable.}
 
-\item{pasted}{list of length six; the first component of which is
+\item{pasted}{List of length six; the first component of which is
 assumed to be from a user-entered/pasted table; will be
-processed by \code{\link{ParseUserEnteredTable}}}
+processed by \code{\link{ParseUserEnteredTable}}.}
 
-\item{raw.data}{data.frame or list, containing Variables from a Q/Displayr
-Data Set}
+\item{raw.data}{data.frame or list, containing Variables from
+a Q/Displayr Data Set.}
 
-\item{formTranspose}{logical; should the supplied data be
+\item{formTranspose}{Logical; should the supplied data be
 transposed?}
 
-\item{missing}{character; One of \code{"Error if missing data"},
+\item{missing}{Character; One of \code{"Error if missing data"},
 \code{"Exclude cases with missing data"} (the default, which is
 equivalent to 'complete.cases'), and \code{"Use partial data"},
-which removes no data; ignored if raw data is not supplied}
+which removes no data; ignored if raw data is not supplied.}
 
-\item{row.names.to.remove}{character vector of row labels
-specifying rows to remove from the returned table; default is
-\code{c("NET", "SUM")}}
-
-\item{col.names.to.remove}{character vector of column labels
-specifying columns to remove from the returned table; default
+\item{row.names.to.remove}{Character vector or delimited string
+of row labels specifying rows to remove from the returned table; default
 is \code{c("NET", "SUM")}}
+
+\item{col.names.to.remove}{Character vector or delimited string
+of column labels specifying columns to remove from the returned table;
+default is \code{c("NET", "SUM")}.}
 
 \item{split}{Character delimiter to split \code{row.names.to.remove}
 and \code{col.names.to.remove} on. Default is to split on either of
-\code{","} or \code{";"}.}
+\code{","} or \code{";"}.  Assumed to be a regular expression; see
+\code{\link{strsplit}}.}
 
-\item{as.percentages}{logical; If \code{TRUE}, aggregate values in the output table
-are given as percentages summing to 100. If \code{FALSE}, column sums are given.}
+\item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
+output table are given as percentages summing to 100. If \code{FALSE},
+column sums are given.}
 
-\item{show.labels}{logical; If \code{TRUE}, labels are used for
-names in the data output if raw data is supplied}
+\item{show.labels}{Logical; If \code{TRUE}, labels are used for
+names in the data output if raw data is supplied.}
 }
 \value{
 If possible, a named vector or matrix, or if that is not
@@ -69,13 +71,13 @@ If possible, a named vector or matrix, or if that is not
 }
 \description{
 For use before calling a Displayr charting function, ensures the
-data to be used is in a convenient format for plotting
+data to be used is in a convenient format for plotting.
 }
 \details{
 It is assumed that only one of \code{pasted},
     \code{formTable}, \code{formTables}, \code{formBinary},
     \code{raw.data} is non-NULL.  They are checked for nullity in
-    that order
+    that order.
 }
 \seealso{
 \code{\link[flipTables]{AsTidyTabularData}},

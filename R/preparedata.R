@@ -1,47 +1,49 @@
 #' Tidy Data For Use With Displayr Charting Functions
 #'
 #' For use before calling a Displayr charting function, ensures the
-#' data to be used is in a convenient format for plotting
-#' @param formChartType character; chart type to be plotted
+#' data to be used is in a convenient format for plotting.
+#' @param formChartType Character; chart type to be plotted.
 #' @param subset subset An optional vector specifying a subset of
 #'     observations to be used in the fitting process, or, the name of
 #'     a variable in \code{data}. It may not be an expression.
 #' @param weights An optional vector of sampling weights, or, the name
 #'     of a variable in \code{data}. It may not be an expression.
-#' @param formTable array; assumed to be a Qtable and will be
-#'     processed using \code{\link[flipTables]{AsTidyTabularData}}
-#' @param formTables list of array; each component is assumed to be a
-#'     Qtable and will be processed using
+#' @param formTable Array; assumed to be a Qtable and will be
+#'     processed using \code{\link[flipTables]{AsTidyTabularData}}.
+#' @param formTables List of array; each component is assumed to be a
+#'     Qtable and will be processed using.
 #'     \code{\link[flipTables]{AsTidyTabularData}}
-#' @param formBinary a PickAny Multi Q variable
-#' @param pasted list of length six; the first component of which is
+#' @param formBinary A PickAny Multi Q variable.
+#' @param pasted List of length six; the first component of which is
 #'     assumed to be from a user-entered/pasted table; will be
-#'     processed by \code{\link{ParseUserEnteredTable}}
-#' @param raw.data data.frame or list, containing Variables from a Q/Displayr
-#'     Data Set
-#' @param formTranspose logical; should the supplied data be
+#'     processed by \code{\link{ParseUserEnteredTable}}.
+#' @param raw.data data.frame or list, containing Variables from
+#' a Q/Displayr Data Set.
+#' @param formTranspose Logical; should the supplied data be
 #'     transposed?
-#' @param missing character; One of \code{"Error if missing data"},
+#' @param missing Character; One of \code{"Error if missing data"},
 #'     \code{"Exclude cases with missing data"} (the default, which is
 #'     equivalent to 'complete.cases'), and \code{"Use partial data"},
-#'     which removes no data; ignored if raw data is not supplied
-#' @param row.names.to.remove character vector of row labels
-#'     specifying rows to remove from the returned table; default is
-#'     \code{c("NET", "SUM")}
-#' @param col.names.to.remove character vector of column labels
-#'     specifying columns to remove from the returned table; default
-#'     is \code{c("NET", "SUM")}
+#'     which removes no data; ignored if raw data is not supplied.
+#' @param row.names.to.remove Character vector or delimited string
+#' of row labels specifying rows to remove from the returned table; default
+#' is \code{c("NET", "SUM")}
+#' @param col.names.to.remove Character vector or delimited string
+#' of column labels specifying columns to remove from the returned table;
+#' default is \code{c("NET", "SUM")}.
 #' @param split Character delimiter to split \code{row.names.to.remove}
 #' and \code{col.names.to.remove} on. Default is to split on either of
-#' \code{","} or \code{";"}.
-#' @param show.labels logical; If \code{TRUE}, labels are used for
-#'     names in the data output if raw data is supplied
-#' @param as.percentages logical; If \code{TRUE}, aggregate values in the output table
-#'     are given as percentages summing to 100. If \code{FALSE}, column sums are given.
+#' \code{","} or \code{";"}.  Assumed to be a regular expression; see
+#' \code{\link{strsplit}}.
+#' @param show.labels Logical; If \code{TRUE}, labels are used for
+#'     names in the data output if raw data is supplied.
+#' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
+#' output table are given as percentages summing to 100. If \code{FALSE},
+#' column sums are given.
 #' @details It is assumed that only one of \code{pasted},
 #'     \code{formTable}, \code{formTables}, \code{formBinary},
 #'     \code{raw.data} is non-NULL.  They are checked for nullity in
-#'     that order
+#'     that order.
 #' @importFrom flipTransformations ParseUserEnteredTable
 #' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns
 #' @importFrom flipData TidyRawData
