@@ -27,6 +27,14 @@ test_that("flipStandardCharts::Chart chart functions",{
     expect_warning(print(CChart("Scatter", x=matrix(1:12, 6, 2, dimnames=list(letters[1:6], c("X", "Y"))),
                                 scatter.labels.as.hovertext = FALSE,
                                 sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
+    expect_warning(print(CChart("Scatter", x=1:10, y=2:11, scatter.sizes=factor(letters[1:10]))))
+
+    # Stacked charts
+    xx <- matrix(abs(rnorm(12)), 6, 2, dimnames=list(letters[1:6], c("X", "Y")))
+    expect_warning(CChart("Stacked Bar", xx), NA)
+    expect_warning(CChart("100% Stacked Column", xx), NA)
+    expect_warning(CChart("Stacked Area", xx), NA)
+
 })
 
 test_that("Comparing parameters",{
