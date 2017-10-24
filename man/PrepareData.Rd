@@ -66,8 +66,28 @@ column sums are given.}
 names in the data output if raw data is supplied.}
 }
 \value{
-If possible, a named vector or matrix, or if that is not
-    posible or a data.frame is requested, a data.frame
+A list with components
+\itemize{
+\item \code{data} - If possible, a named vector or matrix, or if that is not
+    posible or a data.frame is requested, a data.frame.
+\item  \code{weights} - Numeric vector of user-supplied weights.
+\item \code{y.title} - Character string to be used for the y-axis title; will
+only be a non-empty string if some aggregation has been performed on
+\code{data}
+}
+
+The following additional items will be present in the list and are used for
+\code{formChartType = "Bubble Chart"} and \code{formChartType = "Scatter Chart"}.
+\itemize{
+\item \code{scatter.x.column} - Numeric; the index of the column (1-based)
+in \code{data} which contains the x-coordinate data.
+\item \code{scatter.y.column} - Numeric, the index of the column (1-based)
+in \code{data} which contains the y-coordinate data.
+\item \code{scatter.sizes.column} - Numeric; the index of the column (1-based)
+in \code{data} which contains the scatter sizes data.
+\item \code{scatter.colors.column} - Numeric; the index of the column (1-based)
+in \code{data} which contains the scatter colors data.
+}
 }
 \description{
 For use before calling a Displayr charting function, ensures the
