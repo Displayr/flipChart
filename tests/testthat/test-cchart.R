@@ -38,6 +38,7 @@ test_that("flipStandardCharts::Chart chart functions",{
     # Axis names
     CChart("Distribution", list(rnorm(100)), values.tick.format=".2f")
     CChart("Bar", c(A=1, B=2, C=3), values.tick.format=".2f")
+    CChart("Stacked Bar", cbind(X=1:10, Y=1:10), values.tick.format=".2f")
     CChart("Column", c(A=1, B=2, C=3), values.tick.format=".2f")
 })
 
