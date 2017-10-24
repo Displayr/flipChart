@@ -78,7 +78,7 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
     {
         labels <- raw.data$labels
         raw.data$labels <- NULL
-        if (grepl("Scatter|Bubble", chart.function))
+        if (grepl("Scatter|Bubble", formChartType))
         {
             scatter.x.column <- 0 + (!is.null(raw.data$X))
             scatter.y.column <- 0 + (!is.null(raw.data$Y)) * (1 + (!is.null(raw.data$X)))
@@ -121,7 +121,7 @@ PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
                 else
                     names(data) <- Names(data)
 
-                if (!grepl("Scatter", formChartType))
+                if (!grepl("Scatter|Bubble", formChartType))
                     y.title <- "Counts"
                 aggregateDataForCharting(data, weights, formChartType)
             }
