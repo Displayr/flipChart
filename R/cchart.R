@@ -26,6 +26,7 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
         chart.function <- "LabeledScatter"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
+    user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
@@ -35,6 +36,34 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
     attr(result,  "ChartData") <- x #Used by Displayr to permit exporting of the raw data.
     result
 }
+
+#' substituteAxisNames
+#'
+#' Substitutes 'categories' or 'values' for 'x' and 'y'.
+#' @details Unlike \code{substituteArgumentNames}, the behaviour is specific to
+#'   \code{chart.function}. It is also less agggressive in that it searches for
+#'   replacements only at the beginning of the name.
+#' @param chart.function Name of charting function
+#' @param arguments List if arguments supplied by user
+substituteAxisNames <- function(chart.function, arguments)
+{
+    a.names <- names(arguments)
+
+    # constrain to only the first position to prevent excessive matching
+    if (grepl("Bar", chart.function))
+    {
+        a.names <- gsub("^categories", "y", a.names)
+        a.names <- gsub("^values", "x", a.names)
+
+    } else
+    {
+        a.names <- gsub("^categories", "x", a.names)
+        a.names <- gsub("^values", "y", a.names)
+    }
+    names(arguments) <- a.names
+    return(arguments)
+}
+
 
 #' getFunctionNameAndParameters
 #'

@@ -35,6 +35,10 @@ test_that("flipStandardCharts::Chart chart functions",{
     expect_warning(CChart("100% Stacked Column", xx), NA)
     expect_warning(CChart("Stacked Area", xx), NA)
 
+    # Axis names
+    CChart("Distribution", list(rnorm(100)), values.tick.format=".2f")
+    CChart("Bar", c(A=1, B=2, C=3), values.tick.format=".2f")
+    CChart("Column", c(A=1, B=2, C=3), values.tick.format=".2f")
 })
 
 test_that("Comparing parameters",{
