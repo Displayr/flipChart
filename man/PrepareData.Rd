@@ -77,7 +77,7 @@ only be a non-empty string if some aggregation has been performed on
 }
 
 The following additional items will be present in the list and are used for
-\code{formChartType = "Bubble Chart"} and \code{formChartType = "Scatter Chart"}.
+\code{formChartType = "Bubble"} and \code{formChartType = "Scatter"}.
 \itemize{
 \item \code{scatter.x.column} - Numeric; the index of the column (1-based)
 in \code{data} which contains the x-coordinate data.

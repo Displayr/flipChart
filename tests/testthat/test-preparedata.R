@@ -508,8 +508,45 @@ test_that("PrepareData uses Labels",
     expect_equal(names(out$data), flipFormat::Labels(dat), check.attributes = FALSE)
 })
 
-test_that("PrepareDate: useful message if no data provided",
+test_that("PrepareData: useful message if no data provided",
 {
     expect_error(PrepareData(formChartType = "Bar Chart"),
                  "no data supplied")
+})
+
+test_that("PrepareData: input and output format of raw data",
+{
+    set.seed(1234)
+    xx <- rpois(100, 4)
+    yy <- rpois(100, 2)
+    attr(xx, "label") <- "VarA"
+    attr(yy, "label") <- "VarB"
+
+    res1 <- PrepareData("Column", raw.data=list(X=xx))
+    expect_equal(res1$y.title, "Counts")
+    expect_equal(names(dimnames(res1$data)), c("VarA", ""))
+
+    res2 <- PrepareData("Column", raw.data=list(X=xx, Y=yy))
+    expect_equal(res2$y.title, "Counts")
+    expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
+
+    res3 <- PrepareData("Column", raw.data=list(X=xx, Y=yy), as.percentages = T, formTranspose=T)
+    expect_equal(res3$y.title, "% Share")
+    expect_equal(names(dimnames(res3$data)), c("VarB", "VarA"))
+
+    res4 <- PrepareData("Scatter", raw.data=list(X=NULL, Y=xx))
+    expect_equal(ncol(res4$data), 1)
+    expect_equal(res4$y.title, "")
+    expect_equal(res4$scatter.x.column, 0)
+    expect_equal(res4$scatter.y.column, 1)
+    expect_equal(res4$scatter.sizes.column, 0)
+    expect_equal(res4$scatter.colors.column, 0)
+
+    res5 <- PrepareData("Scatter", raw.data=list(X=xx, Y=yy, Z=NULL, Z2=yy))
+    expect_equal(colnames(res5$data), c("VarA", "VarB", "VarB.1")) # actually we want c("VarA", "VarB", "VarB")
+    expect_equal(res5$y.title, "")
+    expect_equal(res5$scatter.x.column, 1)
+    expect_equal(res5$scatter.y.column, 2)
+    expect_equal(res5$scatter.sizes.column, 0)
+    expect_equal(res5$scatter.colors.column, 3)
 })
