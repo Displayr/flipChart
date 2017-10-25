@@ -18,5 +18,9 @@ test_that("Violin", {
            y.title = "Values",
            global.font.family = "Courier",
            global.font.color = "Red")
+    CChart("Histogram", z, title = "Comparing distributions",
+           y.title = "Values",
+           global.font.family = "Courier",
+           global.font.color = "Red")
 
 })
