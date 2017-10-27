@@ -1,34 +1,46 @@
-#' Tidy Data For Use With Displayr Charting Functions
+#' PrepareData
 #'
-#' For use before calling a Displayr charting function, ensures the
-#' data to be used is in a convenient format for plotting.
-#' @param formChartType Character; chart type to be plotted.
+#' Prepares input data for charting.
+#' @param chart.type Character; chart type to be plotted.
 #' @param subset subset An optional vector specifying a subset of
 #'     observations to be used in the fitting process, or, the name of
 #'     a variable in \code{data}. It may not be an expression.
 #' @param weights An optional vector of sampling weights, or, the name
 #'     of a variable in \code{data}. It may not be an expression.
-#' @param formTable Array; assumed to be a Qtable and will be
-#'     processed using \code{\link[flipTables]{AsTidyTabularData}}.
-#' @param formTables List of array; each component is assumed to be a
+#' @param input.data.table Array; typically a table of some kind, which is then
+#' processed using \code{\link[flipTables]{AsTidyTabularData}}.
+#' @param input.data.tables List of array; each component is assumed to be a
 #'     Qtable and will be processed using.
 #'     \code{\link[flipTables]{AsTidyTabularData}}
-#' @param formBinary A PickAny Multi Q variable.
-#' @param pasted List of length six; the first component of which is
+#' @param input.data.raw List, containing variables or data.frames.
+#' @param input.data.pasted List of length six; the first component of which is
 #'     assumed to be from a user-entered/pasted table; will be
 #'     processed by \code{\link{ParseUserEnteredTable}}.
-#' @param raw.data data.frame or list, containing Variables from
-#' a Q/Displayr Data Set.
-#' @param formTranspose Logical; should the supplied data be
+#' @param input.data.other  A PickAny Multi Q variable.
+#' @param first.aggregate Logical; whether or not the input data
+#' needs to be aggregated in this function. A single variable is tabulated,
+#' 2 variables are crosstabbed, and with 3 or more the mean is computed.
+#' been provided, a contingency table is used to aggregate.
+#' @param tidy Logical; whether or not the input data
+#' needs to be aggregated in this function (e.g., if an x and y variable have
+#' been provided, a contingency table is used to aggregate. This defaults
+#' to \code{TRUE}. It aggressively seeks to turn the data into a named vector
+#' or a matrix using \code{\link[flipTables]{TidyTabularData}}. This is not applied
+#' when \code{data.input.tables} are provided, or when the chart type is
+#' any of \code{"Scatter"}, \code{"Bean"}, \code{"Histogram"}, \code{"Density"},
+#' \code{"Box"}, or \code{"Violin"}.
+#' @param transpose Logical; should the resulting matrix (of created)  be
 #'     transposed?
 #' @param missing Character; One of \code{"Error if missing data"},
 #'     \code{"Exclude cases with missing data"} (the default, which is
 #'     equivalent to 'complete.cases'), and \code{"Use partial data"},
-#'     which removes no data; ignored if raw data is not supplied.
+#'     which removes no data. Only used if either \code{input.data.raw} is provided,
+#'     or, a \code{weight} or \code{subset} are provided and are as long as the number of
+#'     observations in \code{data}.
 #' @param row.names.to.remove Character vector or delimited string
 #' of row labels specifying rows to remove from the returned table; default
 #' is \code{c("NET", "SUM")}
-#' @param col.names.to.remove Character vector or delimited string
+#' @param column.names.to.remove Character vector or delimited string
 #' of column labels specifying columns to remove from the returned table;
 #' default is \code{c("NET", "SUM")}.
 #' @param split Character delimiter to split \code{row.names.to.remove}
@@ -41,10 +53,10 @@
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
 #' @details It is assumed that only one of \code{pasted},
-#'     \code{formTable}, \code{formTables}, \code{formBinary},
-#'     \code{raw.data} is non-NULL.  They are checked for nullity in
+#'     \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
+#'     \code{input.data.raw} is non-NULL.  They are checked for nullity in
 #'     that order.
-#' @importFrom flipTransformations ParseUserEnteredTable
+#' @importFrom flipTransformations ParseUserEnteredTable SplitVectorToList
 #' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names
@@ -56,159 +68,164 @@
 #' \item \code{y.title} - Character string to be used for the y-axis title; will
 #' only be a non-empty string if some aggregation has been performed on
 #' \code{data}
-#' }
-#'
-#' The following additional items will be present in the list and are used for
-#' \code{formChartType = "Bubble"} and \code{formChartType = "Scatter"}.
-#' \itemize{
-#' \item \code{scatter.x.column} - Numeric; the index of the column (1-based)
-#' in \code{data} which contains the x-coordinate data.
-#' \item \code{scatter.y.column} - Numeric, the index of the column (1-based)
-#' in \code{data} which contains the y-coordinate data.
-#' \item \code{scatter.sizes.column} - Numeric; the index of the column (1-based)
-#' in \code{data} which contains the scatter sizes data.
-#' \item \code{scatter.colors.column} - Numeric; the index of the column (1-based)
-#' in \code{data} which contains the scatter colors data.
-
+#' \item  \code{scatter.variable.indices} A named vector indicating which columns in
+#' \code{data} should be plotted in a scatterplot as \code{x}, \code{y}, \code{sizes},
+#' and \code{colors}. Is \code{NULL} if \code{chart.type} does not contain \code{"Scatter"}
+#' or  \code{"Bubble"}. \code{NA} is used when the data does not exist.
 #' }
 #' @export
 #' @seealso \code{\link[flipTables]{AsTidyTabularData}},
 #'     \code{\link[flipData]{TidyRawData}},
 #'     \code{\link[flipTransformations]{ParseUserEnteredTable}}
-PrepareData <- function(formChartType, subset = TRUE, weights = NULL,
-                        formTable = NULL, formTables = NULL, formBinary = NULL,
-                        pasted = list(NULL),
-                        raw.data = NULL,
-                        formTranspose = FALSE,
+PrepareData <- function(chart.type,
+                        subset = TRUE,
+                        weights = NULL,
+                        input.data.table = NULL,
+                        input.data.tables = NULL,
+                        input.data.raw = NULL,
+                        input.data.pasted = NULL,
+                        input.data.other = NULL,
+                        first.aggregate = FALSE,
+                        tidy = TRUE,
+                        transpose = FALSE,
                         missing = "Exclude cases with missing data",
                         row.names.to.remove = c("NET", "SUM"),
-                        col.names.to.remove = c("NET", "SUM"),
+                        column.names.to.remove = c("NET", "SUM"),
                         split = "[;,]",
                         as.percentages = FALSE,
                         show.labels = TRUE)
 {
-    is.pasted <- !is.null(pasted[[1L]])
 
-    scatter.x.column <- 1
-    scatter.y.column <- 2
-    scatter.sizes.column <- 3
-    scatter.colors.column <- 4
-    y.title <- ""
+    # Scenarios to address
+    # - User provides a single numeric variable and wants to plot a bar for each value.
+    # - User provides a single categorical variable and wants to plot a bar for each value.
+    # - User provides two numeric variables and wants to plot a stacked bar plot of the unique values.
+    # - User provides two numeric variables and wants to plot a stacked column chart of the crosstab.
+    # - Data is in a weird format (e.g., JSON) for Venn diagram.
+    # - User wants to treat variables or variable sets NOT as 'raw' data. E.g., performing a correspondence analysis of raw data.
+    # - User wants to treat pasted data as raw data.
+    # - User wants to treat otherData as raw data
+    # - Scattersplots of raw data, where separate drop boxes have been used as inputs.
+    # - Scattersplots of raw data, where a table has been used as an input.
+    # - Scattersplots of raw data, where pasted data has been used as an input.
+    # - Venn diagrams of JSON.
+    # - Venn diagrams of multiple binary variables
+    # - Histogram, Density, Bean, Violin, and Box plots of numeric variables
+    # - Histogram, Density, Bean, Violin, and Box plots of an x and a y variable, where the histograms are conditional on the X.
+    # - Aggregation by crosstabbing
+    # - Sankey requires a data.frame
+    # - means of multiple variables of raw data if aggregating
+    ## Other things for the future...
+    # - Taking the average of multiple numeric variables.
+    # - Frequencies of multiple categorical variables (Pick One - Multi)
 
-    # Handles a list of variables (not dataframes as some of them may may be null)
-    # This case needs to be distinguished from when a list of multiple tables is provided
-    if (!is.null(raw.data) && !is.data.frame(raw.data) && (!is.null(raw.data$X) || !is.null(raw.data$Y)))
+    #### This function does the following things:
+    # 1. Converts the data inputs into a single data object called 'data'.
+    # 2. Filters the data and/or removes missing values
+    # 3. Aggregate the data if so required.
+    # 4. Tailoring the data for the chart type.
+    # 5. Transformations of the tidied data (sorting, transposing, removing rows).
+
+    # This function need to be frequently understood and generalized
+    # by multiple people. Consequently, the goal has been to write the code in such a
+    # way as to make it as easy to read and maintain as possible. In particular,
+    # many obvious ways to make this code more efficent have been ignored in the interests
+    # of making it easy to read (and in recognition that the efficiency gains would be trivial anyway).
+
+    ###########################################################################
+    # 1. Converts the data inputs into a single data object called 'data'.
+    ###########################################################################
+
+    checkNumberOfDataInputs(input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
+    data <- input.data.table
+    if (is.null(data))
+        data <- input.data.tables
+    if (is.null(data))
+        data <- asDataFrame(input.data.raw)
+    if (is.null(data))
+        data <- input.data.other
+    if (is.null(data))
+        data <- processPastedData(input.data.pasted, first.aggregate)
+    # Replacing variable names with variable/question labels if appropriate
+    if (is.data.frame(data))
+        names(data) <- if (show.labels) Labels(data) else Names(data)
+
+    ###########################################################################
+    # 2. Filters the data and/or removes missing values
+    ###########################################################################
+    if (!is.null(input.data.raw) || NROW(subset) == NROW(data) || NROW(weights) == NROW(data))
     {
-        labels <- raw.data$labels
-        raw.data$labels <- NULL
-        if (grepl("Scatter|Bubble", formChartType))
-        {
-            scatter.x.column <- 0 + (!is.null(raw.data$X))
-            scatter.y.column <- 0 + (!is.null(raw.data$Y)) * (1 + (!is.null(raw.data$X)))
-            scatter.sizes.column <- 0 + (!is.null(raw.data$Z)) * (1 + (!is.null(raw.data$X)) + (!is.null(raw.data$Y)))
-            scatter.colors.column <- 0 + (!is.null(raw.data$Z2)) * (1 + (!is.null(raw.data$X)) + (!is.null(raw.data$Y)) + (!is.null(raw.data$Z)))
-        }
-        raw.data <- as.data.frame(Filter(Negate(is.null), raw.data), stringsAsFactors=F)
-
-        if (is.null(labels) && nrow(raw.data) == length(labels))
-            rownames(raw.data) <- make.unique(as.character(labels), sep="")
-    }
-    data <- processDataArgs(pasted = pasted, formTable = formTable, formTables = formTables,
-                            formBinary = formBinary, raw.data = raw.data,
-                            is.pasted = is.pasted)
-    is.raw.data <- attr(data, "raw.data")
-
-    # Processing pasted or manually inputted data.
-    if (is.pasted)
-    {
-        data <- ParseUserEnteredTable(data[[1]],
-                                      want.data.frame = data[[2]],
-                                      want.factors = data[[3]],
-                                      want.col.names = data[[4]],
-                                      want.row.names = data[[5]],
-                                      us.format = data[[6]])
-        if (is.data.frame(data)) # Raw data aka data.frame
-            is.raw.data <- TRUE
-    } else if (is.raw.data)
-    {  # formBinary is non-NULL or raw.data is non-NULL
-        data <- flipData::TidyRawData(data, subset = subset, weights = weights,
-                                          missing = missing)
+        data <- flipData::TidyRawData(data, subset = subset, weights = weights, missing = missing)
         weights <- attr(data, "weights")
     }
 
-    ## Aggregate if raw data or convert to tidy table(s)
-    data <- if (is.raw.data)
-            {
-                if (show.labels)
-                    names(data) <- Labels(data)
-                else
-                    names(data) <- Names(data)
+    ###########################################################################
+    # 3. Aggregate the data if so required.
+    ###########################################################################
+    if (first.aggregate)
+        data <- aggregateDataForCharting(data, weights, chart.type)
 
-                if (!grepl("Scatter|Bubble", formChartType))
-                    y.title <- "Counts"
-                aggregateDataForCharting(data, weights, formChartType)
-            }
-            else if(inherits(data, "list"))
-            {  # user provided multiple existing tables
-                lapply(data, TidyTabularData)
-            }
-            else
-                TidyTabularData(data)
+    ###########################################################################
+    # 4. Tailoring the data for the chart type.
+    ###########################################################################
+    data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
 
-      data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                     column.names.to.remove = col.names.to.remove, split = split)
+    ###########################################################################
+    # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
+    ###########################################################################
+#print(data)
+    data <- transformTable(data,
+                   !is.null(input.data.tables),
+                   row.names.to.remove, column.names.to.remove, split,
+                   transpose,
+                   as.percentages)
 
-    ## Switching rows and columns
-    if (isTRUE(formTranspose))
-        data <- t(data)
+    ###########################################################################
+    # Finalizing the result.
+    ###########################################################################
 
-    # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
-    if (as.percentages)
-    {
-        ind.negative <- which(data < 0)
-        if (length(ind.negative) > 0)
-        {
-            warning("Percentages calculated ignoring negative values.")
-            data[ind.negative] <- 0
-        }
 
-        if (is.matrix(data))
-            data <- prop.table(data, 2) * 100
-        else
-            data <- prop.table(data) * 100
-
-        y.title <- "% Share"
-    }
+        # if (is.input.data.raw && !is.data.frame(data)) # Checks to see if failed to convert (i.e., is character matrix)
+        # {
+        #     warning("This data does not appear to be 'raw'. This option has been ignored.")
+        #     is.input.data.raw <- FALSE
+        # }
+    # y.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
+    # is set as an attribute so that other functions (e.g., table rendering) can use this information
+    # later (i.e., it is not just a lazy way of avoiding a list).
+    y.title = if (is.null(yt <- attr(data, "y.title"))) attr(data, "statistic") else yt
 
     list(data = data,
          weights = weights,
          y.title = y.title,
-         scatter.x.column = scatter.x.column,
-         scatter.y.column = scatter.y.column,
-         scatter.sizes.column = scatter.sizes.column,
-         scatter.colors.column = scatter.colors.column)
+         scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
-#' Get Data for charting
-#'
-#' Processes form variables to get first non-NULL
-#' @param ... named components of data components
-#' @details currently recognized components are formTable,
-#' formTables, formBinary, pasted, raw.data
-#' @return the first non-NULL component \code{...} with an added attribute
-#' indicating if the data is raw data
-#' @noRd
-processDataArgs <- function(..., is.pasted = FALSE)
-{  #
-    args <- list(...)
-    non.null.idx <- which(!vapply(args, function(x) is.null(unlist(x)), FALSE))[1]
-    if (is.na(non.null.idx))
-        stop("no data supplied", call. = FALSE)
-    data <- args[[non.null.idx]]
-    raw.data <- (is.pasted && inherits(data, "list") && isTRUE(data[[2]])) ||
-        names(args)[non.null.idx] %in% c("raw.data", "formBinary")
-    attr(data, "raw.data") <- raw.data
-    data
+#' #' Get Data for charting
+#' #'
+#' #' Processes form variables to get first non-NULL
+#' #' @param ... named components of data components
+#' #' @details currently recognized components are input.data.table,
+#' #' input.data.tables, input.data.other, pasted, input.data.raw
+#' #' @return the first non-NULL component \code{...} with an added attribute
+#' #' indicating if the data is raw data
+#' #' @noRd
+#' processDataArgs <- function(..., is.pasted = FALSE)
+#' {  #
+#'     args <- list(...)
+#'     non.null.idx <- which(!vapply(args, function(x) is.null(unlist(x)), FALSE))[1]
+#'     if (is.na(non.null.idx))
+#'         stop("no data supplied", call. = FALSE)
+#'     data <- args[[non.null.idx]]
+#'     input.data.raw <- (is.pasted && inherits(data, "list") && isTRUE(data[[2]])) ||
+#'         names(args)[non.null.idx] %in% c("input.data.raw", "input.data.other")
+#'     attr(data, "input.data.raw") <- input.data.raw
+#'     data
+#' }
+
+isScatter <- function(chart.type)
+{
+    grepl("Scatter|Bubble", chart.type)
 }
 
 #' Aggregrate Raw Data For Charting
@@ -220,28 +237,214 @@ processDataArgs <- function(..., is.pasted = FALSE)
 #' @importFrom flipStatistics Table WeightedTable
 aggregateDataForCharting <- function(data, weights, chart.type)
 {
-    out <- data
-    if (!grepl("Scatter|Bubble", chart.type))
+    # In tables that show aggregated tables, only the x-axis title is
+    # taken from dimnames. But both names should be set in case
+    # the table is transposed
+    if (NCOL(data) == 1)
     {
-        # In tables that show aggregated tables, only the x-axis title is
-        # taken from dimnames. But both names should be set in case
-        # the table is transposed
-        if (NCOL(data) == 1)
+        out <- flipStatistics::WeightedTable(data[[1]]) #, weights)
+        d.names <- list(names(out), NULL)
+        names(d.names) <- c(names(data)[1], "")
+        out <- matrix(out, dimnames=d.names)
+        attr(out, "statistic") = "Count"
+    }
+    else if (ncol(data) == 2)
+    {
+        tmp.names <- names(data)
+        names(data) <- c("x", "y") # temporarily set names for formula
+        data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
+        out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
+        names(dimnames(out)) <- tmp.names
+        attr(out, "statistic") = "Counts"
+    }
+    else
+    {
+        if (weighted <- !is.null(weight))
         {
-            out <- flipStatistics::WeightedTable(data[[1]]) #, weights)
-            d.names <- list(names(out), NULL)
-            names(d.names) <- c(names(data)[1], "")
-            out <- matrix(out, dimnames=d.names)
-        }
-        else if (ncol(data) == 2)
-        {
-            tmp.names <- names(data)
-            names(data) <- c("x", "y") # temporarily set names for formula
-            data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
-            out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
-            names(dimnames(out)) <- tmp.names
-         }
+            xw <- sweep(data, 1, weights, "*")
+            sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
+            w <- matrix(weights, nrow(data), ncol(data))
+            w[!is.na(data)] <- 0
+            sum.w <- apply(w, 2, sum)
+            out <- sum.xw / w
+        } else
+           out <- apply(data, 2, mean, na.rm = TRUE)
+        attr(out, "statistic") <- "Mean"
     }
     out
 }
 
+
+
+asDataFrame <- function(x, remove.NULLs = TRUE)
+{
+    if (is.null(x))
+        return(x)
+    if (is.data.frame(x))
+        return(x)
+    if (remove.NULLs)
+      return(as.data.frame(Filter(Negate(is.null), x), stringsAsFactors = F))
+    as.data.frame(x, stringsAsFactors = F)
+}
+
+
+isDistribution <- function(chart.type)
+{
+    grepl("Bean|Box|Histogram|Density|Violin", chart.type)
+}
+
+processPastedData <- function(input.data.pasted, first.aggregate)
+{
+    tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
+                                  want.data.frame = first.aggregate,
+                                  want.factors = input.data.pasted[[2]],
+                                  want.col.names = input.data.pasted[[3]],
+                                  want.row.names = input.data.pasted[[4]],
+                                  us.format = input.data.pasted[[5]])),
+             error = function(e) {input.data.pasted[[1]]})
+}
+
+checkNumberOfDataInputs <- function(table, tables, raw, pasted, other)
+{
+    n.data <- 5 - sum(sapply(list(table, tables, raw, pasted, other), is.null))
+    if (n.data == 0)
+        stop("No data has been provided.")
+    else if (n.data > 1)
+        stop("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
+}
+
+scatterVariableIndices <- function(input.data.raw, data)
+{
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    # Creating indices in situations where the user has provided a table.
+    if (is.null(input.data.raw))
+        return(indices[1:max(4, NCOL(data))])
+    # Indices corresponding to selections in input.raw.data
+    indices["x"] <- if (is.null(input.data.raw$X)) NA else 1
+    indices["y"] <- if (is.null(input.data.raw$Y)) NA else 1 + max(indices[1], 0, na.rm = TRUE)
+    indices["sizes"] <- if (is.null(input.data.raw$Z)) NA else 1 + max(indices[1:2], 0, na.rm = TRUE)
+    indices["colors"] <- if (is.null(input.data.raw$Z2)) NA else 1 + max(indices[1:3], 0, na.rm = TRUE)
+    indices
+}
+
+useLabelsAsRowNames <- function(input.data.raw, data)
+{
+    if (!is.null(input.data.raw) && !is.null(label.variable.name <- names(input.data.raw$labels)))
+    {
+        labels <- data[[label.variable.name]]
+        data[[label.variable.name]]  <- NULL # Deleting the variable
+        if (nrow(data) == NROW(labels))
+            rownames(data) <- make.unique(as.character(labels), sep="")
+    }
+    data
+}
+
+asPercentages <- function(data)
+{
+    ind.negative <- which(data < 0)
+    if (length(ind.negative) > 0)
+    {
+        warning("Percentages calculated ignoring negative values.")
+        data[ind.negative] <- 0
+    }
+
+    if (is.matrix(data))
+    {
+        data <- prop.table(data, 2)
+        attr(data, "statistic") <- "Column %"
+        attr(data, "y.title") <- "%"
+    }
+    else
+    {
+        data <- prop.table(data)
+        attr(data, "statistic") <- "%"
+    }
+    data
+}
+
+transformTable <- function(data,
+                           multiple.tables,
+                           row.names.to.remove, column.names.to.remove, split,
+                           transpose,
+                           as.percentages,
+                           table.counter = 1)
+{
+    if (multiple.tables)
+    {
+        for(i in seq_along(data))
+            data[[i]] = transformTable(data[[i]], FALSE,
+                                       row.names.to.remove, column.names.to.remove, split,
+                                       transpose,
+                                       as.percentages,
+                                       i)
+        return(data)
+    }
+    ## Remove rows and columns
+    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                 column.names.to.remove = column.names.to.remove, split = split)
+    ## Switching rows and columns
+    if (isTRUE(transpose))
+        data <- t(data)
+
+    # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
+    if (as.percentages)
+    {
+        if (!is.vector(data) && !is.matrix(data) && table.counter == 1)
+            warning("The data has not been converted to percentages. To convert to percentages, ",
+                    "first convert to a more suitable type (e.g., create a table)")
+        else
+            data <- asPercentages(data)
+    }
+    return(data)
+}
+
+
+prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
+{
+    # Multiple tables
+    if (!is.null(input.data.tables))
+    {
+        data <- lapply(data, TidyTabularData)
+
+    }
+    else if (chart.type == "Venn")
+    {
+        data <- data # Do nothing.
+
+    }
+    else if (chart.type == "Sankey")
+    {
+        data <- asDataFrame(data)
+    }
+    # Scatterplots
+    else if (isScatter(chart.type))
+    {
+        if (!is.data.frame(data) && !is.matrix(data))
+            data <- TidyTabularData(data)
+        # Appending the labels to the data.frame as row names
+        data <- useLabelsAsRowNames (input.data.raw, data)
+        # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
+        attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data)
+    }
+    # Charts that plot the distribution of raw data (e.g., histograms)
+    else if (isDistribution(chart.type))
+    {
+        # Splitting the first variable by the second
+        if (!is.null(input.data.raw[[2]]) && NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
+        {
+            data <- SplitVectorToList(data[[1]], data[[2]])
+            weights <- SplitVectorToList(weights, data[[2]])
+        }
+        else # Coercing data to numeric format, if required
+            data <- AsNumeric(data, binary = FALSE)
+    }
+    else if (!tidy) # Do nothing
+    {
+        data <- data
+    }
+    else  # Everything else. We try and turn it into a table if we can.
+    {
+        data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+    }
+    data
+}

@@ -2,17 +2,18 @@
 % Please edit documentation in R/preparedata.R
 \name{PrepareData}
 \alias{PrepareData}
-\title{Tidy Data For Use With Displayr Charting Functions}
+\title{PrepareData}
 \usage{
-PrepareData(formChartType, subset = TRUE, weights = NULL,
-  formTable = NULL, formTables = NULL, formBinary = NULL,
-  pasted = list(NULL), raw.data = NULL, formTranspose = FALSE,
-  missing = "Exclude cases with missing data",
-  row.names.to.remove = c("NET", "SUM"), col.names.to.remove = c("NET",
+PrepareData(chart.type, subset = TRUE, weights = NULL,
+  input.data.table = NULL, input.data.tables = NULL,
+  input.data.raw = NULL, input.data.pasted = NULL,
+  input.data.other = NULL, first.aggregate = FALSE, tidy = TRUE,
+  transpose = FALSE, missing = "Exclude cases with missing data",
+  row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
   "SUM"), split = "[;,]", as.percentages = FALSE, show.labels = TRUE)
 }
 \arguments{
-\item{formChartType}{Character; chart type to be plotted.}
+\item{chart.type}{Character; chart type to be plotted.}
 
 \item{subset}{subset An optional vector specifying a subset of
 observations to be used in the fitting process, or, the name of
@@ -21,35 +22,50 @@ a variable in \code{data}. It may not be an expression.}
 \item{weights}{An optional vector of sampling weights, or, the name
 of a variable in \code{data}. It may not be an expression.}
 
-\item{formTable}{Array; assumed to be a Qtable and will be
+\item{input.data.table}{Array; typically a table of some kind, which is then
 processed using \code{\link[flipTables]{AsTidyTabularData}}.}
 
-\item{formTables}{List of array; each component is assumed to be a
+\item{input.data.tables}{List of array; each component is assumed to be a
 Qtable and will be processed using.
 \code{\link[flipTables]{AsTidyTabularData}}}
 
-\item{formBinary}{A PickAny Multi Q variable.}
+\item{input.data.raw}{List, containing variables or data.frames.}
 
-\item{pasted}{List of length six; the first component of which is
+\item{input.data.pasted}{List of length six; the first component of which is
 assumed to be from a user-entered/pasted table; will be
 processed by \code{\link{ParseUserEnteredTable}}.}
 
-\item{raw.data}{data.frame or list, containing Variables from
-a Q/Displayr Data Set.}
+\item{input.data.other}{A PickAny Multi Q variable.}
 
-\item{formTranspose}{Logical; should the supplied data be
+\item{first.aggregate}{Logical; whether or not the input data
+needs to be aggregated in this function. A single variable is tabulated,
+2 variables are crosstabbed, and with 3 or more the mean is computed.
+been provided, a contingency table is used to aggregate.}
+
+\item{tidy}{Logical; whether or not the input data
+needs to be aggregated in this function (e.g., if an x and y variable have
+been provided, a contingency table is used to aggregate. This defaults
+to \code{TRUE}. It aggressively seeks to turn the data into a named vector
+or a matrix using \code{\link[flipTables]{TidyTabularData}}. This is not applied
+when \code{data.input.tables} are provided, or when the chart type is
+any of \code{"Scatter"}, \code{"Bean"}, \code{"Histogram"}, \code{"Density"},
+\code{"Box"}, or \code{"Violin"}.}
+
+\item{transpose}{Logical; should the resulting matrix (of created)  be
 transposed?}
 
 \item{missing}{Character; One of \code{"Error if missing data"},
 \code{"Exclude cases with missing data"} (the default, which is
 equivalent to 'complete.cases'), and \code{"Use partial data"},
-which removes no data; ignored if raw data is not supplied.}
+which removes no data. Only used if either \code{input.data.raw} is provided,
+or, a \code{weight} or \code{subset} are provided and are as long as the number of
+observations in \code{data}.}
 
 \item{row.names.to.remove}{Character vector or delimited string
 of row labels specifying rows to remove from the returned table; default
 is \code{c("NET", "SUM")}}
 
-\item{col.names.to.remove}{Character vector or delimited string
+\item{column.names.to.remove}{Character vector or delimited string
 of column labels specifying columns to remove from the returned table;
 default is \code{c("NET", "SUM")}.}
 
@@ -74,29 +90,19 @@ A list with components
 \item \code{y.title} - Character string to be used for the y-axis title; will
 only be a non-empty string if some aggregation has been performed on
 \code{data}
-}
-
-The following additional items will be present in the list and are used for
-\code{formChartType = "Bubble"} and \code{formChartType = "Scatter"}.
-\itemize{
-\item \code{scatter.x.column} - Numeric; the index of the column (1-based)
-in \code{data} which contains the x-coordinate data.
-\item \code{scatter.y.column} - Numeric, the index of the column (1-based)
-in \code{data} which contains the y-coordinate data.
-\item \code{scatter.sizes.column} - Numeric; the index of the column (1-based)
-in \code{data} which contains the scatter sizes data.
-\item \code{scatter.colors.column} - Numeric; the index of the column (1-based)
-in \code{data} which contains the scatter colors data.
+\item  \code{scatter.variable.indices} A named vector indicating which columns in
+\code{data} should be plotted in a scatterplot as \code{x}, \code{y}, \code{sizes},
+and \code{colors}. Is \code{NULL} if \code{chart.type} does not contain \code{"Scatter"}
+or  \code{"Bubble"}. \code{NA} is used when the data does not exist.
 }
 }
 \description{
-For use before calling a Displayr charting function, ensures the
-data to be used is in a convenient format for plotting.
+Prepares input data for charting.
 }
 \details{
 It is assumed that only one of \code{pasted},
-    \code{formTable}, \code{formTables}, \code{formBinary},
-    \code{raw.data} is non-NULL.  They are checked for nullity in
+    \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
+    \code{input.data.raw} is non-NULL.  They are checked for nullity in
     that order.
 }
 \seealso{

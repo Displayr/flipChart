@@ -11,16 +11,16 @@ LazyData: true
 Suggests: 
     grDevices,
     flipExampleData,
-    flipStandardCharts
+    flipStandardCharts (>= 1.0.1)
 Imports:
     methods,
     flipChartBasics,
-    flipData,
+    flipData (>= 1.0.0),
     flipFormat,
     flipStatistics,
-    flipTables (>= 2.2.0),
+    flipTables (>= 2.2.1),
     flipU,
-    flipTransformations
+    flipTransformations (>= 1.3.0)
 Remotes:
     Displayr/flipChartBasics,
     Displayr/flipData,

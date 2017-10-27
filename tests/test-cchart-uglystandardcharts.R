@@ -1,9 +1,8 @@
-context("Test 'ugly' standard charts via CChart")
 # The ones that don't depend on Distribution are in the testthat directory
 library(flipStandardCharts)
 
 
-test_that("Violin", {
+#test_that("Violin", {
     set.seed(1223)
     z = list(Normal = rnorm(1000), "Poisson with unit lamda" = rpois(1000, 1), Exponential = rexp(1000))
     Violin(z, title = "Comparing distributions",
@@ -23,4 +22,4 @@ test_that("Violin", {
            global.font.family = "Courier",
            global.font.color = "Red")
 
-})
+#})

@@ -24,9 +24,9 @@ test_that("flipStandardCharts::Chart chart functions",{
     expect_warning(print(CChart("Pie", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
     expect_warning(print(CChart("Column", pie.sales, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
     expect_warning(print(CChart("Scatter", x=1:10, y=1:10, sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
-    expect_warning(print(CChart("Scatter", x=matrix(1:12, 6, 2, dimnames=list(letters[1:6], c("X", "Y"))),
-                                scatter.labels.as.hovertext = FALSE,
-                                sfdsmain = "My pie sales", warn.if.no.match = FALSE)), NA)
+# expect_warning(print(CChart("Scatter", x=matrix(1:12, 6, 2, dimnames=list(letters[1:6], c("X", "Y"))),
+#                             scatter.labels.as.hovertext = FALSE,
+#                             main = "My pie sales", warn.if.no.match = FALSE)), NA)
     expect_warning(print(CChart("Scatter", x=1:10, y=2:11, scatter.sizes=factor(letters[1:10]))))
 
     # Stacked charts
