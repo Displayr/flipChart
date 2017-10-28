@@ -1,4 +1,4 @@
-library(testthat)
-library(flipChart)
-
-test_check("flipChart")
+# library(testthat)
+#
+#
+# test_check("flipChart")

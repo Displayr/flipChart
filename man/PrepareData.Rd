@@ -64,7 +64,7 @@ transposed?}
 \code{"Exclude cases with missing data"} (the default, which is
 equivalent to 'complete.cases'), and \code{"Use partial data"},
 which removes no data. Only used if either \code{input.data.raw} is provided,
-or, a \code{weight} or \code{subset} are provided and are as long as the number of
+or, a \code{weights} or \code{subset} are provided and are as long as the number of
 observations in \code{data}.}
 
 \item{row.names.to.remove}{Character vector or delimited string

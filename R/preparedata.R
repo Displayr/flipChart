@@ -39,7 +39,7 @@
 #'     \code{"Exclude cases with missing data"} (the default, which is
 #'     equivalent to 'complete.cases'), and \code{"Use partial data"},
 #'     which removes no data. Only used if either \code{input.data.raw} is provided,
-#'     or, a \code{weight} or \code{subset} are provided and are as long as the number of
+#'     or, a \code{weights} or \code{subset} are provided and are as long as the number of
 #'     observations in \code{data}.
 #' @param row.names.to.remove Character vector or delimited string
 #' of row labels specifying rows to remove from the returned table; default
@@ -64,6 +64,7 @@
 #' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names
+#' @importFrom flipStatistics Table WeightedTable
 #' @return A list with components
 #' \itemize{
 #' \item \code{data} - If possible, a named vector or matrix, or if that is not
@@ -173,7 +174,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (!is.null(input.data.raw) || NROW(subset) == NROW(data) || NROW(weights) == NROW(data))
     {
-        data <- flipData::TidyRawData(data, subset = subset, weights = weights, missing = missing)
+        data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
         weights <- attr(data, "weights")
     }
 
@@ -219,28 +220,6 @@ PrepareData <- function(chart.type,
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
-#' #' Get Data for charting
-#' #'
-#' #' Processes form variables to get first non-NULL
-#' #' @param ... named components of data components
-#' #' @details currently recognized components are input.data.table,
-#' #' input.data.tables, input.data.other, pasted, input.data.raw
-#' #' @return the first non-NULL component \code{...} with an added attribute
-#' #' indicating if the data is raw data
-#' #' @noRd
-#' processDataArgs <- function(..., is.pasted = FALSE)
-#' {  #
-#'     args <- list(...)
-#'     non.null.idx <- which(!vapply(args, function(x) is.null(unlist(x)), FALSE))[1]
-#'     if (is.na(non.null.idx))
-#'         stop("no data supplied", call. = FALSE)
-#'     data <- args[[non.null.idx]]
-#'     input.data.raw <- (is.pasted && inherits(data, "list") && isTRUE(data[[2]])) ||
-#'         names(args)[non.null.idx] %in% c("input.data.raw", "input.data.other")
-#'     attr(data, "input.data.raw") <- input.data.raw
-#'     data
-#' }
-
 isScatter <- function(chart.type)
 {
     grepl("Scatter|Bubble", chart.type)
@@ -260,7 +239,7 @@ aggregateDataForCharting <- function(data, weights, chart.type)
     # the table is transposed
     if (NCOL(data) == 1)
     {
-        out <- flipStatistics::WeightedTable(data[[1]]) #, weights)
+        out <- WeightedTable(data[[1]]) #, weights)
         d.names <- list(names(out), NULL)
         names(d.names) <- c(names(data)[1], "")
         out <- matrix(out, dimnames=d.names)
@@ -277,7 +256,7 @@ aggregateDataForCharting <- function(data, weights, chart.type)
     }
     else
     {
-        if (weighted <- !is.null(weight))
+        if (weighted <- !is.null(weights))
         {
             xw <- sweep(data, 1, weights, "*")
             sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
@@ -422,7 +401,8 @@ transformTable <- function(data,
     return(data)
 }
 
-
+#' @importFrom flipTables TidyTabularData
+#' @importFrom flipTransformations AsNumeric
 prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
 {
     # Multiple tables
