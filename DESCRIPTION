@@ -8,14 +8,15 @@ Description: Wrapper for other chart functions, such that they can be access via
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Suggests: 
+Suggests:
     grDevices,
-    flipStandardCharts (>= 1.0.1)
+    testthat
 Imports:
     methods,
     flipChartBasics,
     flipData (>= 1.0.0),
     flipFormat,
+    flipStandardCharts (>= 1.0.1),
     flipStatistics,
     flipTables (>= 2.2.1),
     flipU,
@@ -25,6 +26,7 @@ Remotes:
     Displayr/flipData,
     Displayr/flipFormat,
     Displayr/flipStatistics,
+    Displayr/flipStandardCharts,
     Displayr/flipTables,
     Displayr/flipTransformations,
     Displayr/flipU
