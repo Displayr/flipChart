@@ -17,6 +17,10 @@
 #'     assumed to be from a user-entered/pasted table; will be
 #'     processed by \code{\link{ParseUserEnteredTable}}.
 #' @param input.data.other  A PickAny Multi Q variable.
+#' @param data.source Where multiple data inputs are provided, a text string can be provided
+#' to disambiguate. Refer to the source code for a precise understanding
+#' of how this works (it is not obvious and is not likely to be of any use for
+#' most cases, so should usually be left as a \code{NULL}).
 #' @param first.aggregate Logical; whether or not the input data
 #' needs to be aggregated in this function. A single variable is tabulated,
 #' 2 variables are crosstabbed, and with 3 or more the mean is computed.
@@ -85,6 +89,7 @@ PrepareData <- function(chart.type,
                         input.data.raw = NULL,
                         input.data.pasted = NULL,
                         input.data.other = NULL,
+                        data.source = NULL,
                         first.aggregate = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
@@ -135,8 +140,21 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 1. Converts the data inputs into a single data object called 'data'.
     ###########################################################################
-
-    checkNumberOfDataInputs(input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
+    data.source.index <- if (is.null(data.source)) NULL else
+        switch(data.source,
+                "Link to a table in 'Pages'" = 1,
+                "Link to multiple tables in 'Pages'" = 2,
+                "Link to a variable in 'Data'" = 3,
+                "Link to variables in 'Data'" = 3,
+                "Link to variables in 'Data'" = 3,
+                "Variable Set: Binary - Multi" = 3,
+                "Variable Set: Pick Any" = 3,
+                "Variable Set: Numeric - Multi" = 3,
+                "Variable Set: Number - Multi" = 3,
+                "Type or paste in data" = 4,
+                "Use an existing R Output in 'Pages'" = 5,
+                3)
+    checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
     data <- input.data.table
     if (is.null(data))
         data <- input.data.tables
@@ -304,13 +322,19 @@ processPastedData <- function(input.data.pasted, first.aggregate)
              error = function(e) {input.data.pasted[[1]]})
 }
 
-checkNumberOfDataInputs <- function(table, tables, raw, pasted, other)
+checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, pasted, other)
 {
-    n.data <- 5 - sum(sapply(list(table, tables, raw, pasted, other), is.null))
+    data.provided <- !sapply(list(table, tables, raw, pasted, other), is.null)
+    n.data <- sum(data.provided)
     if (n.data == 0)
         stop("No data has been provided.")
-    else if (n.data > 1)
-        stop("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
+    else if (is.null(data.source.index))
+    {
+        if (n.data > 1)
+            stop("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
+
+    } else if (!data.provided[data.source.index])
+        stop("The data provided does not mach the 'data.source.index'.")
 }
 
 scatterVariableIndices <- function(input.data.raw, data)

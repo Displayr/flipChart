@@ -7,8 +7,9 @@
 PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
-  input.data.other = NULL, first.aggregate = FALSE, tidy = TRUE,
-  transpose = FALSE, missing = "Exclude cases with missing data",
+  input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
+  tidy = TRUE, transpose = FALSE,
+  missing = "Exclude cases with missing data",
   row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
   "SUM"), split = "[;,]", as.percentages = FALSE, show.labels = TRUE)
 }
@@ -36,6 +37,11 @@ assumed to be from a user-entered/pasted table; will be
 processed by \code{\link{ParseUserEnteredTable}}.}
 
 \item{input.data.other}{A PickAny Multi Q variable.}
+
+\item{data.source}{Where multiple data inputs are provided, a text string can be provided
+to disambiguate. Refer to the source code for a precise understanding
+of how this works (it is not obvious and is not likely to be of any use for
+most cases, so should usually be left as a \code{NULL}).}
 
 \item{first.aggregate}{Logical; whether or not the input data
 needs to be aggregated in this function. A single variable is tabulated,
