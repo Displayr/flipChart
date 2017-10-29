@@ -79,10 +79,10 @@ test_that("PrepareData: single table, single stat",
                                get0("input.data.tables"),
                                input.data.pasted = list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"),
                                      get0("formPastedColumnNames"), get0("formPastedRowNames"), get0("formPastedDateConvention")),
-                               input.data.raw = as.data.frame(Filter(Negate(is.null), list(get0("formX"), get0("formY")))),
+                               input.data.raw = NULL, #as.data.frame(Filter(Negate(is.null), list(get0("formX"), get0("formY")))),
                                input.data.other = get0("input.data.other"),
                                 transpose = get0("transpose"),
-                                missing = "Exclude cases with missing data"), "There are 3 data inputs. One and only one data argument may be supplied.")
+                                missing = "Exclude cases with missing data"))
     out <- suppressWarnings(PrepareData(chart.type, QFilter, QPopulationWeight, get0("input.data.table")))
     expect_warning(PrepareData(chart.type, QFilter, QPopulationWeight, get0("input.data.table")),
                    "^Multiple statistics detected")
