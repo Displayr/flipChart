@@ -154,6 +154,9 @@ PrepareData <- function(chart.type,
                 "Variable Set: Number - Multi" = 3,
                 "Type or paste in data" = 4,
                 "Use an existing R Output in 'Pages'" = 5,
+                "Link to variable sets in 'Data'" = 3,
+                "Link to a variable in 'Data'" = 3,
+
                        { # Default
                            warning("'", data.source, "' is not a recognized data source.")
                            3
@@ -186,7 +189,7 @@ PrepareData <- function(chart.type,
     if (!is.null(input.data.raw) || NROW(subset) == NROW(data) || NROW(weights) == NROW(data))
     {
         data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
-        weights <- attr(data, "weights")
+        weights <- setWeight(data, weights)
     }
 
     ###########################################################################
@@ -199,6 +202,7 @@ PrepareData <- function(chart.type,
     # 4. Tailoring the data for the chart type.
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
+    weights <- setWeight(data, weights)
 
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
@@ -447,8 +451,10 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         # Splitting the first variable by the second
         if (!is.null(input.data.raw[[2]]) && NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
         {
+            if (!is.null(weights))
+                weights <- SplitVectorToList(weights, data[[2]])
             data <- SplitVectorToList(data[[1]], data[[2]])
-            weights <- SplitVectorToList(weights, data[[2]])
+            attr(data, "weights") <- weights
         }
         else # Coercing data to numeric format, if required
             data <- AsNumeric(data, binary = FALSE)
@@ -462,4 +468,12 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         data <- tryCatch(TidyTabularData(data), error = function(e) { data })
     }
     data
+}
+
+
+setWeight <- function(x, weights)
+{
+    if (!is.null(w <-  attr(x, "weights")))
+        return(w)
+    weights
 }
