@@ -154,11 +154,15 @@ PrepareData <- function(chart.type,
                 "Variable Set: Number - Multi" = 3,
                 "Type or paste in data" = 4,
                 "Use an existing R Output in 'Pages'" = 5,
-                3)
+                       { # Default
+                           warning("'", data.source, "' is not a recognized data source.")
+                           3
+                       }
+                )
     # Convert lists of NULLs into single NULLs.
-    if (all(is.null(input.data.raw)))
+    if (all(sapply(input.data.raw, is.null)))
         input.data.raw <- NULL
-    if (all(is.null(input.data.pasted)))
+    if (all(sapply(input.data.pasted, is.null)))
         input.data.pasted <- NULL
     # Check that there is no ambiguity rearding which input to use.
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
