@@ -155,7 +155,14 @@ PrepareData <- function(chart.type,
                 "Type or paste in data" = 4,
                 "Use an existing R Output in 'Pages'" = 5,
                 3)
+    # Convert lists of NULLs into single NULLs.
+    if (all(is.null(input.data.raw)))
+        input.data.raw <- NULL
+    if (all(is.null(input.data.pasted)))
+        input.data.pasted <- NULL
+    # Check that there is no ambiguity rearding which input to use.
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
+    # Assign the data to 'data'
     data <- input.data.table
     if (is.null(data))
         data <- input.data.tables

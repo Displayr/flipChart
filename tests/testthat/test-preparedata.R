@@ -630,4 +630,8 @@ test_that("PrepareData: incorrect data.source.index",
                       )
     expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, first.aggregate = FALSE,
                              data.source = "Use an existing R Output in 'Pages'"), NA)
+
+    expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, input.data.raw = list(NULL), first.aggregate = FALSE,
+                             data.source = "Use an existing R Output in 'Pages'"), NA)
+
 })
