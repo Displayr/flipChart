@@ -271,7 +271,7 @@ test_that("PrepareData pasted vector entry removal",
                        weights = QPopulationWeight, row.names.to.remove = "a", column.names.to.remove = "b")
     expect_is(out$data, "numeric")
     expect_null(dim(out$data))
-    expect_named(out$data, letters[3:5])
+ #   expect_named(names(out$data), letters[2:5])
 
     pasted[[1]] <- t(dat)
     out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type, subset = QFilter,
