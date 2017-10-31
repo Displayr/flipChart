@@ -289,9 +289,13 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         return(x)
     if (is.data.frame(x))
         return(x)
-    if (remove.NULLs)
-      return(as.data.frame(Filter(Negate(is.null), x), stringsAsFactors = F))
-    as.data.frame(x, stringsAsFactors = F)
+    all.variables <- all(sapply(x, NCOL) == 1)
+    if(remove.NULLs)
+        x <- Filter(Negate(is.null), x)
+    nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    x <- as.data.frame(x, stringsAsFactors = FALSE)
+    names(x) <- nms
+    x
 }
 
 

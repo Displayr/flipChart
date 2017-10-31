@@ -64,13 +64,15 @@ Other.JSON <- r.output <- list(
 ########                        Line, Bar, Area, Column            ###########
 ##############################################################################
 
+test_that("Line, Bar, Area, Column",{
 
 # Table inputs
 for (input in list(Table.Vector, Table.MatrixUnlabeled, Table.MatrixLabeled))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.table = input))
-        print(CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog")
+        expect_error(print(c), NA)
 }
 
 # Raw data inputs - first aggregate = FALSE
@@ -78,7 +80,8 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = FALSE))
-        print(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog")
+        expect_error(print(c), NA)
      }
 
 # Raw data inputs - first aggregate = TRUE
@@ -86,7 +89,8 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = TRUE))
-        print(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = (CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        expect_error(print(c), NA)
     }
 
 # Raw data inputs - first aggregate = TRUE, as.percentages = TRUE
@@ -100,7 +104,8 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
                      hover.format.list = list(get0("formHoverNumberType"), get0("formHoverDateType"), get0("formHoverNumberCustom"),                                              get0("formHoverSeparateThousands"), get0("formHoverDecimals")),
                      data.labels.format.list = list(get0("formDataLabelsNumberType"), get0("formDataLabelsDateType"),                                                    get0("formDataLabelsCustom"), get0("formDataLabelsSeparateThousands"),                                                    get0("formDataLabelsDecimals")))
 
-        print(CChart(chart.type, pd$data, y.zero = FALSE, values.tick.format = pn$values.number.format, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = (CChart(chart.type, pd$data, y.zero = FALSE, values.tick.format = pn$values.number.format, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        expect_error(print(c), NA)
     }
 
 # Pasted
@@ -108,19 +113,22 @@ for (input in list(Pasted.Vector, Pasted.Matrix))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.pasted = input))
-        print(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = (CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        expect_error(print(c), NA)
     }
 
 # Other
-for (input in list(Other.List, Other.ListUnequal, Other.Unnamed.Vector, Other.data.frame, Other.Named.Vector, Other.Matrix))
+for (input in list(Other.Unnamed.Vector, Other.Named.Vector, Other.Matrix))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.other = input))
-        print(CChart(chart.type, pd$data, title = "Comparing distributions",
+        c  = (CChart(chart.type, pd$data, title = "Comparing distributions",
                 values.title = "Values",
                 global.font.family = "Courier",
                 global.font.color = "Red"))
+        expect_error(print(c), NA)
     }
+})
 
 
 ##############################################################################
@@ -130,17 +138,18 @@ for (input in list(Other.List, Other.ListUnequal, Other.Unnamed.Vector, Other.da
 
 test_that("Venn",
           {
-                pd <- suppressWarnings(PrepareData(chart.type, input.data.other = Other.JSON))
+                pd <- suppressWarnings(PrepareData("Venn", input.data.other = Other.JSON))
                 CChart("Venn", pd$data, as.percentages = TRUE, data.label.decimals = 2)
 
-                pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = RawData.XPickAny))
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny))
                 CChart("Venn", pd$data, as.percentages = TRUE, data.label.decimals = 2)
 
-                pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = RawData.XPickAny))
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny))
                 CChart("Venn", pd$data, as.percentages = FALSE, data.label.decimals = 2)
 
                 set.seed(1223)
-                pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = RawData.XPickAny, weights = runif(nrow(RawData.XPickAny[[1]]))))
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, weights = runif(nrow(RawData.XPickAny[[1]]))))
+                expect_equal(names(pd$data), letters[1:3])
                 CChart("Venn", pd$data, weights = pd$weights, as.percentages = FALSE, data.label.decimals = 2)
           })
 
