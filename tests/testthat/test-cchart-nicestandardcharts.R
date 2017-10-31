@@ -22,6 +22,8 @@ library(flipStandardCharts)
 ##############################################################################
 ########                        Example data                       ###########
 ##############################################################################
+set.seed(1223)
+
 asBinary <- function(x) as.integer(unclass(x) == 2)
 data(colas, package = "flipExampleData")
 
@@ -29,6 +31,10 @@ data(colas, package = "flipExampleData")
 Table.Vector = c(a = 1, b = 2, c = 3)
 Table.MatrixUnlabeled = matrix(1:10, 5)
 Table.MatrixLabeled = matrix(1:10, 5, dimnames = list(LETTERS[1:5], LETTERS[6:7]))
+Table.MatrixTimeSeries <- t(apply(matrix(runif(200), nrow = 4), 1, cumsum))
+rownames(Table.MatrixTimeSeries) <- c('Aardvark', 'Three toed sloth', 'Camel', 'Dog')
+colnames(Table.MatrixTimeSeries) <- as.character(seq(as.Date("1910/1/1"), by = "month", length.out = ncol(Table.MatrixTimeSeries)))
+Table.VectorTimeSeries <- Table.MatrixTimeSeries[1, ]
 
 # Tables
 
@@ -43,6 +49,11 @@ RawData.XNumberMulti = suppressWarnings(list(X = flipTransformations::AsNumeric(
 dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
 Pasted.Vector <- list(dat[, 1:2], TRUE, TRUE, TRUE, TRUE, TRUE)
 Pasted.Matrix <- list(dat, TRUE, TRUE, TRUE, TRUE, TRUE)
+z <- Table.MatrixTimeSeries
+z <- matrix(as.character(z), ncol = ncol(z))
+z <- cbind(rownames(Table.MatrixTimeSeries), z)
+z <- rbind(c("", colnames(Table.MatrixTimeSeries)), z)
+Pasted.MatrixTimeSeries <- list(z, TRUE, TRUE, TRUE, TRUE, TRUE)
 
 # Other
 Other.List <- list(Normal = rnorm(1000), "Poisson with unit lamda" = rpois(1000, 1), Exponential = rexp(1000))
@@ -51,6 +62,7 @@ Other.Unnamed.Vector <- Other.List[[1]]
 Other.data.frame = as.data.frame(Other.List)
 Other.Named.Vector <- Table.Vector
 Other.Matrix <- Table.MatrixLabeled
+Other.MatrixTimeSeries <- Table.MatrixTimeSeries
 Other.JSON <- r.output <- list(
                     list("sets"= list(0), "label"= "Like", "size"= 99.9),
                     list("sets"= list(1), "label"= "Love", "size"= 50.1),
@@ -152,4 +164,37 @@ test_that("Venn",
                 expect_equal(names(pd$data), letters[1:3])
                 CChart("Venn", pd$data, weights = pd$weights, as.percentages = FALSE, data.label.decimals = 2)
           })
+
+
+##############################################################################
+########                        Streamgraph                        ###########
+##############################################################################
+#Other.TimeSeries <- Table.MatrixTimeSeries  Table.VectorTimeSeries
+
+#Pasted.MatrixTimeSeries
+
+test_that("Stream",
+          {
+              pn <- PrepareNumbers(categories.format.list = list("Date/Time", "YYYY (Year, 4 digit)", get0("formCategoriesNumberCustom"),                                          get0("formCategoriesSeparateThousands"), get0("formCategoriesDecimals")),
+                                   values.format.list = list("Number", get0("formValuesDateType"), get0("formValuesNumberCustom"),                                          get0("formValuesSeparateThousands"),
+                                                             0),
+                                   hover.format.list = list(get0("formHoverNumberType"), get0("formHoverDateType"), get0("formHoverNumberCustom"),                                              get0("formHoverSeparateThousands"), get0("formHoverDecimals")),
+                                   data.labels.format.list = list(get0("formDataLabelsNumberType"), get0("formDataLabelsDateType"),                                                    get0("formDataLabelsCustom"), get0("formDataLabelsSeparateThousands"),                                                    get0("formDataLabelsDecimals")))
+
+
+              pd <- PrepareData("Stream", input.data.table = Table.MatrixTimeSeries)
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+
+              pd <- PrepareData("Stream", input.data.table = Table.VectorTimeSeries)
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+
+              pd <- PrepareData("Stream", input.data.pasted = Pasted.MatrixTimeSeries)
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+
+              pd <- PrepareData("Stream", input.data.other = Other.MatrixTimeSeries)
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+
+          })
+
+
 
