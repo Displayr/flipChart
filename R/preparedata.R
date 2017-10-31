@@ -207,7 +207,6 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-#print(data)
     data <- transformTable(data,
                    !is.null(input.data.tables),
                    row.names.to.remove, column.names.to.remove, split,
@@ -218,12 +217,6 @@ PrepareData <- function(chart.type,
     # Finalizing the result.
     ###########################################################################
 
-
-        # if (is.input.data.raw && !is.data.frame(data)) # Checks to see if failed to convert (i.e., is character matrix)
-        # {
-        #     warning("This data does not appear to be 'raw'. This option has been ignored.")
-        #     is.input.data.raw <- FALSE
-        # }
     # y.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
     # is set as an attribute so that other functions (e.g., table rendering) can use this information
     # later (i.e., it is not just a lazy way of avoiding a list).
@@ -247,6 +240,7 @@ isScatter <- function(chart.type)
 #' @return aggregated data
 #' @noRd
 #' @importFrom flipStatistics Table WeightedTable
+#' @importFrom flipTransformations AsNumeric
 aggregateDataForCharting <- function(data, weights, chart.type)
 {
     # In tables that show aggregated tables, only the x-axis title is
@@ -271,6 +265,7 @@ aggregateDataForCharting <- function(data, weights, chart.type)
     }
     else
     {
+        data <- AsNumeric(data, binary = FALSE)
         if (weighted <- !is.null(weights))
         {
             xw <- sweep(data, 1, weights, "*")
@@ -407,7 +402,7 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
-        if (!is.vector(data) && !is.matrix(data) && table.counter == 1)
+        if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
             warning("The data has not been converted to percentages. To convert to percentages, ",
                     "first convert to a more suitable type (e.g., create a table)")
         else
@@ -449,7 +444,8 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     else if (isDistribution(chart.type))
     {
         # Splitting the first variable by the second
-        if (!is.null(input.data.raw[[2]]) && NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
+        if (length(input.data.raw)  > 1 && !is.null(input.data.raw[[2]]) &&
+            NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
         {
             if (!is.null(weights))
                 weights <- SplitVectorToList(weights, data[[2]])
