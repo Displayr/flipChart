@@ -471,14 +471,21 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
     {
-        # Splitting the first variable by the second
-        if (length(input.data.raw)  > 1 && !is.null(input.data.raw[[2]]) &&
-            NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
+        if (len <- length(input.data.raw) > 1)
         {
-            if (!is.null(weights))
-                weights <- SplitVectorToList(weights, data[[2]])
-            data <- SplitVectorToList(data[[1]], data[[2]])
-            attr(data, "weights") <- weights
+            if (NCOL(input.data.raw[[1]]) >= 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
+                stop("If using a grouping variable, you may only have one additional variable.")
+            # Splitting the first variable by the second
+            else if (#!is.null(input.data.raw[[2]]) &&
+                NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
+            {
+                if (!is.null(weights))
+                    weights <- SplitVectorToList(weights, data[[2]])
+                data <- SplitVectorToList(data[[1]], data[[2]])
+                attr(data, "weights") <- weights
+            }
+
+
         }
         else # Coercing data to numeric format, if required
             data <- AsNumeric(data, binary = FALSE)
