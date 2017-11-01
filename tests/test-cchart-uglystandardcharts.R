@@ -77,7 +77,22 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
                 values.title = "Values",
                 global.font.family = "Courier",
                 global.font.color = "Red"))
-}
+    }
+
+# Raw data inputs - weighted & subset
+for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        set.seed(1223)
+        wgt <- runif(NROW(input[[1]]))
+        sb <- wgt > .5
+        pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, weights = wgt, subset = sb))
+        print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                values.title = "Values",
+                global.font.family = "Courier",
+                global.font.color = "Red"))
+    }
+
 
 # Pasted
 for (input in list(Pasted.Vector, Pasted.Matrix))

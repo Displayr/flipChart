@@ -473,7 +473,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     {
         if (len <- length(input.data.raw) > 1)
         {
-            if (NCOL(input.data.raw[[1]]) >= 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
+            if (NCOL(input.data.raw[[1]]) > 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
                 stop("If using a grouping variable, you may only have one additional variable.")
             # Splitting the first variable by the second
             else if (#!is.null(input.data.raw[[2]]) &&
