@@ -36,7 +36,7 @@ test_that("PrepareData: single table, single stat",
                      #                get0("formPastedColumnNames"), get0("formPastedRowNames"), get0("formPastedDateConvention")),
                        get0("input.data.other"),
                        transpose = get0("transpose"),
-                       missing = "Exclude cases with missing data", row.names.to.remove = NULL,
+                       row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
@@ -74,15 +74,6 @@ test_that("PrepareData: single table, single stat",
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
 
-    # expect_warning(PrepareData(chart.type, QFilter, QPopulationWeight,
-    #                            get0("input.data.table"),
-    #                            get0("input.data.tables"),
-    #                            input.data.pasted = list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"),
-    #                                  get0("formPastedColumnNames"), get0("formPastedRowNames"), get0("formPastedDateConvention")),
-    #                            input.data.raw = NULL, #as.data.frame(Filter(Negate(is.null), list(get0("formX"), get0("formY")))),
-    #                            input.data.other = get0("input.data.other"),
-    #                             transpose = get0("transpose"),
-    #                             missing = "Exclude cases with missing data"), 'Multiple statistics detected; only the first in the table ("Column %") will be used.')
     out <- suppressWarnings(PrepareData(chart.type, QFilter, QPopulationWeight, get0("input.data.table")))
     expect_warning(PrepareData(chart.type, QFilter, QPopulationWeight, get0("input.data.table")),
                    "^Multiple statistics detected")
@@ -92,8 +83,7 @@ test_that("PrepareData: single table, single stat",
                                input.data.pasted = NULL,
                                input.data.raw = NULL,
                                input.data.other = get0("input.data.other"),
-                                transpose = get0("transpose"),
-                                missing = "Exclude cases with missing data"))
+                                transpose = get0("transpose")))
 
 
 
@@ -477,10 +467,10 @@ test_that("PrepareData: input.data.raw with missing vals",
     out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Area"))
     expect_is(out$data, "matrix")
     num.na <- sum(rowSums(is.na(dat)) > 0)
-    expect_equal(dim(out$data), dim(dat) - c(num.na, 0))
-    expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar",
-                             missing = "Error if missing data"),
-                 "^The data contains missing values.")
+    expect_equal(nrow(out$data), 800)
+    # expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar",
+    #                          missing = "Error if missing data"),
+    #              "^The data contains missing values.")
 })
 
 test_that("PrepareData: input.data.raw subset and weights",
@@ -488,13 +478,13 @@ test_that("PrepareData: input.data.raw subset and weights",
     QPopulationWeight <- prop.table(runif(nrow(dat)))
     QFilter <- rbinom(nrow(dat), 1, .5)
     n.filter <- sum(QFilter ==  1L)
-    out <- PrepareData(input.data.raw = dat, subset = QFilter, chart.type = "Scatter Plot",
-                       missing = "Use partial data")
+    out <- PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot")
+
     expect_equal(nrow(out$data), n.filter)
     expect_is(out$data, "data.frame")
 
-    out <- PrepareData(input.data.raw = dat, subset = QFilter, chart.type = "Scatter Plot",
-                       missing = "Use partial data", weights = QPopulationWeight)
+    out <- PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot",
+                       weights = QPopulationWeight)
     expect_equal(nrow(out$data), n.filter)
     expect_is(out$data, "data.frame")
     expect_equal(attr(out$data, "weights"), QPopulationWeight[QFilter ==  1])

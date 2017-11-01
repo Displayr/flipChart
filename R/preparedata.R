@@ -35,12 +35,6 @@
 #' \code{"Box"}, or \code{"Violin"}.
 #' @param transpose Logical; should the resulting matrix (of created)  be
 #'     transposed?
-#' @param missing Character; One of \code{"Error if missing data"},
-#'     \code{"Exclude cases with missing data"} (the default, which is
-#'     equivalent to 'complete.cases'), and \code{"Use partial data"},
-#'     which removes no data. Only used if either \code{input.data.raw} is provided,
-#'     or, a \code{weights} or \code{subset} are provided and are as long as the number of
-#'     observations in \code{data}.
 #' @param row.names.to.remove Character vector or delimited string
 #' of row labels specifying rows to remove from the returned table; default
 #' is \code{c("NET", "SUM")}
@@ -94,7 +88,6 @@ PrepareData <- function(chart.type,
                         first.aggregate = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
-                        missing = "Exclude cases with missing data",
                         row.names.to.remove = c("NET", "SUM"),
                         column.names.to.remove = c("NET", "SUM"),
                         split = "[;,]",
@@ -186,10 +179,23 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
-    if (!is.null(input.data.raw) || NROW(subset) == NROW(data) || NROW(weights) == NROW(data))
+    filt <- NROW(subset) == NROW(data)
+    if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
+#        n <- nrow(data)
+#        missing <- "Exclude cases with missing data"
+        missing <- "Use partial data"
+        if (!is.null(attr(data, "InvalidVariableJoining")))
+        {
+            if (!isDistribution(chart.type))
+                warning("The variables have been automatically spliced together, without any knowledge of which case should be matched with which. This may cause the results to be misleading.")
+        }
+
         data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
         weights <- setWeight(data, weights)
+        #n.post <- nrow(data)
+        #if (n.post < n)
+        #    warning("After removing cases with missing values", if (filt) " and filtering ", n.post, "observations remain.")
     }
 
     ###########################################################################
@@ -282,9 +288,12 @@ aggregateDataForCharting <- function(data, weights, chart.type)
 }
 
 
-
+#' @importFrom flipTables TidyTabularData
+#' @importFrom stats sd
 asDataFrame <- function(x, remove.NULLs = TRUE)
 {
+    if (is.character(x))
+        x <- TidyTabularData(x)
     if (is.null(x))
         return(x)
     if (is.data.frame(x))
@@ -293,8 +302,23 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
     nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
+    {
+        lengths <- sapply(x, length)
+        if (invalid.joining <- sd(lengths) != 0)
+        {
+            k <- length(lengths)
+            out <- matrix(NA, max(lengths), k)
+            for (i in 1:k)
+                out[1:lengths[i], i] <- x[[i]]
+            x <- out
+        }
+    } else
+        invalid.joining <- FALSE
     x <- as.data.frame(x, stringsAsFactors = FALSE)
     names(x) <- nms
+    if (invalid.joining)
+        attr(x, "InvalidVariableJoining")
     x
 }
 

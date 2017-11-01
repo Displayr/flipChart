@@ -44,6 +44,14 @@ RawData.XFactor.YFactor = list(X = colas$d1, Y = colas$d2)
 RawData.XPickAny = list(X = data.frame(a = asBinary(colas$Q5_5_1),  b = asBinary(colas$Q5_5_2), c = asBinary(colas$Q5_5_3)))
 RawData.XPickOneMulti = suppressWarnings(list(X = flipU::Select(colas, "q4a", "q4f")))
 RawData.XNumberMulti = suppressWarnings(list(X = flipTransformations::AsNumeric(RawData.XPickOneMulti[[1]], binary = FALSE)))
+set.seed(1223)
+RawData.XNumberMulti.1 = list("Normal" = rnorm(10) * 1000,
+                       "Poisson(Lambda = 1)" = rpois(20, lambda = 1)  * 1000,
+                       "Poisson(Lambda = 10) / 10" = rpois(20, lambda = 10) / 10  * 1000,
+                       Gamma = rgamma(20, 1)  * 1000,
+                       Exponential = rexp(20)  * 1000,
+                       Uniform = runif(50)  * 1000                      )
+
 
 # Pasted
 dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
@@ -53,7 +61,7 @@ z <- Table.MatrixTimeSeries
 z <- matrix(as.character(z), ncol = ncol(z))
 z <- cbind(rownames(Table.MatrixTimeSeries), z)
 z <- rbind(c("", colnames(Table.MatrixTimeSeries)), z)
-Pasted.MatrixTimeSeries <- list(z, TRUE, TRUE, TRUE, TRUE, TRUE)
+Pasted.MatrixTimeSeries <- list(z, TRUE, FALSE, TRUE, TRUE, TRUE)
 
 # Other
 Other.List <- list(Normal = rnorm(1000), "Poisson with unit lamda" = rpois(1000, 1), Exponential = rexp(1000))
@@ -83,17 +91,19 @@ for (input in list(Table.Vector, Table.MatrixUnlabeled, Table.MatrixLabeled))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.table = input))
-        c = CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog")
+        c = suppressWarnings(CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
         expect_error(print(c), NA)
 }
 
 # Raw data inputs - first aggregate = FALSE
-for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
+                    RawData.XPickOneMulti, RawData.XNumberMulti, RawData.XNumberMulti.1))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = FALSE))
-        c = CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog")
-        expect_error(print(c), NA)
+        c = suppressWarnings(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        suppressWarnings(print(c))
+        #expect_error(print(c), NA)
      }
 
 # Raw data inputs - first aggregate = TRUE
@@ -186,7 +196,7 @@ test_that("Stream",
               CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.table = Table.VectorTimeSeries)
-              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+              expect_error(CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format))
 
               pd <- PrepareData("Stream", input.data.pasted = Pasted.MatrixTimeSeries)
               CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)

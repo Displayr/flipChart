@@ -8,10 +8,9 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
-  tidy = TRUE, transpose = FALSE,
-  missing = "Exclude cases with missing data",
-  row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
-  "SUM"), split = "[;,]", as.percentages = FALSE, show.labels = TRUE)
+  tidy = TRUE, transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
+  column.names.to.remove = c("NET", "SUM"), split = "[;,]",
+  as.percentages = FALSE, show.labels = TRUE)
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -59,13 +58,6 @@ any of \code{"Scatter"}, \code{"Bean"}, \code{"Histogram"}, \code{"Density"},
 
 \item{transpose}{Logical; should the resulting matrix (of created)  be
 transposed?}
-
-\item{missing}{Character; One of \code{"Error if missing data"},
-\code{"Exclude cases with missing data"} (the default, which is
-equivalent to 'complete.cases'), and \code{"Use partial data"},
-which removes no data. Only used if either \code{input.data.raw} is provided,
-or, a \code{weights} or \code{subset} are provided and are as long as the number of
-observations in \code{data}.}
 
 \item{row.names.to.remove}{Character vector or delimited string
 of row labels specifying rows to remove from the returned table; default

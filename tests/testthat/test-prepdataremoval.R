@@ -399,16 +399,15 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
     expect_is(out$data, "data.frame")
     ## Bubble Charts don't have aggre. so will remove Income var.
     expect_equal(ncol(out$data), ncol(dat) - 1)
-    num.na <- sum(rowSums(is.na(dat)) > 0)
-    expect_equal(dim(out$data), dim(dat) - c(num.na, 1))
+    expect_equal(dim(out$data), dim(dat) - c(0, 1))
     ## Bar Charts have aggregation, so Gender, Income aren't removed
     ## as aggregation happens before removal
     expect_error(suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
-                             missing = "Use partial data", first.aggregate = FALSE,
+                             first.aggregate = FALSE,
                              column.names.to.remove = c("Gender", "Income"))),
                  "Removing rows/columns gives empty input matrix")
     expect_error((PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
-                             missing = "Use partial data", first.aggregate = TRUE,
+                             first.aggregate = TRUE,
                              column.names.to.remove = c("Gender", "Income"))),
                  NA)
 
@@ -417,7 +416,6 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
     # Note this unit test is a bit ambitious as it assumes that users will provide a vector
     # which is pretty unlikely. However, it is left in as it tests the more general splitting mechanism.
     out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
-                             missing = "Use partial data",
                        column.names.to.remove = levels(dat[[2L]])[2:3],
                        split = "$")  )# don't split on "," since levels have commas
 
