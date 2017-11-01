@@ -11,13 +11,14 @@
 #'   always assumed that the first parameter
 #'   in the signature is a data object, which is assigned the value of \code{x}.
 #' @importFrom methods formalArgs
+#' @importFrom flipStandardCharts ErrorIfNotEnoughData
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
 CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE,
                    scatter.labels.as.hovertext = TRUE)
 {
-    user.args <- list(...)
+    ErrorIfNotEnoughData
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
         user.args <- c(user.args, type=chart.type)
