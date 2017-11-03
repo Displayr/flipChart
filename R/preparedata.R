@@ -271,6 +271,7 @@ aggregateDataForCharting <- function(data, weights, chart.type)
     }
     else
     {
+        data <- asDataFrame(data)
         data <- AsNumeric(data, binary = FALSE)
         if (weighted <- !is.null(weights))
         {
