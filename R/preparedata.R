@@ -202,7 +202,11 @@ PrepareData <- function(chart.type,
     # 3. Aggregate the data if so required.
     ###########################################################################
     if (first.aggregate)
-        data <- aggregateDataForCharting(data, weights, chart.type)
+    {
+        nms <- names(input.data.raw)
+        crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2
+        data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
+    }
 
     ###########################################################################
     # 4. Tailoring the data for the chart type.
@@ -243,11 +247,12 @@ isScatter <- function(chart.type)
 #' @param data \code{data.frame} containing raw data
 #' @param weights numeric vector of weights
 #' @param chart.type character; type of chart to be plotted
+#' @param crosstab Aggregate using a contingency table.
 #' @return aggregated data
 #' @noRd
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom flipTransformations AsNumeric
-aggregateDataForCharting <- function(data, weights, chart.type)
+aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 {
     # In tables that show aggregated tables, only the x-axis title is
     # taken from dimnames. But both names should be set in case
@@ -260,7 +265,7 @@ aggregateDataForCharting <- function(data, weights, chart.type)
         out <- matrix(out, dimnames=d.names)
         attr(out, "statistic") = "Count"
     }
-    else if (ncol(data) == 2)
+    else if (ncol(data) == 2 && crosstab)
     {
         tmp.names <- names(data)
         names(data) <- c("x", "y") # temporarily set names for formula
