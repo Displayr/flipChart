@@ -539,38 +539,38 @@ test_that("PrepareData: input and output format of raw data",
     attr(yy, "label") <- "VarB"
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
-    expect_equal(res1$y.title, NULL)
+    expect_equal(res1$values.title, "")
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = TRUE)
-    expect_equal(res1$y.title, "Count")
+    expect_equal(res1$values.title, "Count")
     expect_equal(names(dimnames(res1$data)), c("VarA", ""))
 
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE)
-    expect_equal(res2$y.title, NULL)
+    expect_equal(res2$values.title, "")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE)
-    expect_equal(res2$y.title, "Counts")
+    expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE, as.percentages = TRUE)
-    expect_equal(res2$y.title, "%")
+    expect_equal(res2$values.title, "%")
     expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
                         as.percentages = TRUE, transpose = TRUE)
-    expect_equal(res3$y.title, "%")
+    expect_equal(res3$values.title, "%")
     expect_equal(rownames(res3$data), c("VarA", "VarB"))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
                         as.percentages = TRUE, transpose = FALSE)
-    expect_equal(res3$y.title, "%")
+    expect_equal(res3$values.title, "%")
     expect_equal(colnames(res3$data), c("VarA", "VarB"))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
                         as.percentages = TRUE, transpose = TRUE)
-    expect_equal(res3$y.title, "%")
+    expect_equal(res3$values.title, "%")
     expect_equal(rownames(res3$data), as.character(0:7))
 
 
     res4 <- PrepareData("Scatter", input.data.raw = list(X = NULL, Y = xx))
     #expect_equal(ncol(res4$data), 1)
-    expect_equal(res4$y.title, NULL)
+    expect_equal(res4$values.title, "")
     expect_true(is.na(res4$scatter.variable.indices["x"]))
     expect_equivalent(res4$scatter.variable.indices["y"], 1)
     expect_true(is.na(res4$scatter.variable.indices["sizes"]))
@@ -578,7 +578,7 @@ test_that("PrepareData: input and output format of raw data",
 
     res5 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy, Z = NULL, Z2 = yy))
     expect_equal(colnames(res5$data), c("VarA", "VarB"))
-    expect_equal(res5$y.title, NULL)
+    expect_equal(res5$values.title, "")
     expect_equivalent(res5$scatter.variable.indices["x"], 1)
     expect_equivalent(res5$scatter.variable.indices["y"], 2)
     expect_true(is.na(res5$scatter.variable.indices["sizes"]))
@@ -586,7 +586,7 @@ test_that("PrepareData: input and output format of raw data",
 
     res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = factor(1:5), Y = factor(1:5), Z = factor(1:5)),
                        as.percentages = TRUE, transpose = FALSE))
-    expect_equal(res$y.title, "%")
+    expect_equal(res$values.title, "%")
     expect_equal(colnames(res$data), c("X", "Y","Z"))
 })
 
@@ -623,5 +623,34 @@ test_that("PrepareData: incorrect data.source.index",
 
     expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, input.data.raw = list(NULL), first.aggregate = FALSE,
                              data.source = "Use an existing R Output in 'Pages'"), NA)
+
+})
+
+
+# values.title
+Q.table <- structure(c(48.3870967741936, 51.6129032258064, 100, 52.6315789473684,
+    47.3684210526316, 100, 48.936170212766, 51.063829787234, 100,
+    42.3076923076923, 57.6923076923077, 100, 55.3191489361702, 44.6808510638298,
+    100, 50, 50, 100, 41.3793103448276, 58.6206896551724, 100, 58.0645161290323,
+    41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %", .Dimnames = list(
+    c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
+    "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
+    "55 to 64", "65 or more", "NET")), name = "Q1 by Q2", questions = c("Q1", "Q2"))
+x <- rep(1:2, 15)
+y <- rep(1:3, 10)
+m <- matrix(1:15, 3, dimnames = list(1:3, 1:5))
+for(ct in c("Bar", "Column"))
+    test_that(paste("CChart: values.title ", ct),{
+        expect_equal(PrepareData(ct, input.data.table = m)$values.title, "")
+        pd <- PrepareData(ct, input.data.raw = list(X = x, Y = y), first.aggregate = TRUE)
+        expect_equal(pd$values.title, "Counts")
+        pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = TRUE)
+        expect_equal(pd$values.title, "Average")
+        pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = TRUE, values.title = "dog")
+        expect_equal(pd$values.title, "dog")
+        pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = FALSE, values.title = "dog")
+        expect_equal(pd$values.title, "dog")
+        pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = FALSE)
+        expect_equal(pd$values.title, "Column %")
 
 })

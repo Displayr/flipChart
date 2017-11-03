@@ -406,10 +406,14 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
                              first.aggregate = FALSE,
                              column.names.to.remove = c("Gender", "Income"))),
                  "Removing rows/columns gives empty input matrix")
-    expect_error(suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
+    pd <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
-                             column.names.to.remove = c("Gender", "Income"))),
-                 NA)
+                             column.names.to.remove = c("Gender", "Income")))
+    expect_equal(names(pd$data),  c("Gender", "Income"))
+    pd <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
+                             first.aggregate = TRUE,
+                             row.names.to.remove = c("Gender", "Income"))) # As aggregating implicitly transposes
+    expect_equal(length(pd$data),  0)
 
 
 

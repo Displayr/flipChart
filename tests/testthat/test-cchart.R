@@ -1,6 +1,5 @@
 context("CChart: miscellaneous tests")
 
-
 test_that("flipStandardCharts::Chart chart functions",{
     library(flipStandardCharts)
     # Data

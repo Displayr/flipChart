@@ -50,6 +50,8 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
+#' @param values.title The title for the values axis of a chart (e.g.,
+#' the y-axis of a column chart or the x-axis of a bar chart).
 #' @details It is assumed that only one of \code{pasted},
 #'     \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
 #'     \code{input.data.raw} is non-NULL.  They are checked for nullity in
@@ -64,7 +66,7 @@
 #' \item \code{data} - If possible, a named vector or matrix, or if that is not
 #'     posible or a data.frame is requested, a data.frame.
 #' \item  \code{weights} - Numeric vector of user-supplied weights.
-#' \item \code{y.title} - Character string to be used for the y-axis title; will
+#' \item \code{values.title} - Character string to be used for the y-axis title; will
 #' only be a non-empty string if some aggregation has been performed on
 #' \code{data}
 #' \item  \code{scatter.variable.indices} A named vector indicating which columns in
@@ -92,7 +94,8 @@ PrepareData <- function(chart.type,
                         column.names.to.remove = c("NET", "SUM"),
                         split = "[;,]",
                         as.percentages = FALSE,
-                        show.labels = TRUE)
+                        show.labels = TRUE,
+                        values.title = "")
 {
 
     # Scenarios to address
@@ -182,8 +185,6 @@ PrepareData <- function(chart.type,
     filt <- NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
-#        n <- nrow(data)
-#        missing <- "Exclude cases with missing data"
         missing <- "Use partial data"
         if (!is.null(attr(data, "InvalidVariableJoining")))
         {
@@ -193,9 +194,6 @@ PrepareData <- function(chart.type,
 
         data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
         weights <- setWeight(data, weights)
-        #n.post <- nrow(data)
-        #if (n.post < n)
-        #    warning("After removing cases with missing values", if (filt) " and filtering ", n.post, "observations remain.")
     }
 
     ###########################################################################
@@ -227,14 +225,17 @@ PrepareData <- function(chart.type,
     # Finalizing the result.
     ###########################################################################
 
-    # y.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
+    # values.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
     # is set as an attribute so that other functions (e.g., table rendering) can use this information
     # later (i.e., it is not just a lazy way of avoiding a list).
-    y.title = if (is.null(yt <- attr(data, "y.title"))) attr(data, "statistic") else yt
-
+    if (values.title == "")
+        values.title = if (is.null(yt <- attr(data, "values.title")))
+            attr(data, "statistic") else yt
+    if (is.null(values.title))
+        values.title <- ""
     list(data = data,
          weights = weights,
-         y.title = y.title,
+         values.title = values.title,
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -276,8 +277,10 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     }
     else
     {
-        data <- asDataFrame(data)
-        data <- AsNumeric(data, binary = FALSE)
+        if (!is.matrix(data) && !is.numeric(data))
+            data <- asDataFrame(data)
+        if (is.data.frame(data))
+            data <- AsNumeric(data, binary = FALSE)
         if (weighted <- !is.null(weights))
         {
             xw <- sweep(data, 1, weights, "*")
@@ -288,7 +291,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
             out <- sum.xw / w
         } else
            out <- apply(data, 2, mean, na.rm = TRUE)
-        attr(out, "statistic") <- "Mean"
+        attr(out, "statistic") <- "Average"
     }
     out
 }
@@ -399,7 +402,7 @@ asPercentages <- function(data)
     {
         data <- prop.table(data, 2)
         attr(data, "statistic") <- "Column %"
-        attr(data, "y.title") <- "%"
+        attr(data, "values.title") <- "%"
     }
     else
     {

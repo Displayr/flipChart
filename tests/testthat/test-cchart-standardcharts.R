@@ -1,18 +1,15 @@
-context("Test 'nice' standard charts via CChart")
-# The ones that depend on Distribution, which does not test well, are in the test directory: test-cchart-uglystandardcharts
+context("Testing each Standard Chart by various data inputs")
 library(flipStandardCharts)
 
 
 ###############################################################################
 ########                Instructions for testing                     ##########
 ###############################################################################
-# For each charting function, the units tests need to have have complete coverage
-# of all data input arguments. The charting parameters should be covered in
+# The goal here is in testing inputs. Charting parameters should be covered in
 # flipStandarrdCharts.
 #
 # Please:
-# - Use the 'Distribution plots' tests in test-cchart-uglystandardcharts
-#   as a tempplate for your testing.
+# - Use the 'Distribution plots' tests below as a tempplate for your testing.
 # - Put ALL your example data sets into the Example data section at the top,
 #   re-using existing ones where you can and following the naming conventions.
 #   Avoid using dput, as it makes the tests hard to read.
@@ -216,3 +213,91 @@ test_that("Stream",
 
 
 
+##############################################################################
+########                        Distribution plots                 ###########
+##############################################################################
+
+# Table inputs
+input.counter = 0
+for (input in list(Table.Vector, Table.MatrixUnlabeled, Table.MatrixLabeled))
+{
+    input.counter = input.counter + 1
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        test_that(paste("Distribution plot: ", input.counter, chart.type),{
+            pd <- suppressWarnings(PrepareData(chart.type, input.data.table = input))
+            expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                    values.title = "Values",
+                    global.font.family = "Courier",
+                    global.font.color = "Red")), NA)
+})}}
+
+# Raw data inputs
+input.counter = 0
+for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+{
+    input.counter = input.counter + 1
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        test_that(paste("Distribution plot: ", input.counter, chart.type),{
+            pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input))
+            expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                values.title = "Values",
+                global.font.family = "Courier",
+                global.font.color = "Red")), NA)
+})}}
+
+
+
+
+
+# Raw data inputs - weighted & subset
+input.counter = 0
+for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+{
+    input.counter = input.counter + 1
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        test_that(paste("Distribution plot: ", input.counter, chart.type),{
+        set.seed(1223)
+        wgt <- runif(NROW(input[[1]]))
+        sb <- wgt > .5
+        pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, weights = wgt, subset = sb))
+        expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                values.title = "Values",
+                global.font.family = "Courier",
+                global.font.color = "Red")), NA)
+})}}
+
+
+
+
+# Pasted
+input.counter = 0
+for (input in list(Pasted.Vector, Pasted.Matrix))
+{
+    input.counter = input.counter + 1
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        test_that(paste("Distribution plot: ", input.counter, chart.type),{
+        pd <- suppressWarnings(PrepareData(chart.type, input.data.pasted = input))
+        expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                values.title = "Values",
+                global.font.family = "Courier",
+                global.font.color = "Red")), NA)
+})}}
+
+# Other
+input.counter = 0
+for (input in list(Other.List, Other.ListUnequal, Other.Unnamed.Vector, Other.data.frame, Other.Named.Vector, Other.Matrix))
+{
+    input.counter = input.counter + 1
+    for (chart.type in c("Bean", "Box", "Density", "Histogram", "Violin"))
+    {
+        test_that(paste("Distribution plot: ", input.counter, chart.type),{
+        pd <- suppressWarnings(PrepareData(chart.type, input.data.other = input))
+        expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                values.title = "Values",
+                global.font.family = "Courier",
+                global.font.color = "Red")), NA)
+})}}

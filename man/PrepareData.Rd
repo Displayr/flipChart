@@ -10,7 +10,7 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
   tidy = TRUE, transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",
-  as.percentages = FALSE, show.labels = TRUE)
+  as.percentages = FALSE, show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -78,6 +78,9 @@ column sums are given.}
 
 \item{show.labels}{Logical; If \code{TRUE}, labels are used for
 names in the data output if raw data is supplied.}
+
+\item{values.title}{The title for the values axis of a chart (e.g.,
+the y-axis of a column chart or the x-axis of a bar chart).}
 }
 \value{
 A list with components
@@ -85,7 +88,7 @@ A list with components
 \item \code{data} - If possible, a named vector or matrix, or if that is not
     posible or a data.frame is requested, a data.frame.
 \item  \code{weights} - Numeric vector of user-supplied weights.
-\item \code{y.title} - Character string to be used for the y-axis title; will
+\item \code{values.title} - Character string to be used for the y-axis title; will
 only be a non-empty string if some aggregation has been performed on
 \code{data}
 \item  \code{scatter.variable.indices} A named vector indicating which columns in
