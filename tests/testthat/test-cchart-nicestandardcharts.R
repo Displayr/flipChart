@@ -150,6 +150,14 @@ for (input in list(Other.Unnamed.Vector, Other.Named.Vector, Other.Matrix))
                 global.font.color = "Red"))
         expect_error(print(c), NA)
     }
+
+    pd <- suppressWarnings(PrepareData("Bar", input.data.other = Other.ListUnequal))
+    expect_error((CChart("Bar", pd$data, title = "Comparing distributions",
+            values.title = "Values",
+            global.font.family = "Courier",
+            global.font.color = "Red")))
+
+
 })
 
 
