@@ -18,7 +18,8 @@
 CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE,
                    scatter.labels.as.hovertext = TRUE)
 {
-    ErrorIfNotEnoughData(x)
+    if (chart.type %in% c("Venn"))
+        ErrorIfNotEnoughData(x, require.tidy = FALSE)
     user.args <- list(...)
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
