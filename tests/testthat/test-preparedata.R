@@ -321,7 +321,7 @@ test_that("PrepareData: Binary variable for Venn",
     expect_named(out$data, names(input.data.raw))
     expect_is(out$data[[2]], "numeric")
 
-    out <- PrepareData(input.data.raw = input.data.raw, chart.type = "Venn", subset = QFilter)
+    out <- suppressWarnings(PrepareData(input.data.raw = input.data.raw, chart.type = "Venn", subset = QFilter))
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.raw))
     expect_is(out$data[[2]], "numeric")

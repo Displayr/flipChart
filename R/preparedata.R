@@ -185,7 +185,8 @@ PrepareData <- function(chart.type,
     filt <- NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
-        missing <- if (chartType %in% c("Scatter", "Venn", "Sankey")) "Exclude cases with missing data" else "Use partial data"
+        missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey"))
+            "Exclude cases with missing data" else "Use partial data"
         n <- NROW(data)
         if (!is.null(attr(data, "InvalidVariableJoining")))
         {
@@ -194,7 +195,7 @@ PrepareData <- function(chart.type,
         }
         data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
         n.post <- NROW(data)
-        if (missing && n.post < n)
+        if (missing == "Exclude cases with missing data" && n.post < n)
             warning("After removing missing values and/or filtering, ", n.post, " observations remain.")
         weights <- setWeight(data, weights)
     }

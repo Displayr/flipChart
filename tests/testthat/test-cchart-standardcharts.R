@@ -99,8 +99,8 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = FALSE))
         c = suppressWarnings(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
-        suppressWarnings(print(c))
-        #expect_error(print(c), NA)
+        #suppressWarnings(print(c))
+        expect_error(suppressWarnings(print(c)), NA)
      }
 
 # Raw data inputs - first aggregate = TRUE
