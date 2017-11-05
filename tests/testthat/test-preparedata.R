@@ -654,3 +654,17 @@ for(ct in c("Bar", "Column"))
         expect_equal(pd$values.title, "Column %")
 
 })
+
+test_that("Basic crosstab input",{
+    data(colas, package = "flipExampleData")
+    pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1), X = colas$d2),
+                      transpose = TRUE, first.aggregate = TRUE))
+    expect_equal(dim(pd$data), 8:9)
+    pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
+                      transpose = TRUE, first.aggregate = TRUE))
+    expect_equal(dim(pd$data), 1:2)
+
+})
+
+
+

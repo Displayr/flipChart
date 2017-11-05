@@ -185,14 +185,17 @@ PrepareData <- function(chart.type,
     filt <- NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
-        missing <- "Use partial data"
+        missing <- if (chartType %in% c("Scatter", "Venn", "Sankey")) "Exclude cases with missing data" else "Use partial data"
+        n <- NROW(data)
         if (!is.null(attr(data, "InvalidVariableJoining")))
         {
             if (!isDistribution(chart.type))
                 warning("The variables have been automatically spliced together, without any knowledge of which case should be matched with which. This may cause the results to be misleading.")
         }
-
         data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
+        n.post <- NROW(data)
+        if (missing && n.post < n)
+            warning("After removing missing values and/or filtering, ", n.post, " observations remain.")
         weights <- setWeight(data, weights)
     }
 
@@ -307,13 +310,17 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         return(x)
     if (is.data.frame(x))
         return(x)
+    if (is.list(x[[1]])) # In Displayr, this is typically true.
+    {
+        x[[1]] <- as.data.frame(x[[1]])
+    }
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
     nms <- if (all.variables) names(x) else unlist(lapply(x, names))
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
-        lengths <- sapply(x, length)
+        lengths <- sapply(x, NROW)
         if (invalid.joining <- sd(lengths) != 0)
         {
             k <- length(lengths)
