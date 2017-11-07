@@ -205,7 +205,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (first.aggregate)
     {
-        nms <- names(input.data.raw)
+        null.inputs <- sapply(input.data.raw, is.null)
+        nms <- names(input.data.raw)[!null.inputs]
         crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }

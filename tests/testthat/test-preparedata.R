@@ -657,9 +657,21 @@ for(ct in c("Bar", "Column"))
 
 test_that("Basic crosstab input",{
     data(colas, package = "flipExampleData")
-    pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1), X = colas$d2),
-                      transpose = TRUE, first.aggregate = TRUE))
-    expect_equal(dim(pd$data), 8:9)
+    z = list(X = list(colas$d1), Y = colas$d2)
+    pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = TRUE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(dim(pd$data), 9:8)
+    z = list(X = list(colas$d1), Y = colas$d2, Z = NULL)
+    pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = TRUE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(dim(pd$data), 9:8)
+    z = list(X = list(colas$d1), Y = colas$d2, Z = NULL, Z1 = NULL)
+    pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = TRUE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(dim(pd$data), 9:8)
     pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
                       transpose = TRUE, first.aggregate = TRUE))
     expect_equal(dim(pd$data), 1:2)
