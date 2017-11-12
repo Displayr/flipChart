@@ -684,5 +684,26 @@ test_that("Basic crosstab input",{
 
 })
 
+test_that("Scatterplot with duplicated varible",{
+    data(colas, package = "flipExampleData")
+
+    z = list(X = colas$d1, Y = colas$d2, Z1 = colas$d3, Z2 = colas$d1)
+    w = capture_warnings(pd <- PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = FALSE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(NCOL(pd$data), 4)
+    expect_equal(length(w), 2)
+    expect_equal(w[1], "Duplicated variables: Age.")
+    expect_true(grepl("^Some categories do not appear ", w[2]))
+    w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = FALSE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(NCOL(pd$data), 4)
+    expect_equal(length(w), 1)
+    expect_true(grepl("^After removing missing ", w[1]))
+})
+
+
+
 
 

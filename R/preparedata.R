@@ -193,7 +193,10 @@ PrepareData <- function(chart.type,
             if (!isDistribution(chart.type))
                 warning("The variables have been automatically spliced together, without any knowledge of which case should be matched with which. This may cause the results to be misleading.")
         }
-        data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
+        data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
+            suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing))
+        else
+            TidyRawData(data, subset = subset, weights = weights, missing = missing)
         n.post <- NROW(data)
         if (missing == "Exclude cases with missing data" && n.post < n)
             warning("After removing missing values and/or filtering, ", n.post, " observations remain.")
@@ -214,7 +217,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
-    data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
+    data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
+                                     chart.type, weights, tidy, show.labels)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -306,11 +310,11 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' @importFrom stats sd
 asDataFrame <- function(x, remove.NULLs = TRUE)
 {
+    if (is.data.frame(x))
+        return(x)
     if (is.character(x))
         x <- TidyTabularData(x)
     if (is.null(x))
-        return(x)
-    if (is.data.frame(x))
         return(x)
     if (is.list(x[[1]])) # In Displayr, this is typically true.
     {
@@ -319,7 +323,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
-    nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    nms <- if (is.data.frame(x)) names(x) else unlist(lapply(x, names))
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
         lengths <- sapply(x, NROW)
@@ -333,7 +337,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         }
     } else
         invalid.joining <- FALSE
-    x <- as.data.frame(x, stringsAsFactors = FALSE)
+    x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
     names(x) <- nms
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
@@ -372,19 +376,33 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
         stop("The data provided does not mach the 'data.source.index'.")
 }
 
-scatterVariableIndices <- function(input.data.raw, data)
+scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     # Creating indices in situations where the user has provided a table.
     if (is.null(input.data.raw))
         return(indices[1:max(4, NCOL(data))])
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    .getColumnIndex <- function(i)
+    {
+        lst <- input.data.raw[[i]]
+        if (is.null(lst))
+            return(NA)
+        nms <- names(data)
+        nm <- names(attr(lst, "label"))
+        nm <- attr(lst, "label")
+        if (!show.labels)
+            nm <- names(lst)[1]
+        match(nm, nms)
+    }
     # Indices corresponding to selections in input.raw.data
-    indices["x"] <- if (is.null(input.data.raw$X)) NA else 1
-    indices["y"] <- if (is.null(input.data.raw$Y)) NA else 1 + max(indices[1], 0, na.rm = TRUE)
-    indices["sizes"] <- if (is.null(input.data.raw$Z)) NA else 1 + max(indices[1:2], 0, na.rm = TRUE)
-    indices["colors"] <- if (is.null(input.data.raw$Z2)) NA else 1 + max(indices[1:3], 0, na.rm = TRUE)
+    indices["x"] <- .getColumnIndex(1) # if (is.null(input.data.raw$X)) NA else match(names())
+    indices["y"] <- .getColumnIndex(2) #if (is.null(input.data.raw$Y)) NA else 1 + max(indices[1], 0, na.rm = TRUE)
+    indices["sizes"] <- .getColumnIndex(3)#if (is.null(input.data.raw$Z1)) NA else 1 + max(indices[1:2], 0, na.rm = TRUE)
+    indices["colors"] <- .getColumnIndex(4)#if (is.null(input.data.raw$Z2)) NA else 1 + max(indices[1:3], 0, na.rm = TRUE)
     indices
 }
+
+
 
 useLabelsAsRowNames <- function(input.data.raw, data)
 {
@@ -459,7 +477,7 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy)
+prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -482,9 +500,9 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         if (!is.data.frame(data) && !is.matrix(data))
             data <- TidyTabularData(data)
         # Appending the labels to the data.frame as row names
-        data <- useLabelsAsRowNames (input.data.raw, data)
+        data <- useLabelsAsRowNames(input.data.raw, data)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-        attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data)
+        attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
     }
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
