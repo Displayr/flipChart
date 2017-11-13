@@ -7,31 +7,30 @@
 #' @param values.format.list As per \code{categories.format.list} except for values-axis formatting.
 #' @param hover.format.list As per \code{categories.format.list} except for hovertext formatting.
 #' @param data.labels.format.list As per \code{categories.format.list} except for data label formatting.
+#' @param as.percentages Whether the data should be treated as percentages or not in terms of any
+#' (default) formatting of outputs.
 #' @export
 #' @importFrom flipChartBasics ChartNumberFormat
 PrepareNumbers <- function(categories.format.list = NULL,
                            values.format.list = NULL,
                            hover.format.list = NULL,
-                           data.labels.format.list = NULL) {
+                           data.labels.format.list = NULL,
+                           as.percentages = FALSE) {
 
-    categories.number.format <- NULL
-    values.number.format <- NULL
-    hover.number.format <- NULL
-    data.labels.number.format <- NULL
-
-    if (!is.null(categories.format.list))
-        categories.number.format <- ChartNumberFormat(categories.format.list)
-
-    if (!is.null(values.format.list))
+    if (as.percentages) {
+        values.number.format <- ".0%"
+        data.labels.number.format <- ".0%"
+        hover.number.format <- ".0%"
+    }
+    else
+    {
         values.number.format <- ChartNumberFormat(values.format.list)
-
-    if (!is.null(hover.format.list))
-        hover.number.format <- ChartNumberFormat(hover.format.list)
-
-    if (!is.null(data.labels.format.list))
         data.labels.number.format <- ChartNumberFormat(data.labels.format.list)
+        hover.number.format <- ChartNumberFormat(hover.format.list)
+    }
 
-
-    return(list(categories.number.format = categories.number.format, values.number.format = values.number.format,
-                hover.number.format = hover.number.format, data.labels.number.format = data.labels.number.format))
+    return(list(categories.number.format = ChartNumberFormat(categories.format.list),
+                values.number.format = values.number.format,
+                hover.number.format = hover.number.format,
+                data.labels.number.format = data.labels.number.format))
 }
