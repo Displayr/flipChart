@@ -719,7 +719,7 @@ test_that("Pasted data",{
     x[3:5, 2] = LETTERS[1:3]
     x[2, 3:4] = c("G1", "G2")
     x[3:5, 3:4] = c(1:3, 5, 3, 1)
-
+    # Radar chart
     data(colas, package = "flipExampleData")
     z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
     pd <- PrepareData("Radar", TRUE, NULL,
@@ -727,6 +727,16 @@ test_that("Pasted data",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
         values.title = NULL)
+    expect_equal(NCOL(pd$data), 2)
+    # Line chart
+    data(colas, package = "flipExampleData")
+    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    pd <- PrepareData("Pie", TRUE, NULL,
+    input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+                      transpose = FALSE, first.aggregate = FALSE,
+                      tidy = TRUE, data.source = "Type or paste in data",
+                      as.percentages = TRUE,
+                      values.title = NULL)
     expect_equal(NCOL(pd$data), 1)
 })
 
