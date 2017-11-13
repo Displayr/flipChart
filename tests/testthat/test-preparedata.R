@@ -698,11 +698,37 @@ test_that("Scatterplot with duplicated varible",{
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(NCOL(pd$data), 4)
+    expect_equal(NCOL(pd$data), 3)
     expect_equal(length(w), 1)
     expect_true(grepl("^After removing missing ", w[1]))
 })
 
+
+test_that("Scatterplot with only a Y variable",{
+    data(colas, package = "flipExampleData")
+    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = FALSE,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(NCOL(pd$data), 1)
+})
+
+
+test_that("Pasted data",{
+    x = matrix(rep("", 20), 5)
+    x[3:5, 2] = LETTERS[1:3]
+    x[2, 3:4] = c("G1", "G2")
+    x[3:5, 3:4] = c(1:3, 5, 3, 1)
+
+    data(colas, package = "flipExampleData")
+    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    pd <- PrepareData("Radar", TRUE, NULL,
+        input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+                      transpose = FALSE, first.aggregate = FALSE,
+                      tidy = TRUE, data.source = "Type or paste in data",
+        values.title = NULL)
+    expect_equal(NCOL(pd$data), 1)
+})
 
 
 

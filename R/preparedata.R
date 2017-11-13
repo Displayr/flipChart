@@ -237,7 +237,7 @@ PrepareData <- function(chart.type,
     # values.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
     # is set as an attribute so that other functions (e.g., table rendering) can use this information
     # later (i.e., it is not just a lazy way of avoiding a list).
-    if (values.title == "")
+    if (values.title == "" || is.null(values.title))
         values.title = if (is.null(yt <- attr(data, "values.title")))
             attr(data, "statistic") else yt
     if (is.null(values.title))
@@ -379,9 +379,9 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     if (is.null(input.data.raw))
         return(indices[1:max(4, NCOL(data))])
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     .getColumnIndex <- function(i)
     {
         lst <- input.data.raw[[i]]
@@ -499,6 +499,9 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     {
         if (!is.data.frame(data) && !is.matrix(data))
             data <- TidyTabularData(data)
+        # Removing duplicate columns
+        if (any(d <- duplicated(names(data))))
+            data <- data[, !d]
         # Appending the labels to the data.frame as row names
         data <- useLabelsAsRowNames(input.data.raw, data)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.

@@ -17,7 +17,7 @@ Imports:
     flipChartBasics,
     flipData (>= 1.1.1),
     flipFormat,
-    flipStandardCharts (>= 1.0.1),
+    flipStandardCharts (>= 1.0.3),
     flipStatistics,
     flipTables (>= 2.2.1),
     flipU,
