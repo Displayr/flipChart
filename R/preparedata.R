@@ -73,8 +73,6 @@
 #' \code{data} should be plotted in a scatterplot as \code{x}, \code{y}, \code{sizes},
 #' and \code{colors}. Is \code{NULL} if \code{chart.type} does not contain \code{"Scatter"}
 #' or  \code{"Bubble"}. \code{NA} is used when the data does not exist.
-#' \item \code{as.percentages} Whether the contents of \code{data} should be
-#' treated as percentages or not in terms of any (default) formatting of outputs.
 #' }
 #' @export
 #' @seealso \code{\link[flipTables]{AsTidyTabularData}},
@@ -247,8 +245,7 @@ PrepareData <- function(chart.type,
     list(data = data,
          weights = weights,
          values.title = values.title,
-         scatter.variable.indices = attr(data, "scatter.variable.indices"),
-         as.percentages = as.percentages)
+         scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
 isScatter <- function(chart.type)

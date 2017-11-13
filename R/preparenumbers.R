@@ -7,8 +7,7 @@
 #' @param values.format.list As per \code{categories.format.list} except for values-axis formatting.
 #' @param hover.format.list As per \code{categories.format.list} except for hovertext formatting.
 #' @param data.labels.format.list As per \code{categories.format.list} except for data label formatting.
-#' @param as.percentages Whether the data should be treated as percentages or not in terms of any
-#' (default) formatting of outputs.
+#' @param as.percentages Whether the dfault formatting should be as percentages.
 #' @export
 #' @importFrom flipChartBasics ChartNumberFormat
 PrepareNumbers <- function(categories.format.list = NULL,
@@ -17,20 +16,8 @@ PrepareNumbers <- function(categories.format.list = NULL,
                            data.labels.format.list = NULL,
                            as.percentages = FALSE) {
 
-    if (as.percentages) {
-        values.number.format <- ".0%"
-        data.labels.number.format <- ".0%"
-        hover.number.format <- ".0%"
-    }
-    else
-    {
-        values.number.format <- ChartNumberFormat(values.format.list)
-        data.labels.number.format <- ChartNumberFormat(data.labels.format.list)
-        hover.number.format <- ChartNumberFormat(hover.format.list)
-    }
-
-    return(list(categories.number.format = ChartNumberFormat(categories.format.list),
-                values.number.format = values.number.format,
-                hover.number.format = hover.number.format,
-                data.labels.number.format = data.labels.number.format))
+    return(list(categories.number.format = ChartNumberFormat(categories.format.list, FALSE),
+                values.number.format = ChartNumberFormat(values.format.list, as.percentages),
+                hover.number.format = ChartNumberFormat(hover.format.list, as.percentages),
+                data.labels.number.format = ChartNumberFormat(data.labels.format.list, as.percentages)))
 }
