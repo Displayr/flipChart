@@ -326,7 +326,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
-    nms <- if (is.data.frame(x)) names(x) else unlist(lapply(x, names))
+    nms <- if (all.variables) names(x) else unlist(lapply(x, names))
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
         lengths <- sapply(x, NROW)
@@ -382,11 +382,14 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
+    len <- length(input.data.raw)
     indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
-    if (is.null(input.data.raw))
+    if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices[1:max(4, NCOL(data))])
     .getColumnIndex <- function(i)
     {
+        if (i > len)
+            return(NA)
         lst <- input.data.raw[[i]]
         if (is.null(lst))
             return(NA)

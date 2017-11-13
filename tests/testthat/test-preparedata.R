@@ -576,16 +576,16 @@ test_that("PrepareData: input and output format of raw data",
     expect_true(is.na(res4$scatter.variable.indices["sizes"]))
     expect_true(is.na(res4$scatter.variable.indices["colors"]))
 
-    res5 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy, Z = NULL, Z2 = yy))
+    res5 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy, Z1 = NULL, Z2 = yy))
     expect_equal(colnames(res5$data), c("VarA", "VarB"))
     expect_equal(res5$values.title, "")
     expect_equivalent(res5$scatter.variable.indices["x"], 1)
     expect_equivalent(res5$scatter.variable.indices["y"], 2)
     expect_true(is.na(res5$scatter.variable.indices["sizes"]))
-    expect_equivalent(res5$scatter.variable.indices["colors"], 3)
+    expect_equivalent(res5$scatter.variable.indices["colors"], 2)
 
     res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = factor(1:5), Y = factor(1:5), Z = factor(1:5)),
-                       as.percentages = TRUE, transpose = FALSE))
+                       as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
     expect_equal(colnames(res$data), c("X", "Y","Z"))
 })
@@ -677,7 +677,7 @@ test_that("Basic crosstab input",{
     pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(dim(pd$data), 9:8)
+    expect_equal(dim(pd$data), c(327, 2))
     pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
                       transpose = TRUE, first.aggregate = TRUE))
     expect_equal(dim(pd$data), 1:2)
@@ -721,7 +721,7 @@ test_that("Pasted data",{
     x[3:5, 3:4] = c(1:3, 5, 3, 1)
     # Radar chart
     data(colas, package = "flipExampleData")
-    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
     pd <- PrepareData("Radar", TRUE, NULL,
         input.data.pasted = list(x, NULL, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
@@ -730,14 +730,14 @@ test_that("Pasted data",{
     expect_equal(NCOL(pd$data), 2)
     # Line chart
     data(colas, package = "flipExampleData")
-    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
     pd <- PrepareData("Pie", TRUE, NULL,
     input.data.pasted = list(x, NULL, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
                       as.percentages = TRUE,
                       values.title = NULL)
-    expect_equal(NCOL(pd$data), 1)
+    expect_equal(NCOL(pd$data), 2)
 })
 
 
