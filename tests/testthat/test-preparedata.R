@@ -600,15 +600,15 @@ test_that("PrepareData: incorrect data.source.index",
     attr(yy, "label") <- "VarB"
 
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to a table in 'Pages'"),
-                 "The data provided does not mach the 'data.source.index'.")
+                 "The data provided does not match the 'data.source.index'.")
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
-                             data.source = "Link to multiple tables in 'Pages'"), "The data provided does not mach the 'data.source.index'.")
+                             data.source = "Link to multiple tables in 'Pages'"), "The data provided does not match the 'data.source.index'.")
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
                              data.source ="Link to a variable in 'Data'"), NA)
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
-                             data.source = "Type or paste in data"), "The data provided does not mach the 'data.source.index'.")
+                             data.source = "Type or paste in data"), "The data provided does not match the 'data.source.index'.")
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
-                             data.source = "Use an existing R Output in 'Pages'"), "The data provided does not mach the 'data.source.index'.")
+                             data.source = "Use an existing R Output in 'Pages'"), "The data provided does not match the 'data.source.index'.")
 
     set.seed(1223)
     MultipleNumeric = list("Normal" = rnorm(500) * 1000,

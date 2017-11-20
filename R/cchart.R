@@ -24,6 +24,12 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
     chart.function <- getChartFunction(chart.type)
     if (chart.function != chart.type)
         user.args <- c(user.args, type=chart.type)
+
+    # Use labeled scatterplots if multiple tables are provided
+    if (grepl("Scatter|Bubble", chart.function) && is.list(x) && !is.data.frame(x))
+        chart.function <- "LabeledScatter"
+
+    # Use labeled scatterplots if labels are provided in (row)names
     if (grepl("Scatter|Bubble", chart.function) && !scatter.labels.as.hovertext &&
         (!is.null(rownames(x))|| (length(dim(x)) < 2 && !is.null(names(x)))))
         chart.function <- "LabeledScatter"

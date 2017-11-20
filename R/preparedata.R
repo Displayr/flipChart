@@ -373,7 +373,7 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
             stop("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
 
     } else if (!data.provided[data.source.index])
-        stop("The data provided does not mach the 'data.source.index'.")
+        stop("The data provided does not match the 'data.source.index'.")
 }
 
 scatterVariableIndices <- function(input.data.raw, data, show.labels)

@@ -166,19 +166,19 @@ for (input in list(Other.Unnamed.Vector, Other.Named.Vector, Other.Matrix))
 
 test_that("Venn",
           {
-                pd <- suppressWarnings(PrepareData("Venn", input.data.other = Other.JSON))
-                CChart("Venn", pd$data, as.percentages = TRUE, data.label.decimals = 2)
+                pd <- suppressWarnings(PrepareData("Venn", input.data.other = Other.JSON, as.percentages = T))
+                CChart("Venn", pd$data, values.hovertext.format = "%")
 
-                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny))
-                CChart("Venn", pd$data, as.percentages = TRUE, data.label.decimals = 2)
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, as.percentages = T))
+                CChart("Venn", pd$data, values.hovertext.format = "")
 
-                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny))
-                CChart("Venn", pd$data, as.percentages = FALSE, data.label.decimals = 2)
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, as.percentages = F))
+                CChart("Venn", pd$data, values.hovertext.format = "2f")
 
                 set.seed(1223)
-                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, weights = runif(nrow(RawData.XPickAny[[1]]))))
+                pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, weights = runif(nrow(RawData.XPickAny[[1]])), as.percentages = FALSE))
                 expect_equal(names(pd$data), letters[1:3])
-                CChart("Venn", pd$data, weights = pd$weights, as.percentages = FALSE, data.label.decimals = 2)
+                CChart("Venn", pd$data, weights = pd$weights, values.hovertext.format = "2f")
           })
 
 

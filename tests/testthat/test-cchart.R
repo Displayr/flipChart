@@ -106,6 +106,17 @@ test_that("Appending data",{
 })
 
 
+test_that("Scatterplots", {
+
+    # DS-1657
+    tab3 <- structure(c(1, 2, 3, 4), .Dim = c(4L, 1L), .Dimnames = list(c("Apple", "Microsoft", "Google", "Yahoo"), "Price"))
+    tab4 <- structure(c(1, 2, 3, 4), .Dim = c(4L, 1L), .Dimnames = list(c("Apple","Microsoft", "Google", "Yahoo"), "Price"))
+    pd <- PrepareData("Scatter", input.data.tables = list(tab3, tab4))
+    expect_warning(CChart("Scatter", pd$data, trend.lines = TRUE), "Chart contains overlapping points")
+
+})
+
+
 
 
 
