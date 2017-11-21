@@ -488,7 +488,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         data <- lapply(data, TidyTabularData)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
         if (isScatter(chart.type))
-            attr(data, "scatter.variable.indices") = c(x = 1, y = 2, size = 3, colors = 4)
+            attr(data, "scatter.variable.indices") = c(x = 1, y = 2, sizes = 3, colors = 4)
     }
     else if (chart.type == "Venn")
     {
