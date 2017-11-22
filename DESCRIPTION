@@ -1,10 +1,13 @@
 Package: flipChart
 Type: Package
 Title: Single function for calling charts - CChart
-Version: 1.2.0
+Version: 1.2.1
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
-Description: Wrapper for other chart functions, such that they can be access via a single function, CChart. The chief benefit of this is that a user can change chart type without having to change arguments (whcih are automatically mapped to the the appropriate parameters).
+Description: Wrapper for other chart functions, such that they can be access via a
+    single function, CChart. The chief benefit of this is that a user can change chart
+    type without having to change arguments (whcih are automatically mapped to
+    the the appropriate parameters).
 License: GPL-3
 Encoding: UTF-8
 LazyData: true

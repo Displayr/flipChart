@@ -740,6 +740,28 @@ test_that("Pasted data",{
     expect_equal(NCOL(pd$data), 2)
 })
 
+test_that("DS-1659: histogram, variables from data",
+{
+    dat <- structure(list(X = list(structure(c(3025.844, 5961.405605, 2114.4025,
+    -181.9484, 4071.847, 2620.7452, -11853.0269, -97.49, -1291.5211,
+    395.71, 4252.2578, -6310.5432, 5661.68435
+    ), questiontype = "Number", name = "TotalProfit", label = "Total Profit", question = "Total Profit")),
+        Y = NULL, Z1 = NULL, Z2 = NULL, labels = NULL), .Names = c("X",
+                                                                   "Y", "Z1", "Z2", "labels"))
 
+    expect_silent(out <- PrepareData(chart.type = "Histogram", input.data.raw = dat))
+    expect_is(out$data, "numeric")
+
+    v2 <- dat[[1L]][[1L]]
+    v2 <- v2 + 11
+    attr(v2, "name") <- "TotalSales"
+    attr(v2, "labels") <- "Total Sales"
+    attr(v2, "question") <- "Total Sales"
+    dat[[1L]] <- list(dat[[1L]][[1L]], v2)
+
+    out <- PrepareData(chart.type = "Histogram", input.data.raw = dat)
+    expect_is(out$data, "data.frame")
+    expect_equal(ncol(out$data), 2L)
+})
 
 

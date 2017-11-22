@@ -163,8 +163,9 @@ PrepareData <- function(chart.type,
         input.data.raw <- NULL
     if (all(sapply(input.data.pasted, is.null)))
         input.data.pasted <- NULL
-    # Check that there is no ambiguity rearding which input to use.
-    checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables, input.data.raw, input.data.pasted, input.data.other)
+    # Check that there is no ambiguity regarding which input to use.
+    checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
+                            input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
     data <- input.data.table
     if (is.null(data))
@@ -191,7 +192,9 @@ PrepareData <- function(chart.type,
         if (!is.null(attr(data, "InvalidVariableJoining")))
         {
             if (!isDistribution(chart.type))
-                warning("The variables have been automatically spliced together, without any knowledge of which case should be matched with which. This may cause the results to be misleading.")
+                warning("The variables have been automatically spliced together, ",
+                        "without any knowledge of which case should be matched with ",
+                        "which. This may cause the results to be misleading.")
         }
         data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
             suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing))
@@ -199,7 +202,8 @@ PrepareData <- function(chart.type,
             TidyRawData(data, subset = subset, weights = weights, missing = missing)
         n.post <- NROW(data)
         if (missing == "Exclude cases with missing data" && n.post < n)
-            warning("After removing missing values and/or filtering, ", n.post, " observations remain.")
+            warning("After removing missing values and/or filtering, ", n.post,
+                    " observations remain.")
         weights <- setWeight(data, weights)
     }
 
@@ -515,7 +519,8 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
     {
-        if (len <- length(input.data.raw) > 1)
+        len <- sum(!vapply(input.data.raw, is.null, FALSE))
+        if (len > 1L)  # variables from multiple GUI controls
         {
             if (NCOL(input.data.raw[[1]]) > 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
                 stop("If using a grouping variable, you may only have one additional variable.")
