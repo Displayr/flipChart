@@ -5,7 +5,7 @@
 \title{CChart}
 \usage{
 CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE,
-  scatter.labels.as.hovertext = TRUE)
+  series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
@@ -17,6 +17,9 @@ CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE,
 \item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
 
 \item{append.data}{If TRUE, appends the chart data as an attribute called "ChartData".}
+
+\item{series.stack}{Logical; Option to show charts with series stacked, in
+Column, Bar, or Area chart.}
 
 \item{scatter.labels.as.hovertext}{Option to use ScatterChart instead of LabeledScatterChart}
 }

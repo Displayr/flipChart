@@ -7,6 +7,8 @@
 #' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data If TRUE, appends the chart data as an attribute called "ChartData".
 #' @param scatter.labels.as.hovertext Option to use ScatterChart instead of LabeledScatterChart
+#' @param series.stack Logical; Option to show charts with series stacked, in
+#'   Column, Bar, or Area chart.
 #' @details Where \code{chart.type} is not the name of an existing function. It is
 #'   always assumed that the first parameter
 #'   in the signature is a data object, which is assigned the value of \code{x}.
@@ -16,21 +18,28 @@
 #' @export
 
 CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE,
-                   scatter.labels.as.hovertext = TRUE)
+                   series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
 {
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
     user.args <- list(...)
     chart.function <- getChartFunction(chart.type)
-    if (chart.function != chart.type)
-        user.args <- c(user.args, type=chart.type)
+
+    # e.g. CChart("Column", dat, type = "Stacked")
+    if (series.stack)
+        user.args <- c(user.args, type = "Stacked")
+
+    # e.g. CChart("Pie", dat, type = "Donut")
+    # e.g. CChart("Column", dat, type = "100% Stacked Column") - deprecated
+    else if (chart.function != chart.type)
+        user.args <- c(user.args, type = chart.type)
 
     # Use labeled scatterplots if multiple tables are provided
-    if (grepl("Scatter|Bubble", chart.function) && is.list(x) && !is.data.frame(x))
+    if (grepl("Scatter", chart.function) && is.list(x) && !is.data.frame(x))
         chart.function <- "LabeledScatter"
 
     # Use labeled scatterplots if labels are provided in (row)names
-    if (grepl("Scatter|Bubble", chart.function) && !scatter.labels.as.hovertext &&
+    if (grepl("Scatter", chart.function) && !scatter.labels.as.hovertext &&
         (!is.null(rownames(x))|| (length(dim(x)) < 2 && !is.null(names(x)))))
         chart.function <- "LabeledScatter"
 
