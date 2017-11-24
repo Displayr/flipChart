@@ -324,6 +324,11 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     {
         x[[1]] <- as.data.frame(x[[1]])
     }
+
+    # if labels are present in raw data, extract and store for later
+    rlabels <- x$labels
+    x$labels <- NULL
+
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
@@ -342,7 +347,12 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     } else
         invalid.joining <- FALSE
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
+
+    # Set column and rownames
     names(x) <- nms
+    if (!is.null(rlabels) && nrow(x) == length(rlabels))
+        rownames(x) <- make.unique(as.character(rlabels), sep = "")
+
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
     x
