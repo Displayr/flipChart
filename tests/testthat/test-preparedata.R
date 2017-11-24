@@ -706,11 +706,12 @@ test_that("Scatterplot with duplicated varible",{
 
 test_that("Scatterplot with only a Y variable",{
     data(colas, package = "flipExampleData")
-    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
+    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL, labels = sprintf("Num %d", 1:nrow(colas)))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 1)
+    expect_equal(rownames(pd$data)[1], "Num 1")
 })
 
 
@@ -750,7 +751,8 @@ test_that("DS-1659: histogram, variables from data",
                                                                    "Y", "Z1", "Z2", "labels"))
 
     expect_silent(out <- PrepareData(chart.type = "Histogram", input.data.raw = dat))
-    expect_is(out$data, "numeric")
+    expect_is(out$data, "data.frame")
+    expect_is(out$data[[1]], "numeric")
 
     v2 <- dat[[1L]][[1L]]
     v2 <- v2 + 11
