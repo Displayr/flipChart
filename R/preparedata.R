@@ -444,8 +444,8 @@ asPercentages <- function(data)
 
     if (is.matrix(data))
     {
-        data <- prop.table(data, 2)
-        attr(data, "statistic") <- "Column %"
+        data <- prop.table(data, 1)
+        attr(data, "statistic") <- "Row %"
         attr(data, "values.title") <- "%"
     }
     else
