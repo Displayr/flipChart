@@ -21,6 +21,9 @@
 CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = TRUE, append.data = FALSE,
                    series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
 {
+    if (return.data)
+        return(x)
+
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
     user.args <- list(...)
