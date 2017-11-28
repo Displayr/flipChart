@@ -4,8 +4,9 @@
 #' @param chart.type The name of plot to create, e.g "100\% Stacked Column Chart"
 #' @param x The data to be plotted.
 #' @param ... Arguments to the function \code{chart.type}
-#' @param warn.if.no.match If TRUE, a warning is shown if any arugments are not matched.
-#' @param append.data If TRUE, appends the chart data as an attribute called "ChartData".
+#' @param return.data Logical; If TRUE, returns the data x instead of plotting the chart.
+#' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
+#' @param append.data Logical; If TRUE, appends the chart data as an attribute called "ChartData".
 #' @param scatter.labels.as.hovertext Option to use ScatterChart instead of LabeledScatterChart
 #' @param series.stack Logical; Option to show charts with series stacked, in
 #'   Column, Bar, or Area chart.
@@ -17,7 +18,7 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE,
+CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = TRUE, append.data = FALSE,
                    series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
 {
     if (chart.type %in% c("Venn"))
