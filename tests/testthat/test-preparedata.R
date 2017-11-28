@@ -691,9 +691,9 @@ test_that("Scatterplot with duplicated varible",{
     w = capture_warnings(pd <- PrepareData("Column", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(NCOL(pd$data), 4)
+    expect_equal(NCOL(pd$data), 3)
     expect_equal(length(w), 2)
-    expect_equal(w[1], "Duplicated variables: Age.")
+    expect_equal(w[1], "Variables containing duplicated variable names have been removed (give the variables unique names if you do not want this to happen): Age.")
     expect_true(grepl("^Some categories do not appear ", w[2]))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
