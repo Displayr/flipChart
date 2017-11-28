@@ -4,8 +4,9 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE,
-  series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
+CChart(chart.type, x, ..., return.data = FALSE, warn.if.no.match = TRUE,
+  append.data = FALSE, series.stack = FALSE,
+  scatter.labels.as.hovertext = TRUE)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
@@ -14,9 +15,11 @@ CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE,
 
 \item{...}{Arguments to the function \code{chart.type}}
 
-\item{warn.if.no.match}{If TRUE, a warning is shown if any arugments are not matched.}
+\item{return.data}{Logical; If TRUE, returns the data x instead of plotting the chart.}
 
-\item{append.data}{If TRUE, appends the chart data as an attribute called "ChartData".}
+\item{warn.if.no.match}{Logical; If TRUE, a warning is shown if any arugments are not matched.}
+
+\item{append.data}{Logical; If TRUE, appends the chart data as an attribute called "ChartData".}
 
 \item{series.stack}{Logical; Option to show charts with series stacked, in
 Column, Bar, or Area chart.}
