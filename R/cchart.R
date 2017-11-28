@@ -240,7 +240,8 @@ getChartFunction <- function(type)
     # Some types will match multiple functions (e.g. 'LabeledScatter' matched both
     # 'LabeledScatter' and 'Scatter'. But only the first match is returned)
 
-    c.funcs <- c('Donut' = 'Pie',
+    c.funcs <- c('Pictograph' = 'BarPictograph',
+                 'Donut' = 'Pie',
                  'Bar' = 'Bar',
                  'Column' = 'Column',
                  'Area' = 'Area')
