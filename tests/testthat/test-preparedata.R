@@ -542,7 +542,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$values.title, "")
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = TRUE)
     expect_equal(res1$values.title, "Count")
-    expect_equal(names(dimnames(res1$data)), c("VarA", ""))
+    expect_true(is.null(dimnames(res1$data)))
 
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE)
     expect_equal(res2$values.title, "")
@@ -765,5 +765,16 @@ test_that("DS-1659: histogram, variables from data",
     expect_is(out$data, "data.frame")
     expect_equal(ncol(out$data), 2L)
 })
+
+test_that("DS-1689 Bar chart from one variable raw data",{
+    data(colas, package = "flipExampleData")
+
+    z = list(X = colas$d1, Y = NULL, Z1 = NULL, Z2 = NULL)
+    w = capture_warnings(pd <- PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                                           transpose = FALSE, first.aggregate = TRUE, as.percent = TRUE,
+                                           tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
+})
+
 
 

@@ -276,7 +276,6 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
         out <- WeightedTable(data[[1]]) #, weights)
         d.names <- list(names(out), NULL)
         names(d.names) <- c(names(data)[1], "")
-        out <- matrix(out, dimnames=d.names)
         attr(out, "statistic") = "Count"
     }
     else if (ncol(data) == 2 && crosstab)
