@@ -27,7 +27,10 @@ CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = 
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
     user.args <- list(...)
-    chart.function <- getChartFunction(chart.type)
+
+    # Identify function name
+    chart.type <- gsub(" ", "", chart.type)             # spaces always removed
+    chart.function <- getChartFunction(chart.type)      # substitutions for specific functions
 
     # e.g. CChart("Column", dat, type = "Stacked")
     if (series.stack)
@@ -244,11 +247,7 @@ getChartFunction <- function(type)
     # Some types will match multiple functions (e.g. 'LabeledScatter' matched both
     # 'LabeledScatter' and 'Scatter'. But only the first match is returned)
 
-    c.funcs <- c('Pictograph' = 'BarPictograph',
-                 'Donut' = 'Pie',
-                 'Bar' = 'Bar',
-                 'Column' = 'Column',
-                 'Area' = 'Area')
+    c.funcs <- c('Donut' = 'Pie')
 
     for (i in 1:length(c.funcs))
     {
@@ -273,9 +272,7 @@ loadPackage <- function(chart.type)
     # Make sure that the package is specified in suggest in the descriptions file
     #
     #              package           chart function
-    package.type.lookup <- c("rhtmlMoonPlot" = "moonplot",
-                  "flipStandardCharts" = "LabeledScatter",
-                  "flipStandardCharts" = "Chart")
+    package.type.lookup <- c("rhtmlMoonPlot" = "moonplot")
     package <- LookupName(chart.type, package.type.lookup)
     if (is.null(package))
         package <- "flipStandardCharts"
