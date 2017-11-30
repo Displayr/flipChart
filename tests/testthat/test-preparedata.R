@@ -599,16 +599,16 @@ test_that("PrepareData: incorrect data.source.index",
     attr(xx, "label") <- "VarA"
     attr(yy, "label") <- "VarB"
 
-    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to a table"),
-                 "The data provided does not match the 'data.source.index'.")
-    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
-                             data.source = "Link to multiple tables"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to a table in 'Pages'"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to a table"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to multiple tables in 'Pages'"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Link to multiple tables"), "The data provided does not match the 'data.source.index'.")
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
                              data.source ="Link to a variable in 'Data'"), NA)
     expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
                              data.source = "Type or paste in data"), "The data provided does not match the 'data.source.index'.")
-    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE,
-                             data.source = "Use an existing R Output"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Use an existing R Output in 'Pages'"), "The data provided does not match the 'data.source.index'.")
+    expect_error(PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE, data.source = "Use an existing R Output"), "The data provided does not match the 'data.source.index'.")
 
     set.seed(1223)
     MultipleNumeric = list("Normal" = rnorm(500) * 1000,
@@ -619,8 +619,11 @@ test_that("PrepareData: incorrect data.source.index",
                        Uniform = runif(1000)  * 1000
                       )
     expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, first.aggregate = FALSE,
+                             data.source = "Use an existing R Output in 'Pages'"), NA)
+    expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, first.aggregate = FALSE,
                              data.source = "Use an existing R Output"), NA)
-
+    expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, input.data.raw = list(NULL), first.aggregate = FALSE,
+                             data.source = "Use an existing R Output in 'Pages'"), NA)
     expect_error(PrepareData("Histogram", input.data.other = MultipleNumeric, input.data.raw = list(NULL), first.aggregate = FALSE,
                              data.source = "Use an existing R Output"), NA)
 
@@ -775,6 +778,3 @@ test_that("DS-1689 Bar chart from one variable raw data",{
                                            tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
 })
-
-
-
