@@ -21,8 +21,15 @@
 CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = TRUE, append.data = FALSE,
                    series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
 {
-    if (return.data)
+    if (return.data) {
+        # Vectors cannot be printed with attributes until core bug resolved
+        if (is.null(dim(x)) || length(dim(x)) == 1)
+        {
+            attr(x, "statistic") <- attr(x, "scatter.variable.indices") <- NULL
+            attr(x, "values.title") <- attr(x, "weights") <- attr(x, "InvalidVariableJoining") <- NULL
+        }
         return(x)
+    }
 
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
