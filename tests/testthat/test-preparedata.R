@@ -530,6 +530,19 @@ test_that("PrepareData: No data has been provided",
                  "No data has been provided.")
 })
 
+test_that("PrepareData: aggregate works for all formats",
+{
+    set.seed(23456)
+    zvec <- rpois(20, 4)
+    zlen <- length(table(zvec))
+    resV <- PrepareData("Column", input.data.table = zvec, first.aggregate = TRUE)
+    resM <- PrepareData("Column", input.data.table = as.matrix(zvec), first.aggregate = TRUE)
+    resL <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE)
+    expect_equal(length(resV$data), zlen)
+    expect_equal(length(resM$data), zlen)
+    expect_equal(length(resL$data), zlen)
+})
+
 test_that("PrepareData: input and output format of raw data",
 {
     set.seed(1234)

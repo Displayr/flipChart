@@ -276,7 +276,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     # the table is transposed
     if (NCOL(data) == 1)
     {
-        out <- WeightedTable(data[[1]]) #, weights)
+        out <- WeightedTable(data) #, weights)
         d.names <- list(names(out), NULL)
         names(d.names) <- c(names(data)[1], "")
         attr(out, "statistic") = "Count"
