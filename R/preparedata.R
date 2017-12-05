@@ -553,6 +553,8 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     else  # Everything else. We try and turn it into a table if we can.
     {
         data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+        if (is.matrix(data) && ncol(data) == 1)
+            data <- data[,1]
     }
     data
 }
