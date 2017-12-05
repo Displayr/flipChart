@@ -328,9 +328,6 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     }
 
     # if labels are present in raw data, extract and store for later
-    rlabels <- x$labels
-    x$labels <- NULL
-
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
@@ -352,8 +349,6 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
 
     # Set column and rownames
     names(x) <- nms
-    if (!is.null(rlabels) && nrow(x) == length(rlabels))
-        rownames(x) <- make.unique(as.character(rlabels), sep = "")
 
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
@@ -423,14 +418,14 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 
 
 
-useLabelsAsRowNames <- function(input.data.raw, data)
+useLabelsAsRowNames <- function(data)
 {
-    if (!is.null(input.data.raw) && !is.null(label.variable.name <- names(input.data.raw$labels)))
+    if (is.list(data) && !is.null(data$labels))
     {
-        labels <- data[[label.variable.name]]
-        data[[label.variable.name]]  <- NULL # Deleting the variable
-        if (nrow(data) == NROW(labels))
-            rownames(data) <- make.unique(as.character(labels), sep="")
+        tmp.labels <- data$labels
+        data$labels  <- NULL # Deleting the variable
+        if (nrow(data) == NROW(tmp.labels))
+            rownames(data) <- make.unique(as.character(tmp.labels), sep="")
     }
     data
 }
@@ -524,7 +519,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         if (any(d <- duplicated(names(data))))
             data <- data[, !d]
         # Appending the labels to the data.frame as row names
-        data <- useLabelsAsRowNames(input.data.raw, data)
+        data <- useLabelsAsRowNames(data)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
         attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
     }
