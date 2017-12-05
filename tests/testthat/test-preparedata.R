@@ -698,6 +698,14 @@ test_that("Basic crosstab input",{
                       transpose = TRUE, first.aggregate = TRUE))
     expect_equal(dim(pd$data), 1:2)
 
+
+    set.seed(123456)
+    yy <- table(rpois(20, 5))
+    ylen <- length(yy)
+    res1 <- PrepareData("Pie", input.data.table = yy, tidy = TRUE)
+    res2 <- PrepareData("Pie", input.data.table = yy, tidy = FALSE)
+    expect_true(is.null(dim(res1$data)))
+    expect_true(!is.null(dim(res2$data)))
 })
 
 test_that("Scatterplot with duplicated varible",{
