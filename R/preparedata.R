@@ -477,6 +477,11 @@ transformTable <- function(data,
     if (isTRUE(transpose))
         data <- t(data)
 
+    ## If data is already percentages then divide by 100
+    stat <- attr(data, "statistic")
+    if (!is.null(stat) && grepl("%", stat, fixed = TRUE))
+        data <- data / 100
+
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {

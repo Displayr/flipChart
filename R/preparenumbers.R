@@ -7,7 +7,7 @@
 #' @param values.format.list As per \code{categories.format.list} except for values-axis formatting.
 #' @param hover.format.list As per \code{categories.format.list} except for hovertext formatting.
 #' @param data.labels.format.list As per \code{categories.format.list} except for data label formatting.
-#' @param as.percentages Whether the dfault formatting should be as percentages.
+#' @param as.percentages Whether the default formatting should be as percentages.
 #' @export
 #' @importFrom flipChartBasics ChartNumberFormat
 PrepareNumbers <- function(categories.format.list = NULL,
