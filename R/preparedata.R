@@ -367,13 +367,18 @@ isDistribution <- function(chart.type)
 
 processPastedData <- function(input.data.pasted, first.aggregate)
 {
-    tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
+    processed <- tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = first.aggregate,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
                                   us.format = input.data.pasted[[5]])),
              error = function(e) {input.data.pasted[[1]]})
+
+    stat <- attr(processed, "statistic")
+    if (!is.null(stat) && grepl("%", stat))
+        processed <- processed * 100
+    return(processed)
 }
 
 checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, pasted, other)

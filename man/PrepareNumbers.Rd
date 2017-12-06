@@ -5,8 +5,7 @@
 \title{Generates all d3 formats for use by CChart.}
 \usage{
 PrepareNumbers(categories.format.list = NULL, values.format.list = NULL,
-  hover.format.list = NULL, data.labels.format.list = NULL,
-  as.percentages = FALSE)
+  hover.format.list = NULL, data.labels.format.list = NULL)
 }
 \arguments{
 \item{categories.format.list}{A list of five unnamed items for formatting the categories-axis as
@@ -17,8 +16,6 @@ described in \code{\link[flipChartBasics]{ChartNumberFormat}}.}
 \item{hover.format.list}{As per \code{categories.format.list} except for hovertext formatting.}
 
 \item{data.labels.format.list}{As per \code{categories.format.list} except for data label formatting.}
-
-\item{as.percentages}{Whether the dfault formatting should be as percentages.}
 }
 \description{
 See \url{https://github.com/d3/d3-format} for more information on d3.
