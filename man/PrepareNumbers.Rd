@@ -18,7 +18,7 @@ described in \code{\link[flipChartBasics]{ChartNumberFormat}}.}
 
 \item{data.labels.format.list}{As per \code{categories.format.list} except for data label formatting.}
 
-\item{as.percentages}{Whether the dfault formatting should be as percentages.}
+\item{as.percentages}{Whether the default formatting should be as percentages.}
 }
 \description{
 See \url{https://github.com/d3/d3-format} for more information on d3.

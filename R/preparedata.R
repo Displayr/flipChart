@@ -170,7 +170,7 @@ PrepareData <- function(chart.type,
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
-    data <- input.data.table
+    data <- setQlabelAsDimname(input.data.table)
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
@@ -559,3 +559,13 @@ setWeight <- function(x, weights)
         return(w)
     weights
 }
+
+# This uses the information in a QTable to set
+# title on the categories axis
+setQlabelAsDimname <- function(x)
+{
+    qq <- attr(x, "questions")
+    if (!is.null(dimnames(x)) && !is.null(qq))
+        names(dimnames(x))[1] <- qq[1]
+    x
+} 
