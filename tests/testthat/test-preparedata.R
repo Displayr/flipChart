@@ -708,7 +708,7 @@ test_that("Basic crosstab input",{
     expect_true(!is.null(dim(res2$data)))
 })
 
-test_that("Scatterplot with duplicated varible",{
+test_that("Scatterplot with duplicated variable",{
     data(colas, package = "flipExampleData")
 
     z = list(X = colas$d1, Y = colas$d2, Z1 = colas$d3, Z2 = colas$d1)
@@ -729,8 +729,26 @@ test_that("Scatterplot with duplicated varible",{
 
 
 test_that("Scatterplot with only a Y variable",{
-    data(colas, package = "flipExampleData")
-    z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL, labels = sprintf("Num %d", 1:nrow(colas)))
+    #data(colas, package = "flipExampleData")
+    #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL, labels = sprintf("Num %d", 1:nrow(colas)))
+    z = structure(list(X = NULL, Y = structure(c(1327795200, 1330041600,
+        1328486400, 1330214400, 1331596800, 1325376000, 1326412800, 1329609600),
+        class = c("POSIXct", "POSIXt", "QDate"), QDate = structure(c(3L,
+        5L, 4L, 5L, 7L, 1L, 2L, 5L), class = c("ordered", "factor"),
+        .Label = c("19-Dec-11-01-Jan-12",
+"02-Jan-12-15-Jan-12", "16-Jan-12-29-Jan-12", "30-Jan-12-12-Feb-12",
+"13-Feb-12-26-Feb-12", "27-Feb-12-11-Mar-12", "12-Mar-12-25-Mar-12",
+"26-Mar-12-08-Apr-12", "09-Apr-12-22-Apr-12", "23-Apr-12-06-May-12",
+"07-May-12-20-May-12", "21-May-12-03-Jun-12", "04-Jun-12-17-Jun-12",
+"18-Jun-12-01-Jul-12", "02-Jul-12-15-Jul-12", "16-Jul-12-29-Jul-12",
+"30-Jul-12-12-Aug-12", "13-Aug-12-26-Aug-12", "27-Aug-12-09-Sep-12",
+"10-Sep-12-23-Sep-12", "24-Sep-12-07-Oct-12", "08-Oct-12-21-Oct-12",
+"22-Oct-12-04-Nov-12", "05-Nov-12-18-Nov-12", "19-Nov-12-02-Dec-12",
+"03-Dec-12-16-Dec-12", "17-Dec-12-30-Dec-12")),
+    questiontype = "Date", name = "date", label = "Interview Date", question = "Interview Date"),
+    Z1 = NULL, Z2 = NULL, labels = structure(sprintf("Num %d", 1:8),
+    questiontype = "Text", name = "IDstring", label = "ID string", question = "ID string")), .Names = c("X",
+"Y", "Z1", "Z2", "labels"))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))

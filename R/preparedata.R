@@ -328,6 +328,9 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     }
 
     # if labels are present in raw data, extract and store for later
+    rlabels <- x$labels
+    x$labels <- NULL
+
     all.variables <- all(sapply(x, NCOL) == 1)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
@@ -349,7 +352,8 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
 
     # Set column and rownames
     names(x) <- nms
-
+    if (!is.null(rlabels) && nrow(x) == length(rlabels))
+        rownames(x) <- make.unique(as.character(rlabels), sep = "")
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
     x
@@ -414,20 +418,6 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     indices["sizes"] <- .getColumnIndex(3)#if (is.null(input.data.raw$Z1)) NA else 1 + max(indices[1:2], 0, na.rm = TRUE)
     indices["colors"] <- .getColumnIndex(4)#if (is.null(input.data.raw$Z2)) NA else 1 + max(indices[1:3], 0, na.rm = TRUE)
     indices
-}
-
-
-
-useLabelsAsRowNames <- function(data)
-{
-    if (is.list(data) && !is.null(data$labels))
-    {
-        tmp.labels <- data$labels
-        data$labels  <- NULL # Deleting the variable
-        if (nrow(data) == NROW(tmp.labels))
-            rownames(data) <- make.unique(as.character(tmp.labels), sep="")
-    }
-    data
 }
 
 asPercentages <- function(data)
@@ -523,8 +513,6 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         # Removing duplicate columns
         if (any(d <- duplicated(names(data))))
             data <- data[, !d]
-        # Appending the labels to the data.frame as row names
-        data <- useLabelsAsRowNames(data)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
         attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
     }
