@@ -7,12 +7,14 @@
 #' @param values.format.list As per \code{categories.format.list} except for values-axis formatting.
 #' @param hover.format.list As per \code{categories.format.list} except for hovertext formatting.
 #' @param data.labels.format.list As per \code{categories.format.list} except for data label formatting.
+#' @param as.percentages deprecated
 #' @export
 #' @importFrom flipChartBasics ChartNumberFormat
 PrepareNumbers <- function(categories.format.list = NULL,
                            values.format.list = NULL,
                            hover.format.list = NULL,
-                           data.labels.format.list = NULL) {
+                           data.labels.format.list = NULL,
+                           as.percentages = NULL) {
 
     return(list(categories.number.format = ChartNumberFormat(categories.format.list),
                 values.number.format = ChartNumberFormat(values.format.list),
