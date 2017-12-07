@@ -107,9 +107,9 @@ PrepareData <- function(chart.type,
     # - User wants to treat variables or variable sets NOT as 'raw' data. E.g., performing a correspondence analysis of raw data.
     # - User wants to treat pasted data as raw data.
     # - User wants to treat otherData as raw data
-    # - Scattersplots of raw data, where separate drop boxes have been used as inputs.
-    # - Scattersplots of raw data, where a table has been used as an input.
-    # - Scattersplots of raw data, where pasted data has been used as an input.
+    # - Scatterplots of raw data, where separate drop boxes have been used as inputs.
+    # - Scatterplots of raw data, where a table has been used as an input.
+    # - Scatterplots of raw data, where pasted data has been used as an input.
     # - Venn diagrams of JSON.
     # - Venn diagrams of multiple binary variables
     # - Histogram, Density, Bean, Violin, and Box plots of numeric variables
@@ -513,6 +513,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     # Scatterplots
     else if (isScatter(chart.type))
     {
+        attr(data, "statistic") <- NULL
         if (!is.data.frame(data) && !is.matrix(data))
             data <- TidyTabularData(data)
         # Removing duplicate columns
