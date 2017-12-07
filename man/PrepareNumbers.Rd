@@ -6,7 +6,7 @@
 \usage{
 PrepareNumbers(categories.format.list = NULL, values.format.list = NULL,
   hover.format.list = NULL, data.labels.format.list = NULL,
-  as.percentages = NULL)
+  as.percentages = FALSE)
 }
 \arguments{
 \item{categories.format.list}{A list of five unnamed items for formatting the categories-axis as
@@ -18,7 +18,7 @@ described in \code{\link[flipChartBasics]{ChartNumberFormat}}.}
 
 \item{data.labels.format.list}{As per \code{categories.format.list} except for data label formatting.}
 
-\item{as.percentages}{deprecated}
+\item{as.percentages}{Whether the default formatting should be as percentages.}
 }
 \description{
 See \url{https://github.com/d3/d3-format} for more information on d3.
