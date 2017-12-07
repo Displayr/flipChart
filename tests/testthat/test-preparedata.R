@@ -94,6 +94,14 @@ test_that("PrepareData: single table, single stat",
     expect_equal(attr(out$data, "statistic"), dimnames(input.data.table)[[n.dim]][1])
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), c(dims[1]*dims[3], dims[2]))
+
+    tab.with.stat <- structure(c(1, 3, 5, 7, 2, 4, 6, 8), .Dim = c(4L, 2L), statistic = "Counts", .Dimnames = list(
+    c("A", "B", "C", "D"), c("Column 1", "Column 2")))
+    pdColumn <- PrepareData("Column", input.data.table = tab.with.stat)
+    pdScatter <- PrepareData("Scatter", input.data.table = tab.with.stat)
+    expect_equal(pdColumn$values.title, "Counts")
+    expect_equal(pdScatter$values.title, "")
+
 })
 
 test_that("PrepareData: multiple existing tables",
