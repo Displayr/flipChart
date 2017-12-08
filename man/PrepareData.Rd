@@ -101,7 +101,7 @@ or  \code{"Bubble"}. \code{NA} is used when the data does not exist.
 Prepares input data for charting.
 }
 \details{
-It is assumed that only one of \code{pasted},
+It is assumed that only one of \code{input.data.pasted},
     \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
     \code{input.data.raw} is non-NULL.  They are checked for nullity in
     that order.

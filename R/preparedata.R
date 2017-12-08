@@ -52,7 +52,7 @@
 #' column sums are given.
 #' @param values.title The title for the values axis of a chart (e.g.,
 #' the y-axis of a column chart or the x-axis of a bar chart).
-#' @details It is assumed that only one of \code{pasted},
+#' @details It is assumed that only one of \code{input.data.pasted},
 #'     \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
 #'     \code{input.data.raw} is non-NULL.  They are checked for nullity in
 #'     that order.
@@ -128,7 +128,7 @@ PrepareData <- function(chart.type,
     # 4. Tailoring the data for the chart type.
     # 5. Transformations of the tidied data (sorting, transposing, removing rows).
 
-    # This function need to be frequently understood and generalized
+    # This function needs to be frequently understood and generalized
     # by multiple people. Consequently, the goal has been to write the code in such a
     # way as to make it as easy to read and maintain as possible. In particular,
     # many obvious ways to make this code more efficent have been ignored in the interests
@@ -574,4 +574,4 @@ setQlabelAsDimname <- function(x)
     if (!is.null(dimnames(x)) && !is.null(qq))
         names(dimnames(x))[1] <- qq[1]
     x
-} 
+}
