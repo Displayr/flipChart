@@ -46,7 +46,7 @@ PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
                                                       custom.gradient.start = palette.custom.gradient.start,
                                                       custom.gradient.end = palette.custom.gradient.end,
                                                       custom.palette = palette.custom.palette,
-                                                      silent = chart.type == "Bar Pictograph")
+                                                      silent = chart.type %in% c("Bar Pictograph", "Time Series"))
 
     if (!is.null(fit.palette) && fit.palette != "Group colors")
         fit.line.colors <- ChartColors(num.colors[[1]], given.colors = fit.palette,
