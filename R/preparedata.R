@@ -186,7 +186,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
-    filt <- NROW(subset) == NROW(data)
+    filt <- length(subset) > 1 && NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
         missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey"))
@@ -551,8 +551,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     else  # Everything else. We try and turn it into a table if we can.
     {
         data <- tryCatch(TidyTabularData(data), error = function(e) { data })
-        if (is.matrix(data) && ncol(data) == 1)
-            data <- data[,1]
+        data <- drop(data)
     }
     data
 }

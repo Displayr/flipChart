@@ -120,7 +120,7 @@ test_that("PrepareData: multiple existing tables",
     expect_equal(attr(out$data[[2]], "statistic"), "%")
 })
 
-test_that("PredpareData: pasted raw data",
+test_that("PrepareData: pasted raw data",
 {
     ## list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
     ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
@@ -536,6 +536,15 @@ test_that("PrepareData: No data has been provided",
 {
     expect_error(PrepareData(chart.type = "Bar"),
                  "No data has been provided.")
+})
+
+test_that("PrepareData: 1-row table",
+{
+    xx <- matrix(1:5, 1, 5)
+    expect_error(res1 <- PrepareData("Column", input.data.table = xx, subset = TRUE, tidy = TRUE), NA)
+    expect_error(res2 <- PrepareData("Column", input.data.table = xx, subset = TRUE, tidy = FALSE), NA)
+    expect_equal(length(dim(res1$data)), 0)
+    expect_equal(length(dim(res2$data)), 2)
 })
 
 test_that("PrepareData: aggregate works for all formats",
