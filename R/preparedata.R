@@ -93,6 +93,7 @@ PrepareData <- function(chart.type,
                         row.names.to.remove = c("NET", "SUM"),
                         column.names.to.remove = c("NET", "SUM"),
                         split = "[;,]",
+                        hide.empty.rows.and.columns = TRUE,
                         as.percentages = FALSE,
                         show.labels = TRUE,
                         values.title = "")
@@ -235,7 +236,8 @@ PrepareData <- function(chart.type,
                    !is.null(input.data.tables),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
-                   as.percentages)
+                   as.percentages,
+                   hide.empty.row.and.columns)
 
     ###########################################################################
     # Finalizing the result.
@@ -448,11 +450,13 @@ asPercentages <- function(data)
     data
 }
 
+#' @importFrom flipTables RemoveRowsAndOrColumns HideRowsAndOrColumns
 transformTable <- function(data,
                            multiple.tables,
                            row.names.to.remove, column.names.to.remove, split,
                            transpose,
                            as.percentages,
+                           hide.empty.rows.and.columns,
                            table.counter = 1)
 {
     if (multiple.tables)
@@ -462,12 +466,15 @@ transformTable <- function(data,
                                        row.names.to.remove, column.names.to.remove, split,
                                        transpose,
                                        as.percentages,
+                                       hide.empty.rows.and.columns,
                                        i)
         return(data)
     }
     ## Remove rows and columns
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                 column.names.to.remove = column.names.to.remove, split = split)
+                                   column.names.to.remove = column.names.to.remove, split = split)
+    data <- HideEmptyRowsAndColumns(data)
+
     ## Switching rows and columns
     if (isTRUE(transpose))
         data <- t(data)
