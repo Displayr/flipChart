@@ -11,7 +11,7 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   tidy = TRUE, transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",
   hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
-  show.labels = TRUE, values.title = "")
+  date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -84,9 +84,15 @@ meaning that a row or column contains all \code{NA} values, or
 in the case of percentages, that a row or column contains only
 0's.}
 
-\item{as.percentages}{Logical; If \code{TRUE}, aggregate values in
-the output table are given as percentages summing to 100. If
-\code{FALSE}, column sums are given.}
+\item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
+output table are given as percentages summing to 100. If \code{FALSE},
+column sums are given.}
+
+\item{date.format}{One of \code{"Automatic", "US" or "International"}.
+This is used to determine whether strings which are interpreted as dates
+in the (row)names will be read in the US (month-day-year) or the
+International (day-month-year) format. By default US format is used
+if it cannot be deduced from the input data.}
 
 \item{show.labels}{Logical; If \code{TRUE}, labels are used for
 names in the data output if raw data is supplied.}

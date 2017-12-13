@@ -57,9 +57,14 @@
 #'     0's.
 #' @param show.labels Logical; If \code{TRUE}, labels are used for
 #'     names in the data output if raw data is supplied.
-#' @param as.percentages Logical; If \code{TRUE}, aggregate values in
-#'     the output table are given as percentages summing to 100. If
-#'     \code{FALSE}, column sums are given.
+#' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
+#' output table are given as percentages summing to 100. If \code{FALSE},
+#' column sums are given.
+#' @param date.format One of \code{"Automatic", "US" or "International"}.
+#' This is used to determine whether strings which are interpreted as dates
+#' in the (row)names will be read in the US (month-day-year) or the
+#' International (day-month-year) format. By default US format is used
+#' if it cannot be deduced from the input data.
 #' @param values.title The title for the values axis of a chart (e.g.,
 #'     the y-axis of a column chart or the x-axis of a bar chart).
 #' @details It is assumed that only one of \code{input.data.pasted},
@@ -106,6 +111,7 @@ PrepareData <- function(chart.type,
                         split = "[;,]",
                         hide.empty.rows.and.columns = TRUE,
                         as.percentages = FALSE,
+                        date.format = "Automatic",
                         show.labels = TRUE,
                         values.title = "")
 {
@@ -248,7 +254,8 @@ PrepareData <- function(chart.type,
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
                    as.percentages,
-                   hide.empty.rows.and.columns)
+                   hide.empty.rows.and.columns,
+                   date.format)
 
     ###########################################################################
     # Finalizing the result.
@@ -387,7 +394,6 @@ processPastedData <- function(input.data.pasted, first.aggregate)
                                   want.row.names = input.data.pasted[[4]],
                                   us.format = input.data.pasted[[5]])),
              error = function(e) {input.data.pasted[[1]]})
-
     return(processed)
 }
 
@@ -459,12 +465,14 @@ asPercentages <- function(data)
 }
 
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRowsAndColumns
+#' @importFrom flipTime AsDate
 transformTable <- function(data,
                            multiple.tables,
                            row.names.to.remove, column.names.to.remove, split,
                            transpose,
                            as.percentages,
                            hide.empty.rows.and.columns,
+                           date.format,
                            table.counter = 1)
 {
     if (multiple.tables)
@@ -496,7 +504,7 @@ transformTable <- function(data,
     ## Note that R outputs and pasted data will already be in decimals
     stat <- attr(data, "statistic")
     qst <- attr(data, "questions")
-    if (!is.null(stat) && !is.null(qst) && grepl("%", stat, fixed = TRUE))
+    if (!is.null(stat) && !is.null(qst) && grepl("%$", stat))
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
@@ -508,6 +516,13 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
+
+    # Convert dates in row/column names
+    .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x, on.parse.failure = "silent")))))
+    if (date.format != "Automatic" && .isDate(rownames(data)))
+        rownames(data) <- format(AsDate(rownames(data), us.format = date.format != "International"), "%b %d %Y")
+    else if (date.format != "Automatic" && .isDate(names(data)))
+        names(data) <- format(AsDate(names(data), us.format = date.format != "International"), "%b %d %Y")
     return(data)
 }
 

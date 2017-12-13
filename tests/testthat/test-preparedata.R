@@ -40,7 +40,8 @@ test_that("PrepareData: single table, single stat",
                        column.names.to.remove = NULL)
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
-    expect_equal(dim(out$data), dim(input.data.table) )
+    expect_equal(dim(out$data), dim(input.data.table))
+    expect_equal(round(out$data[1,1],3), 0.484)
 })
 
 test_that("PrepareData: single table, single stat",
@@ -130,6 +131,20 @@ test_that("PrepareData: pasted raw data",
                        input.data.pasted = pasted, chart.type = "Column")
     expect_is(out$data, "matrix")
     expect_equal(colnames(out$data), LETTERS[1:4])
+
+    dat2 <- list(structure(c("", "", "", "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "Total %",
+        "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+        "50 to 54", "55 to 64", "65 or more", "", "", "", "Colas (e.g., Coca Cola, Pepsi Max)?",
+        "11.31%", "10.70%", "7.65%", "9.48%", "7.95%", "7.65%", "9.17%",
+        "12.54%", "4.89%", "", "", "", "Sparkling mineral water", "",
+        "1.22%", "3.36%", "2.45%", "2.75%", "3.06%", "3.67%", "4.59%",
+        "1.83%", "", "", "", "Coffee", "7.34%", "7.65%", "4.59%", "8.87%",
+        "7.34%", "6.42%", "8.87%", "11.93%", "5.81%"), .Dim = c(13L,
+        7L)), NULL, NULL, NULL, NULL)
+    out2 <- PrepareData("Scatter", input.data.pasted = dat2)
+    expect_equal(out2$data[1,1], 0.1131)
 })
 
 test_that("PrepareData: crappy input to crappy data",
@@ -833,4 +848,16 @@ test_that("DS-1689 Bar chart from one variable raw data",{
                                            transpose = FALSE, first.aggregate = TRUE, as.percent = TRUE,
                                            tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
+})
+
+test_that("Date formatting",
+{
+    xx <- structure(1:10, .Names = c("1/01/2001", "2/01/2001", "3/01/2001",
+"4/01/2001", "5/01/2001", "6/01/2001", "7/01/2001", "8/01/2001",
+"9/01/2001", "10/01/2001"))
+    expect_warning(CChart("Column", PrepareData("Column", input.data.table = xx)$data), "Date formats are ambiguous")
+    expect_error(res1 <- PrepareData("Column", input.data.table = xx, date.format="United States"), NA)
+    expect_error(res2 <- PrepareData("Column", input.data.table = xx, date.format="International"), NA)
+    expect_equal(names(res1$data)[10], "Oct 01 2001")
+    expect_equal(names(res2$data)[10], "Jan 10 2001")
 })

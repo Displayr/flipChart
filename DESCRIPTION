@@ -23,6 +23,7 @@ Imports:
     flipStandardCharts (>= 1.0.3),
     flipStatistics,
     flipTables (>= 2.3.0),
+    flipTime,
     flipU,
     flipTransformations (>= 1.6.0)
 Remotes:
@@ -33,5 +34,6 @@ Remotes:
     Displayr/flipStandardCharts,
     Displayr/flipTables,
     Displayr/flipTransformations,
+    Displayr/flipTime,
     Displayr/flipU
 RoxygenNote: 6.0.1
