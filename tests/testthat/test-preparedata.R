@@ -849,3 +849,15 @@ test_that("DS-1689 Bar chart from one variable raw data",{
                                            tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
 })
+
+test_that("Date formatting",
+{
+    xx <- structure(1:10, .Names = c("1/01/2001", "2/01/2001", "3/01/2001",
+"4/01/2001", "5/01/2001", "6/01/2001", "7/01/2001", "8/01/2001",
+"9/01/2001", "10/01/2001"))
+    expect_warning(CChart("Column", PrepareData("Column", input.data.table = xx)$data), "Date formats are ambiguous")
+    expect_error(res1 <- PrepareData("Column", input.data.table = xx, date.format="United States"), NA)
+    expect_error(res2 <- PrepareData("Column", input.data.table = xx, date.format="International"), NA)
+    expect_equal(names(res1$data)[10], "Oct 01 2001")
+    expect_equal(names(res2$data)[10], "Jan 10 2001")
+})

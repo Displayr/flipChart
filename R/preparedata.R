@@ -50,6 +50,11 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
+#' @param date.format One of \code{"Automatic", "US" or "International"}.
+#' This is used to determine whether strings which are interpreted as dates
+#' in the (row)names will be read in the US (month-day-year) or the
+#' International (day-month-year) format. By default US format is used
+#' if it cannot be deduced from the input data.
 #' @param values.title The title for the values axis of a chart (e.g.,
 #' the y-axis of a column chart or the x-axis of a bar chart).
 #' @details It is assumed that only one of \code{input.data.pasted},
@@ -94,6 +99,7 @@ PrepareData <- function(chart.type,
                         column.names.to.remove = c("NET", "SUM"),
                         split = "[;,]",
                         as.percentages = FALSE,
+                        date.format = "Automatic",
                         show.labels = TRUE,
                         values.title = "")
 {
@@ -235,7 +241,8 @@ PrepareData <- function(chart.type,
                    !is.null(input.data.tables),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
-                   as.percentages)
+                   as.percentages,
+                   date.format)
 
     ###########################################################################
     # Finalizing the result.
@@ -444,11 +451,13 @@ asPercentages <- function(data)
     data
 }
 
+#' @importFrom flipTime AsDate
 transformTable <- function(data,
                            multiple.tables,
                            row.names.to.remove, column.names.to.remove, split,
                            transpose,
                            as.percentages,
+                           date.format,
                            table.counter = 1)
 {
     if (multiple.tables)
@@ -484,6 +493,13 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
+
+    # Convert dates in row/column names
+    .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x, on.parse.failure = "silent")))))
+    if (date.format != "Automatic" && .isDate(rownames(data)))
+        rownames(data) <- format(AsDate(rownames(data), us.format = date.format != "International"), "%b %d %Y")
+    else if (date.format != "Automatic" && .isDate(names(data)))
+        names(data) <- format(AsDate(names(data), us.format = date.format != "International"), "%b %d %Y")
     return(data)
 }
 

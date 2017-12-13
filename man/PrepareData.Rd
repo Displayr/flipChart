@@ -10,7 +10,8 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
   tidy = TRUE, transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",
-  as.percentages = FALSE, show.labels = TRUE, values.title = "")
+  as.percentages = FALSE, date.format = "Automatic", show.labels = TRUE,
+  values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -75,6 +76,12 @@ and \code{col.names.to.remove} on. Default is to split on either of
 \item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
 output table are given as percentages summing to 100. If \code{FALSE},
 column sums are given.}
+
+\item{date.format}{One of \code{"Automatic", "US" or "International"}.
+This is used to determine whether strings which are interpreted as dates
+in the (row)names will be read in the US (month-day-year) or the
+International (day-month-year) format. By default US format is used
+if it cannot be deduced from the input data.}
 
 \item{show.labels}{Logical; If \code{TRUE}, labels are used for
 names in the data output if raw data is supplied.}
