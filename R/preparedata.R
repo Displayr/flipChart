@@ -374,7 +374,6 @@ processPastedData <- function(input.data.pasted, first.aggregate)
                                   want.row.names = input.data.pasted[[4]],
                                   us.format = input.data.pasted[[5]])),
              error = function(e) {input.data.pasted[[1]]})
-
     return(processed)
 }
 
@@ -473,7 +472,7 @@ transformTable <- function(data,
     ## Note that R outputs and pasted data will already be in decimals
     stat <- attr(data, "statistic")
     qst <- attr(data, "questions")
-    if (!is.null(stat) && !is.null(qst) && grepl("%", stat, fixed = TRUE))
+    if (!is.null(stat) && !is.null(qst) && grepl("%$", stat))
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
