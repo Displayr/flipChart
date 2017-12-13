@@ -30,7 +30,8 @@ Table.MatrixUnlabeled = matrix(1:10, 5)
 Table.MatrixLabeled = matrix(1:10, 5, dimnames = list(LETTERS[1:5], LETTERS[6:7]))
 Table.MatrixTimeSeries <- t(apply(matrix(runif(200), nrow = 4), 1, cumsum))
 rownames(Table.MatrixTimeSeries) <- c('Aardvark', 'Three toed sloth', 'Camel', 'Dog')
-colnames(Table.MatrixTimeSeries) <- as.character(seq(as.Date("1910/1/1"), by = "month", length.out = ncol(Table.MatrixTimeSeries)))
+colnames(Table.MatrixTimeSeries) <- as.character(seq(as.Date("1910/1/1"), by = "month",
+                                                     length.out = ncol(Table.MatrixTimeSeries)))
 Table.VectorTimeSeries <- Table.MatrixTimeSeries[1, ]
 
 # Tables
@@ -38,7 +39,8 @@ Table.VectorTimeSeries <- Table.MatrixTimeSeries[1, ]
 # Raw data
 RawData.XFactor = list(X = colas$d1)
 RawData.XFactor.YFactor = list(X = colas$d1, Y = colas$d2)
-RawData.XPickAny = list(X = data.frame(a = asBinary(colas$Q5_5_1),  b = asBinary(colas$Q5_5_2), c = asBinary(colas$Q5_5_3)))
+RawData.XPickAny = list(X = data.frame(a = asBinary(colas$Q5_5_1),
+                                       b = asBinary(colas$Q5_5_2), c = asBinary(colas$Q5_5_3)))
 RawData.XPickOneMulti = suppressWarnings(list(X = flipU::Select(colas, "q4a", "q4f")))
 RawData.XNumberMulti = suppressWarnings(list(X = flipTransformations::AsNumeric(RawData.XPickOneMulti[[1]], binary = FALSE)))
 set.seed(1223)
@@ -114,17 +116,26 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     }
 
 # Raw data inputs - first aggregate = TRUE, as.percentages = TRUE
-for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+    for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
+                       RawData.XPickOneMulti, RawData.XNumberMulti))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
-        pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = TRUE, as.percentages = TRUE))
-        pn <- PrepareNumbers(categories.format.list = list(get0("formCategoriesNumberType"), get0("formCategoriesDateType"), get0("formCategoriesNumberCustom"),                                          get0("formCategoriesSeparateThousands"), get0("formCategoriesDecimals")),
-                     values.format.list = list("Percentage", get0("formValuesDateType"), get0("formValuesNumberCustom"),                                          get0("formValuesSeparateThousands"),
+        pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input,
+                                           first.aggregate = TRUE, as.percentages = TRUE))
+        pn <- PrepareNumbers(categories.format.list = list(get0("formCategoriesNumberType"),
+                                                           get0("formCategoriesDateType"), get0("formCategoriesNumberCustom"),
+                                                           get0("formCategoriesSeparateThousands"), get0("formCategoriesDecimals")),
+                             values.format.list = list("Percentage", get0("formValuesDateType"), get0("formValuesNumberCustom"),
+                                                       get0("formValuesSeparateThousands"),
                                                0),
-                     hover.format.list = list(get0("formHoverNumberType"), get0("formHoverDateType"), get0("formHoverNumberCustom"),                                              get0("formHoverSeparateThousands"), get0("formHoverDecimals")),
-                     data.labels.format.list = list(get0("formDataLabelsNumberType"), get0("formDataLabelsDateType"),                                                    get0("formDataLabelsCustom"), get0("formDataLabelsSeparateThousands"),                                                    get0("formDataLabelsDecimals")))
+                             hover.format.list = list(get0("formHoverNumberType"), get0("formHoverDateType"), get0("formHoverNumberCustom"),
+                                                      get0("formHoverSeparateThousands"), get0("formHoverDecimals")),
+                             data.labels.format.list = list(get0("formDataLabelsNumberType"), get0("formDataLabelsDateType"),
+                                                            get0("formDataLabelsCustom"), get0("formDataLabelsSeparateThousands"),
+                                                            get0("formDataLabelsDecimals")))
 
-        c = (CChart(chart.type, pd$data, y.zero = FALSE, values.tick.format = pn$values.number.format, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c = (CChart(chart.type, pd$data, y.zero = FALSE, values.tick.format = pn$values.number.format, y.zero.line.width = 1,
+                    grid.show = FALSE, y.title = "Dog"))
         expect_error(print(c), NA)
     }
 

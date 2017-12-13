@@ -10,7 +10,8 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
   tidy = TRUE, transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",
-  as.percentages = FALSE, show.labels = TRUE, values.title = "")
+  hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
+  show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -22,59 +23,70 @@ a variable in \code{data}. It may not be an expression.}
 \item{weights}{An optional vector of sampling weights, or, the name
 of a variable in \code{data}. It may not be an expression.}
 
-\item{input.data.table}{Array; typically a table of some kind, which is then
-processed using \code{\link[flipTables]{AsTidyTabularData}}.}
+\item{input.data.table}{Array; typically a table of some kind,
+which is then processed using
+\code{\link[flipTables]{AsTidyTabularData}}.}
 
-\item{input.data.tables}{List of array; each component is assumed to be a
-Qtable and will be processed using.
+\item{input.data.tables}{List of array; each component is assumed
+to be a Qtable and will be processed using.
 \code{\link[flipTables]{AsTidyTabularData}}}
 
 \item{input.data.raw}{List, containing variables or data.frames.}
 
-\item{input.data.pasted}{List of length six; the first component of which is
-assumed to be from a user-entered/pasted table; will be
-processed by \code{\link{ParseUserEnteredTable}}.}
+\item{input.data.pasted}{List of length six; the first component of
+which is assumed to be from a user-entered/pasted table; will
+be processed by \code{\link{ParseUserEnteredTable}}.}
 
 \item{input.data.other}{A PickAny Multi Q variable.}
 
-\item{data.source}{Where multiple data inputs are provided, a text string can be provided
-to disambiguate. Refer to the source code for a precise understanding
-of how this works (it is not obvious and is not likely to be of any use for
-most cases, so should usually be left as a \code{NULL}).}
+\item{data.source}{Where multiple data inputs are provided, a text
+string can be provided to disambiguate. Refer to the source
+code for a precise understanding of how this works (it is not
+obvious and is not likely to be of any use for most cases, so
+should usually be left as a \code{NULL}).}
 
-\item{first.aggregate}{Logical; whether or not the input data
-needs to be aggregated in this function. A single variable is tabulated,
-2 variables are crosstabbed, and with 3 or more the mean is computed.
-been provided, a contingency table is used to aggregate.}
+\item{first.aggregate}{Logical; whether or not the input data needs
+to be aggregated in this function. A single variable is
+tabulated, 2 variables are crosstabbed, and with 3 or more the
+mean is computed.  been provided, a contingency table is used
+to aggregate.}
 
-\item{tidy}{Logical; whether or not the input data
-needs to be aggregated in this function (e.g., if an x and y variable have
-been provided, a contingency table is used to aggregate. This defaults
-to \code{TRUE}. It aggressively seeks to turn the data into a named vector
-or a matrix using \code{\link[flipTables]{TidyTabularData}}. This is not applied
-when \code{data.input.tables} are provided, or when the chart type is
-any of \code{"Scatter"}, \code{"Bean"}, \code{"Histogram"}, \code{"Density"},
-\code{"Box"}, or \code{"Violin"}.}
+\item{tidy}{Logical; whether or not the input data needs to be
+aggregated in this function (e.g., if an x and y variable have
+been provided, a contingency table is used to aggregate. This
+defaults to \code{TRUE}. It aggressively seeks to turn the data
+into a named vector or a matrix using
+\code{\link[flipTables]{TidyTabularData}}. This is not applied
+when \code{data.input.tables} are provided, or when the chart
+type is any of \code{"Scatter"}, \code{"Bean"},
+\code{"Histogram"}, \code{"Density"}, \code{"Box"}, or
+\code{"Violin"}.}
 
-\item{transpose}{Logical; should the resulting matrix (of created)  be
-transposed?}
+\item{transpose}{Logical; should the resulting matrix (of created)
+be transposed?}
 
-\item{row.names.to.remove}{Character vector or delimited string
-of row labels specifying rows to remove from the returned table; default
-is \code{c("NET", "SUM")}}
+\item{row.names.to.remove}{Character vector or delimited string of
+row labels specifying rows to remove from the returned table;
+default is \code{c("NET", "SUM")}}
 
 \item{column.names.to.remove}{Character vector or delimited string
-of column labels specifying columns to remove from the returned table;
-default is \code{c("NET", "SUM")}.}
+of column labels specifying columns to remove from the returned
+table; default is \code{c("NET", "SUM")}.}
 
-\item{split}{Character delimiter to split \code{row.names.to.remove}
-and \code{col.names.to.remove} on. Default is to split on either of
-\code{","} or \code{";"}.  Assumed to be a regular expression; see
-\code{\link{strsplit}}.}
+\item{split}{Character delimiter to split
+\code{row.names.to.remove} and \code{col.names.to.remove}
+on. Default is to split on either of \code{","} or \code{";"}.
+Assumed to be a regular expression; see \code{\link{strsplit}}.}
 
-\item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
-output table are given as percentages summing to 100. If \code{FALSE},
-column sums are given.}
+\item{hide.empty.rows.and.columns}{Logical; if \code{TRUE} empty
+rows and columns will be removed from the data.  Empty here
+meaning that a row or column contains all \code{NA} values, or
+in the case of percentages, that a row or column contains only
+0's.}
+
+\item{as.percentages}{Logical; If \code{TRUE}, aggregate values in
+the output table are given as percentages summing to 100. If
+\code{FALSE}, column sums are given.}
 
 \item{show.labels}{Logical; If \code{TRUE}, labels are used for
 names in the data output if raw data is supplied.}
@@ -83,28 +95,28 @@ names in the data output if raw data is supplied.}
 the y-axis of a column chart or the x-axis of a bar chart).}
 }
 \value{
-A list with components
-\itemize{
-\item \code{data} - If possible, a named vector or matrix, or if that is not
-    posible or a data.frame is requested, a data.frame.
-\item  \code{weights} - Numeric vector of user-supplied weights.
-\item \code{values.title} - Character string to be used for the y-axis title; will
-only be a non-empty string if some aggregation has been performed on
-\code{data}
-\item  \code{scatter.variable.indices} A named vector indicating which columns in
-\code{data} should be plotted in a scatterplot as \code{x}, \code{y}, \code{sizes},
-and \code{colors}. Is \code{NULL} if \code{chart.type} does not contain \code{"Scatter"}
-or  \code{"Bubble"}. \code{NA} is used when the data does not exist.
-}
+A list with components \itemize{ \item \code{data} - If
+    possible, a named vector or matrix, or if that is not posible
+    or a data.frame is requested, a data.frame.  \item
+    \code{weights} - Numeric vector of user-supplied weights.
+    \item \code{values.title} - Character string to be used for the
+    y-axis title; will only be a non-empty string if some
+    aggregation has been performed on \code{data} \item
+    \code{scatter.variable.indices} A named vector indicating which
+    columns in \code{data} should be plotted in a scatterplot as
+    \code{x}, \code{y}, \code{sizes}, and \code{colors}. Is
+    \code{NULL} if \code{chart.type} does not contain
+    \code{"Scatter"} or \code{"Bubble"}. \code{NA} is used when the
+    data does not exist.  }
 }
 \description{
 Prepares input data for charting.
 }
 \details{
 It is assumed that only one of \code{input.data.pasted},
-    \code{input.data.table}, \code{input.data.tables}, \code{input.data.other},
-    \code{input.data.raw} is non-NULL.  They are checked for nullity in
-    that order.
+    \code{input.data.table}, \code{input.data.tables},
+    \code{input.data.other}, \code{input.data.raw} is non-NULL.
+    They are checked for nullity in that order.
 }
 \seealso{
 \code{\link[flipTables]{AsTidyTabularData}},

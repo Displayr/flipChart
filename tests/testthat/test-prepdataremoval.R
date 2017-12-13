@@ -410,10 +410,11 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
                              first.aggregate = TRUE,
                              column.names.to.remove = c("Gender", "Income")))
     expect_equal(names(pd$data),  c("Gender", "Income"))
-    pd <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
+    expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
-                             row.names.to.remove = c("Gender", "Income"))) # As aggregating implicitly transposes
-    expect_equal(length(pd$data),  0)
+                             row.names.to.remove = c("Gender", "Income")),  # As aggregating implicitly transposes
+                 "Hiding empty elements gives empty input vector.")
+
 
 
 
@@ -425,12 +426,48 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
 
 })
 
+input.data.table <- structure(c(7.08868501529052, 3.84709480122324, 17.4617737003058
+), .Dim = 3L, statistic = "Average", .Dimnames = list(c("Colas (e.g., Coca-Cola, Pepsi Max)?",
+"Sparkling mineral water", "SUM")), name = "Number Multi", questions = c("Number Multi",
+                                                                         "SUMMARY"))
+
 test_that("PrepareData R+C removal: 1D Q-Table",
 {
-    input.data.table <- structure(c(7.08868501529052, 3.84709480122324, 17.4617737003058
-    ), .Dim = 3L, statistic = "Average", .Dimnames = list(c("Colas (e.g., Coca-Cola, Pepsi Max)?",
-    "Sparkling mineral water", "SUM")), name = "Number Multi", questions = c("Number Multi",
-                                                                             "SUMMARY"))
     out <- PrepareData(input.data.table = input.data.table, chart.type = "Bubble Chart")
     expect_equal(names(out$data), names(input.data.table)[-3])
+})
+
+test_that("PrepareData hide empty rows and columns QTable",
+{
+    input.data.table[1L] <- NA
+    out <- PrepareData(input.data.table = input.data.table, chart.type = "Bubble Chart")
+    expect_equal(out$data, input.data.table[2], check.attributes = FALSE)
+})
+
+test_that("PrepareData hide empty rows and columns list of tables",
+{
+    input.data.table[1] <- NA
+    d2 <- input.data.table
+    attr(d2, "statistic") <- "Column %"
+    d2[2] <- 0
+    x <- list(input.data.table, d2)
+    expect_error(PrepareData(input.data.tables = x, chart.type = "Bubble Chart"),
+                 "Hiding empty elements gives empty input vector.")
+    x[[2]][1] <- 5.3
+    out <- PrepareData(input.data.tables = x, chart.type = "Donut Chart",
+                       row.names.to.remove = NULL, column.names.to.remove = NULL)
+
+    expect_equal(length(out$data[[1]]), sum(!is.na(input.data.table)))
+    expect_equal(length(out$data[[2]]), sum(!is.na(x[[2]]) & x[[2]] != 0))
+})
+
+test_that("PrepareData, hide empty rows and columns, list of factors",
+{
+    data(colas, package = "flipExampleData")
+    RawData.XFactor.YFactor = list(X = colas$d1, Y = colas$d2)
+    pd <- suppressWarnings(PrepareData("Bean", input.data.raw = RawData.XFactor.YFactor))
+    expect_is(pd$data, "list")
+    expect_is(pd$data[[1L]], "factor")
+    expect_equal(levels(pd$data[[2L]]), levels(RawData.XFactor.YFactor$X))
+    expect_true(all(names(pd$data) %in% levels(RawData.XFactor.YFactor$Y)))
 })
