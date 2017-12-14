@@ -253,10 +253,17 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     {
         test_that(paste("Distribution plot: ", input.counter, chart.type),{
             pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input))
-            expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
-                values.title = "Values",
-                global.font.family = "Courier",
-                global.font.color = "Red")), NA)
+            if (inherits(input, "list") && is.factor(input[[1L]]) && length(input) == 2L)
+                expect_warning(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                    values.title = "Values",
+                    global.font.family = "Courier",
+                    global.font.color = "Red")),
+                    "^Data has been automatically been converted to being numeric")
+            else
+                expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                    values.title = "Values",
+                    global.font.family = "Courier",
+                    global.font.color = "Red")), NA)
 })}}
 
 
@@ -275,10 +282,17 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
         wgt <- runif(NROW(input[[1]]))
         sb <- wgt > .5
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, weights = wgt, subset = sb))
-        expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
-                values.title = "Values",
-                global.font.family = "Courier",
-                global.font.color = "Red")), NA)
+            if (inherits(input, "list") && is.factor(input[[1L]]) && length(input) == 2L)
+                expect_warning(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                    values.title = "Values",
+                    global.font.family = "Courier",
+                    global.font.color = "Red")),
+                    "^Data has been automatically been converted to being numeric")
+            else
+                expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
+                    values.title = "Values",
+                    global.font.family = "Courier",
+                    global.font.color = "Red")), NA)
 })}}
 
 

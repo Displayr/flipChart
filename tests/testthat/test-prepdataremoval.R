@@ -410,9 +410,9 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
                              first.aggregate = TRUE,
                              column.names.to.remove = c("Gender", "Income")))
     expect_equal(names(pd$data),  c("Gender", "Income"))
-    expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
+    expect_error(suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
-                             row.names.to.remove = c("Gender", "Income")),  # As aggregating implicitly transposes
+                             row.names.to.remove = c("Gender", "Income"))),  # As aggregating implicitly transposes
                  "Hiding empty elements gives empty input vector.")
 
 
