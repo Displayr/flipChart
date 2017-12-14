@@ -632,7 +632,7 @@ test_that("PrepareData: input and output format of raw data",
     res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = factor(1:5), Y = factor(1:5), Z = factor(1:5)),
                        as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
-    expect_equal(colnames(res$data), c("X", "Y","Z"))
+    expect_equal(colnames(res$data), c("Y","Z"))
 })
 
 
@@ -699,7 +699,7 @@ for(ct in c("Bar", "Column"))
         pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = FALSE, values.title = "dog")
         expect_equal(pd$values.title, "dog")
         pd <- PrepareData(ct, input.data.table = Q.table, first.aggregate = FALSE)
-        expect_equal(pd$values.title, "Column %")
+        expect_equal(pd$values.title, "%")
 
 })
 
@@ -728,7 +728,7 @@ test_that("Basic crosstab input",{
     expect_equal(dim(pd$data), c(327, 2))
     pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
                       transpose = TRUE, first.aggregate = TRUE))
-    expect_equal(dim(pd$data), 1:2)
+    expect_equal(length(pd$data), 2)
 
 
     set.seed(123456)
@@ -748,7 +748,7 @@ test_that("Scatterplot with duplicated variable",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 2)
+    expect_equal(length(w), 3)
     expect_equal(w[1], "Variables containing duplicated variable names have been removed (give the variables unique names if you do not want this to happen): Age.")
     expect_true(grepl("^Some categories do not appear ", w[2]))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,

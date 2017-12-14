@@ -243,7 +243,8 @@ PrepareData <- function(chart.type,
     # 4. Tailoring the data for the chart type.
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
-                                     chart.type, weights, tidy, show.labels)
+                                     chart.type, weights, tidy, show.labels,
+                                     set.rownames = !first.aggregate)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -260,18 +261,16 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
+    data <- setAxisTitles(data, chart.type, tidy, values.title)
+    values.title <- attr(data, "values.title")
+    categories.title <- attr(data, "categories.title")
+    attr(data, "values.title") <- NULL
+    attr(data, "categories.title") <- NULL
 
-    # values.title and statistic are set in asPercentages and aggregateDataForCharting. Note that 'statistic'
-    # is set as an attribute so that other functions (e.g., table rendering) can use this information
-    # later (i.e., it is not just a lazy way of avoiding a list).
-    if (values.title == "" || is.null(values.title))
-        values.title = if (is.null(yt <- attr(data, "values.title")))
-            attr(data, "statistic") else yt
-    if (is.null(values.title))
-        values.title <- ""
     list(data = data,
          weights = weights,
          values.title = values.title,
+         categories.title = categories.title,
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -296,9 +295,8 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     # the table is transposed
     if (NCOL(data) == 1)
     {
-        out <- WeightedTable(data) #, weights)
-        d.names <- list(names(out), NULL)
-        names(d.names) <- c(names(data)[1], "")
+        out <- as.matrix(WeightedTable(unlist(data))) #, weights)
+        names(dimnames(out)) <- c(names(data)[1], "")
         attr(out, "statistic") = "Count"
     }
     else if (ncol(data) == 2 && crosstab)
@@ -450,11 +448,10 @@ asPercentages <- function(data)
         data[ind.negative] <- 0
     }
 
-    if (is.matrix(data))
+    if (NCOL(data) > 1)
     {
         data <- prop.table(data, 1)
         attr(data, "statistic") <- "Row %"
-        attr(data, "values.title") <- "%"
     }
     else
     {
@@ -528,7 +525,7 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels)
+prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels, set.rownames)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -550,7 +547,6 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        attr(data, "statistic") <- NULL
         if (!is.data.frame(data) && !is.matrix(data))
             data <- TidyTabularData(data)
         # Removing duplicate columns
@@ -584,12 +580,16 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     }
     else if (!tidy) # Do nothing
     {
-        data <- data
+        if (set.rownames)
+            data <- useFirstColumnAsLabel(data)
+        #data <- data
     }
     else  # Everything else. We try and turn it into a table if we can.
     {
+        # Set rownames before TidyTabularData so that factor are not converted to numeric
+        if (set.rownames)
+            data <- useFirstColumnAsLabel(data)
         data <- tryCatch(TidyTabularData(data), error = function(e) { data })
-        data <- drop(data)
     }
     data
 }
@@ -616,3 +616,63 @@ setQlabelAsDimname <- function(x)
 #' @noRd
 isListOrRaggedArray <- function(x)
     inherits(x, "list") || (inherits(x, "array") && !all(vapply(x, length, 1L) == 1))
+
+useFirstColumnAsLabel <- function(x, remove.duplicates = FALSE)
+{
+    if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
+        return(x)
+    if (all(rownames(x) != 1:nrow(x)))
+        return(x)
+
+    ind.dup <- duplicated(x[,1])
+    if (any(ind.dup))
+    {
+        warning("Duplicated entries in '", colnames(x)[1], "': ", 
+            paste(unique(x[ind.dup,1]), collapse = ", "), 
+            ". Consider aggregating using '", colnames(x)[1], "' as Groups.")
+        if (remove.duplicates)
+        {
+            warning("Only the first unique entry is shown.")
+            x <- x[!ind.dup, ]
+        }
+        else
+            return(x)
+    }
+
+    if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
+        inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
+        rownames(x) <- format("%b %d %Y", x[,1])
+    else if (is.factor(x[,1])) # QDates are also factors 
+        rownames(x) <- make.unique(as.character(x[,1]))
+    else
+        rownames(x) <- make.unique(x[,1])
+    attr(x, "categories.title") <- colnames(x)[1]
+    x <- x[,-1, drop = FALSE]
+    return(x)
+}
+
+
+setAxisTitles <- function(x, chart.type, tidy, values.title = "")
+{
+    if (isScatter(chart.type))
+    {
+        # Charting functions will automatically use column names
+        attr(x, "categories.title") <- ""
+        attr(x, "values.title") <- ""
+
+    } else
+    {
+        attr(x, "categories.title") <- names(dimnames(x))[1]
+        if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
+            attr(x, "values.title") <- "%"
+        else
+            attr(x, "values.title") <- attr(x, "statistic")
+    }
+    if (sum(nchar(values.title)) > 0)
+        attr(x, "values.title") <- values.title
+    if (is.null(attr(x, "values.title")))
+        attr(x, "values.title") <- ""
+    if (tidy)
+        x <- drop(x)
+    x
+}
