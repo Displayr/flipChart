@@ -632,7 +632,7 @@ test_that("PrepareData: input and output format of raw data",
     res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = factor(1:5), Y = factor(1:5), Z = factor(1:5)),
                        as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
-    expect_equal(colnames(res$data), c("Y","Z"))
+    expect_equal(colnames(res$data), c("X","Y","Z"))
 })
 
 
@@ -748,7 +748,7 @@ test_that("Scatterplot with duplicated variable",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 3)
+    expect_equal(length(w), 2)
     expect_equal(w[1], "Variables containing duplicated variable names have been removed (give the variables unique names if you do not want this to happen): Age.")
     expect_true(grepl("^Some categories do not appear ", w[2]))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,

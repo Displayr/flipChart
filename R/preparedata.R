@@ -617,12 +617,17 @@ setQlabelAsDimname <- function(x)
 isListOrRaggedArray <- function(x)
     inherits(x, "list") || (inherits(x, "array") && !all(vapply(x, length, 1L) == 1))
 
-useFirstColumnAsLabel <- function(x, remove.duplicates = FALSE)
+useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
 {
     if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
         return(x)
     if (all(rownames(x) != 1:nrow(x)))
         return(x)
+    for (i in 2:ncol(x))
+    {
+        if (!is.numeric(x[,i]))
+            return(x)
+    }
 
     ind.dup <- duplicated(x[,1])
     if (any(ind.dup))
