@@ -189,10 +189,15 @@ PrepareData <- function(chart.type,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
     data <- setQlabelAsDimname(input.data.table)
+    has.rownames <- TRUE
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
+    {
         data <- asDataFrame(input.data.raw)
+        if (!is.null(data))
+            has.rownames <- FALSE
+    }
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
@@ -200,6 +205,7 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
+    has.rownames <- has.rownames && !is.null(rownames(data))
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -244,7 +250,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
                                      chart.type, weights, tidy, show.labels,
-                                     set.rownames = !first.aggregate)
+                                     set.rownames = (!first.aggregate) && (!has.rownames))
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -621,8 +627,9 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
 {
     if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
         return(x)
-    if (all(rownames(x) != 1:nrow(x)))
-        return(x)
+
+    # Rownames are only useful if the rest of the columns
+    # Make up multiple series of NUMERIC data
     for (i in 2:ncol(x))
     {
         if (!is.numeric(x[,i]))
