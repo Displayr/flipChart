@@ -42,7 +42,6 @@ PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
 
     if (!is.null(palette))
         series.colors <- ChartColors(num.colors[[1]], given.colors = palette,
-                                                      trim.light.colors = num.colors[[1]] > 2,
                                                       custom.color = palette.custom.color,
                                                       custom.gradient.start = palette.custom.gradient.start,
                                                       custom.gradient.end = palette.custom.gradient.end,
@@ -51,7 +50,6 @@ PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
 
     if (!is.null(fit.palette) && fit.palette != "Group colors")
         fit.line.colors <- ChartColors(num.colors[[1]], given.colors = fit.palette,
-                                                        trim.light.colors = num.colors[[1]] > 2,
                                                         custom.color = fit.palette.custom.color,
                                                         custom.gradient.start = fit.palette.custom.gradient.start,
                                                         custom.gradient.end = fit.palette.custom.gradient.end,
@@ -61,7 +59,6 @@ PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
 
     if (!is.null(subslice.palette) && subslice.palette != "Group colors")
         subslice.colors <- ChartColors(num.colors[[2]], given.colors = subslice.palette,
-                                                        trim.light.colors = num.colors[[2]] > 2,
                                                         custom.color = subslice.palette.custom.color,
                                                         custom.gradient.start = subslice.palette.custom.gradient.start,
                                                         custom.gradient.end = subslice.palette.custom.gradient.end,
