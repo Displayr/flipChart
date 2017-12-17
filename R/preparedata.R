@@ -161,17 +161,20 @@ PrepareData <- function(chart.type,
                 "Link to a table in 'Pages'" = 1,
                 "Link to multiple tables" = 2,
                 "Link to multiple tables in 'Pages'" = 2,
+                "Link to a variable" = 3,
                 "Link to a variable in 'Data'" = 3,
+                "Link to variables" = 3,
                 "Link to variables in 'Data'" = 3,
-                "Link to variables in 'Data'" = 3,
+                "Question Type: Pick Any" = 3,
                 "Variable Set: Binary - Multi" = 3,
-                "Variable Set: Pick Any" = 3,
+                "Question Type: Number - Multi" = 3,
                 "Variable Set: Numeric - Multi" = 3,
-                "Variable Set: Number - Multi" = 3,
                 "Type or paste in data" = 4,
                 "Use an existing R Output" = 5,
                 "Use an existing R Output in 'Pages'" = 5,
+                "Link to questions" = 3,
                 "Link to variable sets in 'Data'" = 3,
+                "Link to a question" = 3,
                 "Link to a variable in 'Data'" = 3,
 
                        { # Default
@@ -639,8 +642,8 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
     ind.dup <- duplicated(x[,1])
     if (any(ind.dup))
     {
-        warning("Duplicated entries in '", colnames(x)[1], "': ", 
-            paste(unique(x[ind.dup,1]), collapse = ", "), 
+        warning("Duplicated entries in '", colnames(x)[1], "': ",
+            paste(unique(x[ind.dup,1]), collapse = ", "),
             ". Consider aggregating using '", colnames(x)[1], "' as Groups.")
         if (remove.duplicates)
         {
@@ -654,7 +657,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
         rownames(x) <- format("%b %d %Y", x[,1])
-    else if (is.factor(x[,1])) # QDates are also factors 
+    else if (is.factor(x[,1])) # QDates are also factors
         rownames(x) <- make.unique(as.character(x[,1]))
     else
         rownames(x) <- make.unique(x[,1])
