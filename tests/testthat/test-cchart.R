@@ -282,8 +282,7 @@ test_that("Tables as an input to histograms", {
     "Don't know", "NET"), c("male", "female", "NET")), name = "Age by Gender", questions = c("Age",
 "Gender"))
     pd <- PrepareData("Column", input.data.table = t1, data.source = "Link to a table")
-
-
+    expect_equal(NCOL(pd$data), 2)
 
 })
 
