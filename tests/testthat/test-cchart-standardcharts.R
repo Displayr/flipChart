@@ -295,6 +295,21 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
                     global.font.color = "Red")), NA)
 })}}
 
+# Raw data inputs - weighted & subset
+test_that("DS-1742",
+          {
+              z = structure(list(X = structure(list(`Colas (e.g., Coca Cola, Pepsi Max)?` = c(1,
+                    1, 1, 1, 1, 1, 0, 1, 0, 1), `Sparkling mineral water` = c(1,
+                    1, 0, 0, 0, 0, 1, 0, 0, 0), Coffee = c(1, 1, 1, 1, 0, 0, 1, 1,
+                    1, 1), NET = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1)), .Names = c("Colas (e.g., Coca Cola, Pepsi Max)?",
+                    "Sparkling mineral water", "Coffee", "NET"), questiontype = "PickAny", question = "Q4.  Drink top 4 boxes (Weekly)", row.names = c(NA,
+                    10L), class = "data.frame"), Y = NULL, Z1 = NULL, Z2 = NULL,
+                        labels = NULL), .Names = c("X", "Y", "Z1", "Z2", "labels"
+                    ))
+                    expect_error(PrepareData("Venn",  TRUE, NULL, input.data.raw = z, data.source = "Question Type: Pick Any", first.aggregate = FALSE, tidy = NULL))
+                    expect_error(PrepareData("Venn",  TRUE, NULL, input.data.raw = z, data.source = "Question Type: Pick Any", first.aggregate = FALSE, tidy = TRUE), NA)
+          }
+)
 
 
 
