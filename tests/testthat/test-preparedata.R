@@ -567,12 +567,12 @@ test_that("PrepareData: aggregate works for all formats",
     set.seed(23456)
     zvec <- rpois(20, 4)
     zlen <- length(table(zvec))
-    resV <- PrepareData("Column", input.data.table = zvec, first.aggregate = TRUE)
-    resM <- PrepareData("Column", input.data.table = as.matrix(zvec), first.aggregate = TRUE)
-    resL <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE)
-    expect_equal(length(resV$data), zlen)
-    expect_equal(length(resM$data), zlen)
-    expect_equal(length(resL$data), zlen)
+    res.vector <- PrepareData("Column", input.data.table = zvec, first.aggregate = TRUE)
+    res.matrix <- PrepareData("Column", input.data.table = as.matrix(zvec), first.aggregate = TRUE)
+    res.list <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE)
+    expect_equal(length(res.vector$data), zlen)
+    expect_equal(length(res.matrix$data), zlen)
+    expect_equal(length(res.list$data), zlen)
 })
 
 test_that("PrepareData: input and output format of raw data",

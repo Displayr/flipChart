@@ -264,7 +264,7 @@ test_that("Tables as an input to histograms", {
     )), .Names = "IID - Interviewer Identification"), statistic = "Values", name = "IID - Interviewer Identification", questions = c("IID - Interviewer Identification",
 "RAW DATA"))
 
-    pd <- PrepareData("Scatter", input.data.tables = list(tab3), data.source = "Link to a table")
+    pd <- PrepareData("Scatter", input.data.tables = list(tab3), data.source = "Link to multiple tables")
     expect_error(CChart("Histogram", pd$data), NA)
 })
 
