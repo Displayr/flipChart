@@ -28,6 +28,9 @@
 #'     tabulated, 2 variables are crosstabbed, and with 3 or more the
 #'     mean is computed.  been provided, a contingency table is used
 #'     to aggregate.
+#' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
+#'     in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
+#'     using the last variable
 #' @param tidy Logical; whether or not the input data needs to be
 #'     aggregated in this function (e.g., if an x and y variable have
 #'     been provided, a contingency table is used to aggregate. This
@@ -104,6 +107,7 @@ PrepareData <- function(chart.type,
                         input.data.other = NULL,
                         data.source = NULL,
                         first.aggregate = FALSE,
+                        group.by.last = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
                         row.names.to.remove = c("NET", "SUM"),
@@ -238,7 +242,7 @@ PrepareData <- function(chart.type,
     {
         null.inputs <- sapply(input.data.raw, is.null)
         nms <- names(input.data.raw)[!null.inputs]
-        crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2
+        crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2 || group.by.last
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }
 
@@ -268,7 +272,9 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
-
+    # The next line is a hack to workaround a big. It should be removed when RS-3402 is fixed and in production for Q.
+    if (chart.type == "Table")
+        attr(data, "statistic") <- NULL
     list(data = data,
          weights = weights,
          values.title = values.title,
@@ -301,14 +307,18 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
         names(dimnames(out)) <- c(names(data)[1], "")
         attr(out, "statistic") = "Count"
     }
-    else if (ncol(data) == 2 && crosstab)
+    else if (crosstab)
     {
-        tmp.names <- names(data)
-        names(data) <- c("x", "y") # temporarily set names for formula
-        data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
-        out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
-        names(dimnames(out)) <- tmp.names
-        attr(out, "statistic") = "Counts"
+        if (NCOL(data) > 2)
+            warning("Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+        {
+            tmp.names <- names(data)
+            names(data) <- c("x", "y") # temporarily set names for formula
+            data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
+            out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
+            names(dimnames(out)) <- tmp.names
+            attr(out, "statistic") = "Counts"
+        }
     }
     else
     {
@@ -323,7 +333,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
             w <- matrix(weights, nrow(data), ncol(data))
             w[!is.na(data)] <- 0
             sum.w <- apply(w, 2, sum)
-            out <- sum.xw / w
+            out <- sum.xw / sum.w
         } else
            out <- apply(data, 2, mean, na.rm = TRUE)
         attr(out, "statistic") <- "Average"

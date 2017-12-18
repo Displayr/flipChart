@@ -32,7 +32,7 @@ test_that("flipStandardCharts::Chart chart functions",{
     CChart("Distribution", list(rnorm(100)), values.tick.format=".2f")
     CChart("Bar", c(A=1, B=2, C=3), values.tick.format=".2f")
     #CChart("Stacked Bar", cbind(X=1:10, Y=1:10), values.tick.format=".2f")
-    CChart("Bar", series.stack = T, cbind(X=1:10, Y=1:10), values.tick.format=".2f")
+    CChart("Bar", cbind(X=1:10, Y=1:10), values.tick.format=".2f", series.stack = T )
     CChart("Column", c(A=1, B=2, C=3), values.tick.format=".2f")
 })
 
@@ -54,7 +54,7 @@ test_that("selecting chart functions",{
     # Original
     pie(rep(1, 24), col = rainbow(24), radius = 0.9)
     # Called via CChart
-    CChart("pie", rep(1, 24))
+    expect_error(print(CChart("pie", rep(1, 24))), NA)
     # Data pased in as a variable
     x = rep(1, 24)
     CChart("pie", x)

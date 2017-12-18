@@ -154,7 +154,7 @@ test_that("PrepareData: crappy input to crappy data",
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
     dat[-1, 3] <- c("dog", "cat", "dog")
     pasted <- list(dat, TRUE, FALSE, TRUE, TRUE, TRUE)
-    suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar"))
+    expect_error(suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar")), NA)
 
 
 })
@@ -349,11 +349,6 @@ test_that("PrepareData: Binary variable for Venn",
     expect_named(out$data, names(input.data.raw))
     expect_is(out$data[[2]], "numeric")
     expect_equal(nrow(out$data), n.filter)
-})
-
-test_that("PrepareData works with aggregation",
-{
-
 })
 
 test_that("PrepareData works with pasted vector",

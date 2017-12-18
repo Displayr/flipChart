@@ -4,12 +4,8 @@
 #' @param chart.type The name of plot to create, e.g "100\% Stacked Column Chart"
 #' @param x The data to be plotted.
 #' @param ... Arguments to the function \code{chart.type}
-#' @param return.data Logical; If TRUE, returns the data x instead of plotting the chart.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, appends the chart data as an attribute called "ChartData".
-#' @param scatter.labels.as.hovertext Option to use ScatterChart instead of LabeledScatterChart
-#' @param series.stack Logical; Option to show charts with series stacked, in
-#'   Column, Bar, or Area chart.
 #' @details Where \code{chart.type} is not the name of an existing function. It is
 #'   always assumed that the first parameter
 #'   in the signature is a data object, which is assigned the value of \code{x}.
@@ -18,19 +14,8 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = TRUE, append.data = FALSE,
-                   series.stack = FALSE, scatter.labels.as.hovertext = TRUE)
+CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
-    if (return.data) {
-        # Vectors cannot be printed with attributes until core bug resolved
-        if (is.null(dim(x)) || length(dim(x)) == 1)
-        {
-            attr(x, "statistic") <- attr(x, "scatter.variable.indices") <- NULL
-            attr(x, "values.title") <- attr(x, "weights") <- attr(x, "InvalidVariableJoining") <- NULL
-        }
-        return(x)
-    }
-
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
     user.args <- list(...)
@@ -38,24 +23,6 @@ CChart <- function(chart.type, x,  ..., return.data = FALSE, warn.if.no.match = 
     # Identify function name
     chart.type <- gsub(" ", "", chart.type)             # spaces always removed
     chart.function <- getChartFunction(chart.type)      # substitutions for specific functions
-
-    # e.g. CChart("Column", dat, type = "Stacked")
-    if (series.stack)
-        user.args <- c(user.args, type = "Stacked")
-
-    # e.g. CChart("Pie", dat, type = "Donut")
-    # e.g. CChart("Column", dat, type = "100% Stacked Column") - deprecated
-    else if (chart.function != chart.type)
-        user.args <- c(user.args, type = chart.type)
-
-    # Use labeled scatterplots if multiple tables are provided
-    if (grepl("Scatter", chart.function) && is.list(x) && !is.data.frame(x))
-        chart.function <- "LabeledScatter"
-
-    # Use labeled scatterplots if labels are provided in (row)names
-    if (grepl("Scatter", chart.function) && !scatter.labels.as.hovertext &&
-        (!is.null(rownames(x))|| (length(dim(x)) < 2 && !is.null(names(x)))))
-        chart.function <- "LabeledScatter"
 
     fun.and.pars <- getFunctionAndParameters(chart.function)
     user.args <- substituteAxisNames(chart.function, user.args)
