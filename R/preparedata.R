@@ -191,16 +191,11 @@ PrepareData <- function(chart.type,
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
-    data <- setQlabelAsDimname(input.data.table)
-    has.rownames <- TRUE
+    data <- input.data.table
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
-    {
         data <- asDataFrame(input.data.raw)
-        if (!is.null(data))
-            has.rownames <- FALSE
-    }
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
@@ -208,7 +203,6 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
-    has.rownames <- has.rownames && !is.null(rownames(data))
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -252,8 +246,7 @@ PrepareData <- function(chart.type,
     # 4. Tailoring the data for the chart type.
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
-                                     chart.type, weights, tidy, show.labels,
-                                     set.rownames = (!first.aggregate) && (!has.rownames))
+                                     chart.type, weights, tidy, show.labels)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -343,6 +336,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' @importFrom stats sd
 asDataFrame <- function(x, remove.NULLs = TRUE)
 {
+
     if (is.data.frame(x))
         return(x)
     if (is.character(x))
@@ -350,9 +344,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
     if (is.null(x))
         return(x)
     if (is.list(x[[1]])) # In Displayr, this is typically true.
-    {
         x[[1]] <- as.data.frame(x[[1]])
-    }
 
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
@@ -383,6 +375,10 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         rownames(x) <- make.unique(as.character(rlabels), sep = "")
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
+    # This setting is used by some chart types (e.g., column),
+    # which need to know if the user provided row names (by default,
+    # anything converted to a data frame is given row names, hence the need for this attribute).
+    attr(x, "no.original.row.names") = TRUE
     x
 }
 
@@ -492,6 +488,9 @@ transformTable <- function(data,
                                        i)
         return(data)
     }
+    ## Adding dimnames
+    data <- setQlabelAsDimname(data)
+
     ## Remove rows and columns
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
                                    column.names.to.remove = column.names.to.remove, split = split)
@@ -534,7 +533,7 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels, set.rownames)
+prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -581,24 +580,17 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
                 data <- SplitVectorToList(data[[1]], data[[2]])
                 attr(data, "weights") <- weights
             }
-
-
         }
         else # Coercing data to numeric format, if required
             data <- AsNumeric(data, binary = FALSE)
+        if (!is.list(data))
+            data <- list(data)
     }
-    else if (!tidy) # Do nothing
+    else
     {
-        if (set.rownames)
-            data <- useFirstColumnAsLabel(data)
-        #data <- data
-    }
-    else  # Everything else. We try and turn it into a table if we can.
-    {
-        # Set rownames before TidyTabularData so that factor are not converted to numeric
-        if (set.rownames)
-            data <- useFirstColumnAsLabel(data)
-        data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+        data <- useFirstColumnAsLabel(data) # Set rownames before TidyTabularData so that factor are not converted to numeric
+        if (tidy)
+            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
     }
     data
 }
@@ -617,7 +609,7 @@ setQlabelAsDimname <- function(x)
 {
     qq <- attr(x, "questions")
     if (!is.null(dimnames(x)) && !is.null(qq))
-        names(dimnames(x))[1] <- qq[1]
+        names(dimnames(x))[1:length(qq)] <- qq
     x
 }
 
@@ -626,8 +618,13 @@ setQlabelAsDimname <- function(x)
 isListOrRaggedArray <- function(x)
     inherits(x, "list") || (inherits(x, "array") && !all(vapply(x, length, 1L) == 1))
 
+
+#' @noRd
 useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
 {
+    if (is.null(attr(x, "no.original.row.names")) || length(dim(x)) != 2 || is.null(rownames(x)))
+        return(x)
+
     if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
         return(x)
 
