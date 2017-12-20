@@ -28,6 +28,11 @@
 #'     tabulated, 2 variables are crosstabbed, and with 3 or more the
 #'     mean is computed.  been provided, a contingency table is used
 #'     to aggregate.
+#' @param scatter.columns.as.series Logical; If \code{TRUE}, then changes
+#'     the expected input format for scatter plots. Multiple columns in input table
+#'     (except the first column used as the x-values) are taken to be 
+#'     the y-coordinates of multiple data series, which will shown in
+#'     different colors. Bubble charts cannot be used in this case. 
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
 #'     in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
@@ -107,6 +112,7 @@ PrepareData <- function(chart.type,
                         input.data.other = NULL,
                         data.source = NULL,
                         first.aggregate = FALSE,
+                        scatter.columns.as.series = FALSE,
                         group.by.last = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
@@ -207,7 +213,6 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
-
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
@@ -234,7 +239,6 @@ PrepareData <- function(chart.type,
                     " observations remain.")
         weights <- setWeight(data, weights)
     }
-
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
@@ -245,12 +249,12 @@ PrepareData <- function(chart.type,
         crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2 || group.by.last
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }
-
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
-                                     chart.type, weights, tidy, show.labels)
+                                     chart.type, weights, tidy, show.labels,
+                                     scatter.columns.as.series)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -436,10 +440,14 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     {
         if (i > len)
             return(NA)
+        # This works as long X, Y, Z1 and Z2 have a max of 1 variable each
+        # Don't call this function if mult variables are read as series
         lst <- input.data.raw[[i]]
         if (is.null(lst))
             return(NA)
         nms <- names(data)
+
+        # Assumes that variables in input.data.raw always have labels
         nm <- names(attr(lst, "label"))
         nm <- attr(lst, "label")
         if (!show.labels)
@@ -543,7 +551,7 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels)
+prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels, scatter.columns.as.series)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -565,11 +573,42 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (!is.data.frame(data) && !is.matrix(data))
-            data <- TidyTabularData(data)
-        # Removing duplicate columns
-        if (any(d <- duplicated(names(data))))
-            data <- data[, !d]
+        if (scatter.columns.as.series || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        {
+            n <- nrow(data)
+            # When no X-coord is supplied
+            if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
+            {
+                m <- length(input.data.raw$Y)
+                y.ind <- 1:m
+                rep(1:n, m)
+            }
+            else
+            {
+                m <- ncol(data) - 1
+                y.ind <- (1:m) + 1
+                xvar <- rep(data[,1], m)
+            }
+            newdata <- data.frame(X = xvar,
+                                  Y = as.vector(unlist(data[,y.ind])),
+                                  Groups = rep(colnames(data)[y.ind], each = n))
+            if (!is.null(input.data.raw$X))
+                colnames(newdata)[1] <- colnames(data)[1]
+            data <- newdata
+            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3)
+
+        } else
+        {
+            if (!is.data.frame(data) && !is.matrix(data))
+                data <- TidyTabularData(data)
+            # Removing duplicate columns
+            if (any(d <- duplicated(names(data))))
+                data <- data[, !d]
+            if (NCOL(data) > 4)
+                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ","),
+                    " not used in Scatter plot.",
+                    " Consider selecting 'Treat columns as data series'.")
+        }
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
         attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
     }
@@ -618,8 +657,9 @@ setWeight <- function(x, weights)
 setQlabelAsDimname <- function(x)
 {
     qq <- attr(x, "questions")
+    mlen <- min(length(qq), length(dimnames(x)), na.rm = TRUE)
     if (!is.null(dimnames(x)) && !is.null(qq))
-        names(dimnames(x))[1:length(qq)] <- qq
+        names(dimnames(x))[1:mlen] <- qq[1:mlen]
     x
 }
 

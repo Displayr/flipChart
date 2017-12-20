@@ -8,11 +8,11 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
-  group.by.last = FALSE, tidy = TRUE, transpose = FALSE,
-  row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
-  "SUM"), split = "[;,]", hide.empty.rows.and.columns = TRUE,
-  as.percentages = FALSE, date.format = "Automatic", show.labels = TRUE,
-  values.title = "")
+  scatter.columns.as.series = FALSE, group.by.last = FALSE, tidy = TRUE,
+  transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
+  column.names.to.remove = c("NET", "SUM"), split = "[;,]",
+  hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
+  date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -51,6 +51,12 @@ to be aggregated in this function. A single variable is
 tabulated, 2 variables are crosstabbed, and with 3 or more the
 mean is computed.  been provided, a contingency table is used
 to aggregate.}
+
+\item{scatter.columns.as.series}{Logical; If \code{TRUE}, then changes
+the expected input format for scatter plots. Multiple columns in input table
+(except the first column used as the x-values) are taken to be 
+the y-coordinates of multiple data series, which will shown in
+different colors. Bubble charts cannot be used in this case.}
 
 \item{group.by.last}{Logical; \code{TRUE} and \code{first.aggregate} and there is data
 in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated

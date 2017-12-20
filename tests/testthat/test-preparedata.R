@@ -19,6 +19,16 @@ test_that("JSON list (Bug DS-1608)", {
 
 test_that("PrepareData: single table, single stat",
 {
+    singleQ <- structure(c(13.4556574923547, 11.9266055045872, 10.0917431192661,
+        11.0091743119266, 10.7033639143731, 8.25688073394496, 12.2324159021407,
+        15.5963302752294, 6.72782874617737, 100), .Dim = 10L, statistic = "%",
+        .Dimnames = list(c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+        "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET")), name = "Q3. Age",
+        questions = c("Q3. Age", "SUMMARY"))
+
+    expect_error(PrepareData("Column", input.data.table = singleQ), NA)
+    expect_error(PrepareData("Column", input.data.table = singleQ, tidy = FALSE), NA)
+
     input.data.table <- structure(c(48.3870967741936, 51.6129032258064, 100, 52.6315789473684,
         47.3684210526316, 100, 48.936170212766, 51.063829787234, 100,
         42.3076923076923, 57.6923076923077, 100, 55.3191489361702, 44.6808510638298,
@@ -575,8 +585,12 @@ test_that("PrepareData: input and output format of raw data",
     set.seed(1234)
     xx <- rpois(100, 4)
     yy <- rpois(100, 2)
+    y2 <- rpois(100, 2)
     attr(xx, "label") <- "VarA"
     attr(yy, "label") <- "VarB"
+    attr(y2, "label") <- "VarC"
+
+    #res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)))
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")
