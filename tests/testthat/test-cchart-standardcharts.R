@@ -60,7 +60,7 @@ z <- Table.MatrixTimeSeries
 z <- matrix(as.character(z), ncol = ncol(z))
 z <- cbind(rownames(Table.MatrixTimeSeries), z)
 z <- rbind(c("", colnames(Table.MatrixTimeSeries)), z)
-Pasted.MatrixTimeSeries <- list(z, TRUE, FALSE, TRUE, TRUE, TRUE)
+Pasted.MatrixTimeSeries <- list(t(z), TRUE, FALSE, TRUE, TRUE, TRUE)
 
 # Other
 Other.List <- list(Normal = rnorm(1000), "Poisson with unit lamda" = rpois(1000, 1), Exponential = rexp(1000))
@@ -69,7 +69,7 @@ Other.Unnamed.Vector <- Other.List[[1]]
 Other.data.frame = as.data.frame(Other.List)
 Other.Named.Vector <- Table.Vector
 Other.Matrix <- Table.MatrixLabeled
-Other.MatrixTimeSeries <- Table.MatrixTimeSeries
+Other.MatrixTimeSeries <- t(Table.MatrixTimeSeries)
 Other.JSON <- r.output <- list(
                     list("sets"= list(0), "label"= "Like", "size"= 99.9),
                     list("sets"= list(1), "label"= "Love", "size"= 50.1),
@@ -198,7 +198,6 @@ test_that("Venn",
 ##############################################################################
 #Other.TimeSeries <- Table.MatrixTimeSeries  Table.VectorTimeSeries
 
-#Pasted.MatrixTimeSeries
 
 test_that("Stream",
           {
@@ -209,11 +208,11 @@ test_that("Stream",
                                    data.labels.format.list = list(get0("formDataLabelsNumberType"), get0("formDataLabelsDateType"),                                                    get0("formDataLabelsCustom"), get0("formDataLabelsSeparateThousands"),                                                    get0("formDataLabelsDecimals")))
 
 
-              pd <- PrepareData("Stream", input.data.table = Table.MatrixTimeSeries)
+              pd <- PrepareData("Stream", input.data.table = t(Table.MatrixTimeSeries))
               CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.table = Table.VectorTimeSeries)
-              expect_error(CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format))
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.pasted = Pasted.MatrixTimeSeries)
               CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
