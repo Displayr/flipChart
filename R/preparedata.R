@@ -30,9 +30,9 @@
 #'     to aggregate.
 #' @param scatter.columns.as.series Logical; If \code{TRUE}, then changes
 #'     the expected input format for scatter plots. Multiple columns in input table
-#'     (except the first column used as the x-values) are taken to be 
+#'     (except the first column used as the x-values) are taken to be
 #'     the y-coordinates of multiple data series, which will shown in
-#'     different colors. Bubble charts cannot be used in this case. 
+#'     different colors. Bubble charts cannot be used in this case.
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
 #'     in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
@@ -209,7 +209,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
-        data <- processPastedData(input.data.pasted, first.aggregate)
+        data <- processPastedData(input.data.pasted, first.aggregate, tidy)
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
@@ -355,6 +355,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         return(x)
     if (is.character(x))
         x <- TidyTabularData(x)
+
     if (is.null(x))
         return(x)
     if (is.list(x[[1]])) # In Displayr, this is typically true.
@@ -402,14 +403,15 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, first.aggregate)
+processPastedData <- function(input.data.pasted, first.aggregate, tidy)
 {
     processed <- tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = first.aggregate,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
-                                  us.format = input.data.pasted[[5]])),
+                                  us.format = input.data.pasted[[5]],
+                                  warn = tidy)),
              error = function(e) {input.data.pasted[[1]]})
     return(processed)
 }

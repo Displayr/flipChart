@@ -133,10 +133,10 @@ test_that("PrepareData: multiple existing tables",
 
 test_that("PrepareData: pasted raw data",
 {
-    ## list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
+    ## list(get0("formPastedData"),get0("formPastedFactor"), get0("formPastedColumnNames"),
     ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
-    pasted <- list(dat, TRUE, TRUE, TRUE, TRUE, TRUE)
+    pasted <- list(dat, TRUE, TRUE, TRUE, TRUE)
     out <- PrepareData(input.data.table = NULL, input.data.raw = NULL, input.data.tables = NULL, input.data.other = NULL,
                        input.data.pasted = pasted, chart.type = "Column")
     expect_is(out$data, "matrix")
@@ -159,11 +159,11 @@ test_that("PrepareData: pasted raw data",
 
 test_that("PrepareData: crappy input to crappy data",
 {
-    ## list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
+    ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
     ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
     dat[-1, 3] <- c("dog", "cat", "dog")
-    pasted <- list(dat, TRUE, FALSE, TRUE, TRUE, TRUE)
+    pasted <- list(dat, FALSE, TRUE, TRUE, TRUE)
     expect_error(suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar")), NA)
 
 
@@ -176,7 +176,7 @@ test_that("PrepareData: pasted, non-raw data",
                       "3", "2", "1", "1", "col 5", "3", "2", "1", "1", "col 6", "3",
                       "2", "1", "1", "col 7", "3", "2", "1", "1", "col 8", "3", "2",
                       "1", "1"), .Dim = c(5L, 9L))
-    pasted <- list(dat, FALSE, NULL, NULL, NULL, NULL)
+    pasted <- list(dat, NULL, NULL, NULL, NULL)
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
@@ -185,6 +185,30 @@ test_that("PrepareData: pasted, non-raw data",
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 })
+
+test_that("DS-1687: no warning if non-tidy pasted data",
+{
+    dat <- structure(c("", "a", "v", "c", "d", "col 1", "2", "3", "1", "2",
+                      "col 2", "3", "2", "1", "1", "col 3", "3", "2", "1", "1", "col 4",
+                      "3", "2", "1", "1", "col 5", "3", "2", "1", "1", "col 6", "3",
+                      "2", "1", "1", "col 7", "3", "2", "1", "1", "col 8", "3", "2",
+                      "1", "1"), .Dim = c(5L, 9L))
+    dat[2, 2] <- "TEXT"
+    pasted <- list(dat, NULL, NULL, NULL, NULL)
+    expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = TRUE,
+                               first.aggregate = FALSE),
+                   "data could not be interpreted")
+    expect_is(out$data, "matrix")
+    expect_true(is.character(out$data))
+    expect_equal(dim(out$data), dim(dat) - c(1, 1))
+
+    expect_silent(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = FALSE,
+                               first.aggregate = FALSE))
+    expect_is(out$data, "matrix")
+    expect_true(is.character(out$data))
+    expect_equal(dim(out$data), dim(dat) - c(1, 1))
+})
+
 
 test_that("PrepareData: Binary variable for Venn",
 {
