@@ -389,10 +389,6 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         rownames(x) <- make.unique(as.character(rlabels), sep = "")
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
-    # This setting is used by some chart types (e.g., column),
-    # which need to know if the user provided row names (by default,
-    # anything converted to a data frame is given row names, hence the need for this attribute).
-    attr(x, "no.original.row.names") = TRUE
     x
 }
 
@@ -605,7 +601,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
             if (NCOL(data) > 4)
-                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ","),
+                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider selecting 'Treat columns as data series'.")
         }
@@ -672,10 +668,7 @@ isListOrRaggedArray <- function(x)
 #' @noRd
 useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
 {
-    if (is.null(attr(x, "no.original.row.names")) || length(dim(x)) != 2 || is.null(rownames(x)))
-        return(x)
-
-    if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
+    if (length(dim(x)) != 2 || ncol(x) == 1 || is.numeric(x[,1]))
         return(x)
 
     # Rownames are only useful if the rest of the columns
@@ -686,6 +679,17 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
             return(x)
     }
 
+    # Ignore numeric/default rownames
+    # Unnamed matrices would have been given default names 'Row 1', 'Row 2',
+    # Filtered variables would have numeric rownames
+    # corresponding to index in original dataset
+    # Note that this overwrites matrices with numeric rownames only if
+    # the first column was also a non-numeric (string/factor/date) variable
+    tmp.names <- gsub("Row ", "", rownames(x))
+    if (any(is.na(as.numeric(tmp.names))))
+        return(x)
+
+    # Rownames must be unique, so remove rows with duplicates in column 1
     ind.dup <- duplicated(x[,1])
     if (any(ind.dup))
     {
@@ -701,9 +705,10 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
             return(x)
     }
 
+    #print(format(x[,1], "%b %d %Y"))
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
-        rownames(x) <- format("%b %d %Y", x[,1])
+        rownames(x) <- format(x[,1], "%b %d %Y")
     else if (is.factor(x[,1])) # QDates are also factors
         rownames(x) <- make.unique(as.character(x[,1]))
     else

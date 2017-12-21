@@ -83,8 +83,8 @@ test_that("PrepareData R+C removal: pasted, non-raw table",
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
-    out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type, subset = QFilter,
-                       weights = QPopulationWeight)
+    expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type,
+                   subset = QFilter, weights = QPopulationWeight))
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), dim(dat) - c(3, 3))
 })
