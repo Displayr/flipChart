@@ -532,7 +532,8 @@ transformTable <- function(data,
     if (as.percentages)
     {
         if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
-            warning("The data has not been converted to percentages. To convert to percentages, ",
+            warning("The data has not been converted to percentages, although it may still be ",
+                    "displayed as percentages. To convert to percentages, ",
                     "first convert to a more suitable type (e.g., create a table)")
         else
             data <- asPercentages(data)
