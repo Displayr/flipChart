@@ -209,7 +209,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
-        data <- processPastedData(input.data.pasted, first.aggregate)
+        data <- processPastedData(input.data.pasted, first.aggregate, tidy)
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
@@ -362,7 +362,12 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
         x <- TidyTabularData(x)
+<<<<<<< HEAD
     else if (is.null(x))
+=======
+
+    if (is.null(x))
+>>>>>>> origin/master
         return(x)
     else if (is.list(x[[1]])) # In Displayr, this is typically true.
         x[[1]] <- as.data.frame(x[[1]])
@@ -396,10 +401,6 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         rownames(x) <- make.unique(as.character(rlabels), sep = "")
     if (invalid.joining)
         attr(x, "InvalidVariableJoining")
-    # This setting is used by some chart types (e.g., column),
-    # which need to know if the user provided row names (by default,
-    # anything converted to a data frame is given row names, hence the need for this attribute).
-    attr(x, "no.original.row.names") = TRUE
     x
 }
 
@@ -409,14 +410,15 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, first.aggregate)
+processPastedData <- function(input.data.pasted, first.aggregate, tidy)
 {
     processed <- tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = first.aggregate,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
-                                  us.format = input.data.pasted[[5]])),
+                                  us.format = input.data.pasted[[5]],
+                                  warn = tidy)),
              error = function(e) {input.data.pasted[[1]]})
     return(processed)
 }
@@ -545,6 +547,7 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
+<<<<<<< HEAD
         percentages.warning <- "The data has not been converted to percentages/proportions. To convert to percentages, first convert to a more suitable type (e.g., create a table)."
         if (!is.numeric(data) && !is.data.frame(data))
             warning(percentages.warning)
@@ -561,6 +564,12 @@ transformTable <- function(data,
                 attr(data, "statistic") = "%"
             }
         }
+=======
+        if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
+            warning("The data has not been converted to percentages, although it may still be ",
+                    "displayed as percentages. To convert to percentages, ",
+                    "first convert to a more suitable type (e.g., create a table)")
+>>>>>>> origin/master
         else
             data <- asPercentages(data)
     }
@@ -630,7 +639,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
             if (NCOL(data) > 4)
-                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ","),
+                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider selecting 'Treat columns as data series'.")
         }
@@ -697,10 +706,7 @@ isListOrRaggedArray <- function(x)
 #' @noRd
 useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
 {
-    if (is.null(attr(x, "no.original.row.names")) || length(dim(x)) != 2 || is.null(rownames(x)))
-        return(x)
-
-    if (length(dim(x)) != 2 || is.numeric(x[,1]) || ncol(x) == 1)
+    if (length(dim(x)) != 2 || ncol(x) == 1 || is.numeric(x[,1]))
         return(x)
 
     # Rownames are only useful if the rest of the columns
@@ -711,6 +717,17 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
             return(x)
     }
 
+    # Ignore numeric/default rownames
+    # Unnamed matrices would have been given default names 'Row 1', 'Row 2',
+    # Filtered variables would have numeric rownames
+    # corresponding to index in original dataset
+    # Note that this overwrites matrices with numeric rownames only if
+    # the first column was also a non-numeric (string/factor/date) variable
+    tmp.names <- gsub("Row ", "", rownames(x))
+    if (any(is.na(as.numeric(tmp.names))))
+        return(x)
+
+    # Rownames must be unique, so remove rows with duplicates in column 1
     ind.dup <- duplicated(x[,1])
     if (any(ind.dup))
     {
@@ -726,9 +743,10 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
             return(x)
     }
 
+    #print(format(x[,1], "%b %d %Y"))
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
-        rownames(x) <- format("%b %d %Y", x[,1])
+        rownames(x) <- format(x[,1], "%b %d %Y")
     else if (is.factor(x[,1])) # QDates are also factors
         rownames(x) <- make.unique(as.character(x[,1]))
     else
