@@ -180,8 +180,8 @@ test_that("PrepareData: pasted, non-raw data",
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
-    out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type, subset = QFilter,
-                       weights = QPopulationWeight)
+    expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type,
+                   subset = QFilter, weights = QPopulationWeight))
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 })
@@ -893,4 +893,15 @@ test_that("Date formatting",
     expect_error(res2 <- PrepareData("Column", input.data.table = xx, date.format="International"), NA)
     expect_equal(names(res1$data)[10], "Oct 01 2001")
     expect_equal(names(res2$data)[10], "Jan 10 2001")
+})
+
+test_that("PrepareData, automatic rownames",
+{
+    # Basic test
+    res <- PrepareData("Time Series", input.data.raw = list(X = list(
+        date=as.Date("2017-01-01") + 0:9, score=1:10)))
+    expect_equal(names(res$data), sprintf("Jan %02d 2017", 1:10))
+
+    # Check all-numeric matrix with numeric rownames is retained
+    # Checks for Scatter
 })
