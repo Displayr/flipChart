@@ -30,11 +30,11 @@
 #'     to aggregate.
 #' @param scatter.columns.as.series Logical; If \code{TRUE}, then changes
 #'     the expected input format for scatter plots. Multiple columns in input table
-#'     (except the first column used as the x-values) are taken to be 
+#'     (except the first column used as the x-values) are taken to be
 #'     the y-coordinates of multiple data series, which will shown in
-#'     different colors. Bubble charts cannot be used in this case. 
+#'     different colors. Bubble charts cannot be used in this case.
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
-#'     in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
+#'     in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
 #' @param tidy Logical; whether or not the input data needs to be
 #'     aggregated in this function (e.g., if an x and y variable have
@@ -262,8 +262,10 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- transformTable(data,
                    !is.null(input.data.tables),
+                   !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
+                   first.aggregate,
                    as.percentages,
                    hide.empty.rows.and.columns,
                    date.format)
@@ -313,16 +315,19 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     }
     else if (crosstab)
     {
-        if (NCOL(data) > 2)
-            warning("Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+        data <- as.data.frame(data)
+        k <- NCOL(data)
+        if (k > 2)
         {
-            tmp.names <- names(data)
-            names(data) <- c("x", "y") # temporarily set names for formula
-            data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
-            out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
-            names(dimnames(out)) <- tmp.names
-            attr(out, "statistic") = "Counts"
+            warning("Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+            data <- data[, c(1, k)]
         }
+        tmp.names <- names(data)
+        names(data) <- c("x", "y") # temporarily set names for formula
+        data$w <- if (is.null(weights) || is.function(weights)) rep.int(1L, nrow(data)) else weights
+        out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
+        names(dimnames(out)) <- tmp.names
+        attr(out, "statistic") = "Counts"
     }
     else
     {
@@ -353,11 +358,13 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
 
     if (is.data.frame(x))
         return(x)
-    if (is.character(x))
+    if (is.list(x) && length(x) == 1)
+        return(as.data.frame(x[[1]]))
+    else if (is.character(x))
         x <- TidyTabularData(x)
-    if (is.null(x))
+    else if (is.null(x))
         return(x)
-    if (is.list(x[[1]])) # In Displayr, this is typically true.
+    else if (is.list(x[[1]])) # In Displayr, this is typically true.
         x[[1]] <- as.data.frame(x[[1]])
 
     # if labels are present in raw data, extract and store for later
@@ -488,8 +495,10 @@ asPercentages <- function(data)
 #' @importFrom flipTime AsDate
 transformTable <- function(data,
                            multiple.tables,
+                           is.raw.data,
                            row.names.to.remove, column.names.to.remove, split,
                            transpose,
+                           first.aggregate,
                            as.percentages,
                            hide.empty.rows.and.columns,
                            date.format,
@@ -498,11 +507,14 @@ transformTable <- function(data,
     if (multiple.tables)
     {
         for(i in seq_along(data))
-            data[[i]] = transformTable(data[[i]], FALSE,
+            data[[i]] = transformTable(data[[i]],
+                                       FALSE,
                                        row.names.to.remove, column.names.to.remove, split,
                                        transpose,
+                                       first.aggregate,
                                        as.percentages,
                                        hide.empty.rows.and.columns,
+                                       date.format,
                                        i)
         return(data)
     }
@@ -533,9 +545,22 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
-        if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
-            warning("The data has not been converted to percentages. To convert to percentages, ",
-                    "first convert to a more suitable type (e.g., create a table)")
+        percentages.warning <- "The data has not been converted to percentages/proportions. To convert to percentages, first convert to a more suitable type (e.g., create a table)."
+        if (!is.numeric(data) && !is.data.frame(data))
+            warning(percentages.warning)
+        else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
+            warning(percentages.warning)
+        else if (is.raw.data && !first.aggregate)
+        {
+            if (is.null(nrow(data)))
+                warning(percentages.warning)
+            else
+            {
+                data <- data / nrow(data)
+                warning("Percentages have been computed by dividing the data values by the number of rows in the data. If this is not appropriate, first convert to a more suitable type (e.g., create a table).")
+                attr(data, "statistic") = "%"
+            }
+        }
         else
             data <- asPercentages(data)
     }

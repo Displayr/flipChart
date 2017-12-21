@@ -870,3 +870,31 @@ test_that("Date formatting",
     expect_equal(names(res1$data)[10], "Oct 01 2001")
     expect_equal(names(res2$data)[10], "Jan 10 2001")
 })
+
+
+test_that("as.percentages from pasted data and raw data work by dividing by nrow",{
+ z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
+ zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
+ expect_equal(zz$data[1,1], 1/3)
+ zz = PrepareData("Venn", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE)
+ expect_equal(zz$data[1,1], 1/3)
+})
+
+
+test_that("crosstabs from pasted data and table",{
+ z = matrix(c(1,1,1,1,2,2,2,2,rep(NA,8), 1,1,2,2,1,1,2,2), ncol = 3, dimnames = list(1:8, LETTERS[1:3]))
+ # Computing the average - variable with all missing data
+ zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(1.5, 1.5))
+ # Creating a crosstab - with three variables
+ expect_warnings(zzz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
+              "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+ expect_equal(zzz$data, 2)
+ # Creating a crosstab with two variables
+ zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
+ expect_equal(zz$data, 2)
+ # Creating a crosstab with two variables
+ zz = PrepareData("Column", input.data.pasted = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
+ expect_equal(zz$data, 2)
+
+})

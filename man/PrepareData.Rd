@@ -54,12 +54,12 @@ to aggregate.}
 
 \item{scatter.columns.as.series}{Logical; If \code{TRUE}, then changes
 the expected input format for scatter plots. Multiple columns in input table
-(except the first column used as the x-values) are taken to be 
+(except the first column used as the x-values) are taken to be
 the y-coordinates of multiple data series, which will shown in
 different colors. Bubble charts cannot be used in this case.}
 
 \item{group.by.last}{Logical; \code{TRUE} and \code{first.aggregate} and there is data
-in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
+in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 using the last variable}
 
 \item{tidy}{Logical; whether or not the input data needs to be
