@@ -541,7 +541,7 @@ transformTable <- function(data,
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
-    if (as.percentages && !chart.type == "Venn") # Venn has its own special processes for dealing with percentages
+    if (as.percentages)
     {
         percentages.warning <- "The data has not been converted to percentages/proportions. To convert to percentages, first convert to a more suitable type (e.g., create a table)."
         if (!is.numeric(data) && !is.data.frame(data))

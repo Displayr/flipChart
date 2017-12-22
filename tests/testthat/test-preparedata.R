@@ -895,7 +895,6 @@ test_that("Date formatting",
     expect_equal(names(res2$data)[10], "Jan 10 2001")
 })
 
-<<<<<<< HEAD
 
 test_that("as.percentages from pasted data and raw data work by dividing by nrow",{
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
