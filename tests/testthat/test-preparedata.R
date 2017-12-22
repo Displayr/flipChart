@@ -925,7 +925,7 @@ test_that("crosstabs from pasted data and table",{
  expect_equal(as.numeric(zz$data), c(1.5, 1.5))
  # Computing the average - variable with all missing data and weights
  zz = PrepareData("Column", input.data.raw = list(z), weights = z[,1], as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
- expect_equal(as.numeric(zz$data), c(1 + 2/3, 1.4))
+ expect_equal(as.numeric(zz$data), c(1 + 2/3, 1.5))
  # Computing the average - variable with all missing data and some dodgy weights
  zz = PrepareData("Column", input.data.raw = list(z), weights = c(0,0,NA,-1,1,1,1,1), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(2, 1.5))

@@ -205,7 +205,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
-        data <- asDataFrame(input.data.raw)
+        data <- coerceToDataFrame(input.data.raw)
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
@@ -332,7 +332,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     else
     {
         if (!is.matrix(data) && !is.numeric(data))
-            data <- asDataFrame(data)
+            data <- coerceToDataFrame(data)
         if (is.data.frame(data))
             data <- AsNumeric(data, binary = FALSE)
         if (weighted <- !is.null(weights))
@@ -350,10 +350,12 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     out
 }
 
-
+#' coerceToDataFrame
+#'
+#' @description Takes variou formats of data and forces them to become a data frame.
 #' @importFrom flipTables TidyTabularData
 #' @importFrom stats sd
-asDataFrame <- function(x, remove.NULLs = TRUE)
+coerceToDataFrame <- function(x, remove.NULLs = TRUE)
 {
 
     if (is.data.frame(x))
@@ -591,7 +593,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     }
     else if (chart.type == "Sankey")
     {
-        data <- asDataFrame(data)
+        data <- coerceToDataFrame(data)
     }
     # Scatterplots
     else if (isScatter(chart.type))
