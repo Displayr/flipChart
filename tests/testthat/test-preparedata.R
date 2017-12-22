@@ -630,13 +630,20 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res2$values.title, "%")
     expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
 
-    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
+                        group.by.last = TRUE,
                         as.percentages = TRUE, transpose = TRUE)
+    expect_equal(res3$values.title, "%")
+    expect_equal(sum(sum(res3$data)),8)
+
+    res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+                        group.by.last = TRUE,
+                        as.percentages = TRUE, transpose = TRUE))
     expect_equal(res3$values.title, "%")
     expect_equal(rownames(res3$data), c("VarA", "VarB"))
 
-    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
-                        as.percentages = TRUE, transpose = FALSE)
+        res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+                        as.percentages = TRUE, transpose = FALSE))
     expect_equal(res3$values.title, "%")
     expect_equal(colnames(res3$data), c("VarA", "VarB"))
 
@@ -839,12 +846,12 @@ test_that("Pasted data",{
     # Line chart
     data(colas, package = "flipExampleData")
     #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
-    pd <- PrepareData("Pie", TRUE, NULL,
-    input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+    pd <- suppressWarnings(PrepareData("Pie", TRUE, NULL,
+        input.data.pasted = list(x, NULL, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
                       as.percentages = TRUE,
-                      values.title = NULL)
+                      values.title = NULL))
     expect_equal(NCOL(pd$data), 2)
 })
 
@@ -896,13 +903,19 @@ test_that("Date formatting",
 })
 
 
-test_that("as.percentages from pasted data and raw data work by dividing by nrow",{
+test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
  zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
- expect_equal(zz$data[1,1], 1/3)
+ expect_equal(zz$data[1,1], 1)
  zz = PrepareData("Venn", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE)
+ expect_equal(zz$data[1,1], 1)
+ z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
+ zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE))
+ expect_equal(zz$data[1,1], 1/3)
+ zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE))
  expect_equal(zz$data[1,1], 1/3)
 })
+
 
 
 test_that("crosstabs from pasted data and table",{
@@ -911,8 +924,9 @@ test_that("crosstabs from pasted data and table",{
  zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(1.5, 1.5))
  # Creating a crosstab - with three variables
- expect_warnings(zzz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
+ expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
               "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+ zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
  expect_equal(zzz$data, 2)
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
@@ -1039,7 +1053,7 @@ test_that("Prepare data with as.percentages and Pick Any inputs to a Venn Diagra
         "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Max", "NET"), row.names = c(NA,
         327L), questiontype = "PickAny", question = "Q6. Brand preference")
      zz = PrepareData("Venn", input.data.raw = list(X = b1), as.percentages = TRUE)
-     Venn(zz$data)
+     expect_error(Venn(zz$data), FALSE)
 
 
 })
