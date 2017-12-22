@@ -222,17 +222,19 @@ PrepareData <- function(chart.type,
         missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey"))
             "Exclude cases with missing data" else "Use partial data"
         n <- NROW(data)
-        if (!is.null(attr(data, "InvalidVariableJoining")))
+        if (invalid.joining <- !is.null(attr(data, "InvalidVariableJoining")))
         {
-            if (!isDistribution(chart.type))
-                warning("The variables have been automatically spliced together, ",
-                        "without any knowledge of which case should be matched with ",
-                        "which. This may cause the results to be misleading.")
+            if (!isDistribution(chart.type) && length(subset) > 1 || NROW(weights) > 1)
+                warning("The variables have been automatically spliced together without ","
+                        any knowledge of which case should be matched with which. ",
+                        "This may cause the results to be misleading.")
         }
         data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
             suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing))
         else
             TidyRawData(data, subset = subset, weights = weights, missing = missing)
+        if (invalid.joining)
+            attr(data, "InvalidVariableJoining") <- TRUE
         n.post <- NROW(data)
         if (missing == "Exclude cases with missing data" && n.post < n)
             warning("After removing missing values and/or filtering, ", n.post,
@@ -247,6 +249,9 @@ PrepareData <- function(chart.type,
         null.inputs <- sapply(input.data.raw, is.null)
         nms <- names(input.data.raw)[!null.inputs]
         crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2 || group.by.last
+        if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
+            warning("The variables being crosstabbed have different lengths; ","
+                    it is likely that the crosstab is invalid.")
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }
     ###########################################################################
@@ -278,7 +283,8 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
-    # The next line is a hack to workaround a big. It should be removed when RS-3402 is fixed and in production for Q.
+    # The next line is a hack to workaround a big. It should be removed when
+    # RS-3402 is fixed and in production for Q.
     if (chart.type == "Table")
         attr(data, "statistic") <- NULL
     list(data = data,
@@ -304,12 +310,14 @@ isScatter <- function(chart.type)
 #' @importFrom flipTransformations AsNumeric
 aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 {
+    weighted <- !is.null(weights)
+    weights <- if (is.null(weights) || is.function(weights)) rep.int(1L, NROW(data)) else weights
     # In tables that show aggregated tables, only the x-axis title is
     # taken from dimnames. But both names should be set in case
     # the table is transposed
     if (NCOL(data) == 1)
     {
-        out <- as.matrix(WeightedTable(unlist(data))) #, weights)
+        out <- as.matrix(WeightedTable(unlist(data), weights = weights))
         names(dimnames(out)) <- c(names(data)[1], "")
         attr(out, "statistic") = "Count"
     }
@@ -319,12 +327,15 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
         k <- NCOL(data)
         if (k > 2)
         {
-            warning("Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+            warning("Multiple variables have been provided. Only the first and last ",
+                    "variable have been used to create the crosstab. If you wish to ",
+                    "create a crosstab with more than two variables, you need to ",
+                    "instead add the data as a 'Data Set' instead add a 'Data Set'.")
             data <- data[, c(1, k)]
         }
         tmp.names <- names(data)
         names(data) <- c("x", "y") # temporarily set names for formula
-        data$w <- if (is.null(weights) || is.function(weights)) rep.int(1L, nrow(data)) else weights
+        data$w <- weights
         out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
         names(dimnames(out)) <- tmp.names
         attr(out, "statistic") = "Counts"
@@ -335,7 +346,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
             data <- coerceToDataFrame(data)
         if (is.data.frame(data))
             data <- AsNumeric(data, binary = FALSE)
-        if (weighted <- !is.null(weights))
+        if (weighted)
         {
             xw <- sweep(data, 1, weights, "*")
             sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
@@ -352,31 +363,56 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 
 #' coerceToDataFrame
 #'
-#' @description Takes variou formats of data and forces them to become a data frame.
+#' @description Takes various formats of data (in particular, lists of variabels and
+#' data.frames, and forces them to become a data frame. Where the coercion
+#' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
+#' is provided.
 #' @importFrom flipTables TidyTabularData
+#' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
 coerceToDataFrame <- function(x, remove.NULLs = TRUE)
 {
-
-    if (is.data.frame(x))
+    if (is.null(x))
         return(x)
-    if (is.list(x) && length(x) == 1)
+    else if (is.data.frame(x))
+        return(x)
+    if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
+    {
         x <- TidyTabularData(x)
-    else if (is.null(x))
-        return(x)
-    else if (is.list(x[[1]])) # In Displayr, this is typically true.
-        x[[1]] <- as.data.frame(x[[1]])
+        return(as.data.frame)
+    }
+    #else if (is.list(x[[1]])) # In Displayr, this is typically true.
+    #    x[[1]] <- as.data.frame(x[[1]])
 
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
     x$labels <- NULL
 
+    # Dealing with situation where first element of x is a list containing only one thing.
+    if (is.list(x[[1]]) && length(x[[1]]) == 1)
+        x[[1]] <- x[[1]][[1]]
+
+
+    if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
+    {
+        x = x[[1]]
+        if (is.null(rlabels) && !is.atomic(x))
+        {
+            rlabels <- x$labels
+            x$labels <- NULL
+        }
+    }
+    # Checking to see if all the elements of x are single variables.
     all.variables <- all(sapply(x, NCOL) == 1)
+    # No idea what this does. Would be nice if whoever wrote something so obscure documented it...
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
+    # Extracting variable names
     nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    # Splicing together elements of the input list
+    invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
         lengths <- sapply(x, NROW)
@@ -388,8 +424,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
                 out[1:lengths[i], i] <- x[[i]]
             x <- out
         }
-    } else
-        invalid.joining <- FALSE
+    }
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
 
     # Set column and rownames
@@ -397,7 +432,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     if (!is.null(rlabels) && nrow(x) == length(rlabels))
         rownames(x) <- make.unique(as.character(rlabels), sep = "")
     if (invalid.joining)
-        attr(x, "InvalidVariableJoining")
+        attr(x, "InvalidVariableJoining") <- TRUE
     x
 }
 
@@ -545,7 +580,8 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
-        percentages.warning <- "The data has not been converted to percentages/proportions. To convert to percentages, first convert to a more suitable type (e.g., create a table)."
+        percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
+        "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
         if (!is.numeric(data) && !is.data.frame(data))
             warning(percentages.warning)
         else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)

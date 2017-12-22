@@ -1063,3 +1063,41 @@ test_that("Prepare data with as.percentages and Pick Any inputs to a Venn Diagra
      zz = PrepareData("Venn", input.data.raw = list(X = b1), as.percentages = TRUE)
      expect_error(Venn(zz$data), NA)
 })
+
+test_that("Invalid joining",
+{
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE), NA)
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = TRUE), NA)
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = rep(TRUE, 10)),
+                   "The variables have been automatically spliced")
+    expect_error(suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = rep(TRUE, 11))),
+                   "'subset' and 'data' are required to have the same number of observations. They do not")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, weights = 1:10),
+                   "The variables have been automatically spliced together")
+    expect_error(suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, weights = 1:11)),
+                   "'weights' and 'data' are required to have the same number of observations. They do not.")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = TRUE),
+                     "The variables being crosstabbed have different lengths")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = TRUE),
+                     "The variables being crosstabbed have ")
+})
+
+
+test_that("Weighting of a frequency table",
+{
+    z = PrepareData("Column", input.data.raw = list(X = rep(1:2,5)),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(5,5))
+    z = PrepareData("Column", input.data.raw = list(X = rep(1:2,5)), weights = rep(1000,10),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(5000,5000))
+
+})
