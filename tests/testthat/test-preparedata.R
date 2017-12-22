@@ -622,8 +622,8 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$values.title, "Count")
     expect_true(is.null(dimnames(res1$data)))
 
-    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE)
-    expect_equal(res2$values.title, "")
+    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE) # We aggregate based on the variables
+    expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE)
     expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE, as.percentages = TRUE)
@@ -640,12 +640,12 @@ test_that("PrepareData: input and output format of raw data",
                         group.by.last = TRUE,
                         as.percentages = TRUE, transpose = TRUE))
     expect_equal(res3$values.title, "%")
-    expect_equal(rownames(res3$data), c("VarA", "VarB"))
+    expect_equal(rownames(res3$data), as.character(0:7))
 
-        res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+    res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
                         as.percentages = TRUE, transpose = FALSE))
     expect_equal(res3$values.title, "%")
-    expect_equal(colnames(res3$data), c("VarA", "VarB"))
+    expect_equal(rownames(res3$data), as.character(c(0:7,10)))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
                         as.percentages = TRUE, transpose = TRUE)
@@ -1122,11 +1122,11 @@ test_that("Automatic crosstab of two input variables",
     z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), c(1.2, 1.4))
     z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
-    expect_equal(z$data, zz[[1]])
+    expect_equal(as.numeric(z$data), as.numeric(zz[[1]]))
 
     # Pasted data with an irrelevant middle column
     zz = list(matrix(c(1,2,1,1,1,NA, 4, NA, 3, NA, 1,2,1,2,1), ncol = 3, dimnames = list(1:5, c("X","Irrelevant", "Y"))))
-    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE)
+    z = suppressWarnings(PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE))
     expect_equal(z$data[1,1], 3)
     z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), c(1.2, 3.5, 1.4))

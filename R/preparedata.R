@@ -246,7 +246,8 @@ PrepareData <- function(chart.type,
     # 3. Aggregate the data if so required.
     ###########################################################################
 #    maybe.crosstab <- !is.null(input.data.raw) && ncol(data) == 2 && names(input.data.raw)[1:2] == c("X", "Y")
-    maybe.crosstab <- !is.null(input.data.raw) && length(names(input.data.raw)) == 2 && names(input.data.raw)[1:2] == c("X", "Y")
+    maybe.crosstab <- !is.null(input.data.raw) && length(names(input.data.raw)) == 2 &&
+        names(input.data.raw)[1:2] == c("X", "Y") && !chart.type %in% c("Bubble", "Scatter")
     if (!isDistribution(chart.type) && (maybe.crosstab || first.aggregate))
     {
         null.inputs <- sapply(input.data.raw, is.null)
