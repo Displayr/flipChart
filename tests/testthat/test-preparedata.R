@@ -1101,3 +1101,42 @@ test_that("Weighting of a frequency table",
     expect_equal(as.numeric(z$data), c(5000,5000))
 
 })
+
+test_that("Automatic crosstab of two input variables",
+{
+    # Raw data
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(z$data[1,1], 3)
+
+    # Pasted data
+    zz = list(matrix(c(1,2,1,1,1,1,2,1,2,1), ncol = 2, dimnames = list(1:5, c("X","Y"))))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(1.2, 1.4))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(z$data, zz[[1]])
+
+    # Pasted data with an irrelevant middle column
+    zz = list(matrix(c(1,2,1,1,1,NA, 4, NA, 3, NA, 1,2,1,2,1), ncol = 3, dimnames = list(1:5, c("X","Irrelevant", "Y"))))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(1.2, 3.5, 1.4))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(z$data, zz[[1]])
+
+    # Checking histograms still work (as they should never be aggregated)
+    zz = c(1,2,1,1,1)
+    z = PrepareData("Histogram", input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(sum(unlist(z$data)), sum(zz))
+
+})
