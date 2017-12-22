@@ -923,17 +923,25 @@ test_that("crosstabs from pasted data and table",{
  # Computing the average - variable with all missing data
  zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(1.5, 1.5))
+ # Computing the average - variable with all missing data and weights
+ zz = PrepareData("Column", input.data.raw = list(z), weights = z[,1], as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(1 + 2/3, 1.4))
+ # Computing the average - variable with all missing data and some dodgy weights
+ zz = PrepareData("Column", input.data.raw = list(z), weights = c(0,0,NA,-1,1,1,1,1), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(2, 1.5))
+
+
  # Creating a crosstab - with three variables
  expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
               "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
  zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
- expect_equal(zzz$data, 2)
+ expect_equal(zzz$data[1,1], 2)
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
- expect_equal(zz$data, 2)
+ expect_equal(zz$data[1,1], 2)
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.pasted = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
- expect_equal(zz$data, 2)
+ expect_equal(zz$data[1,1], 2)
 })
 
 test_that("PrepareData, automatic rownames",
@@ -1053,7 +1061,5 @@ test_that("Prepare data with as.percentages and Pick Any inputs to a Venn Diagra
         "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Max", "NET"), row.names = c(NA,
         327L), questiontype = "PickAny", question = "Q6. Brand preference")
      zz = PrepareData("Venn", input.data.raw = list(X = b1), as.percentages = TRUE)
-     expect_error(Venn(zz$data), FALSE)
-
-
+     expect_error(Venn(zz$data), NA)
 })

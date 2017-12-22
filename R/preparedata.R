@@ -340,7 +340,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
             xw <- sweep(data, 1, weights, "*")
             sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
             w <- matrix(weights, nrow(data), ncol(data))
-            w[!is.na(data)] <- 0
+            w[is.na(data)] <- 0
             sum.w <- apply(w, 2, sum)
             out <- sum.xw / sum.w
         } else
