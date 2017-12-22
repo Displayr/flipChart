@@ -921,8 +921,8 @@ test_that("crosstabs from pasted data and table",{
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.pasted = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
  expect_equal(zz$data, 2)
+})
 
-=======
 test_that("PrepareData, automatic rownames",
 {
     # Basic test
@@ -932,5 +932,4 @@ test_that("PrepareData, automatic rownames",
 
     # Check all-numeric matrix with numeric rownames is retained
     # Checks for Scatter
->>>>>>> origin/master
 })

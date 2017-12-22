@@ -261,14 +261,14 @@ PrepareData <- function(chart.type,
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
     data <- transformTable(data,
-                   !is.null(input.data.tables),
-                   !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
+                   multiple.tables = !is.null(input.data.tables),
+                   is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
                    first.aggregate,
                    as.percentages,
-                   hide.empty.rows.and.columns,
-                   date.format)
+                   hide.empty.rows.and.columns = hide.empty.rows.and.columns,
+                   date.format = date.format)
 
     ###########################################################################
     # Finalizing the result.
@@ -362,12 +362,7 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
         x <- TidyTabularData(x)
-<<<<<<< HEAD
     else if (is.null(x))
-=======
-
-    if (is.null(x))
->>>>>>> origin/master
         return(x)
     else if (is.list(x[[1]])) # In Displayr, this is typically true.
         x[[1]] <- as.data.frame(x[[1]])
@@ -511,6 +506,7 @@ transformTable <- function(data,
         for(i in seq_along(data))
             data[[i]] = transformTable(data[[i]],
                                        FALSE,
+                                       is.raw.data,
                                        row.names.to.remove, column.names.to.remove, split,
                                        transpose,
                                        first.aggregate,
@@ -547,7 +543,6 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
-<<<<<<< HEAD
         percentages.warning <- "The data has not been converted to percentages/proportions. To convert to percentages, first convert to a more suitable type (e.g., create a table)."
         if (!is.numeric(data) && !is.data.frame(data))
             warning(percentages.warning)
@@ -564,12 +559,6 @@ transformTable <- function(data,
                 attr(data, "statistic") = "%"
             }
         }
-=======
-        if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
-            warning("The data has not been converted to percentages, although it may still be ",
-                    "displayed as percentages. To convert to percentages, ",
-                    "first convert to a more suitable type (e.g., create a table)")
->>>>>>> origin/master
         else
             data <- asPercentages(data)
     }
