@@ -265,7 +265,6 @@ PrepareData <- function(chart.type,
                                      chart.type, weights, tidy, show.labels,
                                      scatter.columns.as.series)
     weights <- setWeight(data, weights)
-
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
@@ -278,7 +277,6 @@ PrepareData <- function(chart.type,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
-
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
@@ -287,7 +285,7 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
-    # The next line is a hack to workaround a big. It should be removed when
+    # The next line is a hack to workaround a bug. It should be removed when
     # RS-3402 is fixed and in production for Q.
     if (chart.type == "Table")
         attr(data, "statistic") <- NULL
@@ -371,6 +369,8 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' data.frames, and forces them to become a data frame. Where the coercion
 #' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 #' is provided.
+#' @param x Input data
+#' @param remove.NULLS Logical; whether to remove null entries 
 #' @importFrom flipTables TidyTabularData
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
@@ -410,7 +410,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     }
     # Checking to see if all the elements of x are single variables.
     all.variables <- all(sapply(x, NCOL) == 1)
-    # No idea what this does. Would be nice if whoever wrote something so obscure documented it...
+    # Remove entries in the list which are null
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
     # Extracting variable names
@@ -558,7 +558,7 @@ transformTable <- function(data,
         return(data)
     }
     ## Adding dimnames
-    data <- setQlabelAsDimname(data)
+    #data <- setQlabelAsDimname(data)
 
     ## Remove rows and columns
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
@@ -798,7 +798,9 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
 
     } else
     {
-        attr(x, "categories.title") <- names(dimnames(x))[1]
+        #attr(x, "categories.title") <- names(dimnames(x))[1]
+        if (!is.null(attr(x, "questions")))
+            attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"
         else

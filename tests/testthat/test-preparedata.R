@@ -17,6 +17,27 @@ test_that("JSON list (Bug DS-1608)", {
      expect_equal(JSON, out$data)
 })
 
+test_that("PrepareData: number multi",
+{
+    tab <- structure(c(2.98165137614679, 4.11009174311927, 3.07339449541284,
+        2.63302752293578, 3.34862385321101, 2.45565749235474, 3.40366972477064,
+        3.52905198776758, 4.02752293577982, 2.28440366972477), .Dim = 10L,
+        statistic = "Average",
+        .Dimnames = list(c("My friends would describe me as cultured, and refined",
+        "I think it is important to be honest when giving complements",
+        "I can be a little naïve at times", "I am the life of the party",
+        "I am relaxed most of the time and not easily worried",
+        "Living in a big city is important to me",
+        "I think it is important to follow and maintain traditions",
+        "I enjoy being attractive to the opposite sex", "I am young at heart",
+        "I follow all the latest fashions")), name = "Q25. Respondent image (number multi)",
+        questions = c("Q25. Respondent image (number multi)","SUMMARY"))
+    res <- PrepareData("Column", input.data.table = tab)
+    expect_equal(res$categories.title, "Q25. Respondent image (number multi)")
+    expect_equal(res$values.title, "Average")
+})
+
+
 test_that("PrepareData: single table, single stat",
 {
     singleQ <- structure(c(13.4556574923547, 11.9266055045872, 10.0917431192661,
@@ -33,8 +54,8 @@ test_that("PrepareData: single table, single stat",
         47.3684210526316, 100, 48.936170212766, 51.063829787234, 100,
         42.3076923076923, 57.6923076923077, 100, 55.3191489361702, 44.6808510638298,
         100, 50, 50, 100, 41.3793103448276, 58.6206896551724, 100, 58.0645161290323,
-        41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %", .Dimnames = list(
-        c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
+        41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %",
+        .Dimnames = list(c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
         "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
         "55 to 64", "65 or more", "NET")), name = "Q1 by Q2", questions = c("Q1", "Q2"))
 
@@ -48,6 +69,8 @@ test_that("PrepareData: single table, single stat",
                        transpose = get0("transpose"),
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
+    expect_equal(out$categories.title, "Q1")
+    expect_equal(out$values.title, "%")
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
     expect_equal(dim(out$data), dim(input.data.table))
