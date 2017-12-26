@@ -370,7 +370,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 #' is provided.
 #' @param x Input data
-#' @param remove.NULLS Logical; whether to remove null entries 
+#' @param remove.NULLs Logical; whether to remove null entries 
 #' @importFrom flipTables TidyTabularData
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
@@ -798,7 +798,9 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
 
     } else
     {
-        #attr(x, "categories.title") <- names(dimnames(x))[1]
+        # Extract categories.title from aggregated data
+        attr(x, "categories.title") <- names(dimnames(x))[1]
+        # Extract categories.title from Qtables
         if (!is.null(attr(x, "questions")))
             attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))

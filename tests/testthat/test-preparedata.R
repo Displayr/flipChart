@@ -643,6 +643,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$values.title, "")
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = TRUE)
     expect_equal(res1$values.title, "Count")
+    expect_equal(res1$categories.title, "VarA")
     expect_true(is.null(dimnames(res1$data)))
 
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE) # We aggregate based on the variables
@@ -651,6 +652,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE, as.percentages = TRUE)
     expect_equal(res2$values.title, "%")
+    expect_equal(res2$categories.title, "VarA")
     expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,

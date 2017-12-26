@@ -9,7 +9,7 @@ coerceToDataFrame(x, remove.NULLs = TRUE)
 \arguments{
 \item{x}{Input data}
 
-\item{remove.NULLS}{Logical; whether to remove null entries}
+\item{remove.NULLs}{Logical; whether to remove null entries}
 }
 \value{
 A \code{\link{data.frame}})
