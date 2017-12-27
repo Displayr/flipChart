@@ -48,18 +48,19 @@ should usually be left as a \code{NULL}).}
 
 \item{first.aggregate}{Logical; whether or not the input data needs
 to be aggregated in this function. A single variable is
-tabulated, 2 variables are crosstabbed, and with 3 or more the
-mean is computed.  been provided, a contingency table is used
-to aggregate.}
+tabulated, 2 variables are crosstabbed if \code{group.by.last} is selected,
+and otherwise the mean is computed. If \code{input.data.raw} contains
+two an 'X' variable and a 'Y' variable in the first two elements of the list,
+the data is automatically aggregated and crosstabbed.}
 
 \item{scatter.columns.as.series}{Logical; If \code{TRUE}, then changes
 the expected input format for scatter plots. Multiple columns in input table
-(except the first column used as the x-values) are taken to be 
+(except the first column used as the x-values) are taken to be
 the y-coordinates of multiple data series, which will shown in
 different colors. Bubble charts cannot be used in this case.}
 
 \item{group.by.last}{Logical; \code{TRUE} and \code{first.aggregate} and there is data
-in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
+in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 using the last variable}
 
 \item{tidy}{Logical; whether or not the input data needs to be

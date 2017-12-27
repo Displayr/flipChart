@@ -218,7 +218,7 @@ test_that("Stream",
               CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.other = Other.MatrixTimeSeries)
-              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)
+              expect_error(print(CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year", y.tick.format = pn$values.number.format, x.tick.format = pn$categories.number.format)), NA)
 
           })
 

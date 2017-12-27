@@ -17,6 +17,27 @@ test_that("JSON list (Bug DS-1608)", {
      expect_equal(JSON, out$data)
 })
 
+test_that("PrepareData: number multi",
+{
+    tab <- structure(c(2.98165137614679, 4.11009174311927, 3.07339449541284,
+        2.63302752293578, 3.34862385321101, 2.45565749235474, 3.40366972477064,
+        3.52905198776758, 4.02752293577982, 2.28440366972477), .Dim = 10L,
+        statistic = "Average",
+        .Dimnames = list(c("My friends would describe me as cultured, and refined",
+        "I think it is important to be honest when giving complements",
+        "I can be a little naïve at times", "I am the life of the party",
+        "I am relaxed most of the time and not easily worried",
+        "Living in a big city is important to me",
+        "I think it is important to follow and maintain traditions",
+        "I enjoy being attractive to the opposite sex", "I am young at heart",
+        "I follow all the latest fashions")), name = "Q25. Respondent image (number multi)",
+        questions = c("Q25. Respondent image (number multi)","SUMMARY"))
+    res <- PrepareData("Column", input.data.table = tab)
+    expect_equal(res$categories.title, "Q25. Respondent image (number multi)")
+    expect_equal(res$values.title, "Average")
+})
+
+
 test_that("PrepareData: single table, single stat",
 {
     singleQ <- structure(c(13.4556574923547, 11.9266055045872, 10.0917431192661,
@@ -33,8 +54,8 @@ test_that("PrepareData: single table, single stat",
         47.3684210526316, 100, 48.936170212766, 51.063829787234, 100,
         42.3076923076923, 57.6923076923077, 100, 55.3191489361702, 44.6808510638298,
         100, 50, 50, 100, 41.3793103448276, 58.6206896551724, 100, 58.0645161290323,
-        41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %", .Dimnames = list(
-        c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
+        41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %",
+        .Dimnames = list(c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
         "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
         "55 to 64", "65 or more", "NET")), name = "Q1 by Q2", questions = c("Q1", "Q2"))
 
@@ -48,6 +69,8 @@ test_that("PrepareData: single table, single stat",
                        transpose = get0("transpose"),
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
+    expect_equal(out$categories.title, "Q1")
+    expect_equal(out$values.title, "%")
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
     expect_equal(dim(out$data), dim(input.data.table))
@@ -620,25 +643,34 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$values.title, "")
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = TRUE)
     expect_equal(res1$values.title, "Count")
+    expect_equal(res1$categories.title, "VarA")
     expect_true(is.null(dimnames(res1$data)))
 
-    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE)
-    expect_equal(res2$values.title, "")
+    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE) # We aggregate based on the variables
+    expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE)
     expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE, as.percentages = TRUE)
     expect_equal(res2$values.title, "%")
+    expect_equal(res2$categories.title, "VarA")
     expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
 
-    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
+                        group.by.last = TRUE,
                         as.percentages = TRUE, transpose = TRUE)
     expect_equal(res3$values.title, "%")
-    expect_equal(rownames(res3$data), c("VarA", "VarB"))
+    expect_equal(sum(sum(res3$data)),8)
 
-    res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
-                        as.percentages = TRUE, transpose = FALSE)
+    res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+                        group.by.last = TRUE,
+                        as.percentages = TRUE, transpose = TRUE))
     expect_equal(res3$values.title, "%")
-    expect_equal(colnames(res3$data), c("VarA", "VarB"))
+    expect_equal(rownames(res3$data), as.character(0:7))
+
+    res3 <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE,
+                        as.percentages = TRUE, transpose = FALSE))
+    expect_equal(res3$values.title, "%")
+    expect_equal(rownames(res3$data), as.character(c(0:7,10)))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
                         as.percentages = TRUE, transpose = TRUE)
@@ -839,12 +871,12 @@ test_that("Pasted data",{
     # Line chart
     data(colas, package = "flipExampleData")
     #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
-    pd <- PrepareData("Pie", TRUE, NULL,
-    input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+    pd <- suppressWarnings(PrepareData("Pie", TRUE, NULL,
+        input.data.pasted = list(x, NULL, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
                       as.percentages = TRUE,
-                      values.title = NULL)
+                      values.title = NULL))
     expect_equal(NCOL(pd$data), 2)
 })
 
@@ -895,6 +927,48 @@ test_that("Date formatting",
     expect_equal(names(res2$data)[10], "Jan 10 2001")
 })
 
+
+test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
+ z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
+ zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
+ expect_equal(zz$data[1,1], 1)
+ zz = PrepareData("Venn", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE)
+ expect_equal(zz$data[1,1], 1)
+ z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
+ zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE))
+ expect_equal(zz$data[1,1], 1/3)
+ zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE))
+ expect_equal(zz$data[1,1], 1/3)
+})
+
+
+
+test_that("crosstabs from pasted data and table",{
+ z = matrix(c(1,1,1,1,2,2,2,2,rep(NA,8), 1,1,2,2,1,1,2,2), ncol = 3, dimnames = list(1:8, LETTERS[1:3]))
+ # Computing the average - variable with all missing data
+ zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(1.5, 1.5))
+ # Computing the average - variable with all missing data and weights
+ zz = PrepareData("Column", input.data.raw = list(z), weights = z[,1], as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(1 + 2/3, 1.5))
+ # Computing the average - variable with all missing data and some dodgy weights
+ zz = PrepareData("Column", input.data.raw = list(z), weights = c(0,0,NA,-1,1,1,1,1), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ expect_equal(as.numeric(zz$data), c(2, 1.5))
+
+
+ # Creating a crosstab - with three variables
+ expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
+              "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+ zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
+ expect_equal(zzz$data[1,1], 2)
+ # Creating a crosstab with two variables
+ zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
+ expect_equal(zz$data[1,1], 2)
+ # Creating a crosstab with two variables
+ zz = PrepareData("Column", input.data.pasted = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
+ expect_equal(zz$data[1,1], 2)
+})
+
 test_that("PrepareData, automatic rownames",
 {
     # Basic test
@@ -904,4 +978,190 @@ test_that("PrepareData, automatic rownames",
 
     # Check all-numeric matrix with numeric rownames is retained
     # Checks for Scatter
+})
+
+test_that("Prepare data with as.percentages and Pick Any inputs to a Venn Diagram",{
+    b1 = structure(list(`Coca Cola` = c(0, 1, 1, 1, 0, 0, 0, 1, 1, 1,
+        1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1,
+        1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0,
+        1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 1,
+        1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1,
+        1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1,
+        1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1,
+        0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0,
+        1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1,
+        1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0,
+        0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1,
+        1, 1, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1,
+        1, 0), `Diet Coke` = c(1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0,
+        0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1,
+        0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+        1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1,
+        0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+        0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0,
+        0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0,
+        0, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+        0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+        1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0,
+        0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+        1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+        0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0,
+        0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0),
+            `Coke Zero` = c(0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0, 1,
+            0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0,
+            0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0,
+            1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1,
+            0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0,
+            1, 1, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 1,
+            0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+            1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1,
+            1, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 0,
+            0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 1, 1,
+            0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1,
+            0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0,
+            0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,
+            1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 1,
+            1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+            0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0,
+            0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0,
+            0, 1, 1, 1, 0, 0, 1, 0, 0), Pepsi = c(0, 1, 0, 0, 0, 0, 0,
+            0, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1,
+            0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0,
+            0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 1,
+            1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+            0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0,
+            0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0,
+            1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0,
+            1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0,
+            1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,
+            1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1,
+            1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 0,
+            1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0,
+            1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1,
+            1, 0, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 0,
+            1, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+            0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0), `Pepsi Max` = c(1,
+            1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+            1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1,
+            0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0,
+            1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1,
+            0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+            1, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0,
+            0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0,
+            1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0,
+            1, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1,
+            0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0,
+            0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1,
+            0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0,
+            0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+            0, 0, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0,
+            0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 1,
+            1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+            0, 1, 1), NET = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+            1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 1, 1, 1)), class = "data.frame", .Names = c("Coca Cola",
+        "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Max", "NET"), row.names = c(NA,
+        327L), questiontype = "PickAny", question = "Q6. Brand preference")
+     zz = PrepareData("Venn", input.data.raw = list(X = b1), as.percentages = TRUE)
+     expect_error(Venn(zz$data), NA)
+})
+
+test_that("Invalid joining",
+{
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE), NA)
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = TRUE), NA)
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = rep(TRUE, 10)),
+                   "The variables have been automatically spliced")
+    expect_error(suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, subset = rep(TRUE, 11))),
+                   "'subset' and 'data' are required to have the same number of observations. They do not")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, weights = 1:10),
+                   "The variables have been automatically spliced together")
+    expect_error(suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = FALSE, weights = 1:11)),
+                   "'weights' and 'data' are required to have the same number of observations. They do not.")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = TRUE),
+                     "The variables being crosstabbed have different lengths")
+    expect_warning(PrepareData("Column", input.data.raw = list(X = list(A = 1:10, B = 1:9)),
+                      first.aggregate = TRUE, group.by.last = TRUE),
+                     "The variables being crosstabbed have ")
+})
+
+
+test_that("Weighting of a frequency table",
+{
+    z = PrepareData("Column", input.data.raw = list(X = rep(1:2,5)),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(5,5))
+    z = PrepareData("Column", input.data.raw = list(X = rep(1:2,5)), weights = rep(1000,10),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(5000,5000))
+
+})
+
+test_that("Automatic crosstab of two input variables",
+{
+    # Raw data
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
+                               first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(z$data[1,1], 3)
+
+    # Pasted data
+    zz = list(matrix(c(1,2,1,1,1,1,2,1,2,1), ncol = 2, dimnames = list(1:5, c("X","Y"))))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(1.2, 1.4))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), as.numeric(zz[[1]]))
+
+    # Pasted data with an irrelevant middle column
+    zz = list(matrix(c(1,2,1,1,1,NA, 4, NA, 3, NA, 1,2,1,2,1), ncol = 3, dimnames = list(1:5, c("X","Irrelevant", "Y"))))
+    z = suppressWarnings(PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE))
+    expect_equal(z$data[1,1], 3)
+    z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), c(1.2, 3.5, 1.4))
+    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(z$data, zz[[1]])
+
+    # Checking histograms still work (as they should never be aggregated)
+    zz = c(1,2,1,1,1)
+    z = PrepareData("Histogram", input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = TRUE)
+    expect_equal(sum(unlist(z$data)), sum(zz))
+
 })

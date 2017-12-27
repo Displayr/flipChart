@@ -25,16 +25,17 @@
 #'     should usually be left as a \code{NULL}).
 #' @param first.aggregate Logical; whether or not the input data needs
 #'     to be aggregated in this function. A single variable is
-#'     tabulated, 2 variables are crosstabbed, and with 3 or more the
-#'     mean is computed.  been provided, a contingency table is used
-#'     to aggregate.
+#'     tabulated, 2 variables are crosstabbed if \code{group.by.last} is selected,
+#'     and otherwise the mean is computed. If \code{input.data.raw} contains
+#'     two an 'X' variable and a 'Y' variable in the first two elements of the list,
+#'     the data is automatically aggregated and crosstabbed.
 #' @param scatter.columns.as.series Logical; If \code{TRUE}, then changes
 #'     the expected input format for scatter plots. Multiple columns in input table
 #'     (except the first column used as the x-values) are taken to be
 #'     the y-coordinates of multiple data series, which will shown in
 #'     different colors. Bubble charts cannot be used in this case.
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
-#'     in either of \code{inpiut.data.table} or \code{input.data.pasted}, the data is aggregated
+#'     in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
 #' @param tidy Logical; whether or not the input data needs to be
 #'     aggregated in this function (e.g., if an x and y variable have
@@ -205,14 +206,15 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
-        data <- asDataFrame(input.data.raw)
+        data <- coerceToDataFrame(input.data.raw)
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
         data <- processPastedData(
                                   input.data.pasted,
-                                  want.data.frame = first.aggregate || (chart.type == "Table" && tidy),
+                                  want.data.frame = chart.type == "Table" && tidy,
                                   warn = tidy)
+
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
@@ -225,17 +227,19 @@ PrepareData <- function(chart.type,
         missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey"))
             "Exclude cases with missing data" else "Use partial data"
         n <- NROW(data)
-        if (!is.null(attr(data, "InvalidVariableJoining")))
+        if (invalid.joining <- !is.null(attr(data, "InvalidVariableJoining")))
         {
-            if (!isDistribution(chart.type))
-                warning("The variables have been automatically spliced together, ",
-                        "without any knowledge of which case should be matched with ",
-                        "which. This may cause the results to be misleading.")
+            if (!isDistribution(chart.type) && length(subset) > 1 || NROW(weights) > 1)
+                warning("The variables have been automatically spliced together without ","
+                        any knowledge of which case should be matched with which. ",
+                        "This may cause the results to be misleading.")
         }
         data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
             suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing))
         else
             TidyRawData(data, subset = subset, weights = weights, missing = missing)
+        if (invalid.joining)
+            attr(data, "InvalidVariableJoining") <- TRUE
         n.post <- NROW(data)
         if (missing == "Exclude cases with missing data" && n.post < n)
             warning("After removing missing values and/or filtering, ", n.post,
@@ -245,11 +249,17 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
-    if (first.aggregate)
+#    maybe.crosstab <- !is.null(input.data.raw) && ncol(data) == 2 && names(input.data.raw)[1:2] == c("X", "Y")
+    maybe.crosstab <- !is.null(input.data.raw) && length(names(input.data.raw)) == 2 &&
+        names(input.data.raw)[1:2] == c("X", "Y") && !chart.type %in% c("Bubble", "Scatter")
+    if (!isDistribution(chart.type) && (maybe.crosstab || first.aggregate))
     {
         null.inputs <- sapply(input.data.raw, is.null)
         nms <- names(input.data.raw)[!null.inputs]
-        crosstab <- length(nms) == 2 && nms == c("X", "Y") && ncol(data) == 2 || group.by.last
+        crosstab <- length(nms) == 2 && ncol(data) == 2 || group.by.last
+        if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
+            warning("The variables being crosstabbed have different lengths; ","
+                    it is likely that the crosstab is invalid.")
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }
     ###########################################################################
@@ -259,18 +269,18 @@ PrepareData <- function(chart.type,
                                      chart.type, weights, tidy, show.labels,
                                      scatter.columns.as.series)
     weights <- setWeight(data, weights)
-
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
     data <- transformTable(data,
-                   !is.null(input.data.tables),
+                   multiple.tables = !is.null(input.data.tables),
+                   is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
-                   as.percentages,
-                   hide.empty.rows.and.columns,
-                   date.format)
-
+                   first.aggregate,
+                   as.percentages && chart.type != "Venn", #Venn takes care of this itself
+                   hide.empty.rows.and.columns = hide.empty.rows.and.columns,
+                   date.format = date.format)
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
@@ -279,7 +289,8 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
-    # The next line is a hack to workaround a big. It should be removed when RS-3402 is fixed and in production for Q.
+    # The next line is a hack to workaround a bug. It should be removed when
+    # RS-3402 is fixed and in production for Q.
     if (chart.type == "Table")
         attr(data, "statistic") <- NULL
     list(data = data,
@@ -305,40 +316,48 @@ isScatter <- function(chart.type)
 #' @importFrom flipTransformations AsNumeric
 aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 {
+    weighted <- !is.null(weights)
+    weights <- if (is.null(weights) || is.function(weights)) rep.int(1L, NROW(data)) else weights
     # In tables that show aggregated tables, only the x-axis title is
     # taken from dimnames. But both names should be set in case
     # the table is transposed
     if (NCOL(data) == 1)
     {
-        out <- as.matrix(WeightedTable(unlist(data))) #, weights)
+        out <- as.matrix(WeightedTable(unlist(data), weights = weights))
         names(dimnames(out)) <- c(names(data)[1], "")
         attr(out, "statistic") = "Count"
     }
     else if (crosstab)
     {
-        if (NCOL(data) > 2)
-            warning("Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+        data <- as.data.frame(data)
+        k <- NCOL(data)
+        if (k > 2)
         {
-            tmp.names <- names(data)
-            names(data) <- c("x", "y") # temporarily set names for formula
-            data$w <- if (is.null(weights)) rep.int(1L, nrow(data)) else weights
-            out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
-            names(dimnames(out)) <- tmp.names
-            attr(out, "statistic") = "Counts"
+            warning("Multiple variables have been provided. Only the first and last ",
+                    "variable have been used to create the crosstab. If you wish to ",
+                    "create a crosstab with more than two variables, you need to ",
+                    "instead add the data as a 'Data Set' instead add a 'Data Set'.")
+            data <- data[, c(1, k)]
         }
+        tmp.names <- names(data)
+        names(data) <- c("x", "y") # temporarily set names for formula
+        data$w <- weights
+        out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
+        names(dimnames(out)) <- tmp.names
+        attr(out, "statistic") = "Counts"
     }
     else
     {
         if (!is.matrix(data) && !is.numeric(data))
-            data <- asDataFrame(data)
+            data <- coerceToDataFrame(data)
         if (is.data.frame(data))
             data <- AsNumeric(data, binary = FALSE)
-        if (weighted <- !is.null(weights))
+        if (weighted)
         {
             xw <- sweep(data, 1, weights, "*")
             sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
             w <- matrix(weights, nrow(data), ncol(data))
-            w[!is.na(data)] <- 0
+            w[is.na(data)] <- 0
             sum.w <- apply(w, 2, sum)
             out <- sum.xw / sum.w
         } else
@@ -348,30 +367,60 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     out
 }
 
-
+#' coerceToDataFrame
+#'
+#' @description Takes various formats of data (in particular, lists of variabels and
+#' data.frames, and forces them to become a data frame. Where the coercion
+#' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
+#' is provided.
+#' @param x Input data
+#' @param remove.NULLs Logical; whether to remove null entries
 #' @importFrom flipTables TidyTabularData
+#' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
-asDataFrame <- function(x, remove.NULLs = TRUE)
+coerceToDataFrame <- function(x, remove.NULLs = TRUE)
 {
-
-    if (is.data.frame(x))
-        return(x)
-    if (is.character(x))
-        x <- TidyTabularData(x)
-
     if (is.null(x))
         return(x)
-    if (is.list(x[[1]])) # In Displayr, this is typically true.
-        x[[1]] <- as.data.frame(x[[1]])
+    else if (is.data.frame(x))
+        return(x)
+    if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
+        return(as.data.frame(x[[1]]))
+    else if (is.character(x))
+    {
+        x <- TidyTabularData(x)
+        return(as.data.frame)
+    }
+    #else if (is.list(x[[1]])) # In Displayr, this is typically true.
+    #    x[[1]] <- as.data.frame(x[[1]])
 
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
     x$labels <- NULL
 
+    # Dealing with situation where first element of x is a list containing only one thing.
+    if (is.list(x[[1]]) && length(x[[1]]) == 1)
+        x[[1]] <- x[[1]][[1]]
+
+
+    if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
+    {
+        x = x[[1]]
+        if (is.null(rlabels) && !is.atomic(x))
+        {
+            rlabels <- x$labels
+            x$labels <- NULL
+        }
+    }
+    # Checking to see if all the elements of x are single variables.
     all.variables <- all(sapply(x, NCOL) == 1)
+    # Remove entries in the list which are null
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
+    # Extracting variable names
     nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    # Splicing together elements of the input list
+    invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
         lengths <- sapply(x, NROW)
@@ -383,24 +432,23 @@ asDataFrame <- function(x, remove.NULLs = TRUE)
                 out[1:lengths[i], i] <- x[[i]]
             x <- out
         }
-    } else
-        invalid.joining <- FALSE
+    }
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
 
-    # Set column and rownames
-    names(x) <- nms
-    if (!is.null(rlabels) && nrow(x) == length(rlabels))
-        rownames(x) <- make.unique(as.character(rlabels), sep = "")
-    if (invalid.joining)
-        attr(x, "InvalidVariableJoining")
-    x
-}
+      # Set column and rownames
+      names(x) <- nms
+      if (!is.null(rlabels) && nrow(x) == length(rlabels))
+          rownames(x) <- make.unique(as.character(rlabels), sep = "")
+      if (invalid.joining)
+          attr(x, "InvalidVariableJoining") <- TRUE
+      x
+  }
 
 
-isDistribution <- function(chart.type)
-{
-    grepl("Bean|Box|Histogram|Density|Violin", chart.type)
-}
+  isDistribution <- function(chart.type)
+  {
+      grepl("Bean|Box|Histogram|Density|Violin", chart.type)
+  }
 
 processPastedData <- function(input.data.pasted, want.data.frame, warn)
 {
@@ -489,8 +537,10 @@ asPercentages <- function(data)
 #' @importFrom flipTime AsDate
 transformTable <- function(data,
                            multiple.tables,
+                           is.raw.data,
                            row.names.to.remove, column.names.to.remove, split,
                            transpose,
+                           first.aggregate,
                            as.percentages,
                            hide.empty.rows.and.columns,
                            date.format,
@@ -499,16 +549,20 @@ transformTable <- function(data,
     if (multiple.tables)
     {
         for(i in seq_along(data))
-            data[[i]] = transformTable(data[[i]], FALSE,
+            data[[i]] = transformTable(data[[i]],
+                                       FALSE,
+                                       is.raw.data,
                                        row.names.to.remove, column.names.to.remove, split,
                                        transpose,
+                                       first.aggregate,
                                        as.percentages,
                                        hide.empty.rows.and.columns,
+                                       date.format,
                                        i)
         return(data)
     }
     ## Adding dimnames
-    data <- setQlabelAsDimname(data)
+    #data <- setQlabelAsDimname(data)
 
     ## Remove rows and columns
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
@@ -534,9 +588,23 @@ transformTable <- function(data,
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages)
     {
-        if ((!is.numeric(data) || prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
-            warning("The data has not been converted to percentages. To convert to percentages, ",
-                    "first convert to a more suitable type (e.g., create a table)")
+        percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
+        "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
+        if (!is.numeric(data) && !is.data.frame(data))
+            warning(percentages.warning)
+        else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
+            warning(percentages.warning)
+        else if (is.raw.data && !first.aggregate)
+        {
+            if (is.null(nrow(data)))
+                warning(percentages.warning)
+            else
+            {
+                data <- data / nrow(data)
+                warning("Percentages have been computed by dividing the data values by the number of rows in the data. If this is not appropriate, first convert to a more suitable type (e.g., create a table).")
+                attr(data, "statistic") = "%"
+            }
+        }
         else
             data <- asPercentages(data)
     }
@@ -569,7 +637,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
     }
     else if (chart.type == "Sankey")
     {
-        data <- asDataFrame(data)
+        data <- coerceToDataFrame(data)
     }
     # Scatterplots
     else if (isScatter(chart.type))
@@ -734,7 +802,11 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
 
     } else
     {
+        # Extract categories.title from aggregated data
         attr(x, "categories.title") <- names(dimnames(x))[1]
+        # Extract categories.title from Qtables
+        if (!is.null(attr(x, "questions")))
+            attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"
         else
