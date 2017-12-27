@@ -209,7 +209,10 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
-        data <- processPastedData(input.data.pasted, first.aggregate, tidy)
+        data <- processPastedData(
+                                  input.data.pasted,
+                                  want.data.frame = first.aggregate || (chart.type == "Table" && tidy),
+                                  warn = tidy)
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
@@ -399,15 +402,15 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, first.aggregate, tidy)
+processPastedData <- function(input.data.pasted, want.data.frame, warn)
 {
     processed <- tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
-                                  want.data.frame = first.aggregate,
+                                  want.data.frame = want.data.frame,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
                                   us.format = input.data.pasted[[5]],
-                                  warn = tidy)),
+                                  warn = warn)),
              error = function(e) {input.data.pasted[[1]]})
     return(processed)
 }
