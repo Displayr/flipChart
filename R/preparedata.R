@@ -389,7 +389,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     else if (is.character(x))
     {
         x <- TidyTabularData(x)
-        return(as.data.frame)
+        return(as.data.frame(x))
     }
     #else if (is.list(x[[1]])) # In Displayr, this is typically true.
     #    x[[1]] <- as.data.frame(x[[1]])
