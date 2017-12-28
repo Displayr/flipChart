@@ -57,7 +57,7 @@ test_that("PrepareData: single table, single stat",
         41.9354838709677, 100, 50, 50, 100), .Dim = c(3L, 9L), statistic = "Column %",
         .Dimnames = list(c("Male", "Female", "NET"), c("Less than 18 + 18 to 24 + 25 to 29",
         "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
-        "55 to 64", "65 or more", "NET")), name = "Q1 by Q2", questions = c("Q1", "Q2"))
+        "55 to 64", "65 or more", "NET")), name = "Gender by Age", questions = c("Gender", "Age"))
 
     out <- PrepareData("Area", NULL, NULL,
                        get0("input.data.table"),
@@ -69,12 +69,15 @@ test_that("PrepareData: single table, single stat",
                        transpose = get0("transpose"),
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
-    expect_equal(out$categories.title, "Q1")
+    expect_equal(out$categories.title, "Gender")
     expect_equal(out$values.title, "%")
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
     expect_equal(dim(out$data), dim(input.data.table))
     expect_equal(round(out$data[1,1],3), 0.484)
+
+    out2 <- PrepareData("Column", input.data.table = input.data.table, transpose = TRUE)
+    expect_equal(out2$categories.title, "Age")
 })
 
 test_that("PrepareData: single table, single stat",

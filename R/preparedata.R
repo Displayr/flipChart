@@ -563,8 +563,6 @@ transformTable <- function(data,
                                        i)
         return(data)
     }
-    ## Adding dimnames
-    #data <- setQlabelAsDimname(data)
 
     ## Remove rows and columns
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
@@ -578,7 +576,10 @@ transformTable <- function(data,
 
     ## Switching rows and columns
     if (isTRUE(transpose))
+    {
         data <- t(data)
+        attr(data, "questions") <- rev(attr(data, "questions"))
+    }
 
     ## If data is already percentages in Qtable then divide by 100
     ## Note that R outputs and pasted data will already be in decimals
@@ -614,9 +615,9 @@ transformTable <- function(data,
     # Convert dates in row/column names
     .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x, on.parse.failure = "silent")))))
     if (date.format != "Automatic" && .isDate(rownames(data)))
-        rownames(data) <- format(AsDate(rownames(data), us.format = date.format != "International"), "%b %d %Y")
+        rownames(data) <- format(AsDate(rownames(data), us.format = grepl("International", date.format)), "%b %d %Y")
     else if (date.format != "Automatic" && .isDate(names(data)))
-        names(data) <- format(AsDate(names(data), us.format = date.format != "International"), "%b %d %Y")
+        names(data) <- format(AsDate(names(data), us.format = !grepl("International", date.format)), "%b %d %Y")
     return(data)
 }
 
@@ -724,17 +725,6 @@ setWeight <- function(x, weights)
     if (!is.null(w <-  attr(x, "weights")))
         return(w)
     weights
-}
-
-# This uses the information in a QTable to set
-# title on the categories axis
-setQlabelAsDimname <- function(x)
-{
-    qq <- attr(x, "questions")
-    mlen <- min(length(qq), length(dimnames(x)), na.rm = TRUE)
-    if (!is.null(dimnames(x)) && !is.null(qq))
-        names(dimnames(x))[1:mlen] <- qq[1:mlen]
-    x
 }
 
 #' Check for object of class list or a \emph{ragged} array
