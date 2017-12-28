@@ -637,7 +637,16 @@ test_that("PrepareData: input and output format of raw data",
     attr(yy, "label") <- "VarB"
     attr(y2, "label") <- "VarC"
 
-    #res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)))
+    # Multiple variables in Y are concatenated
+    res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)))
+    expect_equal(dim(res6$data), c(200, 3))
+    expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3))
+    expect_equal(as.character(res6$data[101,3]), "VarC")
+
+    # Duplicated variables
+    res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy))
+    expect_equal(dim(res7$data), c(100, 1))
+    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA))
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")

@@ -7,7 +7,7 @@
 coerceToDataFrame(x, remove.NULLs = TRUE)
 }
 \arguments{
-\item{x}{Input data}
+\item{x}{Input data which may be a list of variables or dataframe}
 
 \item{remove.NULLs}{Logical; whether to remove null entries}
 }
@@ -15,7 +15,7 @@ coerceToDataFrame(x, remove.NULLs = TRUE)
 A \code{\link{data.frame}})
 }
 \description{
-Takes various formats of data (in particular, lists of variabels and
+Takes various formats of data (in particular, lists of variables and
 data.frames, and forces them to become a data frame. Where the coercion
 involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 is provided.

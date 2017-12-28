@@ -218,6 +218,7 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
+
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
@@ -246,6 +247,7 @@ PrepareData <- function(chart.type,
                     " observations remain.")
         weights <- setWeight(data, weights)
     }
+
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
@@ -262,6 +264,7 @@ PrepareData <- function(chart.type,
                     it is likely that the crosstab is invalid.")
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
     }
+
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
@@ -269,6 +272,7 @@ PrepareData <- function(chart.type,
                                      chart.type, weights, tidy, show.labels,
                                      scatter.columns.as.series)
     weights <- setWeight(data, weights)
+
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
@@ -281,6 +285,7 @@ PrepareData <- function(chart.type,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
+
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
@@ -369,11 +374,11 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 
 #' coerceToDataFrame
 #'
-#' @description Takes various formats of data (in particular, lists of variabels and
+#' @description Takes various formats of data (in particular, lists of variables and
 #' data.frames, and forces them to become a data frame. Where the coercion
 #' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 #' is provided.
-#' @param x Input data
+#' @param x Input data which may be a list of variables or dataframe
 #' @param remove.NULLs Logical; whether to remove null entries
 #' @importFrom flipTables TidyTabularData
 #' @return A \code{\link{data.frame}})
@@ -418,37 +423,39 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
     # Extracting variable names
-    nms <- if (all.variables) names(x) else unlist(lapply(x, names))
+    nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
+
     # Splicing together elements of the input list
+    # Note that elements of x can contain lists of variables 
     invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
-        lengths <- sapply(x, NROW)
+        lengths <- sapply(x, function(m) NROW(as.data.frame(m)))
         if (invalid.joining <- sd(lengths) != 0)
         {
             k <- length(lengths)
             out <- matrix(NA, max(lengths), k)
             for (i in 1:k)
-                out[1:lengths[i], i] <- x[[i]]
+                out[1:lengths[i], i] <- x[[i]]  # shouldn't work if x$Y is a list?? x$X handled in line 402
             x <- out
         }
     }
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
 
-      # Set column and rownames
-      names(x) <- nms
-      if (!is.null(rlabels) && nrow(x) == length(rlabels))
-          rownames(x) <- make.unique(as.character(rlabels), sep = "")
-      if (invalid.joining)
-          attr(x, "InvalidVariableJoining") <- TRUE
-      x
-  }
+    # Set column and rownames
+    names(x) <- nms
+    if (!is.null(rlabels) && nrow(x) == length(rlabels))
+         rownames(x) <- make.unique(as.character(rlabels), sep = "")
+    if (invalid.joining)
+        attr(x, "InvalidVariableJoining") <- TRUE
+    x
+}
 
 
-  isDistribution <- function(chart.type)
-  {
-      grepl("Bean|Box|Histogram|Density|Violin", chart.type)
-  }
+isDistribution <- function(chart.type)
+{
+    grepl("Bean|Box|Histogram|Density|Violin", chart.type)
+}
 
 processPastedData <- function(input.data.pasted, want.data.frame, warn)
 {
@@ -489,25 +496,20 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     {
         if (i > len)
             return(NA)
-        # This works as long X, Y, Z1 and Z2 have a max of 1 variable each
-        # Don't call this function if mult variables are read as series
         lst <- input.data.raw[[i]]
         if (is.null(lst))
             return(NA)
         nms <- names(data)
 
-        # Assumes that variables in input.data.raw always have labels
-        nm <- names(attr(lst, "label"))
-        nm <- attr(lst, "label")
-        if (!show.labels)
-            nm <- names(lst)[1]
+        # Match based on label/variable name to avoid problems with duplicates
+        nm <- if (show.labels) Labels(lst) else Names(lst)
         match(nm, nms)
     }
     # Indices corresponding to selections in input.raw.data
-    indices["x"] <- .getColumnIndex(1) # if (is.null(input.data.raw$X)) NA else match(names())
-    indices["y"] <- .getColumnIndex(2) #if (is.null(input.data.raw$Y)) NA else 1 + max(indices[1], 0, na.rm = TRUE)
-    indices["sizes"] <- .getColumnIndex(3)#if (is.null(input.data.raw$Z1)) NA else 1 + max(indices[1:2], 0, na.rm = TRUE)
-    indices["colors"] <- .getColumnIndex(4)#if (is.null(input.data.raw$Z2)) NA else 1 + max(indices[1:3], 0, na.rm = TRUE)
+    indices["x"] <- .getColumnIndex(1)
+    indices["y"] <- .getColumnIndex(2)
+    indices["sizes"] <- .getColumnIndex(3)
+    indices["colors"] <- .getColumnIndex(4)
     indices
 }
 
@@ -645,12 +647,13 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         if (scatter.columns.as.series || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
+            y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             # When no X-coord is supplied
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
             {
                 m <- length(input.data.raw$Y)
                 y.ind <- 1:m
-                rep(1:n, m)
+                xvar <- rep(1:n, m)
             }
             else
             {
@@ -658,9 +661,11 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
                 y.ind <- (1:m) + 1
                 xvar <- rep(data[,1], m)
             }
+            # newdata needs to use data rather than input.data.raw
+            # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
                                   Y = as.vector(unlist(data[,y.ind])),
-                                  Groups = rep(colnames(data)[y.ind], each = n))
+                                  Groups = rep(y.names, each = n))
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
@@ -677,9 +682,9 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider selecting 'Treat columns as data series'.")
+            # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
+            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
         }
-        # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-        attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
     }
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
@@ -778,7 +783,6 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
             return(x)
     }
 
-    #print(format(x[,1], "%b %d %Y"))
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
         rownames(x) <- format(x[,1], "%b %d %Y")
