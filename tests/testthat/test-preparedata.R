@@ -927,19 +927,6 @@ test_that("DS-1689 Bar chart from one variable raw data",{
     expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
 })
 
-test_that("Date formatting",
-{
-    xx <- structure(1:10, .Names = c("1/01/2001", "2/01/2001", "3/01/2001",
-"4/01/2001", "5/01/2001", "6/01/2001", "7/01/2001", "8/01/2001",
-"9/01/2001", "10/01/2001"))
-    expect_warning(CChart("Column", PrepareData("Column", input.data.table = xx)$data), "Date formats are ambiguous")
-    expect_error(res1 <- PrepareData("Column", input.data.table = xx, date.format="United States"), NA)
-    expect_error(res2 <- PrepareData("Column", input.data.table = xx, date.format="International"), NA)
-    expect_equal(names(res1$data)[10], "Oct 01 2001")
-    expect_equal(names(res2$data)[10], "Jan 10 2001")
-})
-
-
 test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
  zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
@@ -1176,4 +1163,25 @@ test_that("Automatic crosstab of two input variables",
                                first.aggregate = TRUE, group.by.last = TRUE)
     expect_equal(sum(unlist(z$data)), sum(zz))
 
+})
+
+test_that("Date formatting",
+{
+    # test for vector and matrix separately because they are coded in different places
+    x1d <- 1:10
+    names(x1d) <- sprintf("%02d/01/2017", 1:10)
+    x2d <- cbind(A = x1d, B = x1d + 1)
+
+    res1 <- PrepareData("Column", input.data.table = x1d, date.format = "International (dd/mm/yyyy)")
+    res2 <- PrepareData("Column", input.data.table = x2d, date.format = "International (dd/mm/yyyy)")
+    res3 <- PrepareData("Column", input.data.table = x1d, date.format = "US (mm/dd/yyyy)")
+    res4 <- PrepareData("Column", input.data.table = x2d, date.format = "US (mm/dd/yyyy)")
+
+    us.dates <- format(as.Date(sprintf("2017-%02d-01", 1:10)), "%b %d %Y")
+    intl.dates <- format(as.Date(sprintf("2017-01-%02d", 1:10)), "%b %d %Y")
+
+    expect_equal(names(res1$data), intl.dates)
+    expect_equal(rownames(res2$data), intl.dates)
+    expect_equal(names(res3$data), us.dates)
+    expect_equal(rownames(res4$data), us.dates)
 })

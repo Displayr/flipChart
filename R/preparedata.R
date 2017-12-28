@@ -426,7 +426,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
 
     # Splicing together elements of the input list
-    # Note that elements of x can contain lists of variables 
+    # Note that elements of x can contain lists of variables
     invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
@@ -613,9 +613,10 @@ transformTable <- function(data,
     }
 
     # Convert dates in row/column names
+    # Pattern matching to allow for more flexible controls, e.g. "International (dd/mm/yyyy)"
     .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x, on.parse.failure = "silent")))))
     if (date.format != "Automatic" && .isDate(rownames(data)))
-        rownames(data) <- format(AsDate(rownames(data), us.format = grepl("International", date.format)), "%b %d %Y")
+        rownames(data) <- format(AsDate(rownames(data), us.format = !grepl("International", date.format)), "%b %d %Y")
     else if (date.format != "Automatic" && .isDate(names(data)))
         names(data) <- format(AsDate(names(data), us.format = !grepl("International", date.format)), "%b %d %Y")
     return(data)
