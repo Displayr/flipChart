@@ -50,7 +50,7 @@ test_that("PredpareData R+C removal: pasted raw data",
     ## list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
     ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
-    pasted <- list(dat, TRUE, TRUE, TRUE, TRUE, TRUE)
+    pasted <- list(dat, FALSE, TRUE, TRUE)
     out <- PrepareData(input.data.table = NULL, input.data.raw = NULL, input.data.tables = NULL, input.data.other = NULL,
                        input.data.pasted = pasted, chart.type = "Bubble Chart", row.names.to.remove = "a",
                        column.names.to.remove = LETTERS[2:3])
@@ -65,8 +65,9 @@ test_that("PrepareData R+C removal: pasted raw data factor handling",
     ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
     dat[-1, 3] <- c("dog", "cat", "dog")
-    pasted <- list(dat, TRUE, FALSE, TRUE, TRUE, TRUE)
-    out <- suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar Chart", column.names.to.remove = "D"))
+    pasted <- list(dat, FALSE, TRUE, TRUE)
+    out <- suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar Chart",
+                                        column.names.to.remove = "D"))
     expect_is(out$data, "matrix")
     expect_is(out$data[[2]], "character")
     #expect_equal(names(out$data), LETTERS[1:3])
@@ -79,12 +80,12 @@ test_that("PrepareData R+C removal: pasted, non-raw table",
                       "3", "2", "1", "1", "col 5", "3", "2", "1", "1", "col 6", "3",
                       "2", "1", "1", "SUM", "3", "2", "1", "1", "NET", "3", "2",
                       "1", "1"), .Dim = c(5L, 9L))
-    pasted <- list(dat, FALSE, NULL, NULL, NULL, NULL)
+    pasted <- list(dat, FALSE)
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
     expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type,
-                   subset = QFilter, weights = QPopulationWeight))
+                   subset = QFilter, weights = QPopulationWeight, tidy = TRUE))
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), dim(dat) - c(3, 3))
 })
