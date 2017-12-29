@@ -212,8 +212,8 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- processPastedData(
                                   input.data.pasted,
-                                  want.data.frame = chart.type == "Table" && tidy,
-                                  warn = tidy)
+                                  warn = tidy,
+                                  date.format = date.format)
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
@@ -426,7 +426,7 @@ coerceToDataFrame <- function(x, remove.NULLs = TRUE)
     nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
 
     # Splicing together elements of the input list
-    # Note that elements of x can contain lists of variables 
+    # Note that elements of x can contain lists of variables
     invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
@@ -457,15 +457,17 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, want.data.frame, warn)
+processPastedData <- function(input.data.pasted, warn, date.format)
 {
-    processed <- tryCatch(suppressWarnings(ParseUserEnteredTable(input.data.pasted[[1]],
+    us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
+    want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
+    processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
-                                  us.format = input.data.pasted[[5]],
-                                  warn = warn)),
+                                  us.format = us.format,
+                                  warn = warn),
              error = function(e) {input.data.pasted[[1]]})
     return(processed)
 }
@@ -604,7 +606,9 @@ transformTable <- function(data,
             else
             {
                 data <- data / nrow(data)
-                warning("Percentages have been computed by dividing the data values by the number of rows in the data. If this is not appropriate, first convert to a more suitable type (e.g., create a table).")
+                warning("Percentages have been computed by dividing the data values by the ",
+                        "number of rows in the data. If this is not appropriate, first convert to a ",
+                        "more suitable type (e.g., create a table).")
                 attr(data, "statistic") = "%"
             }
         }
@@ -613,7 +617,8 @@ transformTable <- function(data,
     }
 
     # Convert dates in row/column names
-    .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x, on.parse.failure = "silent")))))
+    .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
+                                                                                    on.parse.failure = "silent")))))
     if (date.format != "Automatic" && .isDate(rownames(data)))
         rownames(data) <- format(AsDate(rownames(data), us.format = grepl("International", date.format)), "%b %d %Y")
     else if (date.format != "Automatic" && .isDate(names(data)))
@@ -623,7 +628,15 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, chart.type, weights, tidy, show.labels, scatter.columns.as.series)
+prepareForSpecificCharts <- function(
+                                     data,
+                                     input.data.tables,
+                                     input.data.raw,
+                                     chart.type,
+                                     weights,
+                                     tidy,
+                                     show.labels,
+                                     scatter.columns.as.series)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -633,7 +646,7 @@ prepareForSpecificCharts <- function(data, input.data.tables, input.data.raw, ch
         if (isScatter(chart.type))
             attr(data, "scatter.variable.indices") = c(x = 1, y = 2, sizes = 3, colors = 4)
     }
-    else if (chart.type == "Venn")
+    else if (chart.type %in% c("Venn", "Table"))
     {
         data <- data # Do nothing.
 

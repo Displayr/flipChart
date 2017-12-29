@@ -64,7 +64,7 @@ test_that("PrepareData: single table, single stat",
                        get0("input.data.tables"),
                        NULL, NULL, #input.data.raw = #as.data.frame(Filter(Negate(is.null), list(get0("formX"), get0("formY")))),
                       # input.data.pasted = list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"),
-                     #                get0("formPastedColumnNames"), get0("formPastedRowNames"), get0("formPastedDateConvention")),
+                     #                get0("formPastedColumnNames"), get0("formPastedRowNames")),
                        get0("input.data.other"),
                        transpose = get0("transpose"),
                        row.names.to.remove = NULL,
@@ -160,9 +160,9 @@ test_that("PrepareData: multiple existing tables",
 test_that("PrepareData: pasted raw data",
 {
     ## list(get0("formPastedData"),get0("formPastedFactor"), get0("formPastedColumnNames"),
-    ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
+    ##      get0("formPastedRowNames"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
-    pasted <- list(dat, TRUE, TRUE, TRUE, TRUE)
+    pasted <- list(dat, TRUE, TRUE, TRUE)
     out <- PrepareData(input.data.table = NULL, input.data.raw = NULL, input.data.tables = NULL, input.data.other = NULL,
                        input.data.pasted = pasted, chart.type = "Column")
     expect_is(out$data, "matrix")
@@ -186,10 +186,10 @@ test_that("PrepareData: pasted raw data",
 test_that("PrepareData: crappy input to crappy data",
 {
     ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
-    ##      get0("formPastedRowNames"), get0("formPastedDateConvention"))
+    ##      get0("formPastedRowNames"))
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
     dat[-1, 3] <- c("dog", "cat", "dog")
-    pasted <- list(dat, FALSE, TRUE, TRUE, TRUE)
+    pasted <- list(dat, FALSE, TRUE, TRUE)
     expect_error(suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar")), NA)
 
 
@@ -220,7 +220,7 @@ test_that("DS-1687: no warning if non-tidy pasted data",
                       "2", "1", "1", "col 7", "3", "2", "1", "1", "col 8", "3", "2",
                       "1", "1"), .Dim = c(5L, 9L))
     dat[2, 2] <- "TEXT"
-    pasted <- list(dat, NULL, NULL, NULL, NULL)
+    pasted <- list(dat, FALSE, TRUE, TRUE)
     expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = TRUE,
                                first.aggregate = FALSE),
                    "data could not be interpreted")
@@ -414,7 +414,7 @@ test_that("PrepareData: Binary variable for Venn",
 test_that("PrepareData works with pasted vector",
 {
     dat <- cbind(letters[1:5], 1:5)
-    pasted <- list(dat, FALSE, NULL, NULL, NULL, NULL)
+    pasted <- list(dat, FALSE, NULL, NULL, NULL)
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter Plot"
@@ -875,7 +875,7 @@ test_that("Pasted data",{
     data(colas, package = "flipExampleData")
     #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
     pd <- PrepareData("Radar", TRUE, NULL,
-        input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+        input.data.pasted = list(x, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
         values.title = NULL)
@@ -884,7 +884,7 @@ test_that("Pasted data",{
     data(colas, package = "flipExampleData")
     #z = list(X = NULL, Y = colas$d2, Z1 = NULL, Z2 = NULL)
     pd <- suppressWarnings(PrepareData("Pie", TRUE, NULL,
-        input.data.pasted = list(x, NULL, NULL, NULL, NULL),
+        input.data.pasted = list(x, NULL, NULL, NULL),
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = TRUE, data.source = "Type or paste in data",
                       as.percentages = TRUE,
@@ -947,9 +947,11 @@ test_that("as.percentages from pasted data and raw data work by dividing by nrow
  zz = PrepareData("Venn", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE)
  expect_equal(zz$data[1,1], 1)
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
- zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE))
+ zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE,
+                                   first.aggregate = FALSE))
  expect_equal(zz$data[1,1], 1/3)
- zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE))
+ zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE,
+                                   first.aggregate = FALSE))
  expect_equal(zz$data[1,1], 1/3)
 })
 
@@ -958,13 +960,16 @@ test_that("as.percentages from pasted data and raw data work by dividing by nrow
 test_that("crosstabs from pasted data and table",{
  z = matrix(c(1,1,1,1,2,2,2,2,rep(NA,8), 1,1,2,2,1,1,2,2), ncol = 3, dimnames = list(1:8, LETTERS[1:3]))
  # Computing the average - variable with all missing data
- zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE,
+                  group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(1.5, 1.5))
  # Computing the average - variable with all missing data and weights
- zz = PrepareData("Column", input.data.raw = list(z), weights = z[,1], as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ zz = PrepareData("Column", input.data.raw = list(z), weights = z[,1], as.percentages = FALSE,
+                  first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(1 + 2/3, 1.5))
  # Computing the average - variable with all missing data and some dodgy weights
- zz = PrepareData("Column", input.data.raw = list(z), weights = c(0,0,NA,-1,1,1,1,1), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = FALSE)
+ zz = PrepareData("Column", input.data.raw = list(z), weights = c(0,0,NA,-1,1,1,1,1), as.percentages = FALSE,
+                  first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(2, 1.5))
 
 
@@ -1176,4 +1181,41 @@ test_that("Automatic crosstab of two input variables",
                                first.aggregate = TRUE, group.by.last = TRUE)
     expect_equal(sum(unlist(z$data)), sum(zz))
 
+})
+
+test_that("Pasted data with crosstab",
+{
+    x <- cbind(c("x", as.character(1:10)), c("pet", rep(c("cat", "dog"), e = 1:5)))
+    pasted <- list(x, TRUE, TRUE, FALSE)
+})
+
+test_that("Pasted data with dates and date.format arg",
+{
+    ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
+    ##      get0("formPastedRowNames"))
+    x <- matrix(c("Date times", "22/06/2007 5:29:41 PM", "22/06/2007 6:09:10 PM",
+                  "22/06/2007 5:36:35 PM", "22/06/2007 5:30:29 PM", "22/06/2007 5:40:53 PM",
+                  "22/06/2007 5:32:22 PM", "22/06/2007 5:39:32 PM", "22/06/2007 5:39:14 PM",
+                  "22/06/2007 5:40:11 PM", "22/06/2007 5:54:34 PM"), ncol = 1)
+    pasted <- list(x, TRUE, TRUE, FALSE)
+    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+                       hide.empty.rows.and.columns = FALSE, date.format = "Automatic")$data
+    expect_is(out, "data.frame")
+    expect_named(out, "Date times")
+    expect_is(out[[1L]], "POSIXct")
+
+    ## wrong date format specified so char. dates becomes factor
+    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+                       hide.empty.rows.and.columns = FALSE, date.format = "US")$data
+    expect_is(out, "data.frame")
+    expect_named(out, "Date times")
+    expect_is(out[[1L]], "factor")
+
+    ## wrong format and factors not requested, char. vector returned
+    pasted <- list(x, FALSE, TRUE, FALSE)
+    expect_warning(out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+                                      hide.empty.rows.and.columns = FALSE, date.format = "US")$data,
+                   "The entered data could not be interpreted.")
+    expect_is(out, "character")
+    expect_equal(out[1], "Date times")
 })
