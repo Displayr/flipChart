@@ -781,8 +781,9 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
         rownames(x) <- make.unique(as.character(x[,1]))
     else
         rownames(x) <- make.unique(x[,1])
-    attr(x, "categories.title") <- colnames(x)[1]
+    c.title <- colnames(x)[1]
     x <- x[,-1, drop = FALSE]
+    attr(x, "categories.title") <- c.title
     return(x)
 }
 
@@ -798,9 +799,10 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
     } else
     {
         # Extract categories.title from aggregated data
-        attr(x, "categories.title") <- names(dimnames(x))[1]
+        if (is.null(attr(x, "categories.title")))
+            attr(x, "categories.title") <- names(dimnames(x))[1]
         # Extract categories.title from Qtables
-        if (!is.null(attr(x, "questions")))
+        if (is.null(attr(x, "categories.title")) && !is.null(attr(x, "questions")))
             attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"

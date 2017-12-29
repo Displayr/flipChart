@@ -183,6 +183,14 @@ test_that("PrepareData: pasted raw data",
     expect_equal(out2$data[1,1], 0.1131)
 })
 
+test_that("PrepareData: raw data with labels",
+{
+    pp <- PrepareData("TimeSeries", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10, B=2:11)))
+    expect_equal(dim(pp$data), c(10, 2))
+    expect_equal(pp$categories.title, "Date")
+    expect_error(CChart("Time Series", pp$data), NA)
+})
+
 test_that("PrepareData: crappy input to crappy data",
 {
     ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
@@ -1171,11 +1179,13 @@ test_that("Date formatting",
     x1d <- 1:10
     names(x1d) <- sprintf("%02d/01/2017", 1:10)
     x2d <- cbind(A = x1d, B = x1d + 1)
+    x3 <- cbind(Time = names(x1d), A = unname(x1d))
 
     res1 <- PrepareData("Column", input.data.table = x1d, date.format = "International (dd/mm/yyyy)")
     res2 <- PrepareData("Column", input.data.table = x2d, date.format = "International (dd/mm/yyyy)")
     res3 <- PrepareData("Column", input.data.table = x1d, date.format = "US (mm/dd/yyyy)")
     res4 <- PrepareData("Column", input.data.table = x2d, date.format = "US (mm/dd/yyyy)")
+    res5 <- PrepareData("Column", input.data.table = x3)
 
     us.dates <- format(as.Date(sprintf("2017-%02d-01", 1:10)), "%b %d %Y")
     intl.dates <- format(as.Date(sprintf("2017-01-%02d", 1:10)), "%b %d %Y")
