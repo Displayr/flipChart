@@ -1207,6 +1207,7 @@ test_that("Pasted data with dates and date.format arg",
                    "The entered data could not be interpreted.")
     expect_is(out, "character")
     expect_equal(out[1], "Date times")
+})
 
 test_that("Date formatting",
 {
