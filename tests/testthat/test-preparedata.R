@@ -183,6 +183,14 @@ test_that("PrepareData: pasted raw data",
     expect_equal(out2$data[1,1], 0.1131)
 })
 
+test_that("PrepareData: raw data with labels",
+{
+    pp <- PrepareData("TimeSeries", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10, B=2:11)))
+    expect_equal(dim(pp$data), c(10, 2))
+    expect_equal(pp$categories.title, "Date")
+    expect_error(CChart("Time Series", pp$data), NA)
+})
+
 test_that("PrepareData: crappy input to crappy data",
 {
     ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
@@ -927,19 +935,6 @@ test_that("DS-1689 Bar chart from one variable raw data",{
     expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
 })
 
-test_that("Date formatting",
-{
-    xx <- structure(1:10, .Names = c("1/01/2001", "2/01/2001", "3/01/2001",
-"4/01/2001", "5/01/2001", "6/01/2001", "7/01/2001", "8/01/2001",
-"9/01/2001", "10/01/2001"))
-    expect_warning(CChart("Column", PrepareData("Column", input.data.table = xx)$data), "Date formats are ambiguous")
-    expect_error(res1 <- PrepareData("Column", input.data.table = xx, date.format="United States"), NA)
-    expect_error(res2 <- PrepareData("Column", input.data.table = xx, date.format="International"), NA)
-    expect_equal(names(res1$data)[10], "Oct 01 2001")
-    expect_equal(names(res2$data)[10], "Jan 10 2001")
-})
-
-
 test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
  zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
@@ -1183,12 +1178,6 @@ test_that("Automatic crosstab of two input variables",
 
 })
 
-test_that("Pasted data with crosstab",
-{
-    x <- cbind(c("x", as.character(1:10)), c("pet", rep(c("cat", "dog"), e = 1:5)))
-    pasted <- list(x, TRUE, TRUE, FALSE)
-})
-
 test_that("Pasted data with dates and date.format arg",
 {
     ## list(get0("formPastedData"), get0("formPastedFactor"), get0("formPastedColumnNames"),
@@ -1218,4 +1207,26 @@ test_that("Pasted data with dates and date.format arg",
                    "The entered data could not be interpreted.")
     expect_is(out, "character")
     expect_equal(out[1], "Date times")
+
+test_that("Date formatting",
+{
+    # test for vector and matrix separately because they are coded in different places
+    x1d <- 1:10
+    names(x1d) <- sprintf("%02d/01/2017", 1:10)
+    x2d <- cbind(A = x1d, B = x1d + 1)
+    x3 <- cbind(Time = names(x1d), A = unname(x1d))
+
+    res1 <- PrepareData("Column", input.data.table = x1d, date.format = "International (dd/mm/yyyy)")
+    res2 <- PrepareData("Column", input.data.table = x2d, date.format = "International (dd/mm/yyyy)")
+    res3 <- PrepareData("Column", input.data.table = x1d, date.format = "US (mm/dd/yyyy)")
+    res4 <- PrepareData("Column", input.data.table = x2d, date.format = "US (mm/dd/yyyy)")
+    res5 <- PrepareData("Column", input.data.table = x3)
+
+    us.dates <- format(as.Date(sprintf("2017-%02d-01", 1:10)), "%b %d %Y")
+    intl.dates <- format(as.Date(sprintf("2017-01-%02d", 1:10)), "%b %d %Y")
+
+    expect_equal(names(res1$data), intl.dates)
+    expect_equal(rownames(res2$data), intl.dates)
+    expect_equal(names(res3$data), us.dates)
+    expect_equal(rownames(res4$data), us.dates)
 })
