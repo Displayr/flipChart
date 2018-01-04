@@ -132,8 +132,8 @@ test_that("PrepareData: single table, single stat",
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), c(dims[1]*dims[3], dims[2]))
 
-    tab.with.stat <- structure(c(1, 3, 5, 7, 2, 4, 6, 8), .Dim = c(4L, 2L), statistic = "Counts", .Dimnames = list(
-    c("A", "B", "C", "D"), c("Column 1", "Column 2")))
+    tab.with.stat <- structure(c(1, 3, 5, 7, 2, 4, 6, 8), .Dim = c(4L, 2L), statistic = "Counts",
+                               .Dimnames = list(c("A", "B", "C", "D"), c("Column 1", "Column 2")))
     pdColumn <- PrepareData("Column", input.data.table = tab.with.stat)
     pdScatter <- PrepareData("Scatter", input.data.table = tab.with.stat)
     expect_equal(pdColumn$values.title, "Counts")
@@ -564,13 +564,13 @@ test_that("PrepareData: input.data.raw subset and weights",
     QPopulationWeight <- prop.table(runif(nrow(dat)))
     QFilter <- rbinom(nrow(dat), 1, .5)
     n.filter <- sum(QFilter ==  1L)
-    out <- PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot")
+    out <- suppressWarnings(PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot"))
 
     expect_equal(nrow(out$data), n.filter)
     expect_is(out$data, "data.frame")
 
-    out <- PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot",
-                       weights = QPopulationWeight)
+    out <- suppressWarnings(PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot",
+                       weights = QPopulationWeight))
     expect_equal(nrow(out$data), n.filter)
     expect_is(out$data, "data.frame")
     expect_equal(attr(out$data, "weights"), QPopulationWeight[QFilter ==  1])
@@ -706,7 +706,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_true(is.na(res4$scatter.variable.indices["sizes"]))
     expect_true(is.na(res4$scatter.variable.indices["colors"]))
 
-    res5 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy, Z1 = NULL, Z2 = yy))
+    res5 <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy, Z1 = NULL, Z2 = yy)))
     expect_equal(colnames(res5$data), c("VarA", "VarB"))
     expect_equal(res5$values.title, "")
     expect_equivalent(res5$scatter.variable.indices["x"], 1)
@@ -714,7 +714,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_true(is.na(res5$scatter.variable.indices["sizes"]))
     expect_equivalent(res5$scatter.variable.indices["colors"], 2)
 
-    res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = factor(1:5), Y = factor(1:5), Z = factor(1:5)),
+    res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = 1:5, Y = factor(1:5), Z = factor(1:5)),
                        as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
     expect_equal(colnames(res$data), c("X","Y","Z"))
@@ -840,7 +840,7 @@ test_that("Scatterplot with duplicated variable",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 1)
+    expect_equal(length(w), 2)
     expect_true(grepl("^After removing missing ", w[1]))
 })
 
@@ -1230,4 +1230,26 @@ test_that("Date formatting",
     expect_equal(rownames(res2$data), intl.dates)
     expect_equal(names(res3$data), us.dates)
     expect_equal(rownames(res4$data), us.dates)
+})
+
+test_that("Scatter input data column order",
+{
+    pst <- list(structure(c("A", "0", "1", "2", "3", "B", "5", "6", "7",
+"8", "C", "9", "10", "11", "12"), .Dim = c(5L, 3L)), NULL, NULL,
+    NULL, NULL)
+    p.unnamed <- list(structure(c("", "", "", "", "", "", "1", "2", "3", "4",
+"", "5", "6", "7", "8", "", "9", "10", "11", "12"), .Dim = c(5L,
+4L)), NULL, NULL, NULL, NULL)
+    p.2col <- list(structure(c("A", "1", "2", "3", "4", "B", "5", "6", "7", "8"),
+        .Dim = c(5L, 2L)), NULL, NULL, NULL, NULL)
+
+    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    expect_equal(levels(res$data$Groups), c('B','C'))
+    res <- PrepareData("Scatter", input.data.pasted = p.unnamed, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    expect_equal(levels(res$data$Groups), c('Group 1','Group 2'))
+    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors")
+    expect_equal(ncol(res$data), 2)
+    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "X coordinates, Y coordinates, Sizes, Colors")
+    expect_equal(ncol(res$data), 3)
+
 })

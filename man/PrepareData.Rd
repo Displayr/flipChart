@@ -8,7 +8,7 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
-  scatter.columns.as.series = FALSE, group.by.last = FALSE, tidy = TRUE,
+  scatter.input.columns.order = NULL, group.by.last = FALSE, tidy = TRUE,
   transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",
   hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
@@ -53,11 +53,11 @@ and otherwise the mean is computed. If \code{input.data.raw} contains
 two an 'X' variable and a 'Y' variable in the first two elements of the list,
 the data is automatically aggregated and crosstabbed.}
 
-\item{scatter.columns.as.series}{Logical; If \code{TRUE}, then changes
-the expected input format for scatter plots. Multiple columns in input table
-(except the first column used as the x-values) are taken to be
-the y-coordinates of multiple data series, which will shown in
-different colors. Bubble charts cannot be used in this case.}
+\item{scatter.input.columns.order}{Character; This is used to determine
+the input format of \code{input.data.table/input.data.pasted/input.data.other}
+for scatterplots. Allowable values are 
+"X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
+Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".}
 
 \item{group.by.last}{Logical; \code{TRUE} and \code{first.aggregate} and there is data
 in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated

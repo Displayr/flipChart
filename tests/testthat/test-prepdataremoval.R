@@ -254,8 +254,8 @@ test_that("PrepareData R+C removal: Binary variable for venn diagram",
     QFilter <- rbinom(nrow(input.data.other), 1, .25)
     n.filter <- sum(QFilter==  1)
 
-    out <- PrepareData(input.data.other = input.data.other, chart.type = "Scatter Plot",
-                       subset = QFilter, column.names.to.remove = colnames(input.data.other)[1:2])
+    out <- suppressWarnings(PrepareData(input.data.other = input.data.other, chart.type = "Scatter Plot",
+                       subset = QFilter, column.names.to.remove = colnames(input.data.other)[1:2]))
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.other)[3:4])
     expect_equal(nrow(out$data), n.filter)
@@ -395,8 +395,8 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
   name = "d2", label = "Income", question = "Income")),
   .Names = c("Gender", "Income"),
   row.names = c(NA, -800L), class = "data.frame")
-    out <- PrepareData(input.data.raw = dat, chart.type = "Bubble Chart",
-                                             column.names.to.remove = "Income")
+    out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bubble Chart",
+                                             column.names.to.remove = "Income"))
     expect_is(out$data, "data.frame")
     ## Bubble Charts don't have aggre. so will remove Income var.
     expect_equal(ncol(out$data), ncol(dat) - 1)

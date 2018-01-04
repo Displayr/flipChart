@@ -29,11 +29,11 @@
 #'     and otherwise the mean is computed. If \code{input.data.raw} contains
 #'     two an 'X' variable and a 'Y' variable in the first two elements of the list,
 #'     the data is automatically aggregated and crosstabbed.
-#' @param scatter.columns.as.series Logical; If \code{TRUE}, then changes
-#'     the expected input format for scatter plots. Multiple columns in input table
-#'     (except the first column used as the x-values) are taken to be
-#'     the y-coordinates of multiple data series, which will shown in
-#'     different colors. Bubble charts cannot be used in this case.
+#' @param scatter.input.columns.order Character; This is used to determine
+#'     the input format of \code{input.data.table/input.data.pasted/input.data.other}
+#'     for scatterplots. Allowable values are 
+#'     "X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
+#'     Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
 #'     in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
@@ -113,7 +113,7 @@ PrepareData <- function(chart.type,
                         input.data.other = NULL,
                         data.source = NULL,
                         first.aggregate = FALSE,
-                        scatter.columns.as.series = FALSE,
+                        scatter.input.columns.order = NULL,
                         group.by.last = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
@@ -270,7 +270,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
                                      chart.type, weights, tidy, show.labels,
-                                     scatter.columns.as.series)
+                                     scatter.input.columns.order)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -638,7 +638,7 @@ prepareForSpecificCharts <- function(
                                      weights,
                                      tidy,
                                      show.labels,
-                                     scatter.columns.as.series)
+                                     scatter.input.columns.order)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -660,7 +660,10 @@ prepareForSpecificCharts <- function(
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (scatter.columns.as.series || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        if (is.null(scatter.input.columns.order))
+            scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors"
+        if ((scatter.input.columns.order == "X coordinates, Y coordinates in multiple columns") ||
+            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
@@ -677,6 +680,11 @@ prepareForSpecificCharts <- function(
                 y.ind <- (1:m) + 1
                 xvar <- rep(data[,1], m)
             }
+            if (length(y.names) <= 1)
+                y.names <- colnames(data)[y.ind]
+            if (length(y.names) <= 1)
+                y.names <- paste("Group", 1:m)
+            
             # newdata needs to use data rather than input.data.raw
             # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
@@ -689,6 +697,9 @@ prepareForSpecificCharts <- function(
 
         } else
         {
+            if (grepl("^Data labels", scatter.input.columns.order))
+                data <- useFirstColumnAsLabel(data, allow.numeric.rownames = TRUE,
+                            allow.duplicate.rownames = FALSE)
             if (!is.data.frame(data) && !is.matrix(data))
                 data <- TidyTabularData(data)
             # Removing duplicate columns
@@ -697,7 +708,7 @@ prepareForSpecificCharts <- function(
             if (NCOL(data) > 4)
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
-                    " Consider selecting 'Treat columns as data series'.")
+                    " Consider setting column order to 'X coordinates, Y coordinates in multiple columns'.")
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
             attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
         }
@@ -749,31 +760,34 @@ isListOrRaggedArray <- function(x)
 
 
 #' @noRd
-useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
+useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE, 
+    allow.numeric.rownames = FALSE, allow.duplicate.rownames = TRUE)
 {
-    if (length(dim(x)) != 2 || ncol(x) == 1 || is.numeric(x[,1]))
+    if (length(dim(x)) != 2 || ncol(x) == 1)
+        return(x)
+    if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
-    # Rownames are only useful if the rest of the columns
-    # Make up multiple series of NUMERIC data
-    for (i in 2:ncol(x))
-    {
-        if (!is.numeric(x[,i]))
-            return(x)
-    }
-
-    # Ignore numeric/default rownames
+    # Preserve existing rownames if they are non-numeric 
     # Unnamed matrices would have been given default names 'Row 1', 'Row 2',
     # Filtered variables would have numeric rownames
     # corresponding to index in original dataset
-    # Note that this overwrites matrices with numeric rownames only if
-    # the first column was also a non-numeric (string/factor/date) variable
     tmp.names <- gsub("Row ", "", rownames(x))
-    if (any(is.na(as.numeric(tmp.names))))
+    if (any(suppressWarnings(is.na(as.numeric(tmp.names)))))
         return(x)
 
-    # Rownames must be unique, so remove rows with duplicates in column 1
+    # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
+    if (any(ind.dup) && !allow.duplicate.rownames) # scatterplot
+    {
+        warning("First column was not used as labels because it contains duplicated values: ",
+            paste(unique(x[ind.dup,1]), collapse=", ")) 
+        return(x)
+    }
+    if (mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
+        return(x)
+
+    # Try salvaging usable data labels
     if (any(ind.dup))
     {
         warning("Duplicated entries in '", colnames(x)[1], "': ",
@@ -794,7 +808,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE)
     else if (is.factor(x[,1])) # QDates are also factors
         rownames(x) <- make.unique(as.character(x[,1]))
     else
-        rownames(x) <- make.unique(x[,1])
+        rownames(x) <- make.unique(as.character(x[,1]))
     c.title <- colnames(x)[1]
     x <- x[,-1, drop = FALSE]
     attr(x, "categories.title") <- c.title
