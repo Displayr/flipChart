@@ -225,22 +225,22 @@ test_that("Stream",
                                                                   get0("formDataLabelsDecimals")))
 
               pd <- PrepareData("Stream", input.data.table = t(Table.MatrixTimeSeries))
-              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year",
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "Year",
                      y.tick.format = pn$values.number.format,
                      x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.table = Table.VectorTimeSeries)
-              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year",
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "Year",
                      y.tick.format = pn$values.number.format,
                      x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.pasted = Pasted.MatrixTimeSeries)
-              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year",
+              CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "Year",
                      y.tick.format = pn$values.number.format,
                      x.tick.format = pn$categories.number.format)
 
               pd <- PrepareData("Stream", input.data.other = Other.MatrixTimeSeries)
-              expect_error(print(CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "year",
+              expect_error(print(CChart("Stream", pd$data,  x.tick.interval = 2, x.tick.units = "Year",
                                         y.tick.format = pn$values.number.format,
                                         x.tick.format = pn$categories.number.format)), NA)
 
