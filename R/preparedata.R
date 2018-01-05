@@ -270,7 +270,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
                                      chart.type, weights, tidy, show.labels,
-                                     scatter.input.columns.order)
+                                     date.format, scatter.input.columns.order)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -487,13 +487,19 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
         stop("The data provided does not match the 'data.source.index'.")
 }
 
-scatterVariableIndices <- function(input.data.raw, data, show.labels)
+scatterVariableIndices <- function(input.data.raw, data, scatter.input.columns.order, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    if (scatter.input.columns.order == "Groups, X coordinates, Y coordinates, Sizes, Colors")
+        indices <- c(x = 2, y = 3, sizes = 4, colors = 1)
+    else if (scatter.input.columns.order == "X coordinates, Y coordinates, Colors, Sizes")
+        indices <- c(x = 1, y = 2, sizes = 4, colors = 3)
+    else
+        indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
-        return(indices[1:max(4, NCOL(data))])
+        return(indices)
+    
     .getColumnIndex <- function(i)
     {
         if (i > len)
@@ -638,6 +644,7 @@ prepareForSpecificCharts <- function(
                                      weights,
                                      tidy,
                                      show.labels,
+                                     date.format,
                                      scatter.input.columns.order)
 {
     # Multiple tables
@@ -702,9 +709,9 @@ prepareForSpecificCharts <- function(
             .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
                                                               on.parse.failure = "silent")))))
 
-            if (.isDate(as.character(newdata[,1])))
-                newdata[,1] <- format(AsDate(as.character(newdata[,1]), us.format = FALSE), "%b %d %Y")
-
+            if (date.format != "Automatic" && .isDate(as.character(newdata[,1])))
+                newdata[,1] <- format(AsDate(as.character(newdata[,1]), 
+                us.format = !grepl("International", date.format)), "%b %d %Y")
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
@@ -724,8 +731,10 @@ prepareForSpecificCharts <- function(
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider setting column order to 'X coordinates, Y coordinates in multiple columns'.")
+            
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
+            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, 
+                        scatter.input.columns.order, show.labels)
         }
     }
     # Charts that plot the distribution of raw data (e.g., histograms)
