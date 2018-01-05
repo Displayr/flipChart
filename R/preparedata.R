@@ -662,20 +662,29 @@ prepareForSpecificCharts <- function(
     {
         if (is.null(scatter.input.columns.order))
             scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors"
+
         if ((scatter.input.columns.order == "X coordinates, Y coordinates in multiple columns") ||
             (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
-            # When no X-coord is supplied
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
-            {
+            {   
+                # No X-coordinates supplied in variables
                 m <- length(input.data.raw$Y)
                 y.ind <- 1:m
                 xvar <- rep(1:n, m)
-            }
-            else
+
+            } else if (is.null(input.data.raw$Y) && (!is.null(rownames(data))) && suppressWarnings(any(!is.numeric(rownames(data)))))
+            {   
+                # Use rowlabels as X-coordinate if character labels given
+                m <- ncol(data)
+                y.ind <- 1:m
+                xvar <- rep(rownames(data), m)
+
+            } else
             {
+                # Otherwise use first column as X-coordinates
                 m <- ncol(data) - 1
                 y.ind <- (1:m) + 1
                 xvar <- rep(data[,1], m)
@@ -690,6 +699,12 @@ prepareForSpecificCharts <- function(
             newdata <- data.frame(X = xvar,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
+            .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
+                                                              on.parse.failure = "silent")))))
+
+            if (.isDate(as.character(newdata[,1])))
+                newdata[,1] <- format(AsDate(as.character(newdata[,1]), us.format = FALSE), "%b %d %Y")
+
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata

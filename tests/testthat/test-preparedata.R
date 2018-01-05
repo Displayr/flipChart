@@ -1242,9 +1242,19 @@ test_that("Scatter input data column order",
 4L)), NULL, NULL, NULL, NULL)
     p.2col <- list(structure(c("A", "1", "2", "3", "4", "B", "5", "6", "7", "8"),
         .Dim = c(5L, 2L)), NULL, NULL, NULL, NULL)
+    p.dates <- list(structure(c("A", "1/1/2017", "2/1/2017", "3/1/2017", "4/1/2017",
+        "B", "5", "6", "7", "8", "C", "9", "10", "11", "12"),
+        .Dim = c(5L, 3L)), NULL, NULL, NULL, NULL)
+    tb <- cbind(A = rnorm(10), B = rnorm(10), C = rnorm(10))
+    rownames(tb) <- letters[1:10]
 
+    res <- PrepareData("Scatter", input.data.other = tb, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    expect_equal(dim(res$data), c(30, 3))
     res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
     expect_equal(levels(res$data$Groups), c('B','C'))
+    res <- PrepareData("Scatter", input.data.pasted = p.dates, date.format = "International",
+        scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    expect_equal(res$data[,1], sprintf("Jan %02d 2017", c(1:4, 1:4)))
     res <- PrepareData("Scatter", input.data.pasted = p.unnamed, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
     expect_equal(levels(res$data$Groups), c('Group 1','Group 2'))
     res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors")
