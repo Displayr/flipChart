@@ -805,12 +805,15 @@ test_that("Basic crosstab input",{
                       transpose = FALSE, first.aggregate = TRUE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(dim(pd$data), 9:8)
-    expect_equal(dim(pd$data), 9:8)
     z = list(X = list(colas$d1), Y = colas$d2, Z = NULL, Z1 = NULL)
     pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(dim(pd$data), c(327, 2))
+    z = list(X = list(colas$d1), Y = colas$d2, Z = NULL, Z1 = NULL)
+    pd <- suppressWarnings(PrepareData("Column", TRUE, NULL, input.data.raw = z,
+                      transpose = FALSE, first.aggregate = NULL,
+                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+    expect_equal(dim(pd$data), 9:8)
     pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
                       transpose = TRUE, first.aggregate = TRUE))
     expect_equal(length(pd$data), 2)
