@@ -497,6 +497,8 @@ scatterVariableIndices <- function(input.data.raw, data, scatter.input.columns.o
         indices <- c(x = 2, y = 3, sizes = 4, colors = 1)
     else if (scatter.input.columns.order == "X coordinates, Y coordinates, Colors, Sizes")
         indices <- c(x = 1, y = 2, sizes = 4, colors = 3)
+    else if (scatter.input.columns.order == "Data labels, X coordinates, Y coordinates, Colors, Sizes")
+        indices <- c(x = 1, y = 2, sizes = 4, colors = 3)
     else
         indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
@@ -816,6 +818,21 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     # Try salvaging usable data labels
     if (any(ind.dup))
     {
+        if (!allow.duplicate.rownames) # scatterplot
+        {
+            warning("First column was not used as labels ",
+                    "because it contains duplicated values: ",
+                    paste(unique(x[ind.dup,1]), collapse=", "))
+            return(x)
+        }
+
+        # If too many duplicates, then assume it is not expected to be a rowname
+        # The exception is when the rownames are QDates
+        is.date <- is.factor(x[,1]) &&
+            all(!is.na(suppressWarnings(AsDate(levels(x[,1]), on.parse.failure = "silent"))))
+        if ((!is.date) && mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
+            return(x)
+
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
             ". Consider aggregating using '", colnames(x)[1], "' as Groups.")
