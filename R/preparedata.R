@@ -262,6 +262,8 @@ PrepareData <- function(chart.type,
             warning("The variables being crosstabbed have different lengths; ","
                     it is likely that the crosstab is invalid.")
         data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
+        if (crosstab)
+            group.by.last <- TRUE
     }
 
     ###########################################################################
