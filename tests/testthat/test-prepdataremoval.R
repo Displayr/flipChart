@@ -410,11 +410,11 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
     pd <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
                              column.names.to.remove = c("Gender", "Income")))
-    expect_equal(names(dimnames(pd$data)),  c("Gender", "Income"))
+    expect_equal(names(pd$data),  c("Gender", "Income"))
     z = suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
                              row.names.to.remove = c("Male")))
-    expect_equal(length(z$data), 9)
+    expect_equal(length(z$data), 2)
 
 
 

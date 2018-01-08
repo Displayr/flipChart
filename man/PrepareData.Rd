@@ -55,7 +55,7 @@ the data is automatically aggregated and crosstabbed.}
 
 \item{scatter.input.columns.order}{Character; This is used to determine
 the input format of \code{input.data.table/input.data.pasted/input.data.other}
-for scatterplots. Allowable values are 
+for scatterplots. Allowable values are
 "X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
 Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".}
 

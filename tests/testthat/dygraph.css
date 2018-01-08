@@ -1,0 +1,26 @@
+.dygraph-title {
+        color: #2C2C2C;
+        font-size: 16px;
+        font-family: 16;
+        font-weight: bold;
+        }
+        .dygraph-label.dygraph-xlabel {
+        color: #2C2C2C;
+        font-size: 12px;
+        font-family: Arial;
+        }
+        .dygraph-label.dygraph-ylabel {
+        color: #2C2C2C;
+        font-size: 12px;
+        font-family: Arial;
+        }
+        .dygraph-axis-label.dygraph-axis-label-x {
+        color: #2C2C2C;
+        font-size: 10px;
+        font-family: Arial;
+        }
+        .dygraph-axis-label.dygraph-axis-label-y {
+        color: #2C2C2C;
+        font-size: 10px;
+        font-family: Arial;
+        }

@@ -288,7 +288,21 @@ test_that("Tables as an input to histograms", {
 
 
 
+test_that("Venn in CCHart", {
 
+                r.output <- list(
+                    list("sets"= list(0), "label"= "Like", "size"= 1.00),
+                    list("sets"= list(1), "label"= "Love", "size"= .50),
+                    list("sets"= list(2), "label"= "Dislike", "size"= 1.00),
+                    list("sets"= list(3), "label"= "Hate", "size"= .50),
+                    list("sets"= list(0, 1), "size"= .50),
+                    list("sets"= list(0, 2), "size"= .0),
+                    list("sets"= list(2, 3), "size"= .50))
+                Z = PrepareData(input.data.other = r.output, chart.type = "Venn", first.aggregate = NULL, group.by.last = FALSE,
+                                data.source = "Use an existing R Output in 'Pages'")
+                expect_error(print(CChart("Venn", Z$data, values.hovertext.format = "%")), NA)
+
+})
 
 
 

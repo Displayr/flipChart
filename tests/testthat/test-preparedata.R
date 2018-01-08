@@ -816,7 +816,7 @@ test_that("Basic crosstab input",{
     expect_equal(dim(pd$data), 9:8)
     pd <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = list(colas$d1, colas$d2)),
                       transpose = TRUE, first.aggregate = TRUE))
-    expect_equal(length(pd$data), 2)
+    expect_equal( dim(as.matrix(pd$data)), 2:1)
 
 
     set.seed(123456)

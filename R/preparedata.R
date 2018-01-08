@@ -31,7 +31,7 @@
 #'     the data is automatically aggregated and crosstabbed.
 #' @param scatter.input.columns.order Character; This is used to determine
 #'     the input format of \code{input.data.table/input.data.pasted/input.data.other}
-#'     for scatterplots. Allowable values are 
+#'     for scatterplots. Allowable values are
 #'     "X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
 #'     Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
@@ -251,13 +251,14 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
-    maybe.crosstab <- !is.null(input.data.raw) && length(names(input.data.raw)) == 2 &&
-        names(input.data.raw)[1:2] == c("X", "Y") && !chart.type %in% c("Bubble", "Scatter")
-    if (!isDistribution(chart.type) && (maybe.crosstab || is.null(first.aggregate) || first.aggregate))
+    crosstab <- rawDataLooksCrosstabbable(input.data.raw) &&
+        !chart.type %in% c("Bubble", "Scatter", "Venn") || group.by.last
+
+    if (is.null(first.aggregate))
+        first.aggregate <- crosstab
+    if (!isDistribution(chart.type) && (crosstab || first.aggregate))
     {
-        null.inputs <- sapply(input.data.raw, is.null)
-        nms <- names(input.data.raw)[!null.inputs]
-        crosstab <- length(nms) == 2 && ncol(data) == 2 || group.by.last
+        #crosstab <- NCOL(data) == 2 || group.by.last
         if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
             warning("The variables being crosstabbed have different lengths; ","
                     it is likely that the crosstab is invalid.")
@@ -500,7 +501,7 @@ scatterVariableIndices <- function(input.data.raw, data, scatter.input.columns.o
         indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
-    
+
     .getColumnIndex <- function(i)
     {
         if (i > len)
@@ -677,14 +678,14 @@ prepareForSpecificCharts <- function(
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
-            {   
+            {
                 # No X-coordinates supplied in variables
                 m <- length(input.data.raw$Y)
                 y.ind <- 1:m
                 xvar <- rep(1:n, m)
 
             } else if (is.null(input.data.raw$Y) && (!is.null(rownames(data))) && suppressWarnings(any(!is.numeric(rownames(data)))))
-            {   
+            {
                 # Use rowlabels as X-coordinate if character labels given
                 m <- ncol(data)
                 y.ind <- 1:m
@@ -701,7 +702,7 @@ prepareForSpecificCharts <- function(
                 y.names <- colnames(data)[y.ind]
             if (length(y.names) <= 1)
                 y.names <- paste("Group", 1:m)
-            
+
             # newdata needs to use data rather than input.data.raw
             # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
@@ -711,7 +712,7 @@ prepareForSpecificCharts <- function(
                                                               on.parse.failure = "silent")))))
 
             if (date.format != "Automatic" && .isDate(as.character(newdata[,1])))
-                newdata[,1] <- format(AsDate(as.character(newdata[,1]), 
+                newdata[,1] <- format(AsDate(as.character(newdata[,1]),
                 us.format = !grepl("International", date.format)), "%b %d %Y")
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
@@ -732,9 +733,9 @@ prepareForSpecificCharts <- function(
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider setting column order to 'X coordinates, Y coordinates in multiple columns'.")
-            
+
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, 
+            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data,
                         scatter.input.columns.order, show.labels)
         }
     }
@@ -785,7 +786,7 @@ isListOrRaggedArray <- function(x)
 
 
 #' @noRd
-useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE, 
+useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     allow.numeric.rownames = FALSE, allow.duplicate.rownames = TRUE)
 {
     if (length(dim(x)) != 2 || ncol(x) == 1)
@@ -793,7 +794,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
-    # Preserve existing rownames if they are non-numeric 
+    # Preserve existing rownames if they are non-numeric
     # Unnamed matrices would have been given default names 'Row 1', 'Row 2',
     # Filtered variables would have numeric rownames
     # corresponding to index in original dataset
@@ -806,7 +807,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     if (any(ind.dup) && !allow.duplicate.rownames) # scatterplot
     {
         warning("First column was not used as labels because it contains duplicated values: ",
-            paste(unique(x[ind.dup,1]), collapse=", ")) 
+            paste(unique(x[ind.dup,1]), collapse=", "))
         return(x)
     }
     if (mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
@@ -869,4 +870,27 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
     if (tidy)
         x <- drop(x)
     x
+}
+
+
+rawDataLooksCrosstabbable <- function(input.data.raw, data)
+{
+    if (is.null(input.data.raw))
+        return(FALSE)
+    not.nulls <- !sapply(input.data.raw, is.null)
+    if (length(not.nulls) == 1)
+        return(FALSE)
+    if (!not.nulls[1] || !not.nulls[2])
+        return(FALSE)
+    if (length(not.nulls) > 2)
+    {
+        if (sum(not.nulls) != 2)
+            return(FALSE)
+        input.data.raw <- input.data.raw[1:2]
+    }
+    nms <- names(input.data.raw)
+    ncols <- sapply(input.data.raw, NCOL)
+    if (any(ncols != 1))
+        return(FALSE)
+    return(nms == c("X", "Y"))
 }
