@@ -805,18 +805,23 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
-    if (any(ind.dup) && !allow.duplicate.rownames) # scatterplot
-    {
-        warning("First column was not used as labels because it contains duplicated values: ",
-            paste(unique(x[ind.dup,1]), collapse=", ")) 
-        return(x)
-    }
-    if (mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
-        return(x)
-
-    # Try salvaging usable data labels
     if (any(ind.dup))
     {
+        if (!allow.duplicate.rownames) # scatterplot
+        {
+            warning("First column was not used as labels ",
+                    "because it contains duplicated values: ",
+                    paste(unique(x[ind.dup,1]), collapse=", ")) 
+            return(x)
+        }
+        
+        # If too many duplicates, then assume it is not expected to be a rowname
+        # The exception is when the rownames are QDates
+        is.date <- is.factor(x[,1]) && 
+            all(!is.na(suppressWarnings(AsDate(levels(x[,1]), on.parse.failure = "silent"))))
+        if ((!is.date) && mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
+            return(x)
+
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
             ". Consider aggregating using '", colnames(x)[1], "' as Groups.")
