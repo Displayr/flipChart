@@ -280,7 +280,7 @@ PrepareData <- function(chart.type,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
-                   first.aggregate,
+                   group.by.last || first.aggregate,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
