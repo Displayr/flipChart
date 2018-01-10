@@ -806,16 +806,6 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
-    if (any(ind.dup) && !allow.duplicate.rownames) # scatterplot
-    {
-        warning("First column was not used as labels because it contains duplicated values: ",
-            paste(unique(x[ind.dup,1]), collapse=", "))
-        return(x)
-    }
-    if (mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
-        return(x)
-
-    # Try salvaging usable data labels
     if (any(ind.dup))
     {
         if (!allow.duplicate.rownames) # scatterplot
@@ -835,7 +825,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
-            ". Consider aggregating using '", colnames(x)[1], "' as Groups.")
+            ". Consider aggregating on '", colnames(x)[1], "'.")
         if (remove.duplicates)
         {
             warning("Only the first unique entry is shown.")
@@ -844,7 +834,6 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
         else
             return(x)
     }
-
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
         rownames(x) <- format(x[,1], "%b %d %Y")
