@@ -626,15 +626,16 @@ transformTable <- function(data,
             data <- asPercentages(data)
     }
 
-    # Convert dates in row/column names
+    # Convert dates in row/column names if format is NOT automatic
     # Pattern matching to allow for more flexible controls, e.g. "International (dd/mm/yyyy)"
+    # All warnings are suppressed here - warnings are given in the charting functions
     .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
                                                                                     on.parse.failure = "silent")))))
 
     if (date.format != "Automatic" && .isDate(rownames(data)))
-        rownames(data) <- format(AsDate(rownames(data), us.format = !grepl("International", date.format)), "%b %d %Y")
+        rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
     else if (date.format != "Automatic" && .isDate(names(data)))
-        names(data) <- format(AsDate(names(data), us.format = !grepl("International", date.format)), "%b %d %Y")
+        names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
     return(data)
 }
 
