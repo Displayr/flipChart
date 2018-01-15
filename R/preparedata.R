@@ -724,7 +724,7 @@ prepareForSpecificCharts <- function(
 
         } else
         {
-            if (grepl("^Data labels", scatter.input.columns.order))
+            if (is.null(input.data.raw) && grepl("^Data labels", scatter.input.columns.order))
                 data <- useFirstColumnAsLabel(data, allow.numeric.rownames = TRUE,
                             allow.duplicate.rownames = FALSE)
             if (!is.data.frame(data) && !is.matrix(data))

@@ -659,6 +659,10 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(dim(res7$data), c(100, 1))
     expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA))
 
+    res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy))
+    expect_equal(dim(res8$data), c(100, 2))
+    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA))
+
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = TRUE)
@@ -843,7 +847,7 @@ test_that("Scatterplot with duplicated variable",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 2)
+    expect_equal(length(w), 1)
     expect_true(grepl("^After removing missing ", w[1]))
 })
 
