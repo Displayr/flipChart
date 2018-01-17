@@ -296,10 +296,18 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
-    # The next line is a hack to workaround a bug. It should be removed when
-    # RS-3402 is fixed and in production for Q.
-    if (chart.type == "Table")
-        attr(data, "statistic") <- NULL
+
+    # This is a work around bug RS-3402
+    # This is now fixed in Q 5.2.7+, but we retain support for older versions
+    # by converting to a matrix if necessary
+    if (chart.type == "Table" && !is.null(attr(data, "statistic")) &&
+        (is.null(dim(data)) || length(dim(data)) == 1))
+    {
+        tmp <- attr(data, "statistic")
+        out <- as.matrix(data)
+        attr(data, "statistic") <- tmp
+    }
+
     list(data = data,
          weights = weights,
          values.title = values.title,
