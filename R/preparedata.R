@@ -304,7 +304,7 @@ PrepareData <- function(chart.type,
         (is.null(dim(data)) || length(dim(data)) == 1))
     {
         tmp <- attr(data, "statistic")
-        out <- as.matrix(data)
+        data <- as.matrix(data)
         attr(data, "statistic") <- tmp
     }
 
