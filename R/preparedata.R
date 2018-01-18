@@ -668,10 +668,14 @@ prepareForSpecificCharts <- function(
         if (isScatter(chart.type))
             attr(data, "scatter.variable.indices") = c(x = 1, y = 2, sizes = 3, colors = 4)
     }
-    else if (chart.type %in% c("Venn", "Table"))
+    else if (chart.type == "Venn")
     {
-        data <- data # Do nothing.
-
+        missing.data.rows <- rowSums(as.matrix(is.na(data))) > 0
+        if (any(missing.data.rows))
+        {
+            data <- data[!missing.data.rows, ]
+            warning(sum(missing.data.rows), " case(s) with missing data have been removed.")
+        }
     }
     else if (chart.type == "Sankey")
     {
