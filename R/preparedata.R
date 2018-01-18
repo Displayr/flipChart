@@ -668,6 +668,10 @@ prepareForSpecificCharts <- function(
         if (isScatter(chart.type))
             attr(data, "scatter.variable.indices") = c(x = 1, y = 2, sizes = 3, colors = 4)
     }
+    else if (chart.type == "Table")
+    {
+        data <- data
+    }
     else if (chart.type == "Venn")
     {
         missing.data.rows <- rowSums(as.matrix(is.na(data))) > 0
