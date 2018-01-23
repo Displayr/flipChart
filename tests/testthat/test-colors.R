@@ -10,3 +10,7 @@ test_that("Warnings", {
     expect_warning(CChart("Column", x2d, colors = PrepareColors(x2d, "Column", palette = "Custom color", palette.custom.color = "red")$series.colors))
     expect_error(CChart("Column", x2d, colors = PrepareColors(x2d, "Column", palette = "Strong colors")$series.colors), NA)
 })
+
+test_that("Pie chart", {
+    expect_error(PrepareColors(table(1:10), "Pie", palette = "Greys, light to dark", subslice.palette = "Greys, light to dark"), NA)
+})
