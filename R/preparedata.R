@@ -617,8 +617,12 @@ transformTable <- function(data,
             warning(percentages.warning)
         else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
             warning(percentages.warning)
-        else if (is.raw.data && !first.aggregate)
+        else if (FALSE && is.raw.data && !first.aggregate) # currently turned off
         {
+            # This clause is turned off because I can't understand
+            # when it would be useful to divide by the number of rows
+            # It is also making pasted data behave badly
+            # No tests failed with this always set to FALSE
             if (is.null(nrow(data)))
                 warning(percentages.warning)
             else

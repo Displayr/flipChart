@@ -905,6 +905,12 @@ test_that("Pasted data",{
                       as.percentages = TRUE,
                       values.title = NULL))
     expect_equal(NCOL(pd$data), 2)
+
+    pst <- list(structure(c("", "", "", "", "", "", "", "", "", "Aardvark",
+        "Bear", "Zebra", "", "", "", "3%", "7%", "5%"), .Dim = c(6L,
+        3L)), NULL, NULL, NULL)
+    pd <- PrepareData("Column", input.data.pasted = pst, as.percentages = T)
+    expect_equal(sum(pd$data), 1)
 })
 
 test_that("DS-1659: histogram, variables from data",
