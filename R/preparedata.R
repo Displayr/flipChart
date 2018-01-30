@@ -279,6 +279,7 @@ PrepareData <- function(chart.type,
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
     data <- transformTable(data,
+                   chart.type,
                    multiple.tables = !is.null(input.data.tables),
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
@@ -558,6 +559,7 @@ asPercentages <- function(data)
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRowsAndColumns
 #' @importFrom flipTime AsDate
 transformTable <- function(data,
+                           chart.type,
                            multiple.tables,
                            is.raw.data,
                            row.names.to.remove, column.names.to.remove, split,
@@ -572,6 +574,7 @@ transformTable <- function(data,
     {
         for(i in seq_along(data))
             data[[i]] = transformTable(data[[i]],
+                                       chart.type,
                                        FALSE,
                                        is.raw.data,
                                        row.names.to.remove, column.names.to.remove, split,
@@ -617,6 +620,8 @@ transformTable <- function(data,
             warning(percentages.warning)
         else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
             warning(percentages.warning)
+        else if (chart.type %in% c("Pie", "Donut"))
+            data <- data / sum(data, na.rm = TRUE)
         else if (FALSE && is.raw.data && !first.aggregate) # currently turned off
         {
             # This clause is turned off because I can't understand
