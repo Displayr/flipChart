@@ -7,7 +7,7 @@
 PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
-  input.data.other = NULL, data.source = NULL, first.aggregate = FALSE,
+  input.data.other = NULL, data.source = NULL, first.aggregate = NULL,
   scatter.input.columns.order = NULL, group.by.last = FALSE, tidy = TRUE,
   transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
   column.names.to.remove = c("NET", "SUM"), split = "[;,]",

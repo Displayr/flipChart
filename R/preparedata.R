@@ -112,7 +112,7 @@ PrepareData <- function(chart.type,
                         input.data.pasted = NULL,
                         input.data.other = NULL,
                         data.source = NULL,
-                        first.aggregate = FALSE,
+                        first.aggregate = NULL,
                         scatter.input.columns.order = NULL,
                         group.by.last = FALSE,
                         tidy = TRUE,
@@ -206,7 +206,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
-        data <- coerceToDataFrame(input.data.raw)
+        data <- coerceToDataFrame(input.data.raw, chart.type)
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
@@ -251,11 +251,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
-    crosstab <- rawDataLooksCrosstabbable(input.data.raw) &&
-        !chart.type %in% c("Bubble", "Scatter", "Venn") || group.by.last
-
+    crosstab <- !chart.type %in% c("Bubble", "Scatter", "Venn") && 
+                (rawDataLooksCrosstabbable(input.data.raw) || group.by.last)
     if (is.null(first.aggregate))
         first.aggregate <- crosstab
+    if (crosstab && !first.aggregate)
+        warning("Input data is always aggregated when 'Groups' variable is provided.")
     if (!isDistribution(chart.type) && (crosstab || first.aggregate))
     {
         #crosstab <- NCOL(data) == 2 || group.by.last
@@ -390,16 +391,27 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 #' is provided.
 #' @param x Input data which may be a list of variables or dataframe
+#' @param chart.type For any value except \code{"Scatter"}, x$Y will be 
+#'      ignored if x$X contains more than one variable
 #' @param remove.NULLs Logical; whether to remove null entries
 #' @importFrom flipTables TidyTabularData
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
-coerceToDataFrame <- function(x, remove.NULLs = TRUE)
+coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
     if (is.null(x))
         return(x)
     else if (is.data.frame(x))
         return(x)
+
+    # Check that grouping variable is not used with multiple X variables
+    # This is possible in Q5.1.2
+    if (chart.type != "Scatter" && !is.null(x$Y) && is.list(x$X) && length(x$X) > 1)
+    {
+        warning("'Groups' variable ignored if more than one input variable is selected.")
+        x$Y <- NULL
+    }
+
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
@@ -923,6 +935,8 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
     nms <- names(input.data.raw)
     ncols <- sapply(input.data.raw, NCOL)
     if (any(ncols != 1))
+        return(FALSE)
+    if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
         return(FALSE)
     return(nms == c("X", "Y"))
 }

@@ -670,9 +670,10 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$categories.title, "VarA")
     expect_true(is.null(dimnames(res1$data)))
 
-    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE) # We aggregate based on the variables
+    expect_warning(res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE),
+                   "Input data is always aggregated when 'Groups' variable is provided")
     expect_equal(res2$values.title, "Counts")
-    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE)
+    res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy))
     expect_equal(res2$values.title, "Counts")
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE, as.percentages = TRUE)
     expect_equal(res2$values.title, "%")
@@ -1162,8 +1163,11 @@ test_that("Automatic crosstab of two input variables",
                                first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(z$data[1,1], 3)
     z = PrepareData("Column", input.data.raw = list(X = c(1,2,1,1,1), Y = c(1,2,1,2,1)),
-                               first.aggregate = FALSE, group.by.last = FALSE)
+                               first.aggregate = NULL, group.by.last = FALSE)
     expect_equal(z$data[1,1], 3)
+    expect_warning(z <- PrepareData("Column", input.data.raw = list(X = list(A = 1:5, B = 2:6), Y = c(1,2,1,2,1))),
+                   "'Groups' variable ignored if more than one input variable is selected")
+    expect_equal(colnames(z$data), c("A", "B"))
 
     # Pasted data
     zz = list(matrix(c(1,2,1,1,1,1,2,1,2,1), ncol = 2, dimnames = list(1:5, c("X","Y"))))

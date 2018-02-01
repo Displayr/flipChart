@@ -4,10 +4,13 @@
 \alias{coerceToDataFrame}
 \title{coerceToDataFrame}
 \usage{
-coerceToDataFrame(x, remove.NULLs = TRUE)
+coerceToDataFrame(x, chart.type = "Column", remove.NULLs = TRUE)
 }
 \arguments{
 \item{x}{Input data which may be a list of variables or dataframe}
+
+\item{chart.type}{For any value except \code{"Scatter"}, x$Y will be 
+ignored if x$X contains more than one variable}
 
 \item{remove.NULLs}{Logical; whether to remove null entries}
 }
