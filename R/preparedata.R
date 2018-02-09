@@ -488,7 +488,8 @@ processPastedData <- function(input.data.pasted, warn, date.format, scatter.inpu
     if (!is.null(scatter.input.columns.order))
     {
         want.data.frame <- scatter.input.columns.order != "X coordinates, Y coordinates in multiple columns"
-        #input.data.pasted[[3]] <- TRUE
+        input.data.pasted[[2]] <- FALSE
+        input.data.pasted[[3]] <- NULL
         input.data.pasted[[4]] <- grepl("^Data labels,", scatter.input.columns.order)
     }
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
@@ -954,8 +955,8 @@ hasUserSuppliedRownames <- function(data)
         return(FALSE)
     
     # Data frames from filtered data
-    if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
-        return(FALSE)
+    #if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
+    #    return(FALSE)
 
     return(TRUE)
 }
