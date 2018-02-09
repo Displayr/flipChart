@@ -213,7 +213,8 @@ PrepareData <- function(chart.type,
         data <- processPastedData(
                                   input.data.pasted,
                                   warn = tidy,
-                                  date.format = date.format)
+                                  date.format,
+                                  scatter.input.columns.order)
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
@@ -480,10 +481,16 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, warn, date.format)
+processPastedData <- function(input.data.pasted, warn, date.format, scatter.input.columns.order = NULL)
 {
     us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
+    if (!is.null(scatter.input.columns.order))
+    {
+        want.data.frame <- scatter.input.columns.order != "X coordinates, Y coordinates in multiple columns"
+        #input.data.pasted[[3]] <- TRUE
+        input.data.pasted[[4]] <- grepl("^Data labels,", scatter.input.columns.order)
+    }
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
                                   want.factors = input.data.pasted[[2]],
@@ -724,7 +731,8 @@ prepareForSpecificCharts <- function(
                 y.ind <- 1:m
                 xvar <- rep(1:n, m)
 
-            } else if (is.null(input.data.raw$Y) && (!is.null(rownames(data))) && suppressWarnings(any(!is.numeric(rownames(data)))))
+            } else if (is.null(input.data.raw$Y) && (!is.null(rownames(data))) &&
+                    hasUserSuppliedRownames(data)) 
             {
                 # Use rowlabels as X-coordinate if character labels given
                 m <- ncol(data)
@@ -833,13 +841,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
         return(x)
     if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
-
-    # Preserve existing rownames if they are non-numeric
-    # Unnamed matrices would have been given default names 'Row 1', 'Row 2',
-    # Filtered variables would have numeric rownames
-    # corresponding to index in original dataset
-    tmp.names <- gsub("Row ", "", rownames(x))
-    if (any(suppressWarnings(is.na(as.numeric(tmp.names)))))
+    if (hasUserSuppliedRownames(x))
         return(x)
 
     # What to do with duplicate rownames?
@@ -939,4 +941,21 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
     if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
         return(FALSE)
     return(nms == c("X", "Y"))
+}
+
+hasUserSuppliedRownames <- function(data)
+{
+    if (is.null(rownames(data)))
+        return(FALSE)
+   
+    # Default row names 
+    rnames <- gsub("Row ", "", rownames(data))
+    if (all(rnames == as.character(1:nrow(data))))
+        return(FALSE)
+    
+    # Data frames from filtered data
+    if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
+        return(FALSE)
+
+    return(TRUE)
 }
