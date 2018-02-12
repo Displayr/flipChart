@@ -84,7 +84,7 @@
 #'     SplitVectorToList
 #' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns
 #' @importFrom flipData TidyRawData
-#' @importFrom flipFormat Labels Names
+#' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
 #' @return A list with components \itemize{ \item \code{data} - If
 #'     possible, a named vector or matrix, or if that is not posible
@@ -485,21 +485,25 @@ processPastedData <- function(input.data.pasted, warn, date.format, scatter.inpu
 {
     us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
+    want.row.names <- FALSE
+    if (length(input.data.pasted) >= 4)
+        want.row.names <- input.data.pasted[[4]]
     if (!is.null(scatter.input.columns.order))
     {
         want.data.frame <- scatter.input.columns.order != "X coordinates, Y coordinates in multiple columns"
         input.data.pasted[[2]] <- FALSE
         input.data.pasted[[3]] <- NULL
-        input.data.pasted[[4]] <- grepl("^Data labels,", scatter.input.columns.order)
+        want.row.names <- grepl("^Data labels,", scatter.input.columns.order)
     }
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
                                   want.factors = input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
-                                  want.row.names = input.data.pasted[[4]],
+                                  want.row.names = want.row.names,
                                   us.format = us.format,
                                   warn = warn),
              error = function(e) {input.data.pasted[[1]]})
+    attr(processed, "assigned.rownames") <- want.row.names
     return(processed)
 }
 
@@ -948,6 +952,8 @@ hasUserSuppliedRownames <- function(data)
 {
     if (is.null(rownames(data)))
         return(FALSE)
+    if (sum(attr(data, "assigned.rownames")) > 0)
+        return(TRUE) 
    
     # Default row names 
     rnames <- gsub("Row ", "", rownames(data))
@@ -955,8 +961,27 @@ hasUserSuppliedRownames <- function(data)
         return(FALSE)
     
     # Data frames from filtered data
-    #if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
-    #    return(FALSE)
+    if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
+        return(FALSE)
 
     return(TRUE)
+}
+
+# There is a problem with the data contains dates
+tidyLabels <- function(data)
+{
+    tmp <- NULL
+    if (is.matrix(data) || is.data.frame(data))
+    {
+        tmp <- ExtractCommonPrefix(rownames(data))
+        rownames(data) <- tmp$shortened.labels
+    }
+    else if (length(names(data)) == NROW(data)) # lists and vectors
+    {
+        tmp <- ExtractCommonPrefix(names(data))
+        names(data) <- tmp$shortened.labels
+    }
+    if (is.null(attr(data, "categories.title")) && !is.null(tmp) && !is.na(tmp$common.prefix))
+        attr(data, "categories.title") <- tmp$common.prefix
+    data
 }
