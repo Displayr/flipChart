@@ -951,7 +951,7 @@ tidyLabels <- function(data)
         if (!isDate(rownames(data)))
         {
             rownames(data) <- tmp$shortened.labels
-            if (is.null(attr(data, "categories.title")))
+            if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
                 attr(data, "categories.title") <- tmp$common.prefix
         }
     }
@@ -961,7 +961,7 @@ tidyLabels <- function(data)
         if (!isDate(names(data)))
         {
             names(data) <- tmp$shortened.labels
-            if (is.null(attr(data, "categories.title")))
+            if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
                 attr(data, "categories.title") <- tmp$common.prefix
         }
     }
