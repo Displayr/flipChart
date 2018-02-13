@@ -497,13 +497,14 @@ processPastedData <- function(input.data.pasted, warn, date.format, scatter.inpu
     }
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
-                                  want.factors = input.data.pasted[[2]],
+                                  want.factors = TRUE, #input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = want.row.names,
                                   us.format = us.format,
                                   warn = warn),
              error = function(e) {input.data.pasted[[1]]})
-    attr(processed, "assigned.rownames") <- want.row.names
+    if (!is.null(processed))
+        attr(processed, "assigned.rownames") <- want.row.names
     return(processed)
 }
 
