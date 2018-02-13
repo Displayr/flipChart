@@ -75,9 +75,8 @@ type is any of \code{"Scatter"}, \code{"Bean"},
 \code{"Histogram"}, \code{"Density"}, \code{"Box"}, or
 \code{"Violin"}.}
 
-\item{tidy.labels}{Logical; whether to remove common prefixes from the 
-labels of the input data. This will not remove common prefixes of
-less than 5 characters long, and will not affect labels in date format.}
+\item{tidy.labels}{Logical; whether to remove common prefixes from the
+labels of the input data.}
 
 \item{transpose}{Logical; should the resulting matrix (of created)
 be transposed?}

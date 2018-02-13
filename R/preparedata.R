@@ -46,9 +46,8 @@
 #'     type is any of \code{"Scatter"}, \code{"Bean"},
 #'     \code{"Histogram"}, \code{"Density"}, \code{"Box"}, or
 #'     \code{"Violin"}.
-#' @param tidy.labels Logical; whether to remove common prefixes from the 
-#'     labels of the input data. This will not remove common prefixes of
-#'     less than 5 characters long, and will not affect labels in date format.
+#' @param tidy.labels Logical; whether to remove common prefixes from the
+#'     labels of the input data.
 #' @param transpose Logical; should the resulting matrix (of created)
 #'     be transposed?
 #' @param row.names.to.remove Character vector or delimited string of
@@ -254,7 +253,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
-    crosstab <- !chart.type %in% c("Bubble", "Scatter", "Venn") && 
+    crosstab <- !chart.type %in% c("Bubble", "Scatter", "Venn") &&
                 (rawDataLooksCrosstabbable(input.data.raw) || group.by.last)
     if (is.null(first.aggregate))
         first.aggregate <- crosstab
@@ -396,7 +395,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
 #' involves creating rows in the data frame that are unlikely to be from the same analysis unit, a warning
 #' is provided.
 #' @param x Input data which may be a list of variables or dataframe
-#' @param chart.type For any value except \code{"Scatter"}, x$Y will be 
+#' @param chart.type For any value except \code{"Scatter"}, x$Y will be
 #'      ignored if x$X contains more than one variable
 #' @param remove.NULLs Logical; whether to remove null entries
 #' @importFrom flipTables TidyTabularData
@@ -714,7 +713,7 @@ prepareForSpecificCharts <- function(
                 y.ind <- 1:m
                 xvar <- rep(1:n, m)
 
-            } else if (is.null(input.data.raw$Y) && hasUserSuppliedRownames(data)) 
+            } else if (is.null(input.data.raw$Y) && hasUserSuppliedRownames(data))
             {
                 # Use rowlabels as X-coordinate if character labels given
                 m <- ncol(data)
@@ -924,13 +923,13 @@ hasUserSuppliedRownames <- function(data)
     if (is.null(rownames(data)))
         return(FALSE)
     if (isTRUE(attr(data, "assigned.rownames")))
-        return(TRUE) 
-   
-    # Default row names 
+        return(TRUE)
+
+    # Default row names
     rnames <- gsub("Row ", "", rownames(data))
     if (all(rnames == as.character(1:nrow(data))))
         return(FALSE)
-    
+
     # Data frames from filtered data
     if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
         return(FALSE)
@@ -949,16 +948,22 @@ tidyLabels <- function(data)
     if (is.matrix(data) || is.data.frame(data))
     {
         tmp <- ExtractCommonPrefix(rownames(data))
-        if (sum(nchar(tmp$common.prefix), na.rm = T) > 5 && !isDate(rownames(data)))
+        if (!isDate(rownames(data)))
+        {
             rownames(data) <- tmp$shortened.labels
+            if (is.null(attr(data, "categories.title")))
+                attr(data, "categories.title") <- tmp$common.prefix
+        }
     }
     else if (length(names(data)) == NROW(data)) # lists and vectors
     {
         tmp <- ExtractCommonPrefix(names(data))
-        if (sum(nchar(tmp$common.prefix), na.rm = T) > 5 && !isDate(names(data)))
+        if (!isDate(names(data)))
+        {
             names(data) <- tmp$shortened.labels
+            if (is.null(attr(data, "categories.title")))
+                attr(data, "categories.title") <- tmp$common.prefix
+        }
     }
-    if (is.null(attr(data, "categories.title")) && !is.null(tmp) && !is.na(tmp$common.prefix))
-        attr(data, "categories.title") <- tmp$common.prefix
     data
 }
