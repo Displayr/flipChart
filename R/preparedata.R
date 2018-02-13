@@ -46,6 +46,9 @@
 #'     type is any of \code{"Scatter"}, \code{"Bean"},
 #'     \code{"Histogram"}, \code{"Density"}, \code{"Box"}, or
 #'     \code{"Violin"}.
+#' @param tidy.labels Logical; whether to remove common prefixes from the 
+#'     labels of the input data. This will not remove common prefixes of
+#'     less than 5 characters long, and will not affect labels in date format.
 #' @param transpose Logical; should the resulting matrix (of created)
 #'     be transposed?
 #' @param row.names.to.remove Character vector or delimited string of
@@ -116,6 +119,7 @@ PrepareData <- function(chart.type,
                         scatter.mult.yvals = FALSE,
                         group.by.last = FALSE,
                         tidy = TRUE,
+                        tidy.labels = TRUE,
                         transpose = FALSE,
                         row.names.to.remove = c("NET", "SUM"),
                         column.names.to.remove = c("NET", "SUM"),
@@ -288,6 +292,8 @@ PrepareData <- function(chart.type,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
+    if (tidy.labels)
+        data <- tidyLabels(data)
 
     ###########################################################################
     # Finalizing the result.
@@ -483,9 +489,6 @@ processPastedData <- function(input.data.pasted, warn, date.format)
 {
     us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
-    #cat("want.data.frame:", want.data.frame, "\n")
-    #cat("want.row.names:", input.data.pasted[[4]], "\n")
-    #cat("want.col.names:", input.data.pasted[[3]], "\n")
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
                                   want.factors = TRUE, #input.data.pasted[[2]],
@@ -652,15 +655,9 @@ transformTable <- function(data,
             data <- asPercentages(data)
     }
 
-    # Convert dates in row/column names if format is NOT automatic
-    # Pattern matching to allow for more flexible controls, e.g. "International (dd/mm/yyyy)"
-    # All warnings are suppressed here - warnings are given in the charting functions
-    .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
-                                                                                    on.parse.failure = "silent")))))
-
-    if (date.format != "Automatic" && .isDate(rownames(data)))
+    if (date.format != "Automatic" && isDate(rownames(data)))
         rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
-    else if (date.format != "Automatic" && .isDate(names(data)))
+    else if (date.format != "Automatic" && isDate(names(data)))
         names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
     return(data)
 }
@@ -741,10 +738,8 @@ prepareForSpecificCharts <- function(
             newdata <- data.frame(X = xvar,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
-            .isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
-                                                              on.parse.failure = "silent")))))
 
-            if (date.format != "Automatic" && .isDate(as.character(newdata[,1])))
+            if (date.format != "Automatic" && isDate(as.character(newdata[,1])))
                 newdata[,1] <- format(AsDate(as.character(newdata[,1]),
                 us.format = !grepl("International", date.format)), "%b %d %Y")
             if (!is.null(input.data.raw$X))
@@ -762,7 +757,7 @@ prepareForSpecificCharts <- function(
             if (NCOL(data) > 4)
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
-                    " Consider selecting checkbox for 'Table contains multiple series (y-coordinates)'.")
+                    " Consider selecting checkbox for 'Input data contains y-values in multiple columns'.")
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
             attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
@@ -943,19 +938,25 @@ hasUserSuppliedRownames <- function(data)
     return(TRUE)
 }
 
-# There is a problem with the data contains dates
+# All warnings are suppressed here - warnings are given in the charting functions
+isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
+                  on.parse.failure = "silent")))))
+
+
 tidyLabels <- function(data)
 {
     tmp <- NULL
     if (is.matrix(data) || is.data.frame(data))
     {
         tmp <- ExtractCommonPrefix(rownames(data))
-        rownames(data) <- tmp$shortened.labels
+        if (sum(nchar(tmp$common.prefix), na.rm = T) > 5 && !isDate(rownames(data)))
+            rownames(data) <- tmp$shortened.labels
     }
     else if (length(names(data)) == NROW(data)) # lists and vectors
     {
         tmp <- ExtractCommonPrefix(names(data))
-        names(data) <- tmp$shortened.labels
+        if (sum(nchar(tmp$common.prefix), na.rm = T) > 5 && !isDate(names(data)))
+            names(data) <- tmp$shortened.labels
     }
     if (is.null(attr(data, "categories.title")) && !is.null(tmp) && !is.na(tmp$common.prefix))
         attr(data, "categories.title") <- tmp$common.prefix

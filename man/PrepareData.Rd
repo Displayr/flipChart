@@ -9,11 +9,11 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = NULL,
   scatter.input.columns.order = NULL, scatter.mult.yvals = FALSE,
-  group.by.last = FALSE, tidy = TRUE, transpose = FALSE,
-  row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
-  "SUM"), split = "[;,]", hide.empty.rows.and.columns = TRUE,
-  as.percentages = FALSE, date.format = "Automatic", show.labels = TRUE,
-  values.title = "")
+  group.by.last = FALSE, tidy = TRUE, tidy.labels = TRUE,
+  transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
+  column.names.to.remove = c("NET", "SUM"), split = "[;,]",
+  hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
+  date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -74,6 +74,10 @@ when \code{data.input.tables} are provided, or when the chart
 type is any of \code{"Scatter"}, \code{"Bean"},
 \code{"Histogram"}, \code{"Density"}, \code{"Box"}, or
 \code{"Violin"}.}
+
+\item{tidy.labels}{Logical; whether to remove common prefixes from the 
+labels of the input data. This will not remove common prefixes of
+less than 5 characters long, and will not affect labels in date format.}
 
 \item{transpose}{Logical; should the resulting matrix (of created)
 be transposed?}
