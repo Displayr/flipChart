@@ -29,11 +29,10 @@
 #'     and otherwise the mean is computed. If \code{input.data.raw} contains
 #'     two an 'X' variable and a 'Y' variable in the first two elements of the list,
 #'     the data is automatically aggregated and crosstabbed.
-#' @param scatter.input.columns.order Character; This is used to determine
-#'     the input format of \code{input.data.table/input.data.pasted/input.data.other}
-#'     for scatterplots. Allowable values are
-#'     "X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
-#'     Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".
+#' @param scatter.input.columns.order (deprecated) Use \code{scatter.mult.yvals} instead.
+#' @param scatter.mult.yvals Logical; When \code{chart.type} is "Scatter',
+#'     a \code{TRUE} value indicates that columns of input.data.table or input.data.pasted
+#'     should be considered multiple series instead of different attributes (default).
 #' @param group.by.last Logical; \code{TRUE} and \code{first.aggregate} and there is data
 #'     in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated
 #'     using the last variable
@@ -114,6 +113,7 @@ PrepareData <- function(chart.type,
                         data.source = NULL,
                         first.aggregate = NULL,
                         scatter.input.columns.order = NULL,
+                        scatter.mult.yvals = FALSE,
                         group.by.last = FALSE,
                         tidy = TRUE,
                         transpose = FALSE,
@@ -210,11 +210,9 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
-        data <- processPastedData(
-                                  input.data.pasted,
+        data <- processPastedData(input.data.pasted,
                                   warn = tidy,
-                                  date.format,
-                                  scatter.input.columns.order)
+                                  date.format)
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
@@ -274,7 +272,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
                                      chart.type, weights, tidy, show.labels,
-                                     date.format, scatter.input.columns.order)
+                                     date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
 
     ###########################################################################
@@ -481,30 +479,23 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
-processPastedData <- function(input.data.pasted, warn, date.format, scatter.input.columns.order = NULL)
+processPastedData <- function(input.data.pasted, warn, date.format)
 {
     us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
-    want.row.names <- FALSE
-    if (length(input.data.pasted) >= 4)
-        want.row.names <- input.data.pasted[[4]]
-    if (!is.null(scatter.input.columns.order))
-    {
-        want.data.frame <- scatter.input.columns.order != "X coordinates, Y coordinates in multiple columns"
-        input.data.pasted[[2]] <- FALSE
-        input.data.pasted[[3]] <- NULL
-        want.row.names <- grepl("^Data labels,", scatter.input.columns.order)
-    }
+    #cat("want.data.frame:", want.data.frame, "\n")
+    #cat("want.row.names:", input.data.pasted[[4]], "\n")
+    #cat("want.col.names:", input.data.pasted[[3]], "\n")
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
                                   want.factors = TRUE, #input.data.pasted[[2]],
                                   want.col.names = input.data.pasted[[3]],
-                                  want.row.names = want.row.names,
+                                  want.row.names = input.data.pasted[[4]],
                                   us.format = us.format,
                                   warn = warn),
              error = function(e) {input.data.pasted[[1]]})
-    if (!is.null(processed))
-        attr(processed, "assigned.rownames") <- want.row.names
+    if (!is.null(processed) && length(input.data.pasted) > 3)
+        attr(processed, "assigned.rownames") <- input.data.pasted[[4]]
     return(processed)
 }
 
@@ -523,18 +514,11 @@ checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, paste
         stop("The data provided does not match the 'data.source.index'.")
 }
 
-scatterVariableIndices <- function(input.data.raw, data, scatter.input.columns.order, show.labels)
+scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    if (scatter.input.columns.order == "Groups, X coordinates, Y coordinates, Sizes, Colors")
-        indices <- c(x = 2, y = 3, sizes = 4, colors = 1)
-    else if (scatter.input.columns.order == "X coordinates, Y coordinates, Colors, Sizes")
-        indices <- c(x = 1, y = 2, sizes = 4, colors = 3)
-    else if (scatter.input.columns.order == "Data labels, X coordinates, Y coordinates, Colors, Sizes")
-        indices <- c(x = 1, y = 2, sizes = 4, colors = 3)
-    else
-        indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
 
@@ -692,7 +676,7 @@ prepareForSpecificCharts <- function(
                                      tidy,
                                      show.labels,
                                      date.format,
-                                     scatter.input.columns.order)
+                                     scatter.mult.yvals)
 {
     # Multiple tables
     if (!is.null(input.data.tables))
@@ -722,11 +706,7 @@ prepareForSpecificCharts <- function(
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (is.null(scatter.input.columns.order))
-            scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors"
-
-        if ((scatter.input.columns.order == "X coordinates, Y coordinates in multiple columns") ||
-            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        if (scatter.mult.yvals || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
@@ -737,8 +717,7 @@ prepareForSpecificCharts <- function(
                 y.ind <- 1:m
                 xvar <- rep(1:n, m)
 
-            } else if (is.null(input.data.raw$Y) && (!is.null(rownames(data))) &&
-                    hasUserSuppliedRownames(data)) 
+            } else if (is.null(input.data.raw$Y) && hasUserSuppliedRownames(data)) 
             {
                 # Use rowlabels as X-coordinate if character labels given
                 m <- ncol(data)
@@ -775,9 +754,6 @@ prepareForSpecificCharts <- function(
 
         } else
         {
-            if (is.null(input.data.raw) && grepl("^Data labels", scatter.input.columns.order))
-                data <- useFirstColumnAsLabel(data, allow.numeric.rownames = TRUE,
-                            allow.duplicate.rownames = FALSE)
             if (!is.data.frame(data) && !is.matrix(data))
                 data <- TidyTabularData(data)
             # Removing duplicate columns
@@ -786,11 +762,10 @@ prepareForSpecificCharts <- function(
             if (NCOL(data) > 4)
                 warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
-                    " Consider setting column order to 'X coordinates, Y coordinates in multiple columns'.")
+                    " Consider selecting checkbox for 'Table contains multiple series (y-coordinates)'.")
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data,
-                        scatter.input.columns.order, show.labels)
+            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
         }
     }
     # Charts that plot the distribution of raw data (e.g., histograms)
@@ -953,7 +928,7 @@ hasUserSuppliedRownames <- function(data)
 {
     if (is.null(rownames(data)))
         return(FALSE)
-    if (sum(attr(data, "assigned.rownames")) > 0)
+    if (isTRUE(attr(data, "assigned.rownames")))
         return(TRUE) 
    
     # Default row names 

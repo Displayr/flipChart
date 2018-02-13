@@ -8,11 +8,12 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = NULL,
-  scatter.input.columns.order = NULL, group.by.last = FALSE, tidy = TRUE,
-  transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
-  column.names.to.remove = c("NET", "SUM"), split = "[;,]",
-  hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
-  date.format = "Automatic", show.labels = TRUE, values.title = "")
+  scatter.input.columns.order = NULL, scatter.mult.yvals = FALSE,
+  group.by.last = FALSE, tidy = TRUE, transpose = FALSE,
+  row.names.to.remove = c("NET", "SUM"), column.names.to.remove = c("NET",
+  "SUM"), split = "[;,]", hide.empty.rows.and.columns = TRUE,
+  as.percentages = FALSE, date.format = "Automatic", show.labels = TRUE,
+  values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -53,11 +54,11 @@ and otherwise the mean is computed. If \code{input.data.raw} contains
 two an 'X' variable and a 'Y' variable in the first two elements of the list,
 the data is automatically aggregated and crosstabbed.}
 
-\item{scatter.input.columns.order}{Character; This is used to determine
-the input format of \code{input.data.table/input.data.pasted/input.data.other}
-for scatterplots. Allowable values are
-"X coordinates, Y coordinates in multiple columns", "Data labels, X coordinates,
-Y coordinates, Size, Colors" (default), "X coordinates, Y coordinates, Sizes, Colors".}
+\item{scatter.input.columns.order}{(deprecated) Use \code{scatter.mult.yvals} instead.}
+
+\item{scatter.mult.yvals}{Logical; When \code{chart.type} is "Scatter',
+a \code{TRUE} value indicates that columns of input.data.table or input.data.pasted
+should be considered multiple series instead of different attributes (default).}
 
 \item{group.by.last}{Logical; \code{TRUE} and \code{first.aggregate} and there is data
 in either of \code{input.data.table} or \code{input.data.pasted}, the data is aggregated

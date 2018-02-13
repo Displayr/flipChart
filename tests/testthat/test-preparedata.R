@@ -1254,6 +1254,9 @@ test_that("Scatter input data column order",
     pst <- list(structure(c("A", "0", "1", "2", "3", "B", "5", "6", "7",
 "8", "C", "9", "10", "11", "12"), .Dim = c(5L, 3L)), NULL, NULL,
     NULL, NULL)
+    pstDF <- list(structure(c("A", "0", "1", "2", "3", "B", "5", "6", "7",
+"8", "C", "9", "10", "11", "12"), .Dim = c(5L, 3L)), TRUE, TRUE,
+    TRUE, NULL)
     p.unnamed <- list(structure(c("", "", "", "", "", "", "1", "2", "3", "4",
 "", "5", "6", "7", "8", "", "9", "10", "11", "12"), .Dim = c(5L,
 4L)), NULL, NULL, NULL, NULL)
@@ -1265,18 +1268,17 @@ test_that("Scatter input data column order",
     tb <- cbind(A = rnorm(10), B = rnorm(10), C = rnorm(10))
     rownames(tb) <- letters[1:10]
 
-    res <- PrepareData("Scatter", input.data.other = tb, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    res <- PrepareData("Scatter", input.data.other = tb, scatter.mult.yvals = TRUE)
     expect_equal(dim(res$data), c(30, 3))
-    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.mult.yvals = TRUE)
     expect_equal(levels(res$data$Groups), c('B','C'))
-    res <- PrepareData("Scatter", input.data.pasted = p.dates, date.format = "International",
-        scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    res <- PrepareData("Scatter", input.data.pasted = p.dates, date.format = "International", scatter.mult.yvals = TRUE)
     expect_equal(res$data[,1], sprintf("Jan %02d 2017", c(1:4, 1:4)))
-    res <- PrepareData("Scatter", input.data.pasted = p.unnamed, scatter.input.columns.order = "X coordinates, Y coordinates in multiple columns")
+    res <- PrepareData("Scatter", input.data.pasted = p.unnamed, scatter.mult.yvals = TRUE)
     expect_equal(levels(res$data$Groups), c('Group 1','Group 2'))
-    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "Data labels, X coordinates, Y coordinates, Sizes, Colors")
+    res <- PrepareData("Scatter", input.data.pasted = pstDF)
     expect_equal(ncol(res$data), 2)
-    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.input.columns.order = "X coordinates, Y coordinates, Sizes, Colors")
+    res <- PrepareData("Scatter", input.data.pasted = pst, scatter.mult.yvals = TRUE)
     expect_equal(ncol(res$data), 3)
 
 })
