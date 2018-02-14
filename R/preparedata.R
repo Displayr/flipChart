@@ -490,7 +490,7 @@ processPastedData <- function(input.data.pasted, warn, date.format)
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
-                                  want.factors = TRUE, #input.data.pasted[[2]],
+                                  want.factors = FALSE, #input.data.pasted[[2]], #charts has no concept of factors
                                   want.col.names = input.data.pasted[[3]],
                                   want.row.names = input.data.pasted[[4]],
                                   us.format = us.format,
@@ -498,6 +498,8 @@ processPastedData <- function(input.data.pasted, warn, date.format)
              error = function(e) {input.data.pasted[[1]]})
     if (!is.null(processed) && length(input.data.pasted) > 3)
         attr(processed, "assigned.rownames") <- input.data.pasted[[4]]
+    if (!is.null(processed) && want.data.frame)
+        attr(processed, "assigned.rownames") <- TRUE
     return(processed)
 }
 

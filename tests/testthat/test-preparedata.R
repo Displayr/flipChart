@@ -1215,7 +1215,7 @@ test_that("Pasted data with dates and date.format arg",
                        hide.empty.rows.and.columns = FALSE, date.format = "US")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
-    expect_is(out[[1L]], "factor")
+    expect_is(out[[1L]], "character")
 
     ## wrong format and factors not requested, char. vector returned
     pasted <- list(x, FALSE, TRUE, FALSE)
