@@ -704,7 +704,7 @@ prepareForSpecificCharts <- function(
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (scatter.mult.yvals || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
