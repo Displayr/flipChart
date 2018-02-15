@@ -1282,3 +1282,19 @@ test_that("Scatter input data column order",
     expect_equal(ncol(res$data), 3)
 
 })
+
+test_that("Tidy labels does not affect date/time",
+{
+    mat.date <- structure(c(1, 2, 3, 4, 5, 2.2, 4.7, 3.1, 5, 6.2), .Dim = c(5L,
+2L), .Dimnames = list(c("Jan 12 2007 00:00", "Jan 12 2007 12:00",
+"Jan 13 2007 00:00", "Jan 13 2007 12:00", "Jan 14 2007 00:00"), NULL))
+    res <- PrepareData("Table", input.data.table = mat.date, tidy.labels = TRUE)
+    expect_true(is.null(res$categories.title))
+
+    mat.string <- structure(c(1, 2, 3, 4, 5, 2.2, 4.7, 3.1, 5, 6.2), .Dim = c(5L,
+2L), .Dimnames = list(c("Row 1", "Row 2", "Row 3", "Row 4", "Row 5"), NULL))
+    res <- PrepareData("Table", input.data.table = mat.string, tidy.labels = TRUE)
+    expect_equal(res$categories.title, "Row")
+})
+
+

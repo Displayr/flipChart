@@ -570,7 +570,7 @@ asPercentages <- function(data)
 }
 
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRowsAndColumns
-#' @importFrom flipTime AsDate
+#' @importFrom flipTime AsDate AsDateTime
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
@@ -940,8 +940,8 @@ hasUserSuppliedRownames <- function(data)
 }
 
 # All warnings are suppressed here - warnings are given in the charting functions
-isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(AsDate(x,
-                  on.parse.failure = "silent")))))
+isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
+                AsDateTime(x, on.parse.failure = "silent")))))
 
 
 tidyLabels <- function(data)
