@@ -839,10 +839,12 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
             all(!is.na(suppressWarnings(AsDate(levels(x[,1]), on.parse.failure = "silent"))))
         if ((!is.date) && mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
             return(x)
+        wmsg <- if (isDate(x[,1])) ". Check aggregation level of date variable '"
+                else               ". Consider aggregating on '"
 
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
-            ". Consider aggregating on '", colnames(x)[1], "'.")
+            wmsg, colnames(x)[1], "'.")
         if (remove.duplicates)
         {
             warning("Only the first unique entry is shown.")
@@ -863,7 +865,6 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     attr(x, "categories.title") <- c.title
     return(x)
 }
-
 
 setAxisTitles <- function(x, chart.type, tidy, values.title = "")
 {
@@ -890,8 +891,21 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         attr(x, "values.title") <- values.title
     if (is.null(attr(x, "values.title")))
         attr(x, "values.title") <- ""
-    if (tidy)
-        x <- drop(x)
+    if (tidy && !is.data.frame(x) && chart.type != "Scatter")
+    {
+        # only drop 1 dimension from a 2d matrix
+        if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)
+        {
+            tmp.vec <- x[, 1]
+            names(tmp.vec) <- rownames(x)
+            attr(tmp.vec, "statistic") <- attr(x, "statistic")
+            attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
+            attr(tmp.vec, "values.title") <- attr(x, "values.title")
+            x <- tmp.vec
+        }
+        else
+            x <- drop(x)
+    }
     x
 }
 
