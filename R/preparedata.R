@@ -891,7 +891,7 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         attr(x, "values.title") <- values.title
     if (is.null(attr(x, "values.title")))
         attr(x, "values.title") <- ""
-    if (tidy && !is.data.frame(x) && chart.type != "Scatter")
+    if (FALSE && tidy && !is.data.frame(x) && chart.type != "Scatter")
     {
         # only drop 1 dimension from a 2d matrix
         if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)
