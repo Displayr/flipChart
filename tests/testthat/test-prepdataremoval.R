@@ -66,11 +66,16 @@ test_that("PrepareData R+C removal: pasted raw data factor handling",
     dat <- rbind(c("", LETTERS[1:4]), cbind(letters[1:3], matrix(as.character(1:12), 3, 4)))
     dat[-1, 3] <- c("dog", "cat", "dog")
     pasted <- list(dat, FALSE, TRUE, TRUE)
-    out <- suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Bar Chart",
+    out <- suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Table",
                                         column.names.to.remove = "D"))
     expect_is(out$data, "matrix")
+    expect_is(out$data[[2]], "numeric")
+
+    out <- suppressWarnings(PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = FALSE,
+                                        column.names.to.remove = "D"))
+    expect_is(out$data, "data.frame")
+    expect_is(out$data[[1]], "numeric")
     expect_is(out$data[[2]], "character")
-    #expect_equal(names(out$data), LETTERS[1:3])
 })
 
 test_that("PrepareData R+C removal: pasted, non-raw table",

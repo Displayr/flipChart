@@ -220,7 +220,7 @@ test_that("PrepareData: pasted, non-raw data",
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 })
 
-test_that("DS-1687: no warning if non-tidy pasted data",
+test_that("Tidy data tries to convert matrix to numeric",
 {
     dat <- structure(c("", "a", "v", "c", "d", "col 1", "2", "3", "1", "2",
                       "col 2", "3", "2", "1", "1", "col 3", "3", "2", "1", "1", "col 4",
@@ -229,17 +229,18 @@ test_that("DS-1687: no warning if non-tidy pasted data",
                       "1", "1"), .Dim = c(5L, 9L))
     dat[2, 2] <- "TEXT"
     pasted <- list(dat, FALSE, TRUE, TRUE)
+
     expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = TRUE,
                                first.aggregate = FALSE),
-                   "data could not be interpreted")
+                   "Data has been automatically been converted to being numeric.")
     expect_is(out$data, "matrix")
-    expect_true(is.character(out$data))
+    expect_true(is.numeric(out$data))
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 
     expect_silent(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = FALSE,
                                first.aggregate = FALSE))
-    expect_is(out$data, "matrix")
-    expect_true(is.character(out$data))
+    expect_is(out$data[[1]], "character")
+    expect_is(out$data[[2]], "numeric")
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 })
 
@@ -1204,26 +1205,25 @@ test_that("Pasted data with dates and date.format arg",
                   "22/06/2007 5:32:22 PM", "22/06/2007 5:39:32 PM", "22/06/2007 5:39:14 PM",
                   "22/06/2007 5:40:11 PM", "22/06/2007 5:54:34 PM"), ncol = 1)
     pasted <- list(x, TRUE, TRUE, FALSE)
-    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
                        hide.empty.rows.and.columns = FALSE, date.format = "Automatic")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
     expect_is(out[[1L]], "POSIXct")
 
     ## wrong date format specified so char. dates becomes factor
-    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
                        hide.empty.rows.and.columns = FALSE, date.format = "US")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
     expect_is(out[[1L]], "character")
 
-    ## wrong format and factors not requested, char. vector returned
+    ## tidy requested - data is forced into numeric format
     pasted <- list(x, FALSE, TRUE, FALSE)
-    expect_warning(out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
-                                      hide.empty.rows.and.columns = FALSE, date.format = "US")$data,
-                   "The entered data could not be interpreted.")
-    expect_is(out, "character")
-    expect_equal(out[1], "Date times")
+    expect_silent(out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
+                                      hide.empty.rows.and.columns = FALSE, date.format = "US")$data)
+    expect_true(is.numeric(out))
+    expect_equal(colnames(out)[1], "Date times")
 })
 
 test_that("Date formatting",

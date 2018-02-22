@@ -686,7 +686,8 @@ prepareForSpecificCharts <- function(
     }
     else if (chart.type == "Table")
     {
-        data <- data
+        if (tidy)
+            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
     }
     else if (chart.type == "Venn")
     {
