@@ -1223,7 +1223,7 @@ test_that("Pasted data with dates and date.format arg",
     expect_silent(out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = TRUE,
                                       hide.empty.rows.and.columns = FALSE, date.format = "US")$data)
     expect_true(is.numeric(out))
-    expect_equal(colnames(out)[1], "Date times")
+    expect_equal(length(out), 10)
 })
 
 test_that("Date formatting",
