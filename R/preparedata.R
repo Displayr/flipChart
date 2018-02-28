@@ -277,6 +277,7 @@ PrepareData <- function(chart.type,
                                      chart.type, weights, tidy, show.labels,
                                      date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
+    scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
 
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
@@ -302,6 +303,8 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
+    if (scatter.mult.yvals)
+        attr(data, "scatter.mult.yvals") <- TRUE
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -748,6 +751,7 @@ prepareForSpecificCharts <- function(
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
             attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3)
+            attr(data, "scatter.mult.yvals") <- TRUE
 
         } else
         {

@@ -652,6 +652,7 @@ test_that("PrepareData: input and output format of raw data",
     # Multiple variables in Y are concatenated
     res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)))
     expect_equal(dim(res6$data), c(200, 3))
+    expect_true(attr(res6$data, "scatter.mult.yvals"))
     expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
@@ -1270,6 +1271,7 @@ test_that("Scatter input data column order",
 
     res <- PrepareData("Scatter", input.data.other = tb, scatter.mult.yvals = TRUE)
     expect_equal(dim(res$data), c(30, 3))
+    expect_equal(attr(res$data, "scatter.mult.yvals"), TRUE)
     res <- PrepareData("Scatter", input.data.pasted = pst, scatter.mult.yvals = TRUE)
     expect_equal(levels(res$data$Groups), c('B','C'))
     res <- PrepareData("Scatter", input.data.pasted = p.dates, date.format = "International", scatter.mult.yvals = TRUE)
