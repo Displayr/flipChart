@@ -274,7 +274,7 @@ PrepareData <- function(chart.type,
     # 4. Tailoring the data for the chart type.
     ###########################################################################
     data <- prepareForSpecificCharts(data,
-                                     multiple.tables = is.list(input.data.table) || is.list(input.data.tables),
+                                     multiple.tables = .isTableList(input.data.table) || .isTableList(input.data.tables),
                                      input.data.raw,
                                      chart.type, weights, tidy, show.labels,
                                      date.format, scatter.mult.yvals)
@@ -286,7 +286,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- transformTable(data,
                    chart.type,
-                   multiple.tables = is.list(input.data.tables) || is.list(input.data.table),
+                   multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
@@ -341,6 +341,8 @@ unlistTable <- function(x)
     else
         return(x)
 }
+
+.isTableList <- function(x){is.list(x) && length(x) > 1}
 
 isScatter <- function(chart.type)
 {
