@@ -155,6 +155,10 @@ test_that("PrepareData: multiple existing tables",
                        chart.type = "Scatter")
     expect_length(out$data, 2)
     expect_equal(attr(out$data[[2]], "statistic"), "%")
+
+
+    out2 <- PrepareData(input.data.table = input.data.tables, chart.type = "Scatter")
+    expect_equal(out2, out)
 })
 
 test_that("PrepareData: pasted raw data",

@@ -205,7 +205,7 @@ PrepareData <- function(chart.type,
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
-    data <- input.data.table
+    data <- unlistTable(input.data.table)
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
@@ -273,7 +273,9 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
-    data <- prepareForSpecificCharts(data, input.data.tables, input.data.raw,
+    data <- prepareForSpecificCharts(data,
+                                     multiple.tables = is.list(input.data.table) || is.list(input.data.tables),
+                                     input.data.raw,
                                      chart.type, weights, tidy, show.labels,
                                      date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
@@ -284,7 +286,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     data <- transformTable(data,
                    chart.type,
-                   multiple.tables = !is.null(input.data.tables),
+                   multiple.tables = is.list(input.data.tables) || is.list(input.data.table),
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
                    transpose,
@@ -322,6 +324,22 @@ PrepareData <- function(chart.type,
          values.title = values.title,
          categories.title = categories.title,
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
+}
+
+#' Handle input of table or tables
+#' @noRd
+#' @description This function allows a list of tables to be supplied
+#'  via the \code{input.data.table} argument in the same way as
+#'  \code{input.data.tables}.
+#' @param x Input data which may be a matrix or list of matrix
+unlistTable <- function(x)
+{
+    if (is.null(x))
+        return(x)
+    if (is.list(x) && length(x) == 1)
+        return(x[[1]])
+    else
+        return(x)
 }
 
 isScatter <- function(chart.type)
@@ -668,9 +686,8 @@ transformTable <- function(data,
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
-prepareForSpecificCharts <- function(
-                                     data,
-                                     input.data.tables,
+prepareForSpecificCharts <- function(data,
+                                     multiple.tables,
                                      input.data.raw,
                                      chart.type,
                                      weights,
@@ -680,7 +697,7 @@ prepareForSpecificCharts <- function(
                                      scatter.mult.yvals)
 {
     # Multiple tables
-    if (!is.null(input.data.tables))
+    if (multiple.tables)
     {
         data <- lapply(data, TidyTabularData)
         # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
