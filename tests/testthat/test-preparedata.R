@@ -1303,4 +1303,17 @@ test_that("Tidy labels does not affect date/time",
     expect_equal(res$categories.title, "Row")
 })
 
+test_that("PrepareData with lists and dataframes",
+{
+    data("LifeCycleSavings")
+    expect_silent(res <- PrepareData("Column", input.data.table = LifeCycleSavings))
+    expect_silent(CChart("Column", res$data))
+
+    x1 <- matrix(c(1:9, 1, 1, 2), 3, 4, dimnames = list(LETTERS[1:3], letters[1:4]))
+    x2 <- x1 + 0.2
+    x3 <- x2 + 0.2
+    expect_silent(res <- PrepareData("Scatter", input.data.table = list(x1, x2, x3)))
+    expect_warning(CChart("Scatter", res$data, trend.lines = FALSE),
+                   "Tables have been automatically assigned names")
+})
 

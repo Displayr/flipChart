@@ -216,7 +216,7 @@ PrepareData <- function(chart.type,
         data <- processPastedData(input.data.pasted,
                                   warn = tidy,
                                   date.format)
-
+    
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
@@ -342,7 +342,7 @@ unlistTable <- function(x)
         return(x)
 }
 
-.isTableList <- function(x){is.list(x) && length(x) > 1}
+.isTableList <- function(x){!is.data.frame(x) && is.list(x) && length(x) > 1}
 
 isScatter <- function(chart.type)
 {
