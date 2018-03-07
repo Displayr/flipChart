@@ -295,7 +295,7 @@ PrepareData <- function(chart.type,
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
     if (tidy.labels)
-        data <- tidyLabels(data)
+        data <- tidyLabels(data, chart.type)
 
     ###########################################################################
     # Finalizing the result.
@@ -808,8 +808,8 @@ prepareForSpecificCharts <- function(data,
         }
         else # Coercing data to numeric format, if required
             data <- AsNumeric(data, binary = FALSE)
-        if (!is.list(data))
-            data <- list(data)
+        #if (!is.list(data))
+        #    data <- list(data)
     }
     else
     {
@@ -982,20 +982,27 @@ isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
                 AsDateTime(x, on.parse.failure = "silent")))))
 
 
-tidyLabels <- function(data)
+tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
     if (is.matrix(data) || is.data.frame(data))
     {
-        tmp <- ExtractCommonPrefix(rownames(data))
-        if (!isDate(rownames(data)))
+        orig.names <- if (isDistribution(chart.type)) colnames(data)
+                      else                            rownames(data)
+        if (!isDate(orig.names))
         {
-            rownames(data) <- tmp$shortened.labels
-            if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
-                attr(data, "categories.title") <- tmp$common.prefix
+            tmp <- ExtractCommonPrefix(orig.names)
+            if (isDistribution(chart.type))
+                colnames(data) <- tmp$shortened.labels  # density charts have no categories title
+            else
+            {
+                rownames(data) <- tmp$shortened.labels
+                if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
+                    attr(data, "categories.title") <- tmp$common.prefix
+            }
         }
     }
-    else if (length(names(data)) == NROW(data)) # lists and vectors
+    else if (!is.null(names(data))) # lists and vectors
     {
         tmp <- ExtractCommonPrefix(names(data))
         if (!isDate(names(data)))

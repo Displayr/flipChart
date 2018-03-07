@@ -1289,7 +1289,7 @@ test_that("Scatter input data column order",
 
 })
 
-test_that("Tidy labels does not affect date/time",
+test_that("Tidy labels",
 {
     mat.date <- structure(c(1, 2, 3, 4, 5, 2.2, 4.7, 3.1, 5, 6.2), .Dim = c(5L,
 2L), .Dimnames = list(c("Jan 12 2007 00:00", "Jan 12 2007 12:00",
@@ -1301,6 +1301,17 @@ test_that("Tidy labels does not affect date/time",
 2L), .Dimnames = list(c("Row 1", "Row 2", "Row 3", "Row 4", "Row 5"), NULL))
     res <- PrepareData("Table", input.data.table = mat.string, tidy.labels = TRUE)
     expect_equal(res$categories.title, "Row")
+
+    pst <- structure(c("Q1 - A", "1", "2", "3", "4", "5", "2", "5", "7",
+        "5", "", "Q1 - B", "0", "0", "0", "0", "5", "8", "7", "1", "2",
+        "1", "Q1 - C", "9", "9", "9", "9", "7", "7", "6", "", "", ""),
+        .Dim = c(11L, 3L))
+    res <- PrepareData("Density", input.data.pasted=list(pst, FALSE), tidy.labels = TRUE)
+    expect_equal(colnames(res$data), c('A','B','C'))
+
+    datL <- list('Q1 - A' = rnorm(20), 'Q1 - B' = rnorm(30), 'Q1 - C' = rnorm(30))
+    resL <- PrepareData("Density", input.data.table = datL, tidy.labels = TRUE)
+    expect_equal(names(resL$data), c('A','B','C'))
 })
 
 test_that("PrepareData with lists and dataframes",
