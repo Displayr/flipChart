@@ -1326,5 +1326,24 @@ test_that("PrepareData with lists and dataframes",
     expect_silent(res <- PrepareData("Scatter", input.data.table = list(x1, x2, x3)))
     expect_warning(CChart("Scatter", res$data, trend.lines = FALSE),
                    "Tables have been automatically assigned names")
+
+    df <- structure(list(`col 1` = c(19.5, 29.3, 1.1, 28.7, 11, 10.4)), .Names = "col 1",
+                    row.names = c("A", "B", "C", "D", "E", "F"), class = "data.frame")
+    expect_silent(res <- PrepareData("Donut", input.data.table = df))
+    expect_equal(names(res$data), rownames(df))
+
+
+    dfL <- list(structure(list(sr = c(11.43, 12.07, 13.17, 5.75, 12.88),
+        pop15 = c(29.35, 23.32, 23.8, 41.89, 42.19)), .Names = c("sr",
+        "pop15"), row.names = c("Australia", "Austria", "Belgium", "Bolivia",
+        "Brazil"), class = "data.frame"), structure(list(sr = c(12.43,
+        12.07, 14.17, 5.75, 13.88), pop15 = c(29.35, 24.32, 23.8, 42.89,
+        42.19)), .Names = c("sr", "pop15"), row.names = c("Australia",
+        "Austria", "Belgium", "Bolivia", "Brazil"), class = "data.frame"),
+        structure(list(sr = c(12.43, 13.07, 14.17, 6.75, 13.88),
+        pop15 = c(30.35, 24.32, 24.8, 42.89, 43.19)), .Names = c("sr",
+        "pop15"), row.names = c("Australia", "Austria", "Belgium",
+        "Bolivia", "Brazil"), class = "data.frame"))
+    expect_silent(PrepareData("Scatter", input.data.table = dfL))
 })
 
