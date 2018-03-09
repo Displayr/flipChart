@@ -342,7 +342,7 @@ unlistTable <- function(x)
         return(x)
 }
 
-.isTableList <- function(x){!is.data.frame(x) && is.list(x) && length(x) > 1 && 
+.isTableList <- function(x){!is.data.frame(x) && is.list(x) && length(x) > 1 &&
                             (is.matrix(x[[1]]) || is.data.frame(x[[1]]) || is.numeric(x[[1]]))}
 
 isScatter <- function(chart.type)
@@ -986,15 +986,17 @@ isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
 tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
+    vertical.chart <- isDistribution(chart.type) || chart.type == "Venn"
     if (is.matrix(data) || is.data.frame(data))
     {
-        orig.names <- if (isDistribution(chart.type)) colnames(data)
-                      else                            rownames(data)
+        orig.names <- if (vertical.chart) colnames(data)
+                      else                rownames(data)
         if (!isDate(orig.names))
         {
+            data <- as.data.frame(data)
             tmp <- ExtractCommonPrefix(orig.names)
-            if (isDistribution(chart.type))
-                colnames(data) <- tmp$shortened.labels  # density charts have no categories title
+            if (vertical.chart)
+                colnames(data) <- tmp$shortened.labels
             else
             {
                 rownames(data) <- tmp$shortened.labels

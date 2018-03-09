@@ -1312,6 +1312,11 @@ test_that("Tidy labels",
     datL <- list('Q1 - A' = rnorm(20), 'Q1 - B' = rnorm(30), 'Q1 - C' = rnorm(30))
     resL <- PrepareData("Density", input.data.table = datL, tidy.labels = TRUE)
     expect_equal(names(resL$data), c('A','B','C'))
+
+    datV = list('Q1 - A' = rbinom(10, 1, 0.5), 'Q1 - B' = rbinom(10, 1, 0.2),
+                'Q1 - C' = rbinom(10, 1, 0.9))
+    resV = PrepareData("Venn", input.data.raw = datV, tidy.labels = TRUE)
+    expect_equal(colnames(resV$data), c('A','B','C'))
 })
 
 test_that("PrepareData with lists and dataframes",
