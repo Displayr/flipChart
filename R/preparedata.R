@@ -1003,6 +1003,11 @@ tidyLabels <- function(data, chart.type)
                 if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
                     attr(data, "categories.title") <- tmp$common.prefix
             }
+
+            # Remove the question and label attribute which is used preferentially
+            # This is also needed to ensure that show.labels works
+            if (chart.type == "Venn" && is.list(data))
+                data <- as.matrix(data)
         }
     }
     else if (!is.null(names(data))) # lists and vectors
