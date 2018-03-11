@@ -993,7 +993,6 @@ tidyLabels <- function(data, chart.type)
                       else                rownames(data)
         if (!isDate(orig.names))
         {
-            data <- as.data.frame(data)
             tmp <- ExtractCommonPrefix(orig.names)
             if (vertical.chart)
                 colnames(data) <- tmp$shortened.labels
@@ -1007,9 +1006,9 @@ tidyLabels <- function(data, chart.type)
     }
     else if (!is.null(names(data))) # lists and vectors
     {
-        tmp <- ExtractCommonPrefix(names(data))
         if (!isDate(names(data)))
         {
+            tmp <- ExtractCommonPrefix(names(data))
             names(data) <- tmp$shortened.labels
             if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
                 attr(data, "categories.title") <- tmp$common.prefix

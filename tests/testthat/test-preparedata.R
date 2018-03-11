@@ -654,18 +654,18 @@ test_that("PrepareData: input and output format of raw data",
     attr(y2, "label") <- "VarC"
 
     # Multiple variables in Y are concatenated
-    res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)))
+    res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)), tidy.labels = TRUE)
     expect_equal(dim(res6$data), c(200, 3))
     expect_true(attr(res6$data, "scatter.mult.yvals"))
     expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
     # Duplicated variables
-    res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy))
+    res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res7$data), c(100, 1))
     expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA))
 
-    res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy))
+    res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res8$data), c(100, 2))
     expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA))
 
@@ -704,12 +704,12 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(rownames(res3$data), as.character(c(0:7,10)))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
-                        as.percentages = TRUE, transpose = TRUE)
+                        as.percentages = TRUE, transpose = TRUE, tidy.labels = TRUE)
     expect_equal(res3$values.title, "%")
     expect_equal(rownames(res3$data), as.character(0:7))
 
 
-    res4 <- PrepareData("Scatter", input.data.raw = list(X = NULL, Y = xx))
+    res4 <- PrepareData("Scatter", input.data.raw = list(X = NULL, Y = xx), tidy.labels = TRUE)
     #expect_equal(ncol(res4$data), 1)
     expect_equal(res4$values.title, "")
     expect_true(is.na(res4$scatter.variable.indices["x"]))
