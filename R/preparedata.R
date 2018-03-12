@@ -253,13 +253,19 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
-    crosstab <- !chart.type %in% c("Bubble", "Scatter", "Venn") &&
-                (rawDataLooksCrosstabbable(input.data.raw) || group.by.last)
+    crosstab <- !(chart.type %in% c("Scatter", "Venn") || isDistribution(chart.type)) &&
+                 (rawDataLooksCrosstabbable(input.data.raw) || group.by.last)
     if (is.null(first.aggregate))
         first.aggregate <- crosstab
+    if ((chart.type %in% c("Scatter", "Venn") || isDistribution(chart.type)) &&
+        first.aggregate)
+    {
+        warning("Data is not aggregated for this chart type.")
+        first.aggregate <- FALSE
+    }
     if (crosstab && !first.aggregate)
         warning("Input data is always aggregated when 'Groups' variable is provided.")
-    if (!isDistribution(chart.type) && (crosstab || first.aggregate))
+    if (crosstab || first.aggregate)
     {
         #crosstab <- NCOL(data) == 2 || group.by.last
         if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
@@ -699,6 +705,11 @@ prepareForSpecificCharts <- function(data,
                                      date.format,
                                      scatter.mult.yvals)
 {
+    if (!isDistribution(chart.type) && !is.null(input.data.raw) &&
+        is.list(input.data.raw$X) && length(input.data.raw$X) > 10)
+        warnings("With a large number of variables, it may be better to first create ",
+                 "a table and then create a visualization using the table.")
+
     # Multiple tables
     if (multiple.tables)
     {

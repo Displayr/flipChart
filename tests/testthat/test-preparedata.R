@@ -1195,8 +1195,9 @@ test_that("Automatic crosstab of two input variables",
 
     # Checking histograms still work (as they should never be aggregated)
     zz = c(1,2,1,1,1)
-    z = PrepareData("Histogram", input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
-                               first.aggregate = TRUE, group.by.last = TRUE)
+    z = suppressWarnings(PrepareData("Histogram",
+                                input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
+                               first.aggregate = TRUE, group.by.last = TRUE))
     expect_equal(sum(unlist(z$data)), sum(zz))
 
 })
