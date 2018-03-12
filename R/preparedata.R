@@ -707,7 +707,7 @@ prepareForSpecificCharts <- function(data,
 {
     if (!isDistribution(chart.type) && !is.null(input.data.raw) &&
         is.list(input.data.raw$X) && length(input.data.raw$X) > 10)
-        warnings("With a large number of variables, it may be better to first create ",
+        warning("With a large number of variables, it may be better to first create ",
                  "a table and then create a visualization using the table.")
 
     # Multiple tables
