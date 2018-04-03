@@ -59,13 +59,7 @@ test_that("PrepareData: single table, single stat",
         "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
         "55 to 64", "65 or more", "NET")), name = "Gender by Age", questions = c("Gender", "Age"))
 
-    out <- PrepareData("Area", NULL, NULL,
-                       get0("input.data.table"),
-                       get0("input.data.tables"),
-                       NULL, NULL, #input.data.raw = #as.data.frame(Filter(Negate(is.null), list(get0("formX"), get0("formY")))),
-                      # input.data.pasted = list(get0("formPastedData"), get0("formPastedRawData"), get0("formPastedFactor"),
-                     #                get0("formPastedColumnNames"), get0("formPastedRowNames")),
-                       get0("input.data.other"),
+    out <- PrepareData("Area", NULL, NULL, input.data.table = input.data.table,
                        transpose = get0("transpose"),
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
@@ -725,10 +719,10 @@ test_that("PrepareData: input and output format of raw data",
     expect_true(is.na(res5$scatter.variable.indices["sizes"]))
     expect_equivalent(res5$scatter.variable.indices["colors"], 2)
 
-    res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = 1:5, Y = factor(1:5), Z = factor(1:5)),
+    res <- suppressWarnings(PrepareData("Column", input.data.raw = list(X = 2:6, Y = factor(1:5), Z = factor(1:5)),
                        as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
-    expect_equal(colnames(res$data), c("X","Y","Z"))
+    expect_equal(colnames(res$data), c("Y","Z"))
 })
 
 
@@ -964,10 +958,10 @@ test_that("as.percentages from pasted data and raw data work by dividing by nrow
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
  zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE,
                                    first.aggregate = FALSE))
- expect_equal(zz$data[1,1], 1/3)
- zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE,
-                                   first.aggregate = FALSE))
- expect_equal(zz$data[1,1], 1/3)
+ #expect_equal(zz$data[1,1], 1/3)
+ #zz = suppressWarnings(PrepareData("Column", input.data.pasted = list(z), as.percentages = TRUE,
+ #                                  first.aggregate = FALSE))
+ #expect_equal(zz$data[1,1], 1/3)
 })
 
 
@@ -1173,24 +1167,29 @@ test_that("Automatic crosstab of two input variables",
     expect_equal(z$data[1,1], 3)
     expect_warning(z <- PrepareData("Column", input.data.raw = list(X = list(A = 1:5, B = 2:6), Y = c(1,2,1,2,1))),
                    "'Groups' variable ignored if more than one input variable is selected")
-    expect_equal(colnames(z$data), c("A", "B"))
+    expect_equal(z$categories.title, "A")
+    expect_equal(z$values.title, "B")
 
     # Pasted data
-    zz = list(matrix(c(1,2,1,1,1,1,2,1,2,1), ncol = 2, dimnames = list(1:5, c("X","Y"))))
+    zz = list(matrix(c("X", 1,2,1,1,1,"Y", 1,2,1,2,1), ncol = 2))
     z = PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE)
     expect_equal(z$data[1,1], 3)
     z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), c(1.2, 1.4))
-    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
-    expect_equal(as.numeric(z$data), as.numeric(zz[[1]]))
+    z = PrepareData("Scatter", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    expect_equal(as.numeric(z$data), as.numeric(zz[[1]][-1,]))
+    z = expect_warning(PrepareData("Colunm", input.data.pasted = zz, first.aggregate = FALSE,
+                        group.by.last = FALSE), "Duplicated entries in 'X'")
+    expect_equal(z$categories.title, "X")
+    expect_equal(z$values.title, "Y")
 
     # Pasted data with an irrelevant middle column
     zz = list(matrix(c(1,2,1,1,1,NA, 4, NA, 3, NA, 1,2,1,2,1), ncol = 3, dimnames = list(1:5, c("X","Irrelevant", "Y"))))
     z = suppressWarnings(PrepareData("Column", input.data.pasted = zz, first.aggregate = TRUE, group.by.last = TRUE))
     expect_equal(z$data[1,1], 3)
-    z = PrepareData("Column", input.data.pasted = zz,first.aggregate = TRUE, group.by.last = FALSE)
+    z = PrepareData("Column", input.data.table = zz, first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), c(1.2, 3.5, 1.4))
-    z = PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    z = PrepareData("Column", input.data.table = zz, first.aggregate = FALSE, group.by.last = FALSE)
     expect_equal(dim(z$data), dim(zz[[1]]))
 
     # Checking histograms still work (as they should never be aggregated)

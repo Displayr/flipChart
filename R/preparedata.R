@@ -205,7 +205,7 @@ PrepareData <- function(chart.type,
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
-    data <- unlistTable(input.data.table)
+    data <- processInputData(input.data.table)
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
@@ -415,6 +415,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
            out <- apply(data, 2, mean, na.rm = TRUE)
         attr(out, "statistic") <- "Average"
     }
+    attr(out, "assigned.rownames") <- TRUE
     out
 }
 
@@ -512,6 +513,27 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 isDistribution <- function(chart.type)
 {
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
+}
+
+processInputData <- function(x)
+{
+    if (is.null(x))
+        return(x)
+
+    # Handle list of tables
+    if (is.list(x) && !is.data.frame(x))
+    {
+        if (length(x) == 1)
+            x <- x[[1]]
+        else
+            return(x)
+    }
+
+    if (!is.null(dim(x)) && length(dim(x)) == 2)
+        attr(x, "assigned.rownames") <- !is.null(rownames(x))
+    else
+        attr(x, "assigned.rownames") <- !is.null(names(x))
+    return(x)
 }
 
 processPastedData <- function(input.data.pasted, warn, date.format)
@@ -852,8 +874,8 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 {
     if (length(dim(x)) != 2 || ncol(x) == 1)
         return(x)
-    if (!allow.numeric.rownames && is.numeric(x[,1]))
-        return(x)
+    #if (!allow.numeric.rownames && is.numeric(x[,1]))
+    #    return(x)
     if (hasUserSuppliedRownames(x))
         return(x)
 
@@ -891,14 +913,25 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     }
     if (inherits(x[,1], 'Date') || inherits(x[,1], 'POSIXct') ||
         inherits(x[,1], 'POSIXlt') || inherits(x[,1], 'POSIXt'))
-        rownames(x) <- format(x[,1], "%b %d %Y")
+        r.tmp <- format(x[,1], "%b %d %Y")
     else if (is.factor(x[,1])) # QDates are also factors
-        rownames(x) <- make.unique(as.character(x[,1]))
+        r.tmp <- make.unique(as.character(x[,1]))
     else
-        rownames(x) <- make.unique(as.character(x[,1]))
+        r.tmp <- make.unique(as.character(x[,1]))
+    
+    is.missing <- is.na(r.tmp)
+    if (any(is.missing))
+        warning("Rows ", paste(which(is.missing), collapse = ","),
+                " have been omitted because of missing values.")
+    ind <- which(!is.missing) 
+
     c.title <- colnames(x)[1]
-    x <- x[,-1, drop = FALSE]
+    c2.title <- if (NCOL(x) == 2) colnames(x)[2]
+    x <- x[ind, -1, drop = FALSE]
+    rownames(x) <- r.tmp[ind]
     attr(x, "categories.title") <- c.title
+    if (!is.null(c2.title))
+        attr(x, "values.title") <- c2.title
     return(x)
 }
 
@@ -920,7 +953,7 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
             attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"
-        else
+        else if (sum(nchar(attr(x, "statistic"))) > 0)
             attr(x, "values.title") <- attr(x, "statistic")
     }
     if (sum(nchar(values.title)) > 0)
@@ -991,7 +1024,7 @@ hasUserSuppliedRownames <- function(data)
 
 # All warnings are suppressed here - warnings are given in the charting functions
 isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
-                AsDateTime(x, on.parse.failure = "silent")))))
+                AsDateTime(as.character(x), on.parse.failure = "silent")))))
 
 
 tidyLabels <- function(data, chart.type)
