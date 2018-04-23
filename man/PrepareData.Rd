@@ -10,8 +10,15 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.other = NULL, data.source = NULL, first.aggregate = NULL,
   scatter.input.columns.order = NULL, scatter.mult.yvals = FALSE,
   group.by.last = FALSE, tidy = TRUE, tidy.labels = FALSE,
-  transpose = FALSE, row.names.to.remove = c("NET", "SUM"),
-  column.names.to.remove = c("NET", "SUM"), split = "[;,]",
+  transpose = FALSE, select.rows = NULL, first.k.rows = NA,
+  last.k.rows = NA, select.columns = NULL, first.k.columns = NA,
+  last.k.columns = NA, sort.rows = FALSE, sort.rows.exclude = c("NET",
+  "SUM", "Total"), sort.rows.column = NULL, sort.columns = FALSE,
+  sort.columns.exclude = c("NET", "SUM", "Total"), sort.columns.row = NULL,
+  hide.output.threshold = 0, hide.rows.and.columns.threshold = 0,
+  reverse.rows = FALSE, reverse.columns = FALSE,
+  row.names.to.remove = c("NET", "SUM", "Total"),
+  column.names.to.remove = c("NET", "SUM", "Total"), split = "[;,]",
   hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
   date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
@@ -80,6 +87,59 @@ labels of the input data.}
 
 \item{transpose}{Logical; should the resulting matrix (of created)
 be transposed?}
+
+\item{select.rows}{String; Comma separated list of rows, by name or index
+to select from input table. If blank (default), then all rows are selected.}
+
+\item{first.k.rows}{Integer; Number of rows to select from the top of the input table.}
+
+\item{last.k.rows}{Integer; Number of rows to select from the bottom of the input table.}
+
+\item{select.columns}{String; Comma separated list of columns, by name or index
+to select from input table. If blank (default), then all columns are selected.}
+
+\item{first.k.columns}{Integer; Number of columns to select from the left of the input table.}
+
+\item{last.k.columns}{Integer; Number of columns to select from the right of the input table.}
+
+\item{sort.rows}{Logical; whether to sort the rows of the table. This operation is
+performed after row selection.}
+
+\item{sort.rows.exclude}{String; If \code{sort.rows} is \code{TRUE}, then rows
+in \code{sort.rows.exclude} will be excluded from sorting and
+appended at the bottom of the table.}
+
+\item{sort.rows.column}{String; If \code{sort.rows} is true, this column
+(specified by name or index) is used for sorting the rows. If not specified,
+the column with the largest \code{Column n} or the right-most column
+will be used for sorting.}
+
+\item{sort.columns}{Logical; whether to sort the columns of the table.
+This operation is performed after column selection}
+
+\item{sort.columns.exclude}{String; If \code{sort.columns} is \code{TRUE}, then columns
+in \code{sort.columns.exclude} will be excluded from sorting and
+appended at the right of the table.'}
+
+\item{sort.columns.row}{String; If \code{sort.columns} is true, this row
+(specified by name or index) is used for sorting the columns. If not specified,
+the row with the largest \code{n} or the bottom row
+will be used for sorting.}
+
+\item{hide.output.threshold}{Integer; If sample size ('Column n' or 'n') is provided
+then each cell in the input table will be checked to ensure
+'n' or 'Column n' is larger than specified threshold, otherwise an error
+message is given.}
+
+\item{hide.rows.and.columns.threshold}{Integer; If sample size ('Column n' or 'n')
+is provided, then rows and columns with sample sizes smaller than threshold
+will be removed from table.}
+
+\item{reverse.rows}{Logical; Whether to reverse order of rows. This operation is
+performed after row selection and sorting.}
+
+\item{reverse.columns}{Logical; Whether to reverse order of columns. This operation
+is peformed after column selection and sorting.}
 
 \item{row.names.to.remove}{Character vector or delimited string of
 row labels specifying rows to remove from the returned table;

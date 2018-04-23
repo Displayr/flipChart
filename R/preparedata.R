@@ -65,6 +65,43 @@
 #'     meaning that a row or column contains all \code{NA} values, or
 #'     in the case of percentages, that a row or column contains only
 #'     0's.
+#' @param select.rows String; Comma separated list of rows, by name or index
+#'     to select from input table. If blank (default), then all rows are selected.
+#' @param select.columns String; Comma separated list of columns, by name or index
+#'     to select from input table. If blank (default), then all columns are selected.
+#' @param sort.rows Logical; whether to sort the rows of the table. This operation is
+#'     performed after row selection.
+#' @param sort.rows.column String; If \code{sort.rows} is true, this column
+#'     (specified by name or index) is used for sorting the rows. If not specified,
+#'     the column with the largest \code{Column n} or the right-most column
+#'     will be used for sorting.
+#' @param sort.rows.exclude String; If \code{sort.rows} is \code{TRUE}, then rows
+#'      in \code{sort.rows.exclude} will be excluded from sorting and
+#'      appended at the bottom of the table.
+#' @param sort.columns Logical; whether to sort the columns of the table.
+#'      This operation is performed after column selection
+#' @param sort.columns.row String; If \code{sort.columns} is true, this row
+#'      (specified by name or index) is used for sorting the columns. If not specified,
+#'      the row with the largest \code{n} or the bottom row
+#'      will be used for sorting.
+#' @param sort.columns.exclude String; If \code{sort.columns} is \code{TRUE}, then columns
+#'      in \code{sort.columns.exclude} will be excluded from sorting and
+#'      appended at the right of the table.'
+#' @param hide.output.threshold Integer; If sample size ('Column n' or 'n') is provided
+#'      then each cell in the input table will be checked to ensure
+#'      'n' or 'Column n' is larger than specified threshold, otherwise an error
+#'      message is given.
+#' @param hide.rows.and.columns.threshold Integer; If sample size ('Column n' or 'n')
+#'      is provided, then rows and columns with sample sizes smaller than threshold
+#'      will be removed from table.
+#' @param first.k.rows Integer; Number of rows to select from the top of the input table.
+#' @param last.k.rows Integer; Number of rows to select from the bottom of the input table.
+#' @param first.k.columns Integer; Number of columns to select from the left of the input table.
+#' @param last.k.columns Integer; Number of columns to select from the right of the input table.
+#' @param reverse.rows Logical; Whether to reverse order of rows. This operation is
+#'      performed after row selection and sorting.
+#' @param reverse.columns Logical; Whether to reverse order of columns. This operation
+#'      is peformed after column selection and sorting.
 #' @param show.labels Logical; If \code{TRUE}, labels are used for
 #'     names in the data output if raw data is supplied.
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
@@ -83,7 +120,7 @@
 #'     They are checked for nullity in that order.
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsAndColumnsWithSmallSampleSizes
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -120,8 +157,24 @@ PrepareData <- function(chart.type,
                         tidy = TRUE,
                         tidy.labels = FALSE,
                         transpose = FALSE,
-                        row.names.to.remove = c("NET", "SUM"),
-                        column.names.to.remove = c("NET", "SUM"),
+                        select.rows = NULL,
+                        first.k.rows = NA,
+                        last.k.rows = NA,
+                        select.columns = NULL,
+                        first.k.columns = NA,
+                        last.k.columns = NA,
+                        sort.rows = FALSE,
+                        sort.rows.exclude = c("NET", "SUM", "Total"),
+                        sort.rows.column = NULL,
+                        sort.columns = FALSE,
+                        sort.columns.exclude = c("NET", "SUM", "Total"),
+                        sort.columns.row = NULL,
+                        hide.output.threshold = 0,
+                        hide.rows.and.columns.threshold = 0,
+                        reverse.rows = FALSE,
+                        reverse.columns = FALSE,
+                        row.names.to.remove = c("NET", "SUM", "Total"),
+                        column.names.to.remove = c("NET", "SUM", "Total"),
                         split = "[;,]",
                         hide.empty.rows.and.columns = TRUE,
                         as.percentages = FALSE,
@@ -313,6 +366,37 @@ PrepareData <- function(chart.type,
     attr(data, "categories.title") <- NULL
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
+
+    # Table tidying functions
+    if (!(is.list(data) && !is.data.frame(data)))
+    {
+        # Selecting rows/columns
+        data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
+        data <- SelectColumns(data, select.columns,
+                    first.k.columns, last.k.columns)
+
+        # merging rows/columns
+
+        # This part should go after the row/column selection
+        # But if tidy is selected (which is the default)
+        # We have already lost the sample size info
+        # We can save the size info but it needs to maintained through
+        # all of the SelectRows/SelectColumns manipulations
+        if (sum(hide.output.threshold, na.rm = TRUE) > 0)
+            data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
+        if (sum(hide.rows.and.columns.threshold, na.rm = TRUE) > 0)
+            data <- HideRowsAndColumnsWithSmallSampleSizes(data, hide.rows.and.columns.threshold)
+
+        if (sort.rows)
+            data <- SortRows(data, reverse.rows, sort.rows.column, sort.rows.exclude)
+        else if (reverse.rows)
+            data <- ReverseRows(data)
+
+        if (sort.columns)
+            data <- SortColumns(data, reverse.columns, sort.columns.row, sort.columns.exclude)
+        else if (reverse.columns)
+            data <- ReverseColumns(data)
+    }
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -918,12 +1002,12 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
         r.tmp <- make.unique(as.character(x[,1]))
     else
         r.tmp <- make.unique(as.character(x[,1]))
-    
+
     is.missing <- is.na(r.tmp)
     if (any(is.missing))
         warning("Rows ", paste(which(is.missing), collapse = ","),
                 " have been omitted because of missing values.")
-    ind <- which(!is.missing) 
+    ind <- which(!is.missing)
 
     c.title <- colnames(x)[1]
     c2.title <- if (NCOL(x) == 2) colnames(x)[2]
