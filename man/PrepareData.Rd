@@ -12,8 +12,9 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   group.by.last = FALSE, tidy = TRUE, tidy.labels = FALSE,
   transpose = FALSE, select.rows = NULL, first.k.rows = NA,
   last.k.rows = NA, select.columns = NULL, first.k.columns = NA,
-  last.k.columns = NA, sort.rows = FALSE, sort.rows.exclude = c("NET",
-  "SUM", "Total"), sort.rows.column = NULL, sort.columns = FALSE,
+  last.k.columns = NA, auto.order.rows = FALSE, sort.rows = FALSE,
+  sort.rows.exclude = c("NET", "SUM", "Total"), sort.rows.column = NULL,
+  auto.order.columns = FALSE, sort.columns = FALSE,
   sort.columns.exclude = c("NET", "SUM", "Total"), sort.columns.row = NULL,
   hide.output.threshold = 0, hide.rows.and.columns.threshold = 0,
   reverse.rows = FALSE, reverse.columns = FALSE,
@@ -102,8 +103,10 @@ to select from input table. If blank (default), then all columns are selected.}
 
 \item{last.k.columns}{Integer; Number of columns to select from the right of the input table.}
 
+\item{auto.order.rows}{Logical; Automatically order rows by correspondence analysis.}
+
 \item{sort.rows}{Logical; whether to sort the rows of the table. This operation is
-performed after row selection.}
+performed after row selection. (Ignored if \code{auto.order.rows} is true).}
 
 \item{sort.rows.exclude}{String; If \code{sort.rows} is \code{TRUE}, then rows
 in \code{sort.rows.exclude} will be excluded from sorting and
@@ -114,8 +117,11 @@ appended at the bottom of the table.}
 the column with the largest \code{Column n} or the right-most column
 will be used for sorting.}
 
+\item{auto.order.columns}{Logical; Automatically order columns by correspondence analysis.}
+
 \item{sort.columns}{Logical; whether to sort the columns of the table.
-This operation is performed after column selection}
+This operation is performed after column selection (Ignored if
+\code{auto.order.columns} is true.}
 
 \item{sort.columns.exclude}{String; If \code{sort.columns} is \code{TRUE}, then columns
 in \code{sort.columns.exclude} will be excluded from sorting and

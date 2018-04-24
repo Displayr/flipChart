@@ -69,8 +69,9 @@
 #'     to select from input table. If blank (default), then all rows are selected.
 #' @param select.columns String; Comma separated list of columns, by name or index
 #'     to select from input table. If blank (default), then all columns are selected.
+#' @param auto.order.rows Logical; Automatically order rows by correspondence analysis.
 #' @param sort.rows Logical; whether to sort the rows of the table. This operation is
-#'     performed after row selection.
+#'     performed after row selection. (Ignored if \code{auto.order.rows} is true).
 #' @param sort.rows.column String; If \code{sort.rows} is true, this column
 #'     (specified by name or index) is used for sorting the rows. If not specified,
 #'     the column with the largest \code{Column n} or the right-most column
@@ -78,8 +79,10 @@
 #' @param sort.rows.exclude String; If \code{sort.rows} is \code{TRUE}, then rows
 #'      in \code{sort.rows.exclude} will be excluded from sorting and
 #'      appended at the bottom of the table.
+#' @param auto.order.columns Logical; Automatically order columns by correspondence analysis.
 #' @param sort.columns Logical; whether to sort the columns of the table.
-#'      This operation is performed after column selection
+#'      This operation is performed after column selection (Ignored if
+#'      \code{auto.order.columns} is true.
 #' @param sort.columns.row String; If \code{sort.columns} is true, this row
 #'      (specified by name or index) is used for sorting the columns. If not specified,
 #'      the row with the largest \code{n} or the bottom row
@@ -120,7 +123,7 @@
 #'     They are checked for nullity in that order.
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsAndColumnsWithSmallSampleSizes
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsAndColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -163,9 +166,11 @@ PrepareData <- function(chart.type,
                         select.columns = NULL,
                         first.k.columns = NA,
                         last.k.columns = NA,
+                        auto.order.rows = FALSE,
                         sort.rows = FALSE,
                         sort.rows.exclude = c("NET", "SUM", "Total"),
                         sort.rows.column = NULL,
+                        auto.order.columns = FALSE,
                         sort.columns = FALSE,
                         sort.columns.exclude = c("NET", "SUM", "Total"),
                         sort.columns.row = NULL,
@@ -370,12 +375,12 @@ PrepareData <- function(chart.type,
     # Table tidying functions
     if (!(is.list(data) && !is.data.frame(data)))
     {
+        # merging rows/columns
+        
         # Selecting rows/columns
         data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
         data <- SelectColumns(data, select.columns,
                     first.k.columns, last.k.columns)
-
-        # merging rows/columns
 
         # This part should go after the row/column selection
         # But if tidy is selected (which is the default)
@@ -387,14 +392,18 @@ PrepareData <- function(chart.type,
         if (sum(hide.rows.and.columns.threshold, na.rm = TRUE) > 0)
             data <- HideRowsAndColumnsWithSmallSampleSizes(data, hide.rows.and.columns.threshold)
 
-        if (sort.rows)
-            data <- SortRows(data, reverse.rows, sort.rows.column, sort.rows.exclude)
-        else if (reverse.rows)
+        if (auto.order.rows)
+            data <- AutoOrderRows(data)
+        else if (sort.rows)
+            data <- SortRows(data, column = sort.rows.column, exclude = sort.rows.exclude)
+        if (reverse.rows)
             data <- ReverseRows(data)
 
-        if (sort.columns)
-            data <- SortColumns(data, reverse.columns, sort.columns.row, sort.columns.exclude)
-        else if (reverse.columns)
+        if (auto.order.columns)
+            data <- AutoOrderColumns(data)
+        else if (sort.columns)
+            data <- SortColumns(data, row = sort.columns.row, exclude = sort.columns.exclude)
+        if (reverse.columns)
             data <- ReverseColumns(data)
     }
 
