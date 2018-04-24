@@ -612,11 +612,9 @@ processInputData <- function(x)
         else
             return(x)
     }
+    if (hasUserSuppliedRownames(x))
+        attr(x, "assigned.rownames") <- TRUE
 
-    if (!is.null(dim(x)) && length(dim(x)) == 2)
-        attr(x, "assigned.rownames") <- !is.null(rownames(x))
-    else
-        attr(x, "assigned.rownames") <- !is.null(names(x))
     return(x)
 }
 
@@ -1093,6 +1091,8 @@ hasUserSuppliedRownames <- function(data)
         return(FALSE)
     if (isTRUE(attr(data, "assigned.rownames")))
         return(TRUE)
+    if (length(dim(data)) < 2 && is.null(names(data)))
+        return(FALSE)
 
     # Default row names
     rnames <- gsub("Row ", "", rownames(data))

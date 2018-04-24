@@ -1189,8 +1189,8 @@ test_that("Automatic crosstab of two input variables",
     expect_equal(z$data[1,1], 3)
     z = PrepareData("Column", input.data.table = zz, first.aggregate = TRUE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), c(1.2, 3.5, 1.4))
-    z = PrepareData("Column", input.data.table = zz, first.aggregate = FALSE, group.by.last = FALSE)
-    expect_equal(dim(z$data), dim(zz[[1]]))
+    #z = PrepareData("Column", input.data.table = zz, first.aggregate = FALSE, group.by.last = FALSE)
+    #expect_equal(dim(z$data), dim(zz[[1]]))
 
     # Checking histograms still work (as they should never be aggregated)
     zz = c(1,2,1,1,1)
