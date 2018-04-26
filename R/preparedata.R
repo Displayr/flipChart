@@ -340,7 +340,7 @@ PrepareData <- function(chart.type,
     data <- prepareForSpecificCharts(data,
                                      multiple.tables = .isTableList(input.data.table) || .isTableList(input.data.tables),
                                      input.data.raw,
-                                     chart.type, weights, tidy, show.labels,
+                                     chart.type, weights, show.labels,
                                      date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
@@ -351,47 +351,23 @@ PrepareData <- function(chart.type,
     data <- transformTable(data,
                    chart.type,
                    multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
+                   tidy,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    row.names.to.remove, column.names.to.remove, split,
+                   select.rows, first.k.rows, last.k.rows,
+                   select.columns, first.k.columns, last.k.columns,
+                   hide.output.threshold,
+                   hide.rows.and.columns.threshold,
                    transpose,
                    group.by.last || first.aggregate,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
                    hide.empty.rows.and.columns = hide.empty.rows.and.columns,
                    date.format = date.format)
-    if (tidy.labels)
-        data <- tidyLabels(data, chart.type)
 
-    ###########################################################################
-    # Finalizing the result.
-    ###########################################################################
-    data <- setAxisTitles(data, chart.type, tidy, values.title)
-    values.title <- attr(data, "values.title")
-    categories.title <- attr(data, "categories.title")
-    attr(data, "values.title") <- NULL
-    attr(data, "categories.title") <- NULL
-    if (scatter.mult.yvals)
-        attr(data, "scatter.mult.yvals") <- TRUE
-
-    # Table tidying functions
+    # Sort/reordering rows and columns
+    # This does not affect input with a list of multiple tables (scatterplot only)
     if (!(is.list(data) && !is.data.frame(data)))
     {
-        # merging rows/columns
-        
-        # Selecting rows/columns
-        data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
-        data <- SelectColumns(data, select.columns,
-                    first.k.columns, last.k.columns)
-
-        # This part should go after the row/column selection
-        # But if tidy is selected (which is the default)
-        # We have already lost the sample size info
-        # We can save the size info but it needs to maintained through
-        # all of the SelectRows/SelectColumns manipulations
-        if (sum(hide.output.threshold, na.rm = TRUE) > 0)
-            data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
-        if (sum(hide.rows.and.columns.threshold, na.rm = TRUE) > 0)
-            data <- HideRowsAndColumnsWithSmallSampleSizes(data, hide.rows.and.columns.threshold)
-
         if (auto.order.rows)
             data <- AutoOrderRows(data)
         else if (sort.rows)
@@ -406,6 +382,19 @@ PrepareData <- function(chart.type,
         if (reverse.columns)
             data <- ReverseColumns(data)
     }
+
+    ###########################################################################
+    # Finalizing the result.
+    ###########################################################################
+    if (tidy.labels)
+        data <- tidyLabels(data, chart.type)
+    data <- setAxisTitles(data, chart.type, tidy, values.title)
+    values.title <- attr(data, "values.title")
+    categories.title <- attr(data, "categories.title")
+    attr(data, "values.title") <- NULL
+    attr(data, "categories.title") <- NULL
+    if (scatter.mult.yvals)
+        attr(data, "scatter.mult.yvals") <- TRUE
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -717,8 +706,13 @@ asPercentages <- function(data)
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
+                           tidy,
                            is.raw.data,
                            row.names.to.remove, column.names.to.remove, split,
+                           select.rows, first.k.rows, last.k.rows,
+                           select.columns, first.k.columns, last.k.columns,
+                           hide.output.threshold,
+                           hide.rows.and.columns.threshold,
                            transpose,
                            first.aggregate,
                            as.percentages,
@@ -732,8 +726,12 @@ transformTable <- function(data,
             data[[i]] = transformTable(data[[i]],
                                        chart.type,
                                        FALSE,
+                                       tidy,
                                        is.raw.data,
                                        row.names.to.remove, column.names.to.remove, split,
+                                       select.rows, first.k.rows, last.k.rows,
+                                       select.columns, first.k.columns, last.k.columns,
+                                       0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
                                        as.percentages,
@@ -747,11 +745,29 @@ transformTable <- function(data,
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
                                    column.names.to.remove = column.names.to.remove, split = split)
 
+    # Selecting rows/columns
+    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
+    data <- SelectColumns(data, select.columns,
+                first.k.columns, last.k.columns)
+
     if (hide.empty.rows.and.columns)
         data <- if (isListOrRaggedArray(data))
                          lapply(data, HideEmptyRowsAndColumns)
                      else
                          HideEmptyRowsAndColumns(data)
+
+    # Checking sample sizes (if available)
+    # This needs to happen after row/columns have been (de)selected
+    if (sum(hide.output.threshold, na.rm = TRUE) > 0)
+        data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
+    if (sum(hide.rows.and.columns.threshold, na.rm = TRUE) > 0)
+        data <- HideRowsAndColumnsWithSmallSampleSizes(data, hide.rows.and.columns.threshold)
+    # This must happen after sample sizes have been used
+    # (only first statistic is retained after tidying)
+    if (tidy && !chart.type %in% c("Venn", "Sankey") &&
+        !isScatter(chart.type) && !isDistribution(chart.type))
+            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+
 
     ## Switching rows and columns
     if (isTRUE(transpose))
@@ -778,23 +794,6 @@ transformTable <- function(data,
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
             data <- data / sum(data, na.rm = TRUE)
-        else if (FALSE && is.raw.data && !first.aggregate) # currently turned off
-        {
-            # This clause is turned off because I can't understand
-            # when it would be useful to divide by the number of rows
-            # It is also making pasted data behave badly
-            # No tests failed with this always set to FALSE
-            if (is.null(nrow(data)))
-                warning(percentages.warning)
-            else
-            {
-                data <- data / nrow(data)
-                warning("Percentages have been computed by dividing the data values by the ",
-                        "number of rows in the data. If this is not appropriate, first convert to a ",
-                        "more suitable type (e.g., create a table).")
-                attr(data, "statistic") = "%"
-            }
-        }
         else
             data <- asPercentages(data)
     }
@@ -813,7 +812,6 @@ prepareForSpecificCharts <- function(data,
                                      input.data.raw,
                                      chart.type,
                                      weights,
-                                     tidy,
                                      show.labels,
                                      date.format,
                                      scatter.mult.yvals)
@@ -833,8 +831,7 @@ prepareForSpecificCharts <- function(data,
     }
     else if (chart.type == "Table")
     {
-        if (tidy)
-            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+        # Do nothing
     }
     else if (chart.type == "Venn")
     {
@@ -939,8 +936,6 @@ prepareForSpecificCharts <- function(data,
     else
     {
         data <- useFirstColumnAsLabel(data) # Set rownames before TidyTabularData so that factor are not converted to numeric
-        if (tidy)
-            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
     }
     data
 }
@@ -1124,7 +1119,7 @@ tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
     vertical.chart <- isDistribution(chart.type) || chart.type == "Venn"
-    if (is.matrix(data) || is.data.frame(data))
+    if (length(dim(data)) >= 2)
     {
         orig.names <- if (vertical.chart) colnames(data)
                       else                rownames(data)
