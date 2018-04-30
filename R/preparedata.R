@@ -829,7 +829,7 @@ prepareForSpecificCharts <- function(data,
         if (isScatter(chart.type))
             attr(data, "scatter.variable.indices") = c(x = 1, y = 2, sizes = 3, colors = 4)
     }
-    else if (chart.type == "Table")
+    else if (chart.type == "Table" || chart.type == "Heat")
     {
         # Do nothing
     }
