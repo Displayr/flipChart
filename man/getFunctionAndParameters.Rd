@@ -4,10 +4,12 @@
 \alias{getFunctionAndParameters}
 \title{getFunctionNameAndParameters}
 \usage{
-getFunctionAndParameters(chart.function.name)
+getFunctionAndParameters(chart.function.name, small.multiples)
 }
 \arguments{
 \item{chart.function.name}{The name of the function used for creating the chart (aka plot).}
+
+\item{small.multiples}{Logical; whether a panel of charts should be created}
 }
 \value{
 A list witht he following elements:

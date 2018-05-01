@@ -4,12 +4,15 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart(chart.type, x, small.multiples = FALSE, ..., warn.if.no.match = TRUE,
+  append.data = FALSE)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
 
 \item{x}{The data to be plotted.}
+
+\item{small.multiples}{Logical; Whether each series should be shown in its own panel}
 
 \item{...}{Arguments to the function \code{chart.type}}
 

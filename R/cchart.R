@@ -3,6 +3,7 @@
 #' Creates charts
 #' @param chart.type The name of plot to create, e.g "100\% Stacked Column Chart"
 #' @param x The data to be plotted.
+#' @param small.multiples Logical; Whether each series should be shown in its own panel
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, appends the chart data as an attribute called "ChartData".
@@ -14,17 +15,19 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart <- function(chart.type, x, small.multiples = FALSE,
+                   ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
-    user.args <- list(...)
+    user.args <- if (small.multiples) list(chart.type = chart.type, ...)
+                 else list(...)
 
     # Identify function name
     chart.type <- gsub(" ", "", chart.type)             # spaces always removed
     chart.function <- getChartFunction(chart.type)      # substitutions for specific functions
 
-    fun.and.pars <- getFunctionAndParameters(chart.function)
+    fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
@@ -68,13 +71,14 @@ substituteAxisNames <- function(chart.function, arguments)
 #'
 #' Gets the function, loading parameters if necessary, and the parameters of the function.
 #' @param chart.function.name The name of the function used for creating the chart (aka plot).
+#' @param small.multiples Logical; whether a panel of charts should be created
 #' @return A list witht he following elements:
 #' \item{\code{chart.function}}{The function}.
 #' \item{\code{parameter.1}}{The first parameter in \code{chart.function}}.
 #' \item{\code{parameter.o}}{The other parameters in \code{chart.function}}.
 #' @export
 
-getFunctionAndParameters <- function(chart.function.name)
+getFunctionAndParameters <- function(chart.function.name, small.multiples)
 {
     if (!is.character(chart.function.name))
         stop("'chart.function.name' must be of type 'character'.")
@@ -87,7 +91,16 @@ getFunctionAndParameters <- function(chart.function.name)
     if (!is.function(chart.function))
         stop(paste0("Cannot find ", chart.function,"."))
     parameters <- formalArgs(chart.function)
-    list(chart.function = chart.function, parameter.1 = parameters[1], parameters.o = parameters[-1])
+    p.1 <- parameters[1]
+    p.o <- parameters[-1]
+
+    if (small.multiples)
+    {
+        chart.function <- get0("SmallMultiples", mode = "function")
+        tmp.param <- formalArgs(chart.function)
+        p.o <- unique(c(p.o, "chart.type", tmp.param[-1]))
+    }
+    list(chart.function = chart.function, parameter.1 = p.1, parameters.o = p.o)
 }
 
 
