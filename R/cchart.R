@@ -3,6 +3,7 @@
 #' Creates charts
 #' @param chart.type The name of plot to create, e.g "100\% Stacked Column Chart"
 #' @param x The data to be plotted.
+#' @param small.multiples Plot each series on separate panels
 #' @param ... Arguments to the function \code{chart.type}
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, appends the chart data as an attribute called "ChartData".
@@ -14,7 +15,8 @@
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 
-CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = FALSE)
+CChart <- function(chart.type, x, small.multiples = FALSE,
+                   ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
@@ -27,10 +29,21 @@ CChart <- function(chart.type, x,  ..., warn.if.no.match = TRUE, append.data = F
     fun.and.pars <- getFunctionAndParameters(chart.function)
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
-    args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
+
+    if (small.multiples)
+    {
+        chart.function <- get0("SmallMultiples")
+        args <- paste0("c(list(", fun.and.pars$parameter.1,
+                    " = x, chart.type = '", chart.type, "'), arguments)")
+
+    } else
+    {
+        args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
+        chart.function <- fun.and.pars$chart.function
+    }
 
     if (!append.data)
-        return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
+        return(do.call(chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     attr(result,  "ChartData") <- x #Used by Displayr to permit exporting of the raw data.
     result
