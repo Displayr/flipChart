@@ -307,6 +307,8 @@ PrepareData <- function(chart.type,
                     " observations remain.")
         weights <- setWeight(data, weights)
     }
+    if (filt)
+        attr(data, "assigned.rownames") <- FALSE
 
     ###########################################################################
     # 3. Aggregate the data if so required.
@@ -960,8 +962,6 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 {
     if (length(dim(x)) != 2 || ncol(x) == 1)
         return(x)
-    #if (!allow.numeric.rownames && is.numeric(x[,1]))
-    #    return(x)
     if (hasUserSuppliedRownames(x))
         return(x)
 
@@ -1101,10 +1101,6 @@ hasUserSuppliedRownames <- function(data)
     # Default row names
     rnames <- gsub("Row ", "", rownames(data))
     if (all(rnames == as.character(1:nrow(data))))
-        return(FALSE)
-
-    # Data frames from filtered data
-    if (!any(suppressWarnings(is.na(as.numeric(rnames)))))
         return(FALSE)
 
     return(TRUE)

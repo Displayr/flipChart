@@ -1365,3 +1365,33 @@ test_that("Heatmap allows numeric rownames",
     expect_equal(rownames(res$data), as.character(1:5))
     expect_equal(ncol(res$data), 5)
 })
+
+test_that("Retain numeric rownames unless they are the default",
+{
+    x0 <- structure(c(4.68663338879645, 4.88175494917068, 4.82555178268251,
+                4.95379965457686, 5.03145973154362, 5.06707855251545, 4.97760859829825,
+                4.00892359174568, 4.12285407725322, 4.18324829931973, 4.1969696969697,
+                4.25999158603281, 4.44154118689105, 4.35534591194969, 4.87296233839236,
+                5.07708779443255, 5.05692438402719, 5.04362850971922, 5.14974832214765,
+                5.1682119205298, 5.10653536257833), .Dim = c(7L, 3L),
+                .Dimnames = list(c("1","2","3","4","5","6","7"),
+                c("to help people and care for others well-being",
+                  "to be humble and modest, not draw attention",
+                "to be loyal to friends and devote to people close")))
+
+    x1 <- structure(c(4.68663338879645, 4.88175494917068, 4.82555178268251,
+                4.95379965457686, 5.03145973154362, 5.06707855251545, 4.97760859829825,
+                4.00892359174568, 4.12285407725322, 4.18324829931973, 4.1969696969697,
+                4.25999158603281, 4.44154118689105, 4.35534591194969, 4.87296233839236,
+                5.07708779443255, 5.05692438402719, 5.04362850971922, 5.14974832214765,
+                5.1682119205298, 5.10653536257833), .Dim = c(7L, 3L),
+                .Dimnames = list(c("2002", "2004", "2006", "2008", "2010", "2012", "2014"),
+                c("to help people and care for others well-being",
+                  "to be humble and modest, not draw attention",
+                  "to be loyal to friends and devote to people close")))
+
+    res0 <- PrepareData("Column", input.data.table = x0)
+    expect_equal(dim(res0$data), c(7, 2))
+    res1 <- PrepareData("Column", input.data.table = x1)
+    expect_equal(dim(res1$data), c(7, 3))
+})
