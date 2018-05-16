@@ -64,7 +64,10 @@
 #'     rows and columns will be removed from the data.  Empty here
 #'     meaning that a row or column contains all \code{NA} values, or
 #'     in the case of percentages, that a row or column contains only
-#'     0's.
+#'     0's. Retained for backwards-compatibility but is superseded by
+#'     \code{hide.empty.rows} and \code{hide.empty.columns}.
+#' @param hide.empty.rows Logical; hide rows with only NAs or 0's (percentages).
+#' @param hide.empty.columns Logical; hide columns with only NAs or 0's (percentages).
 #' @param select.rows String; Comma separated list of rows, by name or index
 #'     to select from input table. If blank (default), then all rows are selected.
 #' @param select.columns String; Comma separated list of columns, by name or index
@@ -94,9 +97,12 @@
 #'      then each cell in the input table will be checked to ensure
 #'      'n' or 'Column n' is larger than specified threshold, otherwise an error
 #'      message is given.
-#' @param hide.rows.and.columns.threshold Integer; If sample size ('Column n' or 'n')
-#'      is provided, then rows and columns with sample sizes smaller than threshold
-#'      will be removed from table.
+#' @param hide.rows.threshold Integer; If sample size ('Column n' or 'n')
+#'      is provided, then rows and with sample sizes smaller than threshold
+#'      will be removed from table. Vectors will be treated as 1-d matrices
+#' @param hide.columns.threshold Integer; If sample size ('Column n' or 'n')
+#'      is provided, then columns with sample sizes smaller than threshold
+#'      will be removed from table. Vectors will not be affected.
 #' @param first.k.rows Integer; Number of rows to select from the top of the input table.
 #' @param last.k.rows Integer; Number of rows to select from the bottom of the input table.
 #' @param first.k.columns Integer; Number of columns to select from the left of the input table.
@@ -123,7 +129,7 @@
 #'     They are checked for nullity in that order.
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsAndColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -175,13 +181,16 @@ PrepareData <- function(chart.type,
                         sort.columns.exclude = c("NET", "SUM", "Total"),
                         sort.columns.row = NULL,
                         hide.output.threshold = 0,
-                        hide.rows.and.columns.threshold = 0,
+                        hide.rows.threshold = 0,
+                        hide.columns.threshold = 0,
                         reverse.rows = FALSE,
                         reverse.columns = FALSE,
                         row.names.to.remove = c("NET", "SUM", "Total"),
                         column.names.to.remove = c("NET", "SUM", "Total"),
                         split = "[;,]",
                         hide.empty.rows.and.columns = TRUE,
+                        hide.empty.rows = hide.empty.rows.and.columns,
+                        hide.empty.columns = hide.empty.rows.and.columns,
                         as.percentages = FALSE,
                         date.format = "Automatic",
                         show.labels = TRUE,
@@ -359,11 +368,11 @@ PrepareData <- function(chart.type,
                    select.rows, first.k.rows, last.k.rows,
                    select.columns, first.k.columns, last.k.columns,
                    hide.output.threshold,
-                   hide.rows.and.columns.threshold,
+                   hide.rows.threshold, hide.columns.threshold,
                    transpose,
                    group.by.last || first.aggregate,
                    as.percentages && chart.type != "Venn", #Venn takes care of this itself
-                   hide.empty.rows.and.columns = hide.empty.rows.and.columns,
+                   hide.empty.rows, hide.empty.columns,
                    date.format = date.format)
 
     # Sort/reordering rows and columns
@@ -703,7 +712,7 @@ asPercentages <- function(data)
     data
 }
 
-#' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRowsAndColumns
+#' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
 #' @importFrom flipTime AsDate AsDateTime
 transformTable <- function(data,
                            chart.type,
@@ -714,11 +723,11 @@ transformTable <- function(data,
                            select.rows, first.k.rows, last.k.rows,
                            select.columns, first.k.columns, last.k.columns,
                            hide.output.threshold,
-                           hide.rows.and.columns.threshold,
+                           hide.rows.threshold, hide.columns.threshold,
                            transpose,
                            first.aggregate,
                            as.percentages,
-                           hide.empty.rows.and.columns,
+                           hide.empty.rows, hide.empty.columns,
                            date.format,
                            table.counter = 1)
 {
@@ -733,11 +742,11 @@ transformTable <- function(data,
                                        row.names.to.remove, column.names.to.remove, split,
                                        select.rows, first.k.rows, last.k.rows,
                                        select.columns, first.k.columns, last.k.columns,
-                                       0, 0, # sample size not used
+                                       0, 0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
                                        as.percentages,
-                                       hide.empty.rows.and.columns,
+                                       hide.empty.rows, hide.empty.columns,
                                        date.format,
                                        i)
         return(data)
@@ -752,18 +761,23 @@ transformTable <- function(data,
     data <- SelectColumns(data, select.columns,
                 first.k.columns, last.k.columns)
 
-    if (hide.empty.rows.and.columns)
-        data <- if (isListOrRaggedArray(data))
-                         lapply(data, HideEmptyRowsAndColumns)
-                     else
-                         HideEmptyRowsAndColumns(data)
+    if (hide.empty.rows)
+        data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyRows)
+                else HideEmptyRows(data)
+    
+    if (hide.empty.columns)
+        data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyColumns)
+                else HideEmptyColumns(data)
 
     # Checking sample sizes (if available)
     # This needs to happen after row/columns have been (de)selected
     if (sum(hide.output.threshold, na.rm = TRUE) > 0)
         data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
-    if (sum(hide.rows.and.columns.threshold, na.rm = TRUE) > 0)
-        data <- HideRowsAndColumnsWithSmallSampleSizes(data, hide.rows.and.columns.threshold)
+    if (sum(hide.rows.threshold, na.rm = TRUE) > 0)
+        data <- HideRowsWithSmallSampleSizes(data, hide.rows.threshold)
+    if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
+        data <- HideColumnsWithSmallSampleSizes(data, hide.columns.threshold)
+
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)
     if (tidy && !chart.type %in% c("Venn", "Sankey") &&

@@ -63,7 +63,6 @@ test_that("Select Rows",
     expect_equal(colnames(res$data), rev(colnames(LifeCycleSavings)))
     expect_equal(rownames(res$data), c("China", "Brazil", "Austria", "Belgium", "Colombia",
                                        "Australia", "Costa Rica", "Chile", "Canada", "Bolivia"))
-
 })
 
 test_that("Sorting rows",
@@ -73,9 +72,7 @@ test_that("Sorting rows",
 
     expect_warning(res1 <- PrepareData("Column", input.data.table = tabWithN, tidy = TRUE, sort.rows = TRUE),
                    "Multiple statistics detected")
-
-    # Not working currently because res0 uses column '2 to 3 days a week', but res1 uses column 'Never'
-    #expect_equal(rownames(res0$data), rownames(res1$data))
+    expect_equal(rownames(res0$data), rownames(res1$data))
 })
 
 test_that("Automatic ordering",

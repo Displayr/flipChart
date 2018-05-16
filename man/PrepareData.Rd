@@ -16,11 +16,13 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   sort.rows.exclude = c("NET", "SUM", "Total"), sort.rows.column = NULL,
   auto.order.columns = FALSE, sort.columns = FALSE,
   sort.columns.exclude = c("NET", "SUM", "Total"), sort.columns.row = NULL,
-  hide.output.threshold = 0, hide.rows.and.columns.threshold = 0,
-  reverse.rows = FALSE, reverse.columns = FALSE,
-  row.names.to.remove = c("NET", "SUM", "Total"),
+  hide.output.threshold = 0, hide.rows.threshold = 0,
+  hide.columns.threshold = 0, reverse.rows = FALSE,
+  reverse.columns = FALSE, row.names.to.remove = c("NET", "SUM", "Total"),
   column.names.to.remove = c("NET", "SUM", "Total"), split = "[;,]",
-  hide.empty.rows.and.columns = TRUE, as.percentages = FALSE,
+  hide.empty.rows.and.columns = TRUE,
+  hide.empty.rows = hide.empty.rows.and.columns,
+  hide.empty.columns = hide.empty.rows.and.columns, as.percentages = FALSE,
   date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
 \arguments{
@@ -137,9 +139,13 @@ then each cell in the input table will be checked to ensure
 'n' or 'Column n' is larger than specified threshold, otherwise an error
 message is given.}
 
-\item{hide.rows.and.columns.threshold}{Integer; If sample size ('Column n' or 'n')
-is provided, then rows and columns with sample sizes smaller than threshold
-will be removed from table.}
+\item{hide.rows.threshold}{Integer; If sample size ('Column n' or 'n')
+is provided, then rows and with sample sizes smaller than threshold
+will be removed from table. Vectors will be treated as 1-d matrices}
+
+\item{hide.columns.threshold}{Integer; If sample size ('Column n' or 'n')
+is provided, then columns with sample sizes smaller than threshold
+will be removed from table. Vectors will not be affected.}
 
 \item{reverse.rows}{Logical; Whether to reverse order of rows. This operation is
 performed after row selection and sorting.}
@@ -164,7 +170,12 @@ Assumed to be a regular expression; see \code{\link{strsplit}}.}
 rows and columns will be removed from the data.  Empty here
 meaning that a row or column contains all \code{NA} values, or
 in the case of percentages, that a row or column contains only
-0's.}
+0's. Retained for backwards-compatibility but is superseded by
+\code{hide.empty.rows} and \code{hide.empty.columns}.}
+
+\item{hide.empty.rows}{Logical; hide rows with only NAs or 0's (percentages).}
+
+\item{hide.empty.columns}{Logical; hide columns with only NAs or 0's (percentages).}
 
 \item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
 output table are given as percentages summing to 100. If \code{FALSE},
