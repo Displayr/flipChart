@@ -483,12 +483,29 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
                     "instead add the data as a 'Data Set' instead add a 'Data Set'.")
             data <- data[, c(1, k)]
         }
+        data.is.numeric <- all(sapply(data[,-k], is.numeric)) # exclude grouping variable
         tmp.names <- names(data)
         names(data) <- c("x", "y") # temporarily set names for formula
-        data$w <- weights
-        out <- flipStatistics::Table(w  ~  x + y, data = data, FUN = sum)
-        names(dimnames(out)) <- tmp.names
-        attr(out, "statistic") = "Counts"
+
+        if (data.is.numeric)
+        {
+            if (weighted)
+            {
+                data$w <- weights
+                data$xw <- data$x * weights
+                out <- Table(xw~y, data = data, FUN = sum)/Table(w~y, data = data, FUN = sum)
+            } else
+                out <- Table(x~y, data = data, FUN = mean)
+            attr(out, "statistic") <- "Average"
+            attr(out, "categories.title") <- tmp.names[2]
+        }
+        else
+        {
+            data$w <- weights
+            out <- Table(w  ~  x + y, data = data, FUN = sum)
+            names(dimnames(out)) <- tmp.names
+            attr(out, "statistic") = "Counts"
+        }
     }
     else
     {
