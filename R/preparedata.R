@@ -82,6 +82,7 @@
 #' @param sort.rows.exclude String; If \code{sort.rows} is \code{TRUE}, then rows
 #'      in \code{sort.rows.exclude} will be excluded from sorting and
 #'      appended at the bottom of the table.
+#' @param sort.rows.decreasing Logical; Whether rows should be sorted in decreasing order.
 #' @param auto.order.columns Logical; Automatically order columns by correspondence analysis.
 #' @param sort.columns Logical; whether to sort the columns of the table.
 #'      This operation is performed after column selection (Ignored if
@@ -93,6 +94,7 @@
 #' @param sort.columns.exclude String; If \code{sort.columns} is \code{TRUE}, then columns
 #'      in \code{sort.columns.exclude} will be excluded from sorting and
 #'      appended at the right of the table.'
+#' @param sort.columns.decreasing Logical; Whether columns should be sorted in decreasing order.
 #' @param hide.output.threshold Integer; If sample size ('Column n' or 'n') is provided
 #'      then each cell in the input table will be checked to ensure
 #'      'n' or 'Column n' is larger than specified threshold, otherwise an error
@@ -176,10 +178,12 @@ PrepareData <- function(chart.type,
                         sort.rows = FALSE,
                         sort.rows.exclude = c("NET", "SUM", "Total"),
                         sort.rows.column = NULL,
+                        sort.rows.decreasing = FALSE,
                         auto.order.columns = FALSE,
                         sort.columns = FALSE,
                         sort.columns.exclude = c("NET", "SUM", "Total"),
                         sort.columns.row = NULL,
+                        sort.columns.decreasing = FALSE,
                         hide.output.threshold = 0,
                         hide.rows.threshold = 0,
                         hide.columns.threshold = 0,
@@ -380,16 +384,24 @@ PrepareData <- function(chart.type,
     if (!(is.list(data) && !is.data.frame(data)))
     {
         if (auto.order.rows)
-            data <- AutoOrderRows(data)
+        {
+            data <- try(AutoOrderRows(data))
+            if (inherits(data, "try-error"))
+                stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
+        }
         else if (sort.rows)
-            data <- SortRows(data, column = sort.rows.column, exclude = sort.rows.exclude)
+            data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
         if (reverse.rows)
             data <- ReverseRows(data)
 
         if (auto.order.columns)
-            data <- AutoOrderColumns(data)
+        {
+            data <- try(AutoOrderColumns(data))
+            if (inherits(data, "try-error"))
+                stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
+        }
         else if (sort.columns)
-            data <- SortColumns(data, row = sort.columns.row, exclude = sort.columns.exclude)
+            data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
         if (reverse.columns)
             data <- ReverseColumns(data)
     }
@@ -781,7 +793,7 @@ transformTable <- function(data,
     if (hide.empty.rows)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyRows)
                 else HideEmptyRows(data)
-    
+
     if (hide.empty.columns)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyColumns)
                 else HideEmptyColumns(data)

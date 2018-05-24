@@ -14,8 +14,9 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   last.k.rows = NA, select.columns = NULL, first.k.columns = NA,
   last.k.columns = NA, auto.order.rows = FALSE, sort.rows = FALSE,
   sort.rows.exclude = c("NET", "SUM", "Total"), sort.rows.column = NULL,
-  auto.order.columns = FALSE, sort.columns = FALSE,
-  sort.columns.exclude = c("NET", "SUM", "Total"), sort.columns.row = NULL,
+  sort.rows.decreasing = FALSE, auto.order.columns = FALSE,
+  sort.columns = FALSE, sort.columns.exclude = c("NET", "SUM", "Total"),
+  sort.columns.row = NULL, sort.columns.decreasing = FALSE,
   hide.output.threshold = 0, hide.rows.threshold = 0,
   hide.columns.threshold = 0, reverse.rows = FALSE,
   reverse.columns = FALSE, row.names.to.remove = c("NET", "SUM", "Total"),
@@ -119,6 +120,8 @@ appended at the bottom of the table.}
 the column with the largest \code{Column n} or the right-most column
 will be used for sorting.}
 
+\item{sort.rows.decreasing}{Logical; Whether rows should be sorted in decreasing order.}
+
 \item{auto.order.columns}{Logical; Automatically order columns by correspondence analysis.}
 
 \item{sort.columns}{Logical; whether to sort the columns of the table.
@@ -133,6 +136,8 @@ appended at the right of the table.'}
 (specified by name or index) is used for sorting the columns. If not specified,
 the row with the largest \code{n} or the bottom row
 will be used for sorting.}
+
+\item{sort.columns.decreasing}{Logical; Whether columns should be sorted in decreasing order.}
 
 \item{hide.output.threshold}{Integer; If sample size ('Column n' or 'n') is provided
 then each cell in the input table will be checked to ensure
