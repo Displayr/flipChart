@@ -3,6 +3,7 @@
 #'
 #' @param dat The data to be plotted, from which the number of required colors are deduced.
 #' @param chart.type The name of plot to create.
+#' @param small.multiples Whether the chart is shown as small multiples.
 #' @param palette Specifies the color vector to be used for the chart data. It can be (1) A named palette from grDevices, RColorBrewer colorspace, or colorRamps; or
 #' (2) A vector of colors which will be recycled to the length of the number of colors needed; or
 #' (3) one of \code{"Custom color"}, \code{"Custom gradient"} or \code{"Custom palette"}.
@@ -26,7 +27,7 @@
 #' @param subslice.palette.custom.palette As per \code{palette.custom.palette}.
 #' @export
 #' @importFrom flipChartBasics GetNumColors ChartColors
-PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
+PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colors.column = 4,
                           palette = NULL, palette.custom.color = NULL, palette.custom.gradient.start = NULL,
                           palette.custom.gradient.end = NULL, palette.custom.palette = NULL,
                           fit.palette = NULL, fit.palette.custom.color = NULL, fit.palette.custom.gradient.start = NULL,
@@ -46,7 +47,7 @@ PrepareColors <- function(dat, chart.type, scatter.colors.column = 4,
                                                       custom.gradient.start = palette.custom.gradient.start,
                                                       custom.gradient.end = palette.custom.gradient.end,
                                                       custom.palette = palette.custom.palette,
-                                                      silent = chart.type %in% c("Bar Pictograph", "Time Series"))
+                                                      silent = small.multiples || chart.type %in% c("Bar Pictograph", "Time Series"))
 
     if (!is.null(fit.palette) && fit.palette != "Group colors")
         fit.line.colors <- ChartColors(num.colors[[1]], given.colors = fit.palette,

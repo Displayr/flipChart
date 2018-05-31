@@ -8,6 +8,7 @@ test_that("Warnings", {
     expect_error(CChart("Bar Pictograph", xx, colors = PrepareColors(xx, "Bar Pictograph", palette = "Strong colors")$series.colors), NA)
     expect_error(CChart("Column", xx, colors = PrepareColors(xx, "Column", palette = "Custom color", palette.custom.color = "red")$series.colors), NA)
     expect_warning(CChart("Column", x2d, colors = PrepareColors(x2d, "Column", palette = "Custom color", palette.custom.color = "red")$series.colors))
+    expect_error(CChart("Column", x2d, small.multiples = TRUE, colors = PrepareColors(x2d, "Column", small.multiples = TRUE, palette = "Custom color", palette.custom.color = "red")$series.colors), NA)
     expect_error(CChart("Column", x2d, colors = PrepareColors(x2d, "Column", palette = "Strong colors")$series.colors), NA)
 })
 
