@@ -54,7 +54,8 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                                                         custom.color = fit.palette.custom.color,
                                                         custom.gradient.start = fit.palette.custom.gradient.start,
                                                         custom.gradient.end = fit.palette.custom.gradient.end,
-                                                        custom.palette = fit.palette.custom.palette)
+                                                        custom.palette = fit.palette.custom.palette,
+                                                        silent = small.multiples)
     if (is.null(fit.line.colors))
         fit.line.colors <- series.colors
 
