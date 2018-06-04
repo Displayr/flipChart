@@ -980,7 +980,9 @@ prepareForSpecificCharts <- function(data,
     }
     else
     {
-        data <- useFirstColumnAsLabel(data) # Set rownames before TidyTabularData so that factor are not converted to numeric
+        # Set rownames before TidyTabularData so that factor are not converted to numeric
+        data <- useFirstColumnAsLabel(data, 
+            allow.numeric.rownames = chart.type %in% c("Area", "Bar", "Column", "Line", "Stream"))    
     }
     data
 }
@@ -1001,11 +1003,14 @@ isListOrRaggedArray <- function(x)
 
 #' @noRd
 useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
-    allow.numeric.rownames = FALSE, allow.duplicate.rownames = TRUE)
+    allow.numeric.rownames = TRUE, allow.duplicate.rownames = TRUE)
 {
     if (length(dim(x)) != 2 || ncol(x) == 1)
         return(x)
     if (hasUserSuppliedRownames(x))
+        return(x)
+
+    if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
     # What to do with duplicate rownames?

@@ -1184,7 +1184,7 @@ test_that("Automatic crosstab of two input variables",
     expect_equal(as.numeric(z$data), c(1.2, 1.4))
     z = PrepareData("Scatter", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), as.numeric(zz[[1]][-1,]))
-    z = expect_warning(PrepareData("Colunm", input.data.pasted = zz, first.aggregate = FALSE,
+    z = expect_warning(PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE,
                         group.by.last = FALSE), "Duplicated entries in 'X'")
     expect_equal(z$categories.title, "X")
     expect_equal(z$values.title, "Y")
