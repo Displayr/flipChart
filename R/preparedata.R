@@ -650,6 +650,19 @@ processInputData <- function(x)
         else
             return(x)
     }
+
+    if (length(attr(x, "tsp")) == 3) # time-series object
+    {
+        ts.info <- attr(x, "tsp")
+        ts.seq <- seq(from = ts.info[1], to = ts.info[2], by = 1/ts.info[3])
+        if (length(dim(x)) < 2)
+            names(x) <- ts.seq
+        else
+            rownames(x) <- ts.seq
+        attr(x, "assigned.rownames") <- TRUE
+        return(x)
+    }
+
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
 
@@ -981,8 +994,8 @@ prepareForSpecificCharts <- function(data,
     else
     {
         # Set rownames before TidyTabularData so that factor are not converted to numeric
-        data <- useFirstColumnAsLabel(data, 
-            allow.numeric.rownames = chart.type %in% c("Area", "Bar", "Column", "Line", "Stream"))    
+        data <- useFirstColumnAsLabel(data,
+            allow.numeric.rownames = chart.type %in% c("Area", "Bar", "Column", "Line", "Stream"))
     }
     data
 }
