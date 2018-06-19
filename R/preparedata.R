@@ -794,14 +794,14 @@ transformTable <- function(data,
         return(data)
     }
 
-    ## Remove rows and columns
-    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                   column.names.to.remove = column.names.to.remove, split = split)
-
     # Selecting rows/columns
     data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
     data <- SelectColumns(data, select.columns,
                 first.k.columns, last.k.columns)
+
+    ## Remove rows and columns
+    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                   column.names.to.remove = column.names.to.remove, split = split)
 
     if (hide.empty.rows)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyRows)

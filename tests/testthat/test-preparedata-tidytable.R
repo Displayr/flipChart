@@ -63,6 +63,10 @@ test_that("Select Rows",
     expect_equal(colnames(res$data), rev(colnames(LifeCycleSavings)))
     expect_equal(rownames(res$data), c("China", "Brazil", "Austria", "Belgium", "Colombia",
                                        "Australia", "Costa Rica", "Chile", "Canada", "Bolivia"))
+    # select rows before hide rows
+    expect_warning(res <- PrepareData("Table", input.data.table = tabWithN, first.k.rows = 4,
+                                      row.names.to.remove = "18 to 24"))
+    expect_equal(rownames(res$data), c("25 to 29", "30 to 34", "35 to 39"))
 })
 
 test_that("Sorting rows",
