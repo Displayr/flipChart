@@ -2,7 +2,7 @@
 % Please edit documentation in R/cchart.R
 \name{CChart}
 \alias{CChart}
-\title{CChart}
+\title{Creates charts}
 \usage{
 CChart(chart.type, x, small.multiples = FALSE, ..., warn.if.no.match = TRUE,
   append.data = FALSE)
@@ -27,7 +27,6 @@ A chart object that can be printed. Most often, a plotly object.
 Creates charts
 }
 \details{
-Where \code{chart.type} is not the name of an existing function. It is
-  always assumed that the first parameter
-  in the signature is a data object, which is assigned the value of \code{x}.
+Where \code{chart.type} is not the name of an existing function. It is always assumed
+that the first parameter in the signature is a data object, which is assigned the value of \code{x}.
 }

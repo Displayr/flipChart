@@ -12,7 +12,7 @@ getFunctionAndParameters(chart.function.name, small.multiples)
 \item{small.multiples}{Logical; whether a panel of charts should be created}
 }
 \value{
-A list witht he following elements:
+A list with the following elements:
 \item{\code{chart.function}}{The function}.
 \item{\code{parameter.1}}{The first parameter in \code{chart.function}}.
 \item{\code{parameter.o}}{The other parameters in \code{chart.function}}.

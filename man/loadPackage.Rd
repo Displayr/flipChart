@@ -10,6 +10,6 @@ loadPackage(chart.type)
 \item{chart.type}{The name of the function of the chart type to be loaded.}
 }
 \description{
-Loads the package in which a chart is located. Only does this if the chart's function is registerd
+Loads the package in which a chart is located. Only does this if the chart's function is registered
 in this function as having a package requiring loading.
 }
