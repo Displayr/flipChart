@@ -15,11 +15,18 @@
 #' @param palette.custom.gradient.start A color specifying the start of the gradient when \code{palette} is set to \code{"Custom gradient"}.
 #' @param palette.custom.gradient.end A color specifying the end of the gradient when \code{palette} is set to \code{"Custom gradient"}.
 #' @param palette.custom.palette A vector or comma separated list of colors which will be recycled to the desired length. Only used if \code{palette} is \code{"Custom palette"}.
-#' @param fit.palette As per \code{palette} except for the chart fit lines. An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.
+#' @param fit.palette As per \code{palette} except for the chart fit lines (trendlines). An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.
 #' @param fit.palette.custom.color As per \code{palette.custom.color}.
 #' @param fit.palette.custom.gradient.start As per \code{palette.custom.gradient.start}.
 #' @param fit.palette.custom.gradient.end As per \code{palette.custom.gradient.end}.
 #' @param fit.palette.custom.palette As per \code{palette.custom.palette}.
+
+#' @param fit.CI.palette As per \code{palette} except for the fit.CI lines (confidence interval around trend). An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.
+#' @param fit.CI.palette.custom.color As per \code{palette.custom.color}.
+#' @param fit.CI.palette.custom.gradient.start As per \code{palette.custom.gradient.start}.
+#' @param fit.CI.palette.custom.gradient.end As per \code{palette.custom.gradient.end}.
+#' @param fit.CI.palette.custom.palette As per \code{palette.custom.palette}.
+
 #' @param subslice.palette As per \code{palette} except for pie chart subslice colors. An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.
 #' @param subslice.palette.custom.color As per \code{palette.custom.color}.
 #' @param subslice.palette.custom.gradient.start As per \code{palette.custom.gradient.start}.
@@ -32,6 +39,8 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                           palette.custom.gradient.end = NULL, palette.custom.palette = NULL,
                           fit.palette = NULL, fit.palette.custom.color = NULL, fit.palette.custom.gradient.start = NULL,
                           fit.palette.custom.gradient.end = NULL, fit.palette.custom.palette = NULL,
+                          fit.CI.palette = NULL, fit.CI.palette.custom.color = NULL, fit.CI.palette.custom.gradient.start = NULL,
+                          fit.CI.palette.custom.gradient.end = NULL, fit.CI.palette.custom.palette = NULL,
                           subslice.palette = NULL, subslice.palette.custom.color = NULL, subslice.palette.custom.gradient.start = NULL,
                           subslice.palette.custom.gradient.end = NULL, subslice.palette.custom.palette = NULL) {
 
@@ -39,6 +48,7 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
 
     series.colors <- NULL
     fit.line.colors <- NULL
+    fit.CI.colors <- NULL
     subslice.colors <- NULL
 
     if (!is.null(palette))
@@ -56,9 +66,17 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                                                         custom.gradient.end = fit.palette.custom.gradient.end,
                                                         custom.palette = fit.palette.custom.palette,
                                                         silent = small.multiples)
+    if (!is.null(fit.CI.palette) && fit.CI.palette != "Group colors")
+        fit.CI.colors <- ChartColors(num.colors[[1]], given.colors = fit.CI.palette,
+                                                        custom.color = fit.CI.palette.custom.color,
+                                                        custom.gradient.start = fit.CI.palette.custom.gradient.start,
+                                                        custom.gradient.end = fit.CI.palette.custom.gradient.end,
+                                                        custom.palette = fit.CI.palette.custom.palette,
+                                                        silent = small.multiples)
     if (is.null(fit.line.colors))
         fit.line.colors <- series.colors
-
+    if (is.null(fit.CI.colors))
+        fit.CI.colors <- fit.line.colors
     if (length(num.colors) > 1 && !is.null(subslice.palette) && subslice.palette != "Group colors")
         subslice.colors <- ChartColors(num.colors[[2]], given.colors = subslice.palette,
                                                         custom.color = subslice.palette.custom.color,
@@ -66,5 +84,8 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                                                         custom.gradient.end = subslice.palette.custom.gradient.end,
                                                         custom.palette = subslice.palette.custom.palette)
 
-    return(list(series.colors = series.colors, fit.line.colors = fit.line.colors, subslice.colors = subslice.colors))
+    return(list(series.colors = series.colors,
+                fit.line.colors = fit.line.colors,
+                fit.CI.colors = fit.CI.colors,
+                subslice.colors = subslice.colors))
 }

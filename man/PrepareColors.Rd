@@ -11,7 +11,11 @@ PrepareColors(dat, chart.type, small.multiples = FALSE,
   palette.custom.palette = NULL, fit.palette = NULL,
   fit.palette.custom.color = NULL, fit.palette.custom.gradient.start = NULL,
   fit.palette.custom.gradient.end = NULL, fit.palette.custom.palette = NULL,
-  subslice.palette = NULL, subslice.palette.custom.color = NULL,
+  fit.CI.palette = NULL, fit.CI.palette.custom.color = NULL,
+  fit.CI.palette.custom.gradient.start = NULL,
+  fit.CI.palette.custom.gradient.end = NULL,
+  fit.CI.palette.custom.palette = NULL, subslice.palette = NULL,
+  subslice.palette.custom.color = NULL,
   subslice.palette.custom.gradient.start = NULL,
   subslice.palette.custom.gradient.end = NULL,
   subslice.palette.custom.palette = NULL)
@@ -40,7 +44,7 @@ are c("#5C9AD3", "#ED7D31", "#A5A5A5", "#FFC000", "#4473C5", "#70AD46",
 
 \item{palette.custom.palette}{A vector or comma separated list of colors which will be recycled to the desired length. Only used if \code{palette} is \code{"Custom palette"}.}
 
-\item{fit.palette}{As per \code{palette} except for the chart fit lines. An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.}
+\item{fit.palette}{As per \code{palette} except for the chart fit lines (trendlines). An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.}
 
 \item{fit.palette.custom.color}{As per \code{palette.custom.color}.}
 
@@ -49,6 +53,16 @@ are c("#5C9AD3", "#ED7D31", "#A5A5A5", "#FFC000", "#4473C5", "#70AD46",
 \item{fit.palette.custom.gradient.end}{As per \code{palette.custom.gradient.end}.}
 
 \item{fit.palette.custom.palette}{As per \code{palette.custom.palette}.}
+
+\item{fit.CI.palette}{As per \code{palette} except for the fit.CI lines (confidence interval around trend). An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.}
+
+\item{fit.CI.palette.custom.color}{As per \code{palette.custom.color}.}
+
+\item{fit.CI.palette.custom.gradient.start}{As per \code{palette.custom.gradient.start}.}
+
+\item{fit.CI.palette.custom.gradient.end}{As per \code{palette.custom.gradient.end}.}
+
+\item{fit.CI.palette.custom.palette}{As per \code{palette.custom.palette}.}
 
 \item{subslice.palette}{As per \code{palette} except for pie chart subslice colors. An additional option is \code{"Group colors"}, which uses the colors from \code{palette}.}
 
