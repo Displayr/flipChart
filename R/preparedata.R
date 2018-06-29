@@ -270,6 +270,9 @@ PrepareData <- function(chart.type,
     # Convert lists of NULLs into single NULLs.
     if (all(sapply(input.data.raw, is.null)))
         input.data.raw <- NULL
+    # Ignore colors/sizes/labels if x and y are not supplied
+    if (length(input.data.raw) >= 2 && all(sapply(input.data.raw[1:2], is.null)))
+        input.data.raw <- NULL
     if (all(sapply(input.data.pasted, is.null)))
         input.data.pasted <- NULL
     # Check that there is no ambiguity regarding which input to use.
@@ -707,7 +710,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
 
@@ -719,9 +722,11 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
         if (is.null(lst))
             return(NA)
         nms <- names(data)
-
+    
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
+        if (is.null(nm))
+            return(i)
         match(nm, nms)
     }
     # Indices corresponding to selections in input.raw.data
@@ -729,6 +734,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     indices["y"] <- .getColumnIndex(2)
     indices["sizes"] <- .getColumnIndex(3)
     indices["colors"] <- .getColumnIndex(4)
+    indices["groups"] <- .getColumnIndex(5)
     indices
 }
 
