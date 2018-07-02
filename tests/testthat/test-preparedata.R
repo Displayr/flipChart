@@ -652,7 +652,7 @@ test_that("PrepareData: input and output format of raw data",
     res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)), tidy.labels = TRUE)
     expect_equal(dim(res6$data), c(200, 3))
     expect_true(attr(res6$data, "scatter.mult.yvals"))
-    #expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = NA))
+    expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
     # Duplicated variables

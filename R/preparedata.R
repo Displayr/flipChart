@@ -956,7 +956,7 @@ prepareForSpecificCharts <- function(data,
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
-            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3)
+            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
             attr(data, "scatter.mult.yvals") <- TRUE
 
         } else
