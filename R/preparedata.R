@@ -662,6 +662,7 @@ processInputData <- function(x)
             names(x) <- ts.seq
         else
             rownames(x) <- ts.seq
+        attr(x, "tsp") <- NULL     # delete attribute so we can do all matrix operations
         attr(x, "assigned.rownames") <- TRUE
         return(x)
     }
@@ -722,7 +723,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
         if (is.null(lst))
             return(NA)
         nms <- names(data)
-    
+
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
         if (is.null(nm))

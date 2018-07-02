@@ -189,5 +189,10 @@ test_that("Automatic ordering",
     expect_equal(dim(res$data), c(8, 19, 2))
 })
 
+data("EuStockMarkets")
+test_that("Time series object",
+{
+    expect_error(res <- PrepareData("Table", input.data.table = EuStockMarkets, first.k.rows = 10), NA)
+})
 
 
