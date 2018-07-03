@@ -658,11 +658,11 @@ test_that("PrepareData: input and output format of raw data",
     # Duplicated variables
     res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res7$data), c(100, 1))
-    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = NA))
+    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = 1))
 
     res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res8$data), c(100, 2))
-    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
+    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = 2))
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")

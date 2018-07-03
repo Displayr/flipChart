@@ -711,7 +711,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
+    indices <- c(x = 1, y = 2, sizes = 3, colors = 4, groups = NCOL(data))
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
 
@@ -735,7 +735,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     indices["y"] <- .getColumnIndex(2)
     indices["sizes"] <- .getColumnIndex(3)
     indices["colors"] <- .getColumnIndex(4)
-    indices["groups"] <- .getColumnIndex(5)
+    indices["groups"] <- .getColumnIndex(NCOL(data))
     indices
 }
 
@@ -966,8 +966,8 @@ prepareForSpecificCharts <- function(data,
             # Removing duplicate columns
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
-            if (NCOL(data) > 4)
-                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
+            if (NCOL(data) > 5)
+                warning("Columns ", paste(colnames(data)[6:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider selecting checkbox for 'Input data contains y-values in multiple columns'.")
 
