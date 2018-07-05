@@ -407,6 +407,9 @@ PrepareData <- function(chart.type,
             data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
         if (reverse.columns)
             data <- ReverseColumns(data)
+
+        if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
+            attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
     }
 
     ###########################################################################
@@ -711,7 +714,11 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4, groups = NCOL(data))
+    indices <- c(x = 1, 
+                 y = 2, 
+                 sizes = if (NCOL(data) >= 3) 3 else NA,
+                 colors = if (NCOL(data) >= 4) 4 else NA,
+                 groups = NCOL(data))
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
 
