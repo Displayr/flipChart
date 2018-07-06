@@ -1220,7 +1220,7 @@ test_that("Pasted data with dates and date.format arg",
                        hide.empty.rows.and.columns = FALSE, date.format = "Automatic")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
-    expect_is(out[[1L]], "POSIXct")
+    expect_is(out[[1L]], "character")
 
     ## wrong date format specified so char. dates becomes factor
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
