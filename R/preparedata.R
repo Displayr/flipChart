@@ -118,7 +118,7 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
-#' @param date.format One of \code{"Automatic", "US" or "International"}.
+#' @param date.format One of \code{"Automatic", "US", "International" or "No dates"}.
 #' This is used to determine whether strings which are interpreted as dates
 #' in the (row)names will be read in the US (month-day-year) or the
 #' International (day-month-year) format. By default US format is used
@@ -678,7 +678,7 @@ processInputData <- function(x)
 
 processPastedData <- function(input.data.pasted, warn, date.format)
 {
-    us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
+    us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No dates")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
@@ -768,7 +768,7 @@ asPercentages <- function(data)
 }
 
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
-#' @importFrom flipTime AsDate AsDateTime
+#' @importFrom flipTime AsDate AsDateTime IsDateTime
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
@@ -868,11 +868,13 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
-
-    if (date.format != "Automatic" && isDate(rownames(data)))
-        rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
-    else if (date.format != "Automatic" && isDate(names(data)))
-        names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+    if (date.format != "No dates" && date.format != "Automatic")
+    {
+        if (IsDateTime(rownames(data)))
+            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+        else if (IsDateTime(names(data)))
+            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+    }
     return(data)
 }
 
@@ -956,9 +958,12 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
 
-            if (date.format != "Automatic" && isDate(as.character(newdata[,1])))
-                newdata[,1] <- format(AsDate(as.character(newdata[,1]),
-                us.format = !grepl("International", date.format)), "%b %d %Y")
+            if (date.format != "No dates" && date.format != "Automatic")
+            {
+                if (IsDateTime(as.character(newdata[,1])))
+                    newdata[,1] <- format(AsDate(as.character(newdata[,1]),
+                    us.format = !grepl("International", date.format)), "%b %d %Y")
+            }
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
@@ -1057,8 +1062,8 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
             all(!is.na(suppressWarnings(AsDate(levels(x[,1]), on.parse.failure = "silent"))))
         if ((!is.date) && mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
             return(x)
-        wmsg <- if (isDate(x[,1])) ". Check aggregation level of date variable '"
-                else               ". Consider aggregating on '"
+        wmsg <- if (IsDateTime(x[,1])) ". Check aggregation level of date variable '"
+                else                   ". Consider aggregating on '"
 
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
@@ -1183,11 +1188,6 @@ hasUserSuppliedRownames <- function(data)
     return(TRUE)
 }
 
-# All warnings are suppressed here - warnings are given in the charting functions
-isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
-                AsDateTime(as.character(x), on.parse.failure = "silent")))))
-
-
 tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
@@ -1196,7 +1196,7 @@ tidyLabels <- function(data, chart.type)
     {
         orig.names <- if (vertical.chart) colnames(data)
                       else                rownames(data)
-        if (!isDate(orig.names))
+        if (!IsDateTime(orig.names))
         {
             tmp <- ExtractCommonPrefix(orig.names)
             if (vertical.chart)
@@ -1211,7 +1211,7 @@ tidyLabels <- function(data, chart.type)
     }
     else if (!is.null(names(data))) # lists and vectors
     {
-        if (!isDate(names(data)))
+        if (!IsDateTime(names(data)))
         {
             tmp <- ExtractCommonPrefix(names(data))
             names(data) <- tmp$shortened.labels
