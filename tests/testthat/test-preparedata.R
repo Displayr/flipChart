@@ -229,7 +229,7 @@ test_that("Tidy data tries to convert matrix to numeric",
 
     expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = TRUE,
                                first.aggregate = FALSE),
-                   "Data has been automatically been converted to being numeric.")
+                   "Data has been automatically converted to numeric.")
     expect_is(out$data, "matrix")
     expect_true(is.numeric(out$data))
     expect_equal(dim(out$data), dim(dat) - c(1, 1))

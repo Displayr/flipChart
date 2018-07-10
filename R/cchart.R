@@ -23,10 +23,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
 
-    # Identify function name
-    chart.type <- gsub(" ", "", chart.type)             # spaces always removed
-    chart.function <- getChartFunction(chart.type)      # substitutions for specific functions
-
+    chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
@@ -223,29 +220,6 @@ parametersEqual <- function(recipient, donor)
         return((all(recipient.split == donor.split)))
     return(FALSE)
 }
-
-#' getChartFunction
-#'
-#' @param type The type of chart (i.e., function name mainly)
-#' Returns the function that creates the chart
-getChartFunction <- function(type)
-{
-    # Note that the order of the list is important
-    # Some types will match multiple functions (e.g. 'LabeledScatter' matched both
-    # 'LabeledScatter' and 'Scatter'. But only the first match is returned)
-
-    c.funcs <- c('Donut' = 'Pie')
-
-    for (i in 1:length(c.funcs))
-    {
-        if (grepl(names(c.funcs)[i], type, ignore.case=F))
-            return(c.funcs[i])
-    }
-
-    # if nothing matches
-    return(type)
-}
-
 
 #' loadPackage
 #'
