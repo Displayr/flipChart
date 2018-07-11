@@ -420,6 +420,7 @@ PrepareData <- function(chart.type,
     data <- setAxisTitles(data, chart.type, tidy, values.title)
     values.title <- attr(data, "values.title")
     categories.title <- attr(data, "categories.title")
+    chart.title <- attr(data, "title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
     if (scatter.mult.yvals)
@@ -440,6 +441,7 @@ PrepareData <- function(chart.type,
          weights = weights,
          values.title = values.title,
          categories.title = categories.title,
+         chart.title = chart.title,
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -692,6 +694,8 @@ processPastedData <- function(input.data.pasted, warn, date.format)
         attr(processed, "assigned.rownames") <- input.data.pasted[[4]]
     if (!is.null(processed) && want.data.frame)
         attr(processed, "assigned.rownames") <- TRUE
+    if (!is.null(attr(processed, "row.column.names")))
+        names(dimnames(processed)) <- attr(processed, "row.column.names")
     return(processed)
 }
 
@@ -714,8 +718,8 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, 
-                 y = 2, 
+    indices <- c(x = 1,
+                 y = 2,
                  sizes = if (NCOL(data) >= 3) 3 else NA,
                  colors = if (NCOL(data) >= 4) 4 else NA,
                  groups = NCOL(data))
