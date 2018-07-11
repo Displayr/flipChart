@@ -645,6 +645,7 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
+#' @importFrom flipStatistics ExtractChartData
 processInputData <- function(x)
 {
     if (is.null(x))
@@ -658,20 +659,7 @@ processInputData <- function(x)
         else
             return(x)
     }
-
-    if (length(attr(x, "tsp")) == 3) # time-series object
-    {
-        ts.info <- attr(x, "tsp")
-        ts.seq <- seq(from = ts.info[1], to = ts.info[2], by = 1/ts.info[3])
-        if (length(dim(x)) < 2)
-            names(x) <- ts.seq
-        else
-            rownames(x) <- ts.seq
-        attr(x, "tsp") <- NULL     # delete attribute so we can do all matrix operations
-        attr(x, "assigned.rownames") <- TRUE
-        return(x)
-    }
-
+    x <- ExtractChartData(x)
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
 
