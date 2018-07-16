@@ -294,6 +294,7 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
+    chart.title <- attr(data, "title")
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -420,7 +421,6 @@ PrepareData <- function(chart.type,
     data <- setAxisTitles(data, chart.type, tidy, values.title)
     values.title <- attr(data, "values.title")
     categories.title <- attr(data, "categories.title")
-    chart.title <- attr(data, "title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
     if (scatter.mult.yvals)
