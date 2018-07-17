@@ -186,7 +186,7 @@ in the case of percentages, that a row or column contains only
 output table are given as percentages summing to 100. If \code{FALSE},
 column sums are given.}
 
-\item{date.format}{One of \code{"Automatic", "US", "International" or "No dates"}.
+\item{date.format}{One of \code{"Automatic", "US", "International" or "No date formatting"}.
 This is used to determine whether strings which are interpreted as dates
 in the (row)names will be read in the US (month-day-year) or the
 International (day-month-year) format. By default US format is used

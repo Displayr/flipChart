@@ -118,7 +118,7 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
-#' @param date.format One of \code{"Automatic", "US", "International" or "No dates"}.
+#' @param date.format One of \code{"Automatic", "US", "International" or "No date formatting"}.
 #' This is used to determine whether strings which are interpreted as dates
 #' in the (row)names will be read in the US (month-day-year) or the
 #' International (day-month-year) format. By default US format is used
@@ -668,7 +668,7 @@ processInputData <- function(x)
 
 processPastedData <- function(input.data.pasted, warn, date.format)
 {
-    us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No dates")
+    us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
@@ -860,7 +860,7 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
-    if (date.format != "No dates" && date.format != "Automatic")
+    if (date.format != "No date formatting" && date.format != "Automatic")
     {
         if (IsDateTime(rownames(data)))
             rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
@@ -950,7 +950,7 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
 
-            if (date.format != "No dates" && date.format != "Automatic")
+            if (date.format != "No date formatting" && date.format != "Automatic")
             {
                 if (IsDateTime(as.character(newdata[,1])))
                     newdata[,1] <- format(AsDate(as.character(newdata[,1]),

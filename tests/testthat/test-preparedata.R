@@ -1253,7 +1253,7 @@ test_that("Pasted data with dates and date.format arg",
     expect_named(out, "Date times")
     expect_is(out[[1L]], "POSIXct")
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
-                       hide.empty.rows.and.columns = FALSE, date.format = "No dates")$data
+                       hide.empty.rows.and.columns = FALSE, date.format = "No date formatting")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
     expect_is(out[[1L]], "character")
