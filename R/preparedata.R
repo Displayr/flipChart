@@ -860,7 +860,7 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
-    if (date.format != "No date formatting" && date.format != "Automatic")
+    if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
         if (IsDateTime(rownames(data)))
             rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
@@ -950,7 +950,7 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
 
-            if (date.format != "No date formatting" && date.format != "Automatic")
+            if (!grepl("^No date", date.format) && date.format != "Automatic")
             {
                 if (IsDateTime(as.character(newdata[,1])))
                     newdata[,1] <- format(AsDate(as.character(newdata[,1]),
