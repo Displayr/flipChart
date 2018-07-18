@@ -49,7 +49,7 @@ substituteAxisNames <- function(chart.function, arguments)
     a.names <- names(arguments)
 
     # constrain to only the first position to prevent excessive matching
-    if (chart.function == "Bar")
+    if (chart.function == "Bar" || chart.function == "Pyramid")
     {
         a.names <- gsub("^categories", "y", a.names)
         a.names <- gsub("^values", "x", a.names)
