@@ -1105,6 +1105,8 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         # Extract categories.title from aggregated data
         if (is.null(attr(x, "categories.title")))
             attr(x, "categories.title") <- names(dimnames(x))[1]
+        if (chart.type == "Heat" && is.null(attr(x, "values.title")))
+            attr(x, "values.title") <- names(dimnames(x))[2]
         # Extract categories.title from Qtables
         if (is.null(attr(x, "categories.title")) && !is.null(attr(x, "questions")))
             attr(x, "categories.title") <- attr(x, "questions")[1]
