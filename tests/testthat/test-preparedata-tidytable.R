@@ -61,8 +61,8 @@ test_that("Select Rows",
     res <- PrepareData("Table", input.data.table = LifeCycleSavings, first.k.rows = 10,
                        sort.rows = TRUE, reverse.rows = TRUE, reverse.columns = TRUE)
     expect_equal(colnames(res$data), rev(colnames(LifeCycleSavings)))
-    expect_equal(rownames(res$data), c("China", "Brazil", "Austria", "Belgium", "Colombia",
-                                       "Australia", "Costa Rica", "Chile", "Canada", "Bolivia"))
+    expect_equal(rownames(res$data), c("Libya", "Jamaica", "Japan", "Malta", "Netherlands",
+                                       "Portugal", "China", "Greece", "Korea", "Zambia"))
     # select rows before hide rows
     expect_warning(res <- PrepareData("Table", input.data.table = tabWithN, first.k.rows = 4,
                                       row.names.to.remove = "18 to 24"))

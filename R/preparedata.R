@@ -372,9 +372,6 @@ PrepareData <- function(chart.type,
                    multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
                    tidy,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
-                   row.names.to.remove, column.names.to.remove, split,
-                   select.rows, first.k.rows, last.k.rows,
-                   select.columns, first.k.columns, last.k.columns,
                    hide.output.threshold,
                    hide.rows.threshold, hide.columns.threshold,
                    transpose,
@@ -383,35 +380,17 @@ PrepareData <- function(chart.type,
                    hide.empty.rows, hide.empty.columns,
                    date.format = date.format)
 
-    # Sort/reordering rows and columns
-    # This does not affect input with a list of multiple tables (scatterplot only)
-    if (!(is.list(data) && !is.data.frame(data)))
-    {
-        if (auto.order.rows)
-        {
-            data <- try(AutoOrderRows(data))
-            if (inherits(data, "try-error"))
-                stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
-        }
-        else if (sort.rows)
-            data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
-        if (reverse.rows)
-            data <- ReverseRows(data)
-
-        if (auto.order.columns)
-        {
-            data <- try(AutoOrderColumns(data))
-            if (inherits(data, "try-error"))
-                stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
-        }
-        else if (sort.columns)
-            data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
-        if (reverse.columns)
-            data <- ReverseColumns(data)
-
-        if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
-            attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
-    }
+    # Sort must happen AFTER tidying
+    data <- RearrangeRowsColumns(data,
+                                 multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns.exclude, reverse.columns)
 
     ###########################################################################
     # Finalizing the result.
@@ -425,6 +404,8 @@ PrepareData <- function(chart.type,
     attr(data, "categories.title") <- NULL
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
+    if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
+        attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -759,6 +740,62 @@ asPercentages <- function(data)
     data
 }
 
+RearrangeRowsColumns <- function(data,
+                                 multiple.tables,
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns.exclude, reverse.columns)
+{
+    if (multiple.tables)
+    {
+        for(i in seq_along(data))
+            data[[i]] = RearrangeRowsColumns(data[[i]], FALSE,
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns.exclude, reverse.columns)
+        return(data)
+    }
+
+    if (auto.order.rows)
+    {
+        data <- try(AutoOrderRows(data))
+        if (inherits(data, "try-error"))
+            stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
+    }
+    else if (sort.rows)
+        data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
+    if (reverse.rows)
+        data <- ReverseRows(data)
+
+    if (auto.order.columns)
+    {
+        data <- try(AutoOrderColumns(data))
+        if (inherits(data, "try-error"))
+            stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
+    }
+    else if (sort.columns)
+        data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
+    if (reverse.columns)
+        data <- ReverseColumns(data)
+
+    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
+    data <- SelectColumns(data, select.columns,
+                first.k.columns, last.k.columns)
+    
+    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                   column.names.to.remove = column.names.to.remove, split = split)
+}
+
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
 #' @importFrom flipTime AsDate AsDateTime IsDateTime
 transformTable <- function(data,
@@ -766,9 +803,6 @@ transformTable <- function(data,
                            multiple.tables,
                            tidy,
                            is.raw.data,
-                           row.names.to.remove, column.names.to.remove, split,
-                           select.rows, first.k.rows, last.k.rows,
-                           select.columns, first.k.columns, last.k.columns,
                            hide.output.threshold,
                            hide.rows.threshold, hide.columns.threshold,
                            transpose,
@@ -786,9 +820,6 @@ transformTable <- function(data,
                                        FALSE,
                                        tidy,
                                        is.raw.data,
-                                       row.names.to.remove, column.names.to.remove, split,
-                                       select.rows, first.k.rows, last.k.rows,
-                                       select.columns, first.k.columns, last.k.columns,
                                        0, 0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
@@ -799,14 +830,6 @@ transformTable <- function(data,
         return(data)
     }
 
-    # Selecting rows/columns
-    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
-    data <- SelectColumns(data, select.columns,
-                first.k.columns, last.k.columns)
-
-    ## Remove rows and columns
-    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                   column.names.to.remove = column.names.to.remove, split = split)
 
     if (hide.empty.rows)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyRows)

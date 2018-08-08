@@ -1246,12 +1246,14 @@ test_that("Pasted data with dates and date.format arg",
                   "22/06/2007 5:36:35 PM", "22/06/2007 5:30:29 PM", "22/06/2007 5:40:53 PM",
                   "22/06/2007 5:32:22 PM", "22/06/2007 5:39:32 PM", "22/06/2007 5:39:14 PM",
                   "22/06/2007 5:40:11 PM", "22/06/2007 5:54:34 PM"), ncol = 1)
+
     pasted <- list(x, TRUE, TRUE, FALSE)
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
                        hide.empty.rows.and.columns = FALSE, date.format = "Automatic")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
     expect_is(out[[1L]], "POSIXct")
+
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
                        hide.empty.rows.and.columns = FALSE, date.format = "No date formatting")$data
     expect_is(out, "data.frame")
