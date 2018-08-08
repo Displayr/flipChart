@@ -389,7 +389,7 @@ PrepareData <- function(chart.type,
                                  auto.order.rows, auto.order.columns,
                                  sort.rows, sort.rows.decreasing, sort.rows.column,
                                  sort.rows.exclude, reverse.rows,
-                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 
     ###########################################################################
@@ -748,7 +748,7 @@ RearrangeRowsColumns <- function(data,
                                  auto.order.rows, auto.order.columns,
                                  sort.rows, sort.rows.decreasing, sort.rows.column,
                                  sort.rows.exclude, reverse.rows,
-                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 {
     if (multiple.tables)
@@ -761,7 +761,7 @@ RearrangeRowsColumns <- function(data,
                                  auto.order.rows, auto.order.columns,
                                  sort.rows, sort.rows.decreasing, sort.rows.column,
                                  sort.rows.exclude, reverse.rows,
-                                 sort.columns, sort.columns.decreasing, sort.columns.column,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
         return(data)
     }
@@ -852,7 +852,11 @@ transformTable <- function(data,
     # (only first statistic is retained after tidying)
     if (tidy && !chart.type %in% c("Venn", "Sankey") &&
         !isScatter(chart.type) && !isDistribution(chart.type))
+    {
+        cat("line 856\n")
+        dput(data)
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+    }
 
 
     ## Switching rows and columns
