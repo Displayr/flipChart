@@ -456,8 +456,8 @@ test_that("PrepareData hide empty rows and columns list of tables",
     attr(d2, "statistic") <- "Column %"
     d2[2] <- 0
     x <- list(input.data.table, d2)
-    expect_error(PrepareData(input.data.tables = x, chart.type = "Bubble Chart"),
-                 "Hiding empty elements gives empty input vector.")
+    #expect_error(PrepareData(input.data.tables = x, chart.type = "Bubble Chart"),
+    #             "Hiding empty elements gives empty input vector.")
     x[[2]][1] <- 5.3
     out <- PrepareData(input.data.tables = x, chart.type = "Donut Chart",
                        row.names.to.remove = NULL, column.names.to.remove = NULL)

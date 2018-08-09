@@ -356,29 +356,20 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
-    data <- prepareForSpecificCharts(data,
-                                     multiple.tables = .isTableList(input.data.table) || .isTableList(input.data.tables),
-                                     input.data.raw,
-                                     chart.type, weights, show.labels,
-                                     date.format, scatter.mult.yvals)
+    multiple.tables <- .isTableList(input.data.table) || .isTableList(input.data.tables)
+    data <- prepareForSpecificCharts(data, multiple.tables, input.data.raw, chart.type,
+                                     weights, show.labels, date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
 
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-    data <- transformTable(data,
-                   chart.type,
-                   multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
-                   tidy,
+    data <- transformTable(data, chart.type, multiple.tables, tidy,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
-                   hide.output.threshold,
-                   hide.rows.threshold, hide.columns.threshold,
-                   transpose,
-                   group.by.last || first.aggregate,
-                   as.percentages && chart.type != "Venn", #Venn takes care of this itself
-                   hide.empty.rows, hide.empty.columns,
-                   date.format = date.format)
+                   hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
+                   transpose, group.by.last || first.aggregate,
+                   hide.empty.rows, hide.empty.columns, date.format)
 
     # Sort must happen AFTER tidying
     data <- RearrangeRowsColumns(data,
@@ -391,6 +382,9 @@ PrepareData <- function(chart.type,
                                  sort.rows.exclude, reverse.rows,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
+    
+    # Calculate percentages after all the select/hide operations are completed
+    data <- convertPercentages(data, as.percentages, chart.type, multiple.tables)
 
     ###########################################################################
     # Finalizing the result.
@@ -402,6 +396,14 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
+    if (multiple.tables)
+    {
+        for (i in seq_along(data))
+        {
+            attr(data[[i]], "values.title") <- NULL
+            attr(data[[i]], "categories.title") <- NULL
+        }
+    }
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
     if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
@@ -807,23 +809,21 @@ transformTable <- function(data,
                            hide.rows.threshold, hide.columns.threshold,
                            transpose,
                            first.aggregate,
-                           as.percentages,
                            hide.empty.rows, hide.empty.columns,
                            date.format,
                            table.counter = 1)
 {
     if (multiple.tables)
     {
-        for(i in seq_along(data))
+        for (i in seq_along(data))
             data[[i]] = transformTable(data[[i]],
                                        chart.type,
                                        FALSE,
-                                       tidy,
+                                       FALSE,
                                        is.raw.data,
                                        0, 0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
-                                       as.percentages,
                                        hide.empty.rows, hide.empty.columns,
                                        date.format,
                                        i)
@@ -848,22 +848,42 @@ transformTable <- function(data,
     if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
         data <- HideColumnsWithSmallSampleSizes(data, hide.columns.threshold)
 
-    # This must happen after sample sizes have been used
-    # (only first statistic is retained after tidying)
-    if (tidy && !chart.type %in% c("Venn", "Sankey") &&
-        !isScatter(chart.type) && !isDistribution(chart.type))
-    {
-        cat("line 856\n")
-        dput(data)
-            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
-    }
-
-
     ## Switching rows and columns
     if (isTRUE(transpose))
     {
         data <- t(data)
         attr(data, "questions") <- rev(attr(data, "questions"))
+    }
+
+    # Set axis names before dropping dimensions (but AFTER transpose)
+    data <- setAxisTitles(data, chart.type, tidy)
+    if (chart.type == "Scatter" && is.null(dim(data)))
+        dim(data) <- c(length(data), 1)
+
+    # This must happen after sample sizes have been used
+    # (only first statistic is retained after tidying)
+    if (tidy && !chart.type %in% c("Venn", "Sankey") &&
+        !isScatter(chart.type) && !isDistribution(chart.type))
+            data <- tryCatch(TidyTabularData(data), error = function(e) { data })
+
+
+    if (!grepl("^No date", date.format) && date.format != "Automatic")
+    {
+        if (IsDateTime(rownames(data)))
+            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+        else if (IsDateTime(names(data)))
+            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+    }
+    return(data)
+}
+
+convertPercentages <- function(data, as.percentages, chart.type, multiple.tables, table.counter = 1)
+{
+    if (multiple.tables)
+    {
+        for(i in seq_along(data))
+            data[[i]] = convertPercentages(data[[i]], as.percentages, chart.type, FALSE, i)
+        return(data)
     }
 
     ## If data is already percentages in Qtable then divide by 100
@@ -874,7 +894,7 @@ transformTable <- function(data,
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
-    if (as.percentages)
+    if (as.percentages && chart.type != "Venn")
     {
         percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
@@ -886,13 +906,6 @@ transformTable <- function(data,
             data <- data / sum(data, na.rm = TRUE)
         else
             data <- asPercentages(data)
-    }
-    if (!grepl("^No date", date.format) && date.format != "Automatic")
-    {
-        if (IsDateTime(rownames(data)))
-            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
-        else if (IsDateTime(names(data)))
-            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
     }
     return(data)
 }

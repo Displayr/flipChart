@@ -60,7 +60,7 @@ test_that("PrepareData: single table, single stat",
         "55 to 64", "65 or more", "NET")), name = "Gender by Age", questions = c("Gender", "Age"))
 
     out <- PrepareData("Area", NULL, NULL, input.data.table = input.data.table,
-                       transpose = get0("transpose"),
+                       transpose = FALSE,
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
     expect_equal(out$categories.title, "Gender")
