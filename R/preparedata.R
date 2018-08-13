@@ -858,7 +858,12 @@ transformTable <- function(data,
     # Set axis names before dropping dimensions (but AFTER transpose)
     data <- setAxisTitles(data, chart.type, tidy)
     if (chart.type == "Scatter" && is.null(dim(data)))
+    {
+        tmp.names <- names(data)
         dim(data) <- c(length(data), 1)
+        if (!is.null(tmp.names))
+            rownames(data) <- tmp.names
+    }
 
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)
