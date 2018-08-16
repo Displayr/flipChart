@@ -51,13 +51,24 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
     fit.CI.colors <- NULL
     subslice.colors <- NULL
 
+    # We suppress warnings for Pie charts because missing values mean that num.color
+    # may be larger than the number of slices. But we still want warnings if the
+    # user specifies custom color (i.e. all slices colored the same)
+    # In contrast, for bar pictograph and pyramid, the default option is to have
+    # each bar a different color, but it would be equally valid to color them differently
+    # For small multiples, it is also equally valid to color all panels the same.
+
+    # For time series, we turn off the warnings for a single color because a single color
+    # is usually valid if the option for range.bars is selected
+
     if (!is.null(palette))
         series.colors <- ChartColors(num.colors[[1]], given.colors = palette,
                                                       custom.color = palette.custom.color,
                                                       custom.gradient.start = palette.custom.gradient.start,
                                                       custom.gradient.end = palette.custom.gradient.end,
                                                       custom.palette = palette.custom.palette,
-                                                      silent = small.multiples || chart.type %in% c("Bar Pictograph", "Time Series", "Pyramid"))
+                                                      silent = chart.type %in% c("Pie", "Donut"),
+                                                      silent.single.color = small.multiples || chart.type %in% c("Bar Pictograph", "Time Series", "Pyramid"))
 
     if (!is.null(fit.palette) && fit.palette != "Group colors")
         fit.line.colors <- ChartColors(num.colors[[1]], given.colors = fit.palette,
@@ -65,14 +76,14 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                                                         custom.gradient.start = fit.palette.custom.gradient.start,
                                                         custom.gradient.end = fit.palette.custom.gradient.end,
                                                         custom.palette = fit.palette.custom.palette,
-                                                        silent = small.multiples)
+                                                        silent.single.color = small.multiples)
     if (!is.null(fit.CI.palette) && fit.CI.palette != "Group colors")
         fit.CI.colors <- ChartColors(num.colors[[1]], given.colors = fit.CI.palette,
                                                         custom.color = fit.CI.palette.custom.color,
                                                         custom.gradient.start = fit.CI.palette.custom.gradient.start,
                                                         custom.gradient.end = fit.CI.palette.custom.gradient.end,
                                                         custom.palette = fit.CI.palette.custom.palette,
-                                                        silent = small.multiples)
+                                                        silent.single.color = small.multiples)
     if (is.null(fit.line.colors))
         fit.line.colors <- series.colors
     if (is.null(fit.CI.colors))
@@ -82,7 +93,8 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                                                         custom.color = subslice.palette.custom.color,
                                                         custom.gradient.start = subslice.palette.custom.gradient.start,
                                                         custom.gradient.end = subslice.palette.custom.gradient.end,
-                                                        custom.palette = subslice.palette.custom.palette)
+                                                        custom.palette = subslice.palette.custom.palette,
+                                                        silent = TRUE, silent.single.color = FALSE)
 
     return(list(series.colors = series.colors,
                 fit.line.colors = fit.line.colors,
