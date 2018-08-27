@@ -635,9 +635,6 @@ processInputData <- function(x)
     if (is.null(x))
         return(x)
 
-    # Try to use S3 method to extract data
-    x <- ExtractChartData(x)
-
     # Handle list of tables
     if (class(x) == "list" && is.list(x) && !is.data.frame(x))
     {
@@ -646,6 +643,10 @@ processInputData <- function(x)
         else
             return(x)
     }
+    
+    # Try to use S3 method to extract data
+    x <- ExtractChartData(x)
+
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
 
