@@ -4,8 +4,8 @@
 \alias{CChart}
 \title{CChart}
 \usage{
-CChart(chart.type, x, small.multiples = FALSE, ..., warn.if.no.match = TRUE,
-  append.data = FALSE)
+CChart(chart.type, x, small.multiples = FALSE, ...,
+  warn.if.no.match = TRUE, append.data = FALSE)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
