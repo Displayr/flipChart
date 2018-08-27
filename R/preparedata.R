@@ -382,7 +382,7 @@ PrepareData <- function(chart.type,
                                  sort.rows.exclude, reverse.rows,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
-    
+
     # Calculate percentages after all the select/hide operations are completed
     data <- convertPercentages(data, as.percentages, chart.type, multiple.tables)
 
@@ -425,6 +425,7 @@ PrepareData <- function(chart.type,
          values.title = values.title,
          categories.title = categories.title,
          chart.title = chart.title,
+         chart.footer = attr(data, "footer"),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -634,6 +635,9 @@ processInputData <- function(x)
     if (is.null(x))
         return(x)
 
+    # Try to use S3 method to extract data
+    x <- ExtractChartData(x)
+
     # Handle list of tables
     if (is.list(x) && !is.data.frame(x))
     {
@@ -642,7 +646,6 @@ processInputData <- function(x)
         else
             return(x)
     }
-    x <- ExtractChartData(x)
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
 
@@ -793,7 +796,7 @@ RearrangeRowsColumns <- function(data,
     data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
     data <- SelectColumns(data, select.columns,
                 first.k.columns, last.k.columns)
-    
+
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
                                    column.names.to.remove = column.names.to.remove, split = split)
 }
@@ -1020,7 +1023,8 @@ prepareForSpecificCharts <- function(data,
                     " Consider selecting checkbox for 'Input data contains y-values in multiple columns'.")
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
+            if (is.null(attr(data, "scatter.variable.indices")))
+                attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
         }
     }
     # Charts that plot the distribution of raw data (e.g., histograms)

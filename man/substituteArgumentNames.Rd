@@ -4,7 +4,8 @@
 \alias{substituteArgumentNames}
 \title{substituteArgumentNames}
 \usage{
-substituteArgumentNames(parameter.names, arguments, warn.if.no.match = TRUE)
+substituteArgumentNames(parameter.names, arguments,
+  warn.if.no.match = TRUE)
 }
 \arguments{
 \item{parameter.names}{The names of parameters.}
