@@ -639,7 +639,7 @@ processInputData <- function(x)
     x <- ExtractChartData(x)
 
     # Handle list of tables
-    if (is.list(x) && !is.data.frame(x))
+    if (class(x) == "list" && is.list(x) && !is.data.frame(x))
     {
         if (length(x) == 1)
             x <- x[[1]]
