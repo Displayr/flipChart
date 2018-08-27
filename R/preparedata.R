@@ -373,7 +373,7 @@ PrepareData <- function(chart.type,
 
     # Sort must happen AFTER tidying
     data <- RearrangeRowsColumns(data,
-                                 multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
+                                 multiple.tables =  multiple.tables,
                                  select.rows, first.k.rows, last.k.rows,
                                  select.columns, first.k.columns, last.k.columns,
                                  row.names.to.remove, column.names.to.remove, split,
@@ -445,7 +445,7 @@ unlistTable <- function(x)
         return(x)
 }
 
-.isTableList <- function(x){!is.data.frame(x) && is.list(x) && length(x) > 1 &&
+.isTableList <- function(x){class(x) == "list" && !is.data.frame(x) && is.list(x) && length(x) > 1 &&
                             (is.matrix(x[[1]]) || is.data.frame(x[[1]]) || is.numeric(x[[1]]))}
 
 isScatter <- function(chart.type)
