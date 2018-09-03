@@ -7,24 +7,26 @@
 PrepareData(chart.type, subset = TRUE, weights = NULL,
   input.data.table = NULL, input.data.tables = NULL,
   input.data.raw = NULL, input.data.pasted = NULL,
-  input.data.other = NULL, data.source = NULL, first.aggregate = NULL,
-  scatter.input.columns.order = NULL, scatter.mult.yvals = FALSE,
-  group.by.last = FALSE, tidy = TRUE, tidy.labels = FALSE,
-  transpose = FALSE, select.rows = NULL, first.k.rows = NA,
-  last.k.rows = NA, select.columns = NULL, first.k.columns = NA,
-  last.k.columns = NA, auto.order.rows = FALSE, sort.rows = FALSE,
-  sort.rows.exclude = c("NET", "SUM", "Total"), sort.rows.column = NULL,
-  sort.rows.decreasing = FALSE, auto.order.columns = FALSE,
-  sort.columns = FALSE, sort.columns.exclude = c("NET", "SUM", "Total"),
+  input.data.other = NULL, data.source = NULL,
+  first.aggregate = NULL, scatter.input.columns.order = NULL,
+  scatter.mult.yvals = FALSE, group.by.last = FALSE, tidy = TRUE,
+  tidy.labels = FALSE, transpose = FALSE, select.rows = NULL,
+  first.k.rows = NA, last.k.rows = NA, select.columns = NULL,
+  first.k.columns = NA, last.k.columns = NA, auto.order.rows = FALSE,
+  sort.rows = FALSE, sort.rows.exclude = c("NET", "SUM", "Total"),
+  sort.rows.column = NULL, sort.rows.decreasing = FALSE,
+  auto.order.columns = FALSE, sort.columns = FALSE,
+  sort.columns.exclude = c("NET", "SUM", "Total"),
   sort.columns.row = NULL, sort.columns.decreasing = FALSE,
   hide.output.threshold = 0, hide.rows.threshold = 0,
   hide.columns.threshold = 0, reverse.rows = FALSE,
-  reverse.columns = FALSE, row.names.to.remove = c("NET", "SUM", "Total"),
-  column.names.to.remove = c("NET", "SUM", "Total"), split = "[;,]",
-  hide.empty.rows.and.columns = TRUE,
+  reverse.columns = FALSE, row.names.to.remove = c("NET", "SUM",
+  "Total"), column.names.to.remove = c("NET", "SUM", "Total"),
+  split = "[;,]", hide.empty.rows.and.columns = TRUE,
   hide.empty.rows = hide.empty.rows.and.columns,
-  hide.empty.columns = hide.empty.rows.and.columns, as.percentages = FALSE,
-  date.format = "Automatic", show.labels = TRUE, values.title = "")
+  hide.empty.columns = hide.empty.rows.and.columns,
+  as.percentages = FALSE, date.format = "Automatic",
+  show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -186,7 +188,7 @@ in the case of percentages, that a row or column contains only
 output table are given as percentages summing to 100. If \code{FALSE},
 column sums are given.}
 
-\item{date.format}{One of \code{"Automatic", "US" or "International"}.
+\item{date.format}{One of \code{"Automatic", "US", "International" or "No date formatting"}.
 This is used to determine whether strings which are interpreted as dates
 in the (row)names will be read in the US (month-day-year) or the
 International (day-month-year) format. By default US format is used

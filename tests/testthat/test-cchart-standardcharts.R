@@ -281,7 +281,7 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
                     values.title = "Values",
                     global.font.family = "Courier",
                     global.font.color = "Red")),
-                    "^Data has been automatically been converted to being numeric")
+                    "^Data has been automatically converted to numeric")
             else
                 expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
                     values.title = "Values",
@@ -310,7 +310,7 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
                     values.title = "Values",
                     global.font.family = "Courier",
                     global.font.color = "Red")),
-                    "^Data has been automatically been converted to being numeric")
+                    "^Data has been automatically converted to numeric")
             else
                 expect_error(print(CChart(chart.type, pd$data, title = "Comparing distributions",
                     values.title = "Values",

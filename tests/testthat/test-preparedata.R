@@ -60,7 +60,7 @@ test_that("PrepareData: single table, single stat",
         "55 to 64", "65 or more", "NET")), name = "Gender by Age", questions = c("Gender", "Age"))
 
     out <- PrepareData("Area", NULL, NULL, input.data.table = input.data.table,
-                       transpose = get0("transpose"),
+                       transpose = FALSE,
                        row.names.to.remove = NULL,
                        column.names.to.remove = NULL)
     expect_equal(out$categories.title, "Gender")
@@ -178,6 +178,37 @@ test_that("PrepareData: pasted raw data",
         7L)), NULL, NULL, NULL, NULL)
     out2 <- PrepareData("Scatter", input.data.pasted = dat2)
     expect_equal(out2$data[1,1], 0.1131)
+
+    dat3 <- list(structure(c("", "Main title", "", "", "", "Product", "", "",
+                "", "", "", "", "", "", "", "", "", "", "Coke", "Diet Coke",
+                "Coke Zero", "Pepsi", "Diet Pepsi", "Pepsi Max", "None of these",
+                "NET", "", "", "", "Attribute", "Feminine", "0.064220183", "0.574923547",
+                "0.22324159", "0.085626911", "0.605504587", "0.100917431", "0.097859327",
+                "1", "", "", "", "", "Health-conscious", "0.018348624", "0.587155963",
+                "0.550458716", "0.021406728", "0.577981651", "0.308868502", "0.174311927",
+                "1", "", "", "", "", "Innocent", "0.091743119", "0.229357798",
+                "0.128440367", "0.097859327", "0.434250765", "0.073394495", "0.29969419",
+                "1", "", "", "", "", "Older", "0.651376147", "0.217125382", "0.04587156",
+                "0.379204893", "0.091743119", "0.064220183", "0.085626911", "1",
+                "", "", "", "", "Open to new experiences", "0.226299694", "0.091743119",
+                "0.519877676", "0.155963303", "0.162079511", "0.504587156", "0.119266055",
+                "1", "", "", "", "", "Rebellious", "0.262996942", "0.04587156",
+                "0.314984709", "0.177370031", "0.039755352", "0.44648318", "0.159021407",
+                "1", "", "", "", "", "Sleepy", "0.091743119", "0.235474006",
+                "0.091743119", "0.143730887", "0.296636086", "0.064220183", "0.388379205",
+                "1", "", "", "", "", "Traditional", "0.923547401", "0.146788991",
+                "0.03058104", "0.5382263", "0.033639144", "0.039755352", "0.027522936",
+                "1", "", "", "", "", "Weight-conscious", "0.006116208", "0.764525994",
+                "0.645259939", "0", "0.764525994", "0.406727829", "0.055045872",
+                "1", "", "", "", "", "NET", "0.981651376", "0.923547401", "0.908256881",
+                "0.788990826", "0.951070336", "0.868501529", "0.574923547", "1"
+                ), .Dim = c(13L, 12L)), NULL, NULL, NULL, NULL)
+        out3 <- PrepareData("Column", input.data.pasted = dat3)
+        expect_equal(out3$chart.title, "Main title")
+        expect_equal(out3$categories.title, "Product")
+
+        out4 <- PrepareData("Column", input.data.pasted = dat3, transpose = TRUE)
+        expect_equal(out4$categories.title, "Attribute")
 })
 
 test_that("PrepareData: raw data with labels",
@@ -229,7 +260,7 @@ test_that("Tidy data tries to convert matrix to numeric",
 
     expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = "Table", tidy = TRUE,
                                first.aggregate = FALSE),
-                   "Data has been automatically been converted to being numeric.")
+                   "Data has been automatically converted to numeric.")
     expect_is(out$data, "matrix")
     expect_true(is.numeric(out$data))
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
@@ -652,17 +683,17 @@ test_that("PrepareData: input and output format of raw data",
     res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)), tidy.labels = TRUE)
     expect_equal(dim(res6$data), c(200, 3))
     expect_true(attr(res6$data, "scatter.mult.yvals"))
-    expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3))
+    expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
     # Duplicated variables
     res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res7$data), c(100, 1))
-    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA))
+    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = 1))
 
     res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res8$data), c(100, 2))
-    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA))
+    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = 2))
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")
@@ -1215,12 +1246,19 @@ test_that("Pasted data with dates and date.format arg",
                   "22/06/2007 5:36:35 PM", "22/06/2007 5:30:29 PM", "22/06/2007 5:40:53 PM",
                   "22/06/2007 5:32:22 PM", "22/06/2007 5:39:32 PM", "22/06/2007 5:39:14 PM",
                   "22/06/2007 5:40:11 PM", "22/06/2007 5:54:34 PM"), ncol = 1)
+
     pasted <- list(x, TRUE, TRUE, FALSE)
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
                        hide.empty.rows.and.columns = FALSE, date.format = "Automatic")$data
     expect_is(out, "data.frame")
     expect_named(out, "Date times")
     expect_is(out[[1L]], "POSIXct")
+
+    out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,
+                       hide.empty.rows.and.columns = FALSE, date.format = "No date formatting")$data
+    expect_is(out, "data.frame")
+    expect_named(out, "Date times")
+    expect_is(out[[1L]], "character")
 
     ## wrong date format specified so char. dates becomes factor
     out <- PrepareData(chart.type = "Table", input.data.pasted = pasted, tidy = FALSE,

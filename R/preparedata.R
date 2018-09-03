@@ -118,7 +118,7 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
-#' @param date.format One of \code{"Automatic", "US" or "International"}.
+#' @param date.format One of \code{"Automatic", "US", "International" or "No date formatting"}.
 #' This is used to determine whether strings which are interpreted as dates
 #' in the (row)names will be read in the US (month-day-year) or the
 #' International (day-month-year) format. By default US format is used
@@ -270,6 +270,9 @@ PrepareData <- function(chart.type,
     # Convert lists of NULLs into single NULLs.
     if (all(sapply(input.data.raw, is.null)))
         input.data.raw <- NULL
+    # Ignore colors/sizes/labels if x and y are not supplied
+    if (length(input.data.raw) >= 2 && all(sapply(input.data.raw[1:2], is.null)))
+        input.data.raw <- NULL
     if (all(sapply(input.data.pasted, is.null)))
         input.data.pasted <- NULL
     # Check that there is no ambiguity regarding which input to use.
@@ -291,6 +294,7 @@ PrepareData <- function(chart.type,
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
+    chart.title <- attr(data, "title")
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -352,59 +356,35 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 4. Tailoring the data for the chart type.
     ###########################################################################
-    data <- prepareForSpecificCharts(data,
-                                     multiple.tables = .isTableList(input.data.table) || .isTableList(input.data.tables),
-                                     input.data.raw,
-                                     chart.type, weights, show.labels,
-                                     date.format, scatter.mult.yvals)
+    multiple.tables <- .isTableList(input.data.table) || .isTableList(input.data.tables)
+    data <- prepareForSpecificCharts(data, multiple.tables, input.data.raw, chart.type,
+                                     weights, show.labels, date.format, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
 
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-    data <- transformTable(data,
-                   chart.type,
-                   multiple.tables = .isTableList(input.data.tables) || .isTableList(input.data.table),
-                   tidy,
+    data <- transformTable(data, chart.type, multiple.tables, tidy,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
-                   row.names.to.remove, column.names.to.remove, split,
-                   select.rows, first.k.rows, last.k.rows,
-                   select.columns, first.k.columns, last.k.columns,
-                   hide.output.threshold,
-                   hide.rows.threshold, hide.columns.threshold,
-                   transpose,
-                   group.by.last || first.aggregate,
-                   as.percentages && chart.type != "Venn", #Venn takes care of this itself
-                   hide.empty.rows, hide.empty.columns,
-                   date.format = date.format)
+                   hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
+                   transpose, group.by.last || first.aggregate,
+                   hide.empty.rows, hide.empty.columns, date.format)
 
-    # Sort/reordering rows and columns
-    # This does not affect input with a list of multiple tables (scatterplot only)
-    if (!(is.list(data) && !is.data.frame(data)))
-    {
-        if (auto.order.rows)
-        {
-            data <- try(AutoOrderRows(data))
-            if (inherits(data, "try-error"))
-                stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
-        }
-        else if (sort.rows)
-            data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
-        if (reverse.rows)
-            data <- ReverseRows(data)
+    # Sort must happen AFTER tidying
+    data <- RearrangeRowsColumns(data,
+                                 multiple.tables =  multiple.tables,
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
+                                 sort.columns.exclude, reverse.columns)
 
-        if (auto.order.columns)
-        {
-            data <- try(AutoOrderColumns(data))
-            if (inherits(data, "try-error"))
-                stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
-        }
-        else if (sort.columns)
-            data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
-        if (reverse.columns)
-            data <- ReverseColumns(data)
-    }
+    # Calculate percentages after all the select/hide operations are completed
+    data <- convertPercentages(data, as.percentages, chart.type, multiple.tables)
 
     ###########################################################################
     # Finalizing the result.
@@ -416,8 +396,18 @@ PrepareData <- function(chart.type,
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
     attr(data, "categories.title") <- NULL
+    if (multiple.tables)
+    {
+        for (i in seq_along(data))
+        {
+            attr(data[[i]], "values.title") <- NULL
+            attr(data[[i]], "categories.title") <- NULL
+        }
+    }
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
+    if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
+        attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -434,6 +424,8 @@ PrepareData <- function(chart.type,
          weights = weights,
          values.title = values.title,
          categories.title = categories.title,
+         chart.title = chart.title,
+         chart.footer = attr(data, "footer"),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -453,7 +445,7 @@ unlistTable <- function(x)
         return(x)
 }
 
-.isTableList <- function(x){!is.data.frame(x) && is.list(x) && length(x) > 1 &&
+.isTableList <- function(x){class(x) == "list" && !is.data.frame(x) && is.list(x) && length(x) > 1 &&
                             (is.matrix(x[[1]]) || is.data.frame(x[[1]]) || is.numeric(x[[1]]))}
 
 isScatter <- function(chart.type)
@@ -637,31 +629,23 @@ isDistribution <- function(chart.type)
     grepl("Bean|Box|Histogram|Density|Violin", chart.type)
 }
 
+#' @importFrom flipStatistics ExtractChartData
 processInputData <- function(x)
 {
     if (is.null(x))
         return(x)
 
     # Handle list of tables
-    if (is.list(x) && !is.data.frame(x))
+    if (class(x) == "list" && is.list(x) && !is.data.frame(x))
     {
         if (length(x) == 1)
             x <- x[[1]]
         else
             return(x)
     }
-
-    if (length(attr(x, "tsp")) == 3) # time-series object
-    {
-        ts.info <- attr(x, "tsp")
-        ts.seq <- seq(from = ts.info[1], to = ts.info[2], by = 1/ts.info[3])
-        if (length(dim(x)) < 2)
-            names(x) <- ts.seq
-        else
-            rownames(x) <- ts.seq
-        attr(x, "assigned.rownames") <- TRUE
-        return(x)
-    }
+    
+    # Try to use S3 method to extract data
+    x <- ExtractChartData(x)
 
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
@@ -671,7 +655,7 @@ processInputData <- function(x)
 
 processPastedData <- function(input.data.pasted, warn, date.format)
 {
-    us.format <- switch(date.format, US = TRUE, International = FALSE, NULL)
+    us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
                                   want.data.frame = want.data.frame,
@@ -685,6 +669,8 @@ processPastedData <- function(input.data.pasted, warn, date.format)
         attr(processed, "assigned.rownames") <- input.data.pasted[[4]]
     if (!is.null(processed) && want.data.frame)
         attr(processed, "assigned.rownames") <- TRUE
+    if (!is.null(attr(processed, "row.column.names")))
+        names(dimnames(processed)) <- attr(processed, "row.column.names")
     return(processed)
 }
 
@@ -707,7 +693,11 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
-    indices <- c(x = 1, y = 2, sizes = 3, colors = 4)
+    indices <- c(x = 1,
+                 y = 2,
+                 sizes = if (NCOL(data) >= 3) 3 else NA,
+                 colors = if (NCOL(data) >= 4) 4 else NA,
+                 groups = NCOL(data))
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
         return(indices)
 
@@ -722,6 +712,8 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
+        if (is.null(nm))
+            return(i)
         match(nm, nms)
     }
     # Indices corresponding to selections in input.raw.data
@@ -754,54 +746,94 @@ asPercentages <- function(data)
     data
 }
 
+RearrangeRowsColumns <- function(data,
+                                 multiple.tables,
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
+                                 sort.columns.exclude, reverse.columns)
+{
+    if (multiple.tables)
+    {
+        for(i in seq_along(data))
+            data[[i]] = RearrangeRowsColumns(data[[i]], FALSE,
+                                 select.rows, first.k.rows, last.k.rows,
+                                 select.columns, first.k.columns, last.k.columns,
+                                 row.names.to.remove, column.names.to.remove, split,
+                                 auto.order.rows, auto.order.columns,
+                                 sort.rows, sort.rows.decreasing, sort.rows.column,
+                                 sort.rows.exclude, reverse.rows,
+                                 sort.columns, sort.columns.decreasing, sort.columns.row,
+                                 sort.columns.exclude, reverse.columns)
+        return(data)
+    }
+
+    if (auto.order.rows)
+    {
+        data <- try(AutoOrderRows(data))
+        if (inherits(data, "try-error"))
+            stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
+    }
+    else if (sort.rows)
+        data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
+    if (reverse.rows)
+        data <- ReverseRows(data)
+
+    if (auto.order.columns)
+    {
+        data <- try(AutoOrderColumns(data))
+        if (inherits(data, "try-error"))
+            stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
+    }
+    else if (sort.columns)
+        data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
+    if (reverse.columns)
+        data <- ReverseColumns(data)
+
+    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
+    data <- SelectColumns(data, select.columns,
+                first.k.columns, last.k.columns)
+
+    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                   column.names.to.remove = column.names.to.remove, split = split)
+}
+
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
-#' @importFrom flipTime AsDate AsDateTime
+#' @importFrom flipTime AsDate AsDateTime IsDateTime
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
                            tidy,
                            is.raw.data,
-                           row.names.to.remove, column.names.to.remove, split,
-                           select.rows, first.k.rows, last.k.rows,
-                           select.columns, first.k.columns, last.k.columns,
                            hide.output.threshold,
                            hide.rows.threshold, hide.columns.threshold,
                            transpose,
                            first.aggregate,
-                           as.percentages,
                            hide.empty.rows, hide.empty.columns,
                            date.format,
                            table.counter = 1)
 {
     if (multiple.tables)
     {
-        for(i in seq_along(data))
+        for (i in seq_along(data))
             data[[i]] = transformTable(data[[i]],
                                        chart.type,
                                        FALSE,
-                                       tidy,
+                                       FALSE,
                                        is.raw.data,
-                                       row.names.to.remove, column.names.to.remove, split,
-                                       select.rows, first.k.rows, last.k.rows,
-                                       select.columns, first.k.columns, last.k.columns,
                                        0, 0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
-                                       as.percentages,
                                        hide.empty.rows, hide.empty.columns,
                                        date.format,
                                        i)
         return(data)
     }
 
-    # Selecting rows/columns
-    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
-    data <- SelectColumns(data, select.columns,
-                first.k.columns, last.k.columns)
-
-    ## Remove rows and columns
-    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                   column.names.to.remove = column.names.to.remove, split = split)
 
     if (hide.empty.rows)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyRows)
@@ -820,6 +852,23 @@ transformTable <- function(data,
     if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
         data <- HideColumnsWithSmallSampleSizes(data, hide.columns.threshold)
 
+    ## Switching rows and columns
+    if (isTRUE(transpose))
+    {
+        data <- t(data)
+        attr(data, "questions") <- rev(attr(data, "questions"))
+    }
+
+    # Set axis names before dropping dimensions (but AFTER transpose)
+    data <- setAxisTitles(data, chart.type, tidy)
+    if (chart.type == "Scatter" && is.null(dim(data)))
+    {
+        tmp.names <- names(data)
+        dim(data) <- c(length(data), 1)
+        if (!is.null(tmp.names))
+            rownames(data) <- tmp.names
+    }
+
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)
     if (tidy && !chart.type %in% c("Venn", "Sankey") &&
@@ -827,11 +876,23 @@ transformTable <- function(data,
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
 
 
-    ## Switching rows and columns
-    if (isTRUE(transpose))
+    if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
-        data <- t(data)
-        attr(data, "questions") <- rev(attr(data, "questions"))
+        if (IsDateTime(rownames(data)))
+            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+        else if (IsDateTime(names(data)))
+            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+    }
+    return(data)
+}
+
+convertPercentages <- function(data, as.percentages, chart.type, multiple.tables, table.counter = 1)
+{
+    if (multiple.tables)
+    {
+        for(i in seq_along(data))
+            data[[i]] = convertPercentages(data[[i]], as.percentages, chart.type, FALSE, i)
+        return(data)
     }
 
     ## If data is already percentages in Qtable then divide by 100
@@ -842,7 +903,7 @@ transformTable <- function(data,
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
-    if (as.percentages)
+    if (as.percentages && chart.type != "Venn")
     {
         percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
@@ -855,11 +916,6 @@ transformTable <- function(data,
         else
             data <- asPercentages(data)
     }
-
-    if (date.format != "Automatic" && isDate(rownames(data)))
-        rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
-    else if (date.format != "Automatic" && isDate(names(data)))
-        names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
     return(data)
 }
 
@@ -943,13 +999,16 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = rep(y.names, each = n))
 
-            if (date.format != "Automatic" && isDate(as.character(newdata[,1])))
-                newdata[,1] <- format(AsDate(as.character(newdata[,1]),
-                us.format = !grepl("International", date.format)), "%b %d %Y")
+            if (!grepl("^No date", date.format) && date.format != "Automatic")
+            {
+                if (IsDateTime(as.character(newdata[,1])))
+                    newdata[,1] <- format(AsDate(as.character(newdata[,1]),
+                    us.format = !grepl("International", date.format)), "%b %d %Y")
+            }
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
             data <- newdata
-            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3)
+            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
             attr(data, "scatter.mult.yvals") <- TRUE
 
         } else
@@ -959,13 +1018,14 @@ prepareForSpecificCharts <- function(data,
             # Removing duplicate columns
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
-            if (NCOL(data) > 4)
-                warning("Columns ", paste(colnames(data)[5:ncol(data)], collapse = ", "),
+            if (NCOL(data) > 5)
+                warning("Columns ", paste(colnames(data)[6:ncol(data)], collapse = ", "),
                     " not used in Scatter plot.",
                     " Consider selecting checkbox for 'Input data contains y-values in multiple columns'.")
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
-            attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
+            if (is.null(attr(data, "scatter.variable.indices")))
+                attr(data, "scatter.variable.indices") = scatterVariableIndices(input.data.raw, data, show.labels)
         }
     }
     # Charts that plot the distribution of raw data (e.g., histograms)
@@ -1044,8 +1104,8 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
             all(!is.na(suppressWarnings(AsDate(levels(x[,1]), on.parse.failure = "silent"))))
         if ((!is.date) && mean(ind.dup, na.rm = T) > 0.9) # too many duplicates
             return(x)
-        wmsg <- if (isDate(x[,1])) ". Check aggregation level of date variable '"
-                else               ". Consider aggregating on '"
+        wmsg <- if (IsDateTime(x[,1])) ". Check aggregation level of date variable '"
+                else                   ". Consider aggregating on '"
 
         warning("Duplicated entries in '", colnames(x)[1], "': ",
             paste(unique(x[ind.dup,1]), collapse = ", "),
@@ -1095,6 +1155,8 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         # Extract categories.title from aggregated data
         if (is.null(attr(x, "categories.title")))
             attr(x, "categories.title") <- names(dimnames(x))[1]
+        if (chart.type == "Heat" && is.null(attr(x, "values.title")))
+            attr(x, "values.title") <- names(dimnames(x))[2]
         # Extract categories.title from Qtables
         if (is.null(attr(x, "categories.title")) && !is.null(attr(x, "questions")))
             attr(x, "categories.title") <- attr(x, "questions")[1]
@@ -1170,11 +1232,6 @@ hasUserSuppliedRownames <- function(data)
     return(TRUE)
 }
 
-# All warnings are suppressed here - warnings are given in the charting functions
-isDate <- function(x) return(!is.null(x) && all(!is.na(suppressWarnings(
-                AsDateTime(as.character(x), on.parse.failure = "silent")))))
-
-
 tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
@@ -1183,7 +1240,7 @@ tidyLabels <- function(data, chart.type)
     {
         orig.names <- if (vertical.chart) colnames(data)
                       else                rownames(data)
-        if (!isDate(orig.names))
+        if (!IsDateTime(orig.names))
         {
             tmp <- ExtractCommonPrefix(orig.names)
             if (vertical.chart)
@@ -1198,7 +1255,7 @@ tidyLabels <- function(data, chart.type)
     }
     else if (!is.null(names(data))) # lists and vectors
     {
-        if (!isDate(names(data)))
+        if (!IsDateTime(names(data)))
         {
             tmp <- ExtractCommonPrefix(names(data))
             names(data) <- tmp$shortened.labels
