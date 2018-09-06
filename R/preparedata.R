@@ -878,10 +878,11 @@ transformTable <- function(data,
 
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
+        format.str <- if (!grepl("International", date.format)) "%b %d %Y" else "%d %b %Y"
         if (IsDateTime(rownames(data)))
-            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), format.str)
         else if (IsDateTime(names(data)))
-            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), "%b %d %Y")
+            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), format.str)
     }
     return(data)
 }

@@ -1290,7 +1290,7 @@ test_that("Date formatting",
     res5 <- PrepareData("Column", input.data.table = x3)
 
     us.dates <- format(as.Date(sprintf("2017-%02d-01", 1:10)), "%b %d %Y")
-    intl.dates <- format(as.Date(sprintf("2017-01-%02d", 1:10)), "%b %d %Y")
+    intl.dates <- format(as.Date(sprintf("2017-01-%02d", 1:10)), "%d %b %Y")
 
     expect_equal(names(res1$data), intl.dates)
     expect_equal(rownames(res2$data), intl.dates)
