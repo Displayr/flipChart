@@ -561,6 +561,25 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x$Y <- NULL
     }
 
+    # Check that input data is of the same length
+    .nobs <- function(x)
+    {
+        if (is.list(x))
+            return(lapply(x, .nobs))
+        else
+            return(NROW(x))
+    } 
+    num.obs <- unlist(lapply(x, .nobs))
+    if (length(unique(num.obs[num.obs > 0])) > 1 && isScatter(chart.type))
+    {
+        # If data is aggregated (e.g. the mean of each variable) then the length can differ
+        names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
+        ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])    
+        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+            "' differ in length from the variables for 'X coordinates'. ",
+            "Check that all variables are from the same data set.")
+    }
+    
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
@@ -878,11 +897,22 @@ transformTable <- function(data,
 
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
-        format.str <- if (!grepl("International", date.format)) "%b %d %Y" else "%d %b %Y"
-        if (IsDateTime(rownames(data)))
-            rownames(data) <- format(suppressWarnings(AsDate(rownames(data), us.format = !grepl("International", date.format))), format.str)
+        input.us.format <- !grepl("International", date.format)
+        output.format.str <- if (!grepl("International", date.format)) "%b %d %Y" else "%d %b %Y"
+        if (!is.null(rownames(data)) && IsDateTime(rownames(data)))
+        {
+            tmp.dates <- try(suppressWarnings(AsDate(rownames(data), us.format = input.us.format)), silent = TRUE)
+            if (inherits(tmp.dates, "try-error"))
+                tmp.dates <- suppressWarnings(AsDate(rownames(data)))
+            rownames(data) <- format(tmp.dates, output.format.str)
+        }
         else if (IsDateTime(names(data)))
-            names(data) <- format(suppressWarnings(AsDate(names(data), us.format = !grepl("International", date.format))), format.str)
+        {
+            tmp.dates <- try(suppressWarnings(AsDate(names(data), us.format = input.us.format)), silent = TRUE)
+            if (inherits(tmp.dates, "try-error"))
+                tmp.dates <- suppressWarnings(AsDate(names(data)))
+            names(data) <- format(tmp.dates, output.format.str)
+        }
     }
     return(data)
 }
