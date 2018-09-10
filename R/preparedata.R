@@ -575,7 +575,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         # If data is aggregated (e.g. the mean of each variable) then the length can differ
         names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
         ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])    
-        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+        warning("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
             "' differ in length from the variables for 'X coordinates'. ",
             "Check that all variables are from the same data set.")
     }
