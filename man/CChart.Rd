@@ -8,13 +8,13 @@ CChart(chart.type, x, small.multiples = FALSE, ...,
   warn.if.no.match = TRUE, append.data = FALSE)
 }
 \arguments{
-\item{chart.type}{The name of plot to create, e.g "100\% Stacked Column Chart"}
+\item{chart.type}{The name of plot to create, e.g \code{\link[flipStandardCharts]{Area}}, \code{\link[flipStandardCharts]{Bar}}, \code{\link[flipStandardCharts]{BarPictograph}}, \code{\link[flipStandardCharts]{Bean}}, \code{\link[flipStandardCharts]{Box}}, \code{\link[flipStandardCharts]{Column}}, \code{\link[flipStandardCharts]{Density}}, \code{\link[flipStandardCharts]{Donut}}, \code{\link[flipStandardCharts]{GeographicMap}}, \code{\link[flipStandardCharts]{Heat}}, \code{\link[flipStandardCharts]{Histogram}}, \code{\link[flipStandardCharts]{Line}}, \code{\link[flipStandardCharts]{Palm}}, \code{\link[flipStandardCharts]{Pie}}, \code{\link[flipStandardCharts]{Pyramid}}, \code{\link[flipStandardCharts]{Radar}}, \code{\link[flipStandardCharts]{Scatter}}, \code{\link[flipStandardCharts]{Stream}}, \code{\link[flipStandardCharts]{TimeSeries}}, \code{\link[flipStandardCharts]{Venn}}, \code{\link[flipStandardCharts]{Violin}}. Spaces will automatically be stripped.}
 
 \item{x}{The data to be plotted.}
 
-\item{small.multiples}{Logical; Whether each series should be shown in its own panel}
+\item{small.multiples}{Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).}
 
-\item{...}{Arguments to the function \code{chart.type}}
+\item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
 \item{warn.if.no.match}{Logical; If TRUE, a warning is shown if any arugments are not matched.}
 
@@ -27,6 +27,245 @@ A chart object that can be printed. Most often, a plotly object.
 Creates charts
 }
 \details{
-Where \code{chart.type} is not the name of an existing function. It is always assumed
-that the first parameter in the signature is a data object, which is assigned the value of \code{x}.
+Paramaeters passed to \code{chart.type} are listed below:
+\describe{
+    \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{"Stacked"} to show cumulative values.}
+    \itemize{\code{grid.show} }{ Logical; whether to show grid lines.}
+    \itemize{\code{opacity} }{ Opacity of bars as an alpha value (0 to 1).}
+    \itemize{\code{colors} }{ Character; a vector containing one or more colors specified as hex codes.}
+    \itemize{\code{fit.type} }{ Character; type of line of best fit. Can be one of "None", "Linear", "LOESS",
+         "Friedman's super smoother" or "Cubic spline". This option is only valid for charts Area, Bar, Column, Line, Scatter, Pyramid.}
+    \itemize{\code{fit.ignore.last} }{ Logical; whether to ignore the last data point in the fit.}
+    \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash, "dotdash", or length of dash "2px", "5px".}
+    \itemize{\code{fit.line.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
+    \itemize{\code{fit.line.width} }{ Numeric; Line width of line of best fit.}
+    \itemize{\code{fit.line.name} }{ Character; Name of the line of best fit, which will appear in the hovertext.}
+    \itemize{\code{fit.line.opacity} }{ Opacity of trend line as an alpha value (0 to 1).}
+    \itemize{\code{fit.CI.show} }{ Show 95\% confidence interval.}
+    \itemize{\code{fit.CI.opacity} }{ Opacity of confidence interval ribbon as an alpha value (0 to 1).}
+    \itemize{\code{fit.CI.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
+    \itemize{\code{title} }{ Character; chart title.}
+    \itemize{\code{title.font.family} }{ Character; title font family. Can be "Arial Black",
+"Arial", "Comic Sans MS", "Courier New", "Georgia", "Impact",
+"Lucida Console", "Lucida Sans Unicode", "Marlett", "Symbol", "Tahoma",
+"Times New Roman", "Trebuchet MS", "Verdana", "Webdings".}
+    \itemize{\code{title.font.color} }{ Title font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{title.font.size} }{ Integer; Title font size; default = 10.}
+    \itemize{\code{subtitle} }{ Character.}
+    \itemize{\code{subtitle.font.color} }{ subtitle font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{subtitle.font.family} }{ Character; subtitle font family.}
+    \itemize{\code{subtitle.font.size} }{ Integer; subtitle font size.}
+    \itemize{\code{footer} }{ Character to show below the chart.}
+    \itemize{\code{footer.font.color} }{ footer font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{footer.font.family} }{ Character; footer font family.}
+    \itemize{\code{footer.font.size} }{ Integer; footer font size.}
+    \itemize{\code{footer.wrap} }{ Logical; whether the footer text should be wrapped.}
+    \itemize{\code{footer.wrap.nchar} }{ Number of characters (approximately) in each
+line of the footer when \code{footer.wrap} \code{TRUE}.}
+    \itemize{\code{background.fill.color} }{ Background color in character format (e.g. "black").}
+    \itemize{\code{legend.show} }{ Logical; show the legend.}
+    \itemize{\code{legend.wrap} }{ Logical; whether the legend text should be wrapped.}
+    \itemize{\code{legend.wrap.nchar} }{ Number of characters (approximately) in each
+line of the legend when \code{legend.wrap} \code{TRUE}.}
+    \itemize{\code{legend.fill.color} }{ Legend fill color as a named color in character format
+(e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, maxColorValue = 255)).}
+    \itemize{\code{legend.fill.opacity} }{ Legend fill opacity as an alpha value (0 to 1).}
+    \itemize{\code{legend.ascending} }{ Logical; TRUE for ascending, FALSE for descending.
+By default, we set it to to FALSE if the chart is stacked and TRUE otherwise.}
+    \itemize{\code{legend.border.color} }{ Legend border color as a named color in character
+format (e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, maxColorValue = 255)).}
+    \itemize{\code{legend.border.line.width} }{ Width in pixels of the border
+around the legend.  0 = no border.}
+    \itemize{\code{legend.position.x} }{ A numeric controlling the position of the legend. Values range from -0.5 (left) to 1.5 (right).}
+    \itemize{\code{legend.position.y} }{ A numeric controlling the position of the legend. Values range from 0 (bottom) to 1 (top).}
+    \itemize{\code{legend.font.color} }{ Legend font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{legend.font.family} }{ Character; legend font family.}
+    \itemize{\code{legend.font.size} }{ Integer; Legend font size.}
+    \itemize{\code{legend.width} }{ Only used in a TimeSeries chart. Integer; Width (in pixels) of the textbox containing the legend.}
+    \itemize{\code{values.title} }{ Character; title of the axis showing the independent values, i.e. y-axis (in a column or area chart) or x-axis (in a bar chart). This will override dim names read from the input table.}
+    \itemize{\code{values.title.font.color} }{ values-axis title font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{values.title.font.family} }{ Character; values-axis title font family.}
+    \itemize{\code{values.title.font.size} }{ Integer; values-axis title font size.}
+    \itemize{\code{values.line.width} }{ values-axis line width in pixels (0 = no line).}
+    \itemize{\code{values.line.color} }{ values-axis line color as a named color in character format.
+(e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, maxColorValue = 255)).}
+    \itemize{\code{values.tick.mark.length} }{ Length of tick marks in pixels. Ticks are only shown when \code{y.line.width > 0}.}
+    \itemize{\code{values.bounds.minimum} }{ Minimum of range for plotting; NULL = no manual range set.}
+    \itemize{\code{values.bounds.maximum} }{ Maximum of range for plotting; NULL = no manual range set.}
+    \itemize{\code{values.tick.distance} }{ Distance between tick marks. Requires that \code{values.bounds.minimum} and \code{values.bounds.maximum} have been set.}
+    \itemize{\code{values.number.ticks} }{ Only used in Stream. The total number of ticks on the y-axis.}
+    \itemize{\code{values.zero} }{ Whether the values-axis should include zero. If false, the range will be determined from the input data.}
+    \itemize{\code{values.zero.line.width} }{ Width in pixels of zero line;.}
+    \itemize{\code{values.zero.line.color} }{ Color of horizontal zero line as a named.
+color in character format (e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, maxColorValue = 255)).}
+    \itemize{\code{values.data.reversed} }{ Logical; whether to reverse values-axis or not.}
+    \itemize{\code{values.grid.width} }{ Width of values-grid lines in pixels; 0 = no line.}
+    \itemize{\code{values.grid.color} }{ Color of values-grid lines as a named color in character.
+format (e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, maxColorValue = 255)).}
+    \itemize{\code{values.tick.show} }{ Whether to display the values-axis tick labels.}
+    \itemize{\code{values.tick.suffix} }{ values-axis tick label suffix.}
+    \itemize{\code{values.tick.prefix} }{ values-axis tick label prefix.}
+    \itemize{\code{values.tick.format} }{ A string representing a d3 formatting code. See \url{https://github.com/d3/d3/blob/master/API.md#number-formats-d3-format}.}
+    \itemize{\code{values.hovertext.format} }{ A string representing a d3 formatting code. See \url{https://github.com/d3/d3/blob/master/API.md#number-formats-d3-format}.}
+    \itemize{\code{values.tick.angle} }{ values-axis tick label angle in degrees 90 = vertical; 0 = horizontal.}
+    \itemize{\code{values.tick.font.color} }{ values-axis tick label font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{values.tick.font.family} }{ Character; values-axis tick label font family.}
+    \itemize{\code{values.tick.font.size} }{ Integer; values-axis tick label font size.}
+    \itemize{\code{categories.title} }{ Character; title of the axis showing the dependent values, i.e. x-axis (in a column or area chart) or y-axis (in a bar chart). This will override dim names read from the input table.}
+    \itemize{\code{categories.title.font.color} }{ categories-axis title font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{categories.title.font.family} }{ Character; categories-axis title font family.}
+    \itemize{\code{categories.title.font.size} }{ Integer; categories-axis title font size.}
+    \itemize{\code{categories.line.width} }{ categories-axis line in pixels, 0 = no line.}
+    \itemize{\code{categories.line.color} }{ categories-axis line color as a named color in character format (e.g. "black") or an rgb value (e.g. rgb(0, 0, 0, macategories.olorValue = 255)).}
+    \itemize{\code{categories.tick.marks} }{ Character; whether and where to show tick marks on the categories.axis. Can be "outside", "inside", "none".}
+    \itemize{\code{categories.tick.mark.length} }{ Length of tick marks in pixels.}
+    \itemize{\code{categories.tick.units} }{ Only used in Stream. "Automatic", "Number", "Day", "Month" or "Year".}
+    \itemize{\code{categories.tick.interval} }{ Only used in Stream. The frequency of ticks on the x-axis. Where the data crosses multiple years, re-starts at each year.}
+    \itemize{\code{categories.bounds.minimum} }{ Minimum of range for plotting; NULL = no manual range set.  Must be less than categories.bounds.maximum.}
+    \itemize{\code{categories.bounds.maximum} }{ Maximum of range for plotting; NULL = no manual range set.  Must be greater than categories.bounds.minimum.}
+    \itemize{\code{categories.tick.distance} }{ Tick mark distance in categories.axis units between minimum and maximum for plotting; NULL = no manual range set.}
+    \itemize{\code{categories.zero} }{ Whether the categories-axis should include zero. If false, the range will be determined from the input data.}
+    \itemize{\code{categories.zero.line.width} }{ Width in pixels of zero line.}
+    \itemize{\code{categories.zero.line.color} }{ Color of horizontal zero (origin) line as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{categories.data.reversed} }{ Logical; whether to reverse categories-axis or not.}
+    \itemize{\code{categories.grid.width} }{ Width of y-grid lines in pixels; 0 = no line.}
+    \itemize{\code{categories.grid.color} }{ Color of y-grid lines as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{categories.tick.show} }{ Whether to display the categories-axis tick labels.}
+    \itemize{\code{categories.tick.suffix} }{ categories-axis tick label suffix.}
+    \itemize{\code{categories.tick.prefix} }{ categories-axis tick label prefix.}
+    \itemize{\code{categories.tick.format} }{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
+    \itemize{\code{categories.hovertext.format} }{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
+    \itemize{\code{categories.tick.angle} }{ categories-axis tick label angle in degrees. 90 = vertical; 0 = horizontal.}
+    \itemize{\code{categories.tick.font.color} }{ categories-axis tick label font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{categories.tick.font.family} }{ Character; categories-axis tick label font family.}
+    \itemize{\code{categories.tick.font.size} }{ Integer; categories-axis tick label font size.}
+    \itemize{\code{categories.tick.label.wrap} }{ Logical; whether to wrap long labels on the categories-axis.}
+    \itemize{\code{categories.tick.label.wrap.nchar} }{ Integer; number of characters in each line when \code{label.wrap} is \code{TRUE}.}
+    \itemize{\code{tooltip.show} }{ Logical; whether to show a tooltip on hover.}
+    \itemize{\code{modebar.show} }{ Logical; whether to show the zoom menu buttons or not.}
+    \itemize{\code{global.font.family} }{ Character; font family for all occurrences of any
+font attribute for the chart unless specified individually.}
+    \itemize{\code{global.font.color} }{ Global font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{data.label.show} }{ Logical; whether to show data labels.}
+    \itemize{\code{data.label.font.family} }{ Character; font family for data label.}
+    \itemize{\code{data.label.font.size} }{ Integer; Font size for data label.px.}
+    \itemize{\code{data.label.font.color} }{ Font color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{data.label.format} }{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
+    \itemize{\code{data.label.prefix} }{ Character; prefix for data values.}
+    \itemize{\code{data.label.suffix} }{ Character; suffix for data values.}
+    \itemize{\code{data.label.threshold} }{ The proportion of the total range below which data labels should not be displayed. Only applicable for pie, bar and column charts.}
+    \itemize{\code{margin.top} }{ Margin between plot area and the top of the graphic in pixels.}
+    \itemize{\code{margin.bottom} }{ Margin between plot area and the bottom of the graphic in pixels.}
+    \itemize{\code{margin.left} }{ Margin between plot area and the left of the graphic in pixels.}
+    \itemize{\code{margin.right} }{ Margin between plot area and the right of the graphic in pixels.}
+    \itemize{\code{margin.inner.pad} }{ Padding in pixels between plot proper and axis lines.}
+    \itemize{\code{background.fill.opacity} }{ Background opacity as an alpha value (0 to 1).}
+    \itemize{\code{charting.area.fill.color} }{ Charting area background color as a named color in character format (e.g. "black") or hex code.}
+    \itemize{\code{charting.area.fill.opacity} }{ Charting area background opacity as an alpha value (0 to 1).}
+    \itemize{\code{line.thickness} }{ Only used in Scatter, Line Area or TimeSeries charts. Controls the line thickness in pixels.}
+    \itemize{\code{line.colors} }{ Character; a vctor containing one or more colors specified as hex codes.}
+    \itemize{\code{line.thickness} }{ Opacity of series lines as an alpha value (0 to 1).}
+    \itemize{\code{marker.show} }{ Only used in Scatter, Line or Area charts. Can be "none", "automatic" or a vector referencing the plotly symbol dictionary using either numerics or strings.}
+    \itemize{\code{marker.colors} }{ Only works if \code{marker.show} is true. Character; a vector containing one or more colors specified as hex codes.}
+    \itemize{\code{marker.opacity} }{ Only works if \code{marker.show} is true. Controls ppacity for markers as an alpha value (0 to 1).}
+    \itemize{\code{marker.size} }{ Only works if \code{marker.show} is true. Controls size in pixels of marker.}
+    \itemize{\code{marker.border.width} }{ Width in pixels of border/line around series bars; 0 is no line.}
+    \itemize{\code{marker.border.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
+    \itemize{\code{marker.border.opacity} }{ Opacity of border around bars as an alpha value (0 to 1).}
+    \itemize{\code{bar.gap} }{ Only used in charts Bar, Column and Pyramid. Chart proportion between each bar or column if using bar or column charts, or between each cluster of bars or columns.}
+    \itemize{\code{weights} }{ Only used in Bean, Box, Density, Histogram, Violin plots or Venn diagrams. An optional \code{\link{list}}, where each element is a vector containing weights corresponding to the values of \code{x}, or, a vector where the weights is assumed applicable for each element in \code{x}.}
+    \itemize{\code{vertical} }{ Only used in Bean, Box, Density, Histogram or Violin plots Display the densities vertically.}
+    \itemize{\code{show.mean} }{ Only used in Violin plots. Displays the mean of the data.}
+    \itemize{\code{mean.color} }{ Defaults to "white".}
+    \itemize{\code{show.median} }{ Only used in Violin plots. Displays the median of the data.}
+    \itemize{\code{median.color} }{ Defaults to "black".}
+    \itemize{\code{show.quartiles} }{ Only used in Violin plots. Displays the quartiles of the data.}
+    \itemize{\code{quartile.color} }{ Defaults to "black".}
+    \itemize{\code{show.range} }{ Only used in Violin plots. Displays the range of the data.}
+    \itemize{\code{range.color} }{ Defaults to "black".}
+    \itemize{\code{show.values} }{ Only used in Box, Density or Histogram (always true in Bean plots). Produces a rug plot of individual values.}
+    \itemize{\code{values.color} }{ Defaults to "Green".}
+    \itemize{\code{show.density} }{ Only used in Violin plots. Show the left or top (if \code{vertical} is FALSE) of the violin plot.}
+    \itemize{\code{density.color} }{ Only used in Bean, Box, Density, Histogram or Violin plots. Defaults to "Green".}
+    \itemize{\code{bw} }{ The smoothing bandwidth to be used when creating a Density, Bean, or Violin plot. This defaults to \code{"nrd0"}, whereas \code{"SJ"} may often be superior (see \code{\link{density}}). The default is to \code{"nrd0"} as \code{"SJ"} fails with trivial categorical cases.}
+    \itemize{\code{adjust} }{ A scaling factor for the bandwidth when creating a Density, Bean, or Violin plot. E.g., a value of 0.5 sets the bandwidth to have of that computed using \code{bw}.}
+    \itemize{\code{kernel} }{ The kernel used when when creating a Density, Bean, or Violin plot. One of "gaussian" (the default), "epanechnikov", "rectangular", "triangular", "biweight", "cosine", "optcosine".}
+    \itemize{\code{n} }{ The number of equally-spaced points at which the density is to be estimated when creating a Density, Bean, or Violin plot. If greater than 512, it is rounded to a power of 2 (see \code{link{density}})}.
+    \itemize{\code{from} }{ The left-most point of the grid used when creating a Density, Bean, or Violin plot.}
+    \itemize{\code{to} }{ The right-most point of the grid used when creating a Density, Bean, or Violin plot.}
+    \itemize{\code{cut} }{ By default, the values of \code{from} and \code{to} are \code{cut} bandwidths beyond the extremes of the data.}
+    \itemize{\code{automatic.lower.density} }{ When \code{TRUE}, which is the default, \code{from} is set to the lowest value in the data.}
+    \itemize{\code{histogram.cumulative} }{ Only used in Histogram plots. Plots the cumulative histogram, if set to TRUE.}
+    \itemize{\code{histogram.counts} }{ Only used in Histogram plots. Displays the counts in tooltips of a histogram, rather than the proportions.}
+    \itemize{\code{maximum.bins} }{ Only used in Histograph plots. The maximum number of bins of the histogram. If \code{NULL}, this is generated automatically.}
+    \itemize{\code{box.points} }{ How outliers are displayed boxplots. \code{"All"} plots all the points. \code{"Suspected outliers"} plots points between 1.5 and 3 IQR from the 1st and 3rd quartile with un-filled circles. \code{"Outliers"} does not plot points between 1.5 and 3 IQR from the 1st and 3rd quartiles.}
+    \itemize{\code{country} }{ Only used in GeographicMap. Character string optionally stating the country that the states are from, if \code{map.type} is \code{"states"}.}
+    \itemize{\code{high.resolution} }{ Only used in GeographicMap. Specifically request a high resolution map. Otherwise the resolution of the map is chosen automatically based on the resolution required for the requested countries or regions.}
+    \itemize{\code{show.missing.regions} }{ Only used in GeographicMap. Logical; Whether to plot regions not included in \code{x} with values of \code{NA}. Used only when \code{mapping.package} is \code{"leaflet"}.}
+    \itemize{\code{treat.NA.as.0} }{ Only used in GeographicMap. Plots any \code{NA} values in the data and any geographical entities without data as having a zero value.}
+    \itemize{\code{ocean.color} }{ Only used in GeographicMap. The color used for oceans (or background).}
+    \itemize{\code{mapping.package} }{ Only used in GeographicMap. Either \code{"leaflet"} (better graphics, wider range of
+maps) or \code{"plotly"} (faster).}
+    \itemize{\code{background} }{ Only used in GeographicMap. If \code{"mapping.package"} is \code{"leaflet"}, add a background
+tile from opensteetmaps.}
+    \itemize{\code{zip.country} }{ Only used in GeographicMap. One of \code{"Automatic"}, \code{"USA"}, \code{"UK"} or \code{"Australia"}. If \code{"Automatic"} an attempt is made to infer the country from the data.}
+    \itemize{\code{sort.rows} }{ Only used in Heat. Whether to sort rows by their averages or link as a dendrogram. Options are \code{"None"}, \code{"Sort by averages (ascending)"}, \code{"Sort by averages (descending)"} and \code{"Dendrogram"}.}
+    \itemize{\code{sort.columns} }{ Only used in Heat. Whether to sort columns by their averages or link as a dendrogram. Options are \code{"None"}, \code{"Sort by averages (ascending)"}, \code{"Sort by averages (descending)"} and \code{"Dendrogram"}.}
+    \itemize{\code{standardization} }{ Only used in Heat. Whether to standardize the shading of rows or columns. Options are \code{"None"}, \code{"Standardize rows"} and \code{"Standardize columns"}.}
+    \itemize{\code{left.columns} }{ Only used in Heat. An optional list of vectors or matrices to be appended to the left of the heatmap.}
+    \itemize{\code{left.column.headings} }{ Only used in Heat. An optional comma separated string containing headings for \code{left.columns}. If not supplied, colnames of the items in \code{left.columns} are used.}
+    \itemize{\code{right.columns} }{ Only used in Heat. An optional list of vectors or matrices to be appended to the right of the heatmap.}
+    \itemize{\code{right.column.headings} }{ Only used in Heat. An optional comma separated string containing headings for
+\code{right.columns}. If not supplied, colnames of the items in \code{right.columns} are used.}
+    \itemize{\code{pie.subslice.colors} }{ A vector containing hex value colors for the outer ring of the pie chart. If not supplied will default to the same colors as the inner ring.}
+    \itemize{\code{pie.subslice.colors.repeat} }{  Logical; if, when a grouped pie chart is displayed, the colors of the subslices should repeat by group, or be different throughout; defaults to TRUE.}
+    \itemize{\code{pie.groups.font.family} }{  Character; font family for group labels.}
+    \itemize{\code{pie.groups.font.size} }{ Font size for group labels.}
+    \itemize{\code{pie.groups.font.color} }{ Font color as a named color or hex code.}
+    \itemize{\code{pie.data.threshold} }{ Labels with values smaller than the theshold are not shown.}
+    \itemize{\code{pie.border.color} }{ A single color for space around pie and between segments.}
+    \itemize{\code{pie.inner.radius} }{ The size of the inner radius of pie and donut charts as a proportion out of 100. Defaults to 70.}
+    \itemize{\code{scatter.x.column} }{ When \code{x} is a dataframe or matrix, the index of the column (1-based) which contains the x-coordinate data in a scatterplot.}
+    \itemize{\code{scatter.y.column} }{ When \code{x} is a dataframe or matrix, the index of the column (1-based) which contains the y-coordinate data in a scatterplot. This is ignored if \code{scatter.y} is provided instead.}
+    \itemize{\code{scatter.sizes.column} }{ When \code{x} is a dataframe or matrix, the index of the column (1-based) which contains \code{scatter.sizes} data. This is ignored if \code{scatter.sizes} is provided instead.}
+    \itemize{\code{scatter.colors.column} }{ When \code{x} is a dataframe or matrix, the index of the column (1-based) which contains \code{scatter.colors} data. This is ignored if \code{scatter.colors} is provided instead.}
+    \itemize{\code{scatter.groups.column} }{ Only used for small multiples (otherwise use \code{scatter.colors.column} with \code{scatter.colors.as.categorical = TRUE}). The index of the column of \code{x} which is used to aggregate the data for small multiples. By default this is the last column in \code{x}.}
+    \itemize{\code{scatter.labels} }{ Optional vector for labelling scatter points. This should be the same length as the number of observations in x and y. If not provided, the rownames of \code{x} will be used instead.}
+    \itemize{\code{scatter.labels.name} }{ Character; Used for labelling subtitles and footers if \code{scatter.labels} is provided}.
+    \itemize{\code{scatter.sizes} }{ Numeric vector determining of the size of each observation. These can alternatively be provided as a column in \code{x}.}
+    \itemize{\code{scatter.sizes.name} }{ Character; Used for labelling footers and legends if \code{scatter.sizes} is provided.}
+    \itemize{\code{scatter.colors} }{ Numeric, character, or categorical vector determining the color of each observation. These can alternatively be provided as a column in \code{x}.}
+    \itemize{\code{scatter.colors.name} }{ Character; Used for labelling footers if \code{scatter.colors} is provided.}
+    \itemize{\code{scatter.colors.as.categorical} }{ Logical; Whether to treat colors as a categorical groups, or a numeric scale..}
+    \itemize{\code{scatter.labels.as.hovertext} }{ Logical; if TRUE, labels are shown has hovers; otherwise, as a labeled scatterplot.}
+    \itemize{\code{scatter.sizes.as.diameter} }{ Whether to show the points with diameter (instead of area, which is the default) proportional to the sizes variable. Cannot be used if \code{scatter.labels.as.hovertext = FALSE}.}
+    \itemize{\code{scatter.max.labels} }{ Integer; the maximum number of labels to show on a Labeled Scatterplot, i.e. when \code{scatter.labels.as.hovertext = FALSE}.}
+    \itemize{\code{trend.lines} }{ Logical; indicating whether to plot trend lines for multiple tables when \code{scatter.labels.as.hovertext = FALSE}.}
+    \itemize{\code{logos} }{ Optional list of images to be used to label scatterplot instead of the row names. This should be input as a comma-seperated list of URLs. Only used when \code{scatter.labels.as.hovertext = FALSE}.}
+    \itemize{\code{logo.size} }{ Numeric controlling the size of the logos.}
+    \itemize{\code{range.bars} }{ Only used in TimeSeries. Logical; whether the data consists of a single series with low, value, high in the columns, or multiple series.}
+    \itemize{\code{window.start} }{ Only used in TimeSeries. The number of days before the end of the data series to start the range selector window.}
+    \itemize{\code{nrows} }{ Only used for small multiples. Integer; Number of rows to arrange the charts in.}
+    \itemize{\code{x.order} }{ Only used for small multiples. A vector containing the list index of the columns in the order which they are to be shown.}
+    \itemize{\code{share.axes} }{ Only used for small multiples. Force range of the plot to be the same across all panels.}
+    \itemize{\code{average.show} }{ Only used for small multiples. Logical; whether to show a second series in each panel containing the data averaged across all series.}
+    \itemize{\code{average.color} }{ Only used for small multiples. The color in which the average series should be displayed.}
+    \itemize{\code{panel.title.show} }{ Only used for small multiples. Logical; whether to show a title for each panel.}
+    \itemize{\code{panel.title.font.family} }{ Only used for small multiples. Font family of panel titles.}
+    \itemize{\code{panel.title.font.color} }{ Only used for small multiples. Font color of panel titles as hex code.}
+    \itemize{\code{panel.title.font.size} }{ Only used for small multiples. Font size of panel titles.}
+    \itemize{\code{panel.title.wrap} }{ Only used for small multiples. Logical; whether the panel title should be wrapped.}
+    \itemize{\code{panel.title.wrap.nchar} }{ Only used for small multiples. Number of characters (approximately) in each line
+    of the panel title when \code{panel.title.wordwrap} \code{TRUE}.}
+    \itemize{\code{pad.top} }{ Only used for small multiples. Numeric in [0,1]; Spacing above chart (between panels).}
+    \itemize{\code{pad.bottom} }{ Only used for small multiples. Numeric in [0,1]; Spacing below chart (between panels).}
+    \itemize{\code{pad.left} }{ Only used for small multiples. Numeric in [0,1]; Spacing to the left of chart (between panels).}
+    \itemize{\code{pad.right} }{ Only used for small multiples. Numeric in [0,1]; Spacing to the right chart (between panels).}
+}
+}
+\examples{
+x <- matrix(1:21, 7, 3, dimnames = list(letters[1:7], LETTERS[1:3]))
+CChart("Column", x, colors = c("red", "green", "blue"), categories.title = "Categories")
+CChart("Bar", x, type = "Stacked", colors = grey(1:3/3), categories.title = "Categories")
+CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
 }
