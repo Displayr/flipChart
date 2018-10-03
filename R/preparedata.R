@@ -279,7 +279,7 @@ PrepareData <- function(chart.type,
     checkNumberOfDataInputs(data.source.index, input.data.table, input.data.tables,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
-    data <- processInputData(input.data.table)
+    data <- processInputData(input.data.table, subset, weights)
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
@@ -289,7 +289,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- processPastedData(input.data.pasted,
                                   warn = tidy,
-                                  date.format)
+                                  date.format, subset, weights)
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
@@ -649,10 +649,15 @@ isDistribution <- function(chart.type)
 }
 
 #' @importFrom flipStatistics ExtractChartData
-processInputData <- function(x)
+processInputData <- function(x, subset, weights)
 {
     if (is.null(x))
         return(x)
+
+    if (length(subset) > 1)
+        warning("Filters have not been used. They can only be applied to variables and questions")
+    if (length(weights) > 0)
+        warning("Weights have not been used. They can only be applied to variables and questions")
 
     # Handle list of tables
     if (class(x) == "list" && is.list(x) && !is.data.frame(x))
@@ -672,8 +677,13 @@ processInputData <- function(x)
     return(x)
 }
 
-processPastedData <- function(input.data.pasted, warn, date.format)
+processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
 {
+    if (length(subset) > 1)
+        warning("Filters have not been used. They can only be applied to variables and questions")
+    if (length(weights) > 0)
+        warning("Weights have not been used. They can only be applied to variables and questions")
+
     us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
