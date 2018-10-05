@@ -1215,8 +1215,10 @@ test_that("Automatic crosstab of two input variables",
     expect_equal(as.numeric(z$data), c(1.2, 1.4))
     z = PrepareData("Scatter", input.data.pasted = zz, first.aggregate = FALSE, group.by.last = FALSE)
     expect_equal(as.numeric(z$data), as.numeric(zz[[1]][-1,]))
-    z = expect_warning(PrepareData("Column", input.data.pasted = zz, first.aggregate = FALSE,
-                        group.by.last = FALSE), "Duplicated entries in 'X'")
+
+    z2 = list(matrix(c("X", 5,4,3,2,1,"Y", 1,2,1,2,1), ncol = 2))
+    z = expect_error(PrepareData("Column", input.data.pasted = z2, first.aggregate = FALSE,
+                        group.by.last = FALSE), NA)
     expect_equal(z$categories.title, "X")
     expect_equal(z$values.title, "Y")
 
@@ -1439,6 +1441,16 @@ test_that("Retain numeric rownames unless they are the default",
     expect_equal(dim(res0$data), c(7, 2))
     res1 <- PrepareData("Column", input.data.table = x1)
     expect_equal(dim(res1$data), c(7, 3))
+
+
+    # Default rownames which shouldn't be discarded
+    x2 <- structure(c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 35,
+            51, 39, 13, 1, 0, 1, 19, 125, 218, 117, 19, 1, 0, 1, 2, 17, 19,
+            5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), .Dim = c(7L,
+            7L), .Dimnames = list(Observed = c("1", "2", "3", "4", "5", "6",
+            "7"), Predicted = c("1", "2", "3", "4", "5", "6", "7")), type = "count", accuracy = 0.419825072886297, outcome.label = "Overall", description = "Fitted model : n = 686 cases used in estimation of a total sample size of 896; cases containing missing values have been excluded;  686 observed/predicted pairs with 41.98% accuracy;", decimals = 0, title = "Prediction-Accuracy Table: Overall", footer = "Fitted model : n = 686 cases used in estimation of a total sample size of 896; cases containing missing values have been excluded;  686 observed/predicted pairs with 41.98% accuracy;")
+    expect_error(res2 <- PrepareData("Column", input.data.table = x2), NA)
+    expect_equal(dim(x2), dim(res2$data))
 })
 
 test_that("Discard rownames from filtered raw data",

@@ -1,8 +1,13 @@
 .dygraph-title {
         color: #2C2C2C;
         font-size: 16px;
-        font-family: 16;
+        font-family: Arial;
         font-weight: bold;
+        }
+        .dygraph-legend {
+        color: #2C2C2C;
+        font-size: 11px;
+        font-family: Arial;
         }
         .dygraph-label.dygraph-xlabel {
         color: #2C2C2C;

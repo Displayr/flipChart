@@ -1129,6 +1129,12 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
+
+    # Duplicated numeric vectors are most likely data variables, not rownames
+    if (any(ind.dup) && is.numeric(x[,1]))
+        return(x)
+
+    # For duplicated character vectors, we remove duplicates
     if (any(ind.dup))
     {
         if (!allow.duplicate.rownames) # scatterplot
