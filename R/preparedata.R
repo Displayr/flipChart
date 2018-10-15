@@ -568,18 +568,18 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             return(lapply(x, .nobs))
         else
             return(NROW(x))
-    } 
+    }
     num.obs <- unlist(lapply(x, .nobs))
     if (length(unique(num.obs[num.obs > 0])) > 1 && isScatter(chart.type))
     {
         # If data is aggregated (e.g. the mean of each variable) then the length can differ
         names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
-        ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])    
+        ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
         stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
             "' differ in length from the variables for 'X coordinates'. ",
             "Check that all variables are from the same data set.")
     }
-    
+
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
     else if (is.character(x))
@@ -667,7 +667,7 @@ processInputData <- function(x, subset, weights)
         else
             return(x)
     }
-    
+
     # Try to use S3 method to extract data
     x <- ExtractChartData(x)
 
@@ -833,6 +833,7 @@ RearrangeRowsColumns <- function(data,
 
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
 #' @importFrom flipTime AsDate AsDateTime IsDateTime
+#' @importFrom flipU CopyAttributes
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
@@ -901,7 +902,7 @@ transformTable <- function(data,
     # Convert to matrix to avoid state names from being turned into numeric values
     # when TidyTabularData is called
     if (gsub(" ", "", chart.type) == "GeographicMap")
-        data <- as.matrix(data)
+        data <- CopyAttributes(as.matrix(data), data)
 
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)

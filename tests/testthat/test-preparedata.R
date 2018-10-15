@@ -1529,9 +1529,16 @@ df <- structure(list(Country = c("Macau", "Qatar", "Singapore", "Australia",
 129L, 130L, 131L, 134L, 136L, 139L, 140L, 143L, 146L, 150L, 151L,
 159L, 161L, 166L, 168L, 180L, 181L), class = "data.frame")
 
+pasted.data <- list(structure(c("", "", "", "", "", "", "", "", "", "France",
+"Germany", "Spain", "", "", "", "3%", "7%", "5%"), .Dim = c(6L,
+3L)), NULL, NULL, NULL)
+
 test_that("PrepareData: Data frame with country names",
 {
     expect_error(res <- PrepareData("Geographic Map", input.data.table = df), NA)
     expect_equal(names(res$data)[1], "Macau")
+
+    expect_error(res <- PrepareData("Geographic Map", input.data.pasted = pasted.data), NA)
+    expect_equal(attr(res$data, "statistic"), "%")
 })
 
