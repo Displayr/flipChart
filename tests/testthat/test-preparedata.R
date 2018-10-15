@@ -1505,3 +1505,33 @@ test_that("Aggregate numeric data",
         "Sep", "Oct", "Nov", "Dec")))
 })
 
+df <- structure(list(Country = c("Macau", "Qatar", "Singapore", "Australia",
+"Hong Kong", "New Zealand", "Israel", "Japan", "United Arab Emirates",
+"South Korea", "Brunei", "Kuwait", "Taiwan", "Bahrain", "Saudi Arabia",
+"Oman", "Palau", "Seychelles", "Maldives", "Lebanon", "Turkey",
+"Malaysia", "Mauritius", "Kazakhstan", "China", "Nauru", "Turkmenistan",
+"Thailand", "Suriname", "Fiji", "Jordan", "Iran", "Iraq", "Samoa",
+"Tonga", "Azerbaijan", "Sri Lanka", "Indonesia", "Armenia", "Mongolia",
+"Tuvalu", "Marshall Islands", "Micronesia", "Vanuatu", "Philippines",
+"Bhutan", "Papua New Guinea", "Laos", "Vietnam", "East Timor",
+"Solomon Islands", "India", "Kiribati", "Bangladesh", "Pakistan",
+"Myanmar", "Kyrgyzstan", "Nepal", "Tajikistan", "Afghanistan",
+"Yemen"), `GDP USD` = c(77451, 60804, 57713, 55707, 46109, 41593,
+40258, 38440, 37226, 29891, 29712, 27319, 24577, 24029, 21120,
+17973, 17096, 15686, 12527, 11409, 10512, 9813, 9794, 8841, 8643,
+8575, 6643, 6591, 5746, 5740, 5678, 5305, 5088, 4253, 4177, 4141,
+4084, 3876, 3861, 3640, 3638, 3625, 3200, 3094, 2976, 2903, 2861,
+2542, 2354, 2104, 2081, 1983, 1721, 1602, 1541, 1264, 1144, 834,
+824, 588, 551)), row.names = c(3L, 7L, 9L, 11L, 16L, 21L, 22L,
+25L, 26L, 30L, 31L, 33L, 36L, 37L, 40L, 44L, 47L, 53L, 62L, 64L,
+67L, 70L, 71L, 74L, 75L, 76L, 86L, 87L, 93L, 94L, 95L, 98L, 100L,
+111L, 112L, 113L, 115L, 118L, 119L, 120L, 121L, 122L, 126L, 128L,
+129L, 130L, 131L, 134L, 136L, 139L, 140L, 143L, 146L, 150L, 151L,
+159L, 161L, 166L, 168L, 180L, 181L), class = "data.frame")
+
+test_that("PrepareData: Data frame with country names",
+{
+    expect_error(res <- PrepareData("GeographicMap", input.data.table = df), NA)
+    expect_equal(names(res$data)[1], "Macau")
+})
+
