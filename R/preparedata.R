@@ -900,7 +900,7 @@ transformTable <- function(data,
 
     # Convert to matrix to avoid state names from being turned into numeric values
     # when TidyTabularData is called
-    if (chart.type == "GeographicMap")
+    if (gsub(" ", "", chart.type) == "GeographicMap")
         data <- as.matrix(data)
 
     # This must happen after sample sizes have been used

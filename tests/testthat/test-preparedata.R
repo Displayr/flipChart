@@ -1531,7 +1531,7 @@ df <- structure(list(Country = c("Macau", "Qatar", "Singapore", "Australia",
 
 test_that("PrepareData: Data frame with country names",
 {
-    expect_error(res <- PrepareData("GeographicMap", input.data.table = df), NA)
+    expect_error(res <- PrepareData("Geographic Map", input.data.table = df), NA)
     expect_equal(names(res$data)[1], "Macau")
 })
 
