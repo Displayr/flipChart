@@ -906,7 +906,7 @@ transformTable <- function(data,
 
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)
-    if (tidy && !chart.type %in% c("Venn", "Sankey") &&
+    if (tidy && !chart.type %in% c("Venn", "Sankey", "Heat") &&
         !isScatter(chart.type) && !isDistribution(chart.type))
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
 
@@ -1222,7 +1222,7 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         attr(x, "values.title") <- values.title
     if (is.null(attr(x, "values.title")))
         attr(x, "values.title") <- ""
-    if (tidy && !is.data.frame(x) && chart.type != "Scatter" && chart.type != "Table")
+    if (tidy && !is.data.frame(x) && !chart.type %in% c("Scatter", "Table", "Heat"))
     {
         # only drop 1 dimension from a 2d matrix
         if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)
