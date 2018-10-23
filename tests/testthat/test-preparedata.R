@@ -441,7 +441,7 @@ test_that("PrepareData: Binary variable for Venn",
     expect_named(out$data, names(input.data.raw))
     expect_is(out$data[[2]], "numeric")
 
-    out <- suppressWarnings(PrepareData(input.data.raw = input.data.raw, chart.type = "Venn", subset = QFilter))
+    out <- suppressWarnings(PrepareData(input.data.raw = input.data.raw, chart.type = "Venn", subset = QFilter, hide.empty.rows = FALSE, hide.empty.columns = FALSE))
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.raw))
     expect_is(out$data[[2]], "numeric")
@@ -687,7 +687,8 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
     # Duplicated variables
-    res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE)
+    res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE,
+                        hide.empty.rows = FALSE, hide.empty.columns = FALSE)
     expect_equal(dim(res7$data), c(100, 1))
     expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = 1))
 
@@ -1449,7 +1450,7 @@ test_that("Retain numeric rownames unless they are the default",
             5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), .Dim = c(7L,
             7L), .Dimnames = list(Observed = c("1", "2", "3", "4", "5", "6",
             "7"), Predicted = c("1", "2", "3", "4", "5", "6", "7")), type = "count", accuracy = 0.419825072886297, outcome.label = "Overall", description = "Fitted model : n = 686 cases used in estimation of a total sample size of 896; cases containing missing values have been excluded;  686 observed/predicted pairs with 41.98% accuracy;", decimals = 0, title = "Prediction-Accuracy Table: Overall", footer = "Fitted model : n = 686 cases used in estimation of a total sample size of 896; cases containing missing values have been excluded;  686 observed/predicted pairs with 41.98% accuracy;")
-    expect_error(res2 <- PrepareData("Column", input.data.table = x2), NA)
+    expect_error(res2 <- PrepareData("Column", input.data.table = x2, hide.empty.columns = FALSE), NA)
     expect_equal(dim(x2), dim(res2$data))
 })
 

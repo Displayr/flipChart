@@ -260,7 +260,8 @@ test_that("PrepareData R+C removal: Binary variable for venn diagram",
     n.filter <- sum(QFilter==  1)
 
     out <- suppressWarnings(PrepareData(input.data.other = input.data.other, chart.type = "Scatter Plot",
-                       subset = QFilter, column.names.to.remove = colnames(input.data.other)[1:2]))
+                       subset = QFilter, column.names.to.remove = colnames(input.data.other)[1:2],
+                       hide.empty.columns = FALSE, hide.empty.rows = FALSE))
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.other)[3:4])
     expect_equal(nrow(out$data), n.filter)
