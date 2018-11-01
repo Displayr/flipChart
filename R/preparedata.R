@@ -402,6 +402,8 @@ PrepareData <- function(chart.type,
         {
             attr(data[[i]], "values.title") <- NULL
             attr(data[[i]], "categories.title") <- NULL
+            if (NCOL(data[[i]]) > 2)
+                attr(data[[i]], "statistic") <- NULL
         }
     }
     if (scatter.mult.yvals)
