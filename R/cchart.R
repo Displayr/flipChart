@@ -307,7 +307,7 @@ substituteAxisNames <- function(chart.function, arguments)
 
 #' scaleFontSizes
 #'
-#' Convert font size from pixel to point. 
+#' Convert font size from pixel to point.
 #' @details All of the charts in flipStandardChart
 #' take font sizes to be in units of pixels, however, textboxes in Displayr
 #' assumes font sizes are in units of points. This function iterates through
@@ -320,7 +320,7 @@ scaleFontSizes <- function(arguments)
     f.scale <- 1.3333
     for (i in ind)
     {
-        arguments[[i]] <- f.scale * arguments[[i]]
+        arguments[[i]] <- round(f.scale * arguments[[i]], 0)
     }
     return(arguments)
 }
