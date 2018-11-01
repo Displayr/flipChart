@@ -4,7 +4,7 @@
 \alias{CChart}
 \title{Creates charts}
 \usage{
-CChart(chart.type, x, small.multiples = FALSE, ...,
+CChart(chart.type, x, small.multiples = FALSE, font.units = "px", ...,
   warn.if.no.match = TRUE, append.data = FALSE)
 }
 \arguments{
@@ -13,6 +13,8 @@ CChart(chart.type, x, small.multiples = FALSE, ...,
 \item{x}{The data to be plotted.}
 
 \item{small.multiples}{Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).}
+
+\item{font.units}{One of "px" or "pt"}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 

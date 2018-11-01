@@ -9,7 +9,7 @@ substituteAxisNames(chart.function, arguments)
 \arguments{
 \item{chart.function}{Name of charting function}
 
-\item{arguments}{List if arguments supplied by user}
+\item{arguments}{List of arguments supplied by user}
 }
 \description{
 Substitutes 'categories' or 'values' for 'x' and 'y'.

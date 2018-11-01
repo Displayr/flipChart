@@ -3,6 +3,7 @@
 #' @param chart.type The name of plot to create, e.g \code{\link[flipStandardCharts]{Area}}, \code{\link[flipStandardCharts]{Bar}}, \code{\link[flipStandardCharts]{BarPictograph}}, \code{\link[flipStandardCharts]{Bean}}, \code{\link[flipStandardCharts]{Box}}, \code{\link[flipStandardCharts]{Column}}, \code{\link[flipStandardCharts]{Density}}, \code{\link[flipStandardCharts]{Donut}}, \code{\link[flipStandardCharts]{GeographicMap}}, \code{\link[flipStandardCharts]{Heat}}, \code{\link[flipStandardCharts]{Histogram}}, \code{\link[flipStandardCharts]{Line}}, \code{\link[flipStandardCharts]{Palm}}, \code{\link[flipStandardCharts]{Pie}}, \code{\link[flipStandardCharts]{Pyramid}}, \code{\link[flipStandardCharts]{Radar}}, \code{\link[flipStandardCharts]{Scatter}}, \code{\link[flipStandardCharts]{Stream}}, \code{\link[flipStandardCharts]{TimeSeries}}, \code{\link[flipStandardCharts]{Venn}}, \code{\link[flipStandardCharts]{Violin}}. Spaces will automatically be stripped.
 #' @param x The data to be plotted.
 #' @param small.multiples Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).
+#' @param font.units One of "px" or "pt"
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, appends the chart data as an attribute called "ChartData".
@@ -254,7 +255,7 @@
 #' CChart("Column", x, colors = c("red", "green", "blue"), categories.title = "Categories")
 #' CChart("Bar", x, type = "Stacked", colors = grey(1:3/3), categories.title = "Categories")
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
-CChart <- function(chart.type, x, small.multiples = FALSE,
+CChart <- function(chart.type, x, small.multiples = FALSE, font.units = "px",
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -265,6 +266,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
     user.args <- substituteAxisNames(chart.function, user.args)
+    if (tolower(font.units) %in% c("pt", "points"))
+        user.args <- scaleFontSizes(user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
@@ -282,7 +285,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 #'   \code{chart.function}. It is also less agggressive in that it searches for
 #'   replacements only at the beginning of the name.
 #' @param chart.function Name of charting function
-#' @param arguments List if arguments supplied by user
+#' @param arguments List of arguments supplied by user
 substituteAxisNames <- function(chart.function, arguments)
 {
     a.names <- names(arguments)
@@ -299,6 +302,26 @@ substituteAxisNames <- function(chart.function, arguments)
         a.names <- gsub("^values", "y", a.names)
     }
     names(arguments) <- a.names
+    return(arguments)
+}
+
+#' scaleFontSizes
+#'
+#' Convert font size from pixel to point. 
+#' @details All of the charts in flipStandardChart
+#' take font sizes to be in units of pixels, however, textboxes in Displayr
+#' assumes font sizes are in units of points. This function iterates through
+#' \code{user.args} and scales all font sizes so they are in the equivalent points.
+#' Note that arguments not specified by the user are not affected.
+#' @param arguments List of arguments supplied by user
+scaleFontSizes <- function(arguments)
+{
+    ind <- which(grepl("font.size$", names(arguments)))
+    f.scale <- 1.3333
+    for (i in ind)
+    {
+        arguments[[i]] <- f.scale * arguments[[i]]
+    }
     return(arguments)
 }
 
