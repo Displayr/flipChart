@@ -14,7 +14,7 @@ test_that("JSON list (Bug DS-1608)", {
         list("sets" =  list(0, 2), "size" =  0),
         list("sets" =  list(2, 3), "size" =  50))
      out <- PrepareData("Venn", input.data.other = JSON)
-     expect_equal(JSON, out$data)
+     expect_equal(JSON, out$data, check.attributes = FALSE)
 })
 
 test_that("PrepareData: number multi",
@@ -679,6 +679,35 @@ test_that("PrepareData: input and output format of raw data",
     attr(yy, "label") <- "VarB"
     attr(y2, "label") <- "VarC"
 
+    gender <- as.factor(sample(c("Male", "Female"), 100, replace = TRUE))
+    fav.food <- as.factor(sample(c("Chocolate", "Ice cream", "Chips", "Fruit", "Nuts"), 100, replace = TRUE))
+    fav.drink <- as.factor(sample(c("Cola", "Juice", "Water"), 100, replace = TRUE))
+    attr(gender, "label") <- "Gender"
+    attr(fav.food, "label") <- "Favourite Food"
+    attr(fav.drink, "label") <- "Favourite Drink"
+
+    res1 <- PrepareData("Table", input.data.raw = list(X = list(fav.food)),
+                first.aggregate = TRUE, categorical.as.binary = TRUE)$data
+    expect_equal(rownames(res1), levels(fav.food))
+    res2 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink)),
+                first.aggregate = TRUE, categorical.as.binary = TRUE)$data
+    expect_equal(rownames(res2), c(levels(fav.food), levels(fav.drink)))
+    expect_warning(res3 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink)),
+                first.aggregate = TRUE, categorical.as.binary = FALSE)$data)
+    expect_equal(rownames(res3), c("Favourite Food", "Favourite Drink"))
+
+
+    res4 <- PrepareData("Table", input.data.raw = list(X = list(fav.food), Y = gender),
+                first.aggregate = TRUE, categorical.as.binary = TRUE)$data
+    expect_equal(rownames(res4), rownames(res1))
+    res5 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink), Y = gender),
+                first.aggregate = TRUE, categorical.as.binary = TRUE)$data
+    expect_equal(rownames(res5), rownames(res2))
+    expect_warning(res6 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink), Y = gender),
+                first.aggregate = TRUE, categorical.as.binary = FALSE)$data)
+    expect_equal(rownames(res6), rownames(res3))
+
+
     # Multiple variables in Y are concatenated
     res6 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)), tidy.labels = TRUE)
     expect_equal(dim(res6$data), c(200, 3))
@@ -763,6 +792,8 @@ test_that("PrepareData: input and output format of raw data",
                        as.percentages = TRUE, transpose = FALSE, show.labels = TRUE))
     expect_equal(res$values.title, "%")
     expect_equal(colnames(res$data), c("Y","Z"))
+
+    PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink), Y = gender))
 })
 
 
@@ -1023,9 +1054,9 @@ test_that("crosstabs from pasted data and table",{
 
 
  # Creating a crosstab - with three variables
- expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
-              "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
- zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
+# expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
+#              "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
+ #zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
  #expect_equal(zzz$data[1,1], 2)
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
@@ -1205,10 +1236,10 @@ test_that("Automatic crosstab of two input variables",
     z3 = PrepareData("Column", input.data.raw = list(X = 10:6, Y = c(1,1,1,2,2)),
                                first.aggregate = NULL, group.by.last = FALSE)
     expect_equal(z1$data, z3$data)
-    expect_warning(z <- PrepareData("Column", input.data.raw = list(X = list(A = 1:5, B = 2:6), Y = c(1,2,1,2,1))),
-                   "'Groups' variable ignored if more than one input variable is selected")
-    expect_equal(z$categories.title, "A")
-    expect_equal(z$values.title, "B")
+    #expect_warning(z <- PrepareData("Column", input.data.raw = list(X = list(A = 1:5, B = 2:6), Y = c(1,2,1,2,1))),
+    #               "'Groups' variable ignored if more than one input variable is selected")
+    #expect_equal(z$categories.title, "A")
+    #expect_equal(z$values.title, "B")
 
     # Pasted data
     zz = list(matrix(c("X", 1,2,1,1,1,"Y", 1,2,1,2,1), ncol = 2))

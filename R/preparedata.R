@@ -118,6 +118,7 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
+#' @param categorical.as.binary If data is aggregated and this is true, then categorical variables will be converted into indicator variables for each level in the factor.
 #' @param date.format One of \code{"Automatic", "US", "International" or "No date formatting"}.
 #' This is used to determine whether strings which are interpreted as dates
 #' in the (row)names will be read in the US (month-day-year) or the
@@ -196,6 +197,7 @@ PrepareData <- function(chart.type,
                         hide.empty.rows = hide.empty.rows.and.columns,
                         hide.empty.columns = hide.empty.rows.and.columns,
                         as.percentages = FALSE,
+                        categorical.as.binary = NULL,
                         date.format = "Automatic",
                         show.labels = TRUE,
                         values.title = "")
@@ -348,7 +350,8 @@ PrepareData <- function(chart.type,
         if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
             warning("The variables being crosstabbed have different lengths; ","
                     it is likely that the crosstab is invalid.")
-        data <- aggregateDataForCharting(data, weights, chart.type, crosstab)
+        data <- aggregateDataForCharting(data, weights, chart.type, 
+                    crosstab, categorical.as.binary, as.percentages)
         if (crosstab)
             group.by.last <- TRUE
     }
@@ -455,19 +458,61 @@ isScatter <- function(chart.type)
     grepl("Scatter|Bubble", chart.type)
 }
 
+crosstabOneVariable <- function(x, group, weights = NULL,
+        categorical.as.binary = FALSE, as.percentages = FALSE)
+{
+    data <- data.frame(x = x, y = group)
+    data$w <- if (is.null(weights)) rep.int(1L, NROW(data)) else weights
+    
+    if (is.numeric(x) || !categorical.as.binary)
+    {
+        data$x <- AsNumeric(data$x, binary = FALSE)
+        if (!is.null(weights))
+        {
+            data$xw <- data$x * weights
+            out <- Table(xw~y, data = data, FUN = sum)/Table(w~y, data = data, FUN = sum)
+
+        } else
+            out <- Table(x~y, data = data, FUN = mean)
+        attr(out, "statistic") <- "Average"
+    } else
+    {
+        out <- Table(w~x+y, data = data, FUN = sum)
+        if (as.percentages)
+        {
+            out <- out / sum(data$w * !is.na(data$x))
+            attr(out, "statistic") <- "%"
+
+        } else
+                attr(out, "statistic") <- "Counts"
+    }
+    return(out)
+}
+
+
+
+
+
 #' Aggregrate Raw Data For Charting
 #' @param data \code{data.frame} containing raw data
 #' @param weights numeric vector of weights
 #' @param chart.type character; type of chart to be plotted
 #' @param crosstab Aggregate using a contingency table.
+#' @param categorical.as.binary Whether to convert factors to indicator variables
+#' @param as.percentages Whether to return percentages instead of counts. 
+#'     This is only used if the chart.type is "Heat". The difference between these 
+#'     calculations is this percentage uses the number of observations in the dataframe
+#'     as the denomicator. For bar/column charts, it is computing row percentages.
 #' @return aggregated data
 #' @noRd
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom flipTransformations AsNumeric
-aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
+aggregateDataForCharting <- function(data, weights, chart.type, crosstab, 
+        categorical.as.binary, as.percentages)
 {
-    weighted <- !is.null(weights)
-    weights <- if (is.null(weights) || is.function(weights)) rep.int(1L, NROW(data)) else weights
+    if (chart.type != "Heat")
+        as.percentages <- FALSE
+
     # In tables that show aggregated tables, only the x-axis title is
     # taken from dimnames. But both names should be set in case
     # the table is transposed
@@ -479,47 +524,52 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
     }
     else if (crosstab)
     {
-        data <- as.data.frame(data)
-        k <- NCOL(data)
-        if (k > 2)
-        {
-            warning("Multiple variables have been provided. Only the first and last ",
-                    "variable have been used to create the crosstab. If you wish to ",
-                    "create a crosstab with more than two variables, you need to ",
-                    "instead add the data as a 'Data Set' instead add a 'Data Set'.")
-            data <- data[, c(1, k)]
-        }
-        data.is.numeric <- all(sapply(data[,-k], is.numeric)) # exclude grouping variable
-        tmp.names <- names(data)
-        names(data) <- c("x", "y") # temporarily set names for formula
+        if (is.null(categorical.as.binary))
+            categorical.as.binary <- TRUE
 
-        if (data.is.numeric)
+        data <- as.data.frame(data)
+        tmp.names <- names(data)
+        k <- NCOL(data)
+        group.var <- data[,k] 
+
+        if (length(unique(group.var)) < 2)
+            stop("Grouping variable must have more than one value")
+
+        if (k == 2)
         {
-            if (weighted)
-            {
-                data$w <- weights
-                data$xw <- data$x * weights
-                out <- Table(xw~y, data = data, FUN = sum)/Table(w~y, data = data, FUN = sum)
-            } else
-                out <- Table(x~y, data = data, FUN = mean)
-            attr(out, "statistic") <- "Average"
-            attr(out, "categories.title") <- tmp.names[2]
+            out <- crosstabOneVariable(data[,1], group.var, weights,
+                        categorical.as.binary, as.percentages)
+            if (attr(out, "statistic") == "Average")
+                attr(out, "categories.title") <- tmp.names[2]
+            else
+                names(dimnames(out)) <- tmp.names 
         }
         else
         {
-            data$w <- weights
-            out <- Table(w  ~  x + y, data = data, FUN = sum)
-            names(dimnames(out)) <- tmp.names
-            attr(out, "statistic") = "Counts"
+            res <- lapply(data[,-k], crosstabOneVariable, group = group.var,
+                        weights = weights, categorical.as.binary = categorical.as.binary,
+                        as.percentages = as.percentages)
+            out <- do.call("rbind", res)
+            names(dimnames(out)) <- c("", tmp.names[2])
+            attr.list <- sapply(res, function(x) attr(x, "statistic"))
+            if (all(attr.list == attr.list[1]))
+                attr(out, "statistic") <- attr.list[1]
         }
     }
-    else
+    else # first.aggregate
     {
-        if (!is.matrix(data) && !is.numeric(data))
-            data <- coerceToDataFrame(data)
+        if (is.null(categorical.as.binary))
+            categorical.as.binary <- FALSE
+    
+        if (categorical.as.binary)
+        {
+            tmp.dat <- data
+            tmp.names <- colnames(data)
+            tmp.numeric <- sapply(data, is.numeric)
+        }
         if (is.data.frame(data))
-            data <- AsNumeric(data, binary = FALSE)
-        if (weighted)
+            data <- AsNumeric(data, binary = categorical.as.binary)
+        if (!is.null(weights))
         {
             xw <- sweep(data, 1, weights, "*")
             sum.xw <- apply(xw, 2, sum, na.rm = TRUE)
@@ -529,7 +579,25 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab)
             out <- sum.xw / sum.w
         } else
            out <- apply(data, 2, mean, na.rm = TRUE)
-        attr(out, "statistic") <- "Average"
+
+        if (categorical.as.binary && any(!tmp.numeric))
+        {
+            ind <- which(!tmp.numeric)
+            for (ii in ind)
+            {
+                tmp.pos <- grep(paste0("^", tmp.names[ii]), names(out))
+                names(out)[tmp.pos] <- levels(tmp.dat[[ii]])
+            }
+        }
+        out <- as.matrix(out)
+
+        # If ANY of the variables have been converted to percentages
+        # label 'statistic' attribute to prevent mixed summary
+        # statistics from being summed
+        if (categorical.as.binary && any(!tmp.numeric))
+            attr(out, "statistic") <- "%"
+        else if (!categorical.as.binary || all(tmp.numeric))
+            attr(out, "statistic") <- "Average"
     }
     attr(out, "assigned.rownames") <- TRUE
     out
@@ -559,8 +627,9 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # This is possible in Q5.1.2
     if (chart.type != "Scatter" && !is.null(x$Y) && is.list(x$X) && length(x$X) > 1)
     {
-        warning("'Groups' variable ignored if more than one input variable is selected.")
-        x$Y <- NULL
+        #x$X <- data.frame(x$X, Y = x$Y) 
+        #warning("'Groups' variable ignored if more than one input variable is selected.")
+        #x$Y <- NULL
     }
 
     # Check that input data is of the same length
@@ -962,6 +1031,8 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
             data <- data / sum(data, na.rm = TRUE)
+        else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic")))) 
+            data <- data
         else
             data <- asPercentages(data)
     }
@@ -1262,8 +1333,8 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
     ncols <- sapply(input.data.raw, NCOL)
     if (any(ncols != 1))
         return(FALSE)
-    if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
-        return(FALSE)
+    #if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
+    #    return(FALSE)
     return(nms == c("X", "Y"))
 }
 

@@ -25,8 +25,8 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   split = "[;,]", hide.empty.rows.and.columns = TRUE,
   hide.empty.rows = hide.empty.rows.and.columns,
   hide.empty.columns = hide.empty.rows.and.columns,
-  as.percentages = FALSE, date.format = "Automatic",
-  show.labels = TRUE, values.title = "")
+  as.percentages = FALSE, categorical.as.binary = NULL,
+  date.format = "Automatic", show.labels = TRUE, values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -187,6 +187,8 @@ in the case of percentages, that a row or column contains only
 \item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the
 output table are given as percentages summing to 100. If \code{FALSE},
 column sums are given.}
+
+\item{categorical.as.binary}{If data is aggregated and this is true, then categorical variables will be converted into indicator variables for each level in the factor.}
 
 \item{date.format}{One of \code{"Automatic", "US", "International" or "No date formatting"}.
 This is used to determine whether strings which are interpreted as dates
