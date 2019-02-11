@@ -564,7 +564,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
         if (categorical.as.binary)
         {
             tmp.dat <- data
-            tmp.names <- colnames(data)
+            tmp.names <- Names(data)
             tmp.numeric <- sapply(data, is.numeric)
         }
         if (is.data.frame(data))
