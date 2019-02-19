@@ -423,6 +423,7 @@ PrepareData <- function(chart.type,
         tmp <- attr(data, "statistic")
         data <- as.matrix(data)
         attr(data, "statistic") <- tmp
+        class(data) <- c("ChartTable", class(data))
     }
 
     list(data = data,
@@ -433,6 +434,29 @@ PrepareData <- function(chart.type,
          chart.footer = attr(data, "footer"),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
+
+#' @method print ChartTable
+#' @export 
+print.ChartTable <- function(x, ...)
+{
+    y <- as.matrix(x)
+    tmp.row <- NROW(x)
+    tmp.col <- NCOL(x)
+    tmp.names <- dimnames(y)
+    class(y) <- "matrix"
+    y.stat <- attr(x, "statistic")
+    if (!is.null(y.stat) && grepl("%$", y.stat))
+    {
+        y <- matrix(paste0(sprintf("%3.0f", y * 100), "%"), 
+                    tmp.row, tmp.col, dimnames = tmp.names)
+        attr(y, "statistic") <- "%"
+        print(y)
+    }
+    else
+        print(y)
+}
+
+
 
 #' Handle input of table or tables
 #' @noRd
