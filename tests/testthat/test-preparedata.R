@@ -1052,18 +1052,17 @@ test_that("crosstabs from pasted data and table",{
                   first.aggregate = TRUE, group.by.last = FALSE)
  expect_equal(as.numeric(zz$data), c(2, 1.5))
 
-
- # Creating a crosstab - with three variables
-# expect_warning(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE),
-#              "Multiple variables have been provided. Only the first and last variable have been used to create the crosstab. If you wish to create a crosstab with more than two variables, you need to instead add the data as a 'Data Set' instead add a 'Data Set'.")
- #zzz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE))
- #expect_equal(zzz$data[1,1], 2)
  # Creating a crosstab with two variables
  zz = PrepareData("Column", input.data.raw = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
- #expect_equal(zz$data[1,1], 2)
- # Creating a crosstab with two variables
+ expect_equal(zz$data, c('1' = 1.5, '2' = 1.5), check.attributes = FALSE)
  zz = PrepareData("Column", input.data.pasted = list(z[, -2]), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
- #expect_equal(zz$data[1,1], 2)
+ expect_equal(zz$data, c('1' = 1.5, '2' = 1.5), check.attributes = FALSE)
+
+ # Creating a crosstab with three variables
+ z = matrix(c(1,1,1,1,2,2,2,2,rep(4,8), 1,1,2,2,1,1,2,2), ncol = 3, dimnames = list(1:8, LETTERS[1:3]))
+ zz = PrepareData("Column", input.data.raw = list(z), as.percentages = FALSE, first.aggregate = TRUE, group.by.last = TRUE)
+ expect_equal(rownames(zz$data), LETTERS[1:2])
+
 })
 
 test_that("PrepareData, automatic rownames",
