@@ -1304,12 +1304,13 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
             tmp.vec <- x[, 1]
             names(tmp.vec) <- rownames(x)
             attr(tmp.vec, "statistic") <- attr(x, "statistic")
+            attr(tmp.vec, "questions") <- attr(x, "questions")
             attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
             attr(tmp.vec, "values.title") <- attr(x, "values.title")
             x <- tmp.vec
         }
         else
-            x <- drop(x)
+            x <- CopyAttributes(drop(x), x)
     }
     x
 }

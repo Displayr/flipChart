@@ -1573,3 +1573,21 @@ test_that("PrepareData: Data frame with country names",
     expect_equal(attr(res$data, "statistic"), "%")
 })
 
+test_that("Question attribute is not accidently dropped",
+{
+    tb <- structure(c(86.5979381443299, 84.8130841121495, 80.3446075303127,
+80.2355303998539, 79.6610169491525, 79.3420416061926, 78.9456252800561,
+77.970592923175, 76.4833261152014, 74.2729306487696, 72.7629773340273,
+70.7792207792208, 68.0959302325581, 66.887417218543, 63.6178861788618,
+63.013698630137), .Dim = c(16L, 1L), statistic = "Row %", .Dimnames = list(
+    c("Pantry", "Hospital", "Private Club/Event", "School", "Kiosk/Vending",
+    "Daycare/Assisted Living", "Restaurants", "NET", "Specialty Food Store",
+    "Other", "Grocery", "Retail Store", "Mobile Food", "Gas Station",
+    "Wholesale", "Bar"), "Overall Pass Rate"), name = "table.Facility.Type.Coded1.by.Pass", questions = c("Facility Type - Coded1",
+"Pass"))
+    expect_error(res <- PrepareData("Column", input.data.table = tb), NA)
+    expect_equal(attr(res$data, "questions"), c("Facility Type - Coded1", "Pass"))
+    expect_equal(res$data[1], c(Pantry = 0.865979381443299))
+})
+
+
