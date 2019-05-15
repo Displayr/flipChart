@@ -189,6 +189,14 @@ test_that("Automatic ordering",
     expect_equal(dim(res$data), c(8, 19, 2))
 })
 
+test_that("Preseve column name if SelectColumns is used",
+{
+    expect_warning(res <- PrepareData("Column", input.data.table = tabWithN, select.columns = "Never", tidy = TRUE),
+        "Multiple statistics detected")
+    expect_equal(dim(res$data), c(9, 1))
+})
+
+
 data("EuStockMarkets")
 test_that("Time series object",
 {

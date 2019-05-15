@@ -368,7 +368,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-    data <- transformTable(data, chart.type, multiple.tables, tidy,
+    drop <- tidy && sum(nchar(select.columns), na.rm = TRUE) == 0
+    data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
                    transpose, group.by.last || first.aggregate,
@@ -394,7 +395,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
-    data <- setAxisTitles(data, chart.type, tidy, values.title)
+    data <- setAxisTitles(data, chart.type, drop, values.title)
     values.title <- attr(data, "values.title")
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL
@@ -910,6 +911,7 @@ transformTable <- function(data,
                            chart.type,
                            multiple.tables,
                            tidy,
+                           drop,
                            is.raw.data,
                            hide.output.threshold,
                            hide.rows.threshold, hide.columns.threshold,
@@ -924,6 +926,7 @@ transformTable <- function(data,
         for (i in seq_along(data))
             data[[i]] = transformTable(data[[i]],
                                        chart.type,
+                                       FALSE,
                                        FALSE,
                                        FALSE,
                                        is.raw.data,
@@ -962,7 +965,7 @@ transformTable <- function(data,
     }
 
     # Set axis names before dropping dimensions (but AFTER transpose)
-    data <- setAxisTitles(data, chart.type, tidy)
+    data <- setAxisTitles(data, chart.type, drop)
     if (chart.type == "Scatter" && is.null(dim(data)))
     {
         tmp.names <- names(data)
@@ -1269,7 +1272,7 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     return(x)
 }
 
-setAxisTitles <- function(x, chart.type, tidy, values.title = "")
+setAxisTitles <- function(x, chart.type, drop, values.title = "")
 {
     if (isScatter(chart.type))
     {
@@ -1296,7 +1299,7 @@ setAxisTitles <- function(x, chart.type, tidy, values.title = "")
         attr(x, "values.title") <- values.title
     if (is.null(attr(x, "values.title")))
         attr(x, "values.title") <- ""
-    if (tidy && !is.data.frame(x) && !chart.type %in% c("Scatter", "Table", "Heat"))
+    if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Table", "Heat"))
     {
         # only drop 1 dimension from a 2d matrix
         if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)
