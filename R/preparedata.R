@@ -1299,7 +1299,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
         attr(x, "values.title") <- values.title
     if (is.null(attr(x, "values.title")))
         attr(x, "values.title") <- ""
-    if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Table", "Heat"))
+    if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Heat"))
     {
         # only drop 1 dimension from a 2d matrix
         if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)

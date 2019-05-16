@@ -1590,4 +1590,16 @@ test_that("Question attribute is not accidently dropped",
     expect_equal(res$data[1], c(Pantry = 0.865979381443299))
 })
 
-
+test_that("Dimensions are dropped consistently",
+{
+    pasted1d <- list(structure(c("", "", "", "", "", "", "", "", "", "", "",
+    "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+    "50 to 54", "55 to 64", "65 or more", "", "13.45565749", "11.9266055",
+    "10.09174312", "11.00917431", "10.70336391", "8.256880734", "12.2324159",
+    "15.59633028", "6.727828746"), .Dim = c(10L, 3L)), FALSE, NULL,
+        NULL)
+    res1 <- PrepareData("Column", input.data.pasted = pasted1d)
+    res2 <- PrepareData("Table", input.data.pasted = pasted1d)
+    expect_equal(length(dim(res1$data)), 0)
+    expect_equal(length(dim(res2$data)), 0)
+})
