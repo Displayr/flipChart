@@ -1613,3 +1613,23 @@ test_that("Dimensions are dropped consistently",
     expect_equal(length(dim(res1$data)), 0)
     expect_equal(length(dim(res2$data)), 0)
 })
+
+
+test_that("Axis and Series names are both preserved",
+{
+    dat <- list(X = list(`Variable A` = structure(c(0.287577520124614, 0.788305135443807,
+    0.323344993172213, 0.835255319951102, 0.143817043630406, 0.192815946880728,
+    0.896738682640716, 0.308119554305449, 0.363300543511286, 0.783946478739381
+    ), questiontype = "Number", name = "v1", label = "Variable A", question = "Variable A"),
+    `Variable B` = structure(c(0.386757359839976, 0.0355316237546504,
+    0.837338316719979, 1.43576909322292, 1.4850782644935, 1.74399764742702,
+    1.58644833555445, 0.0457093669101596, 0.833829099312425,
+    1.74976477492601), questiontype = "Number", name = "v2", label = "Variable B", question = "Variable B")),
+    Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    filt <- structure(rep(c(0, 1), length = 10), label = "Filter ABC")
+
+    pd <- PrepareData("Column", input.data.raw = dat, subset = filt)
+    expect_equal(pd$categories.title, "Variable A")
+    expect_equal(pd$values.title, "Variable B")
+    expect_equal(colnames(pd$data), "Filter ABC")
+})
