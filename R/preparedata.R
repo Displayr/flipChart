@@ -396,6 +396,11 @@ PrepareData <- function(chart.type,
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
     data <- setAxisTitles(data, chart.type, drop, values.title)
+    if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && length(dim(data)) == 0)
+    {
+        data <- as.matrix(data)
+        colnames(data) <- attr(subset, "label")
+    }
     values.title <- attr(data, "values.title")
     categories.title <- attr(data, "categories.title")
     attr(data, "values.title") <- NULL

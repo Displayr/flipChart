@@ -217,6 +217,13 @@ test_that("PrepareData: raw data with labels",
     expect_equal(dim(pp$data), c(10, 2))
     expect_equal(pp$categories.title, "Date")
     expect_error(CChart("Time Series", pp$data), NA)
+
+    filt <- rep(c(0, 1), 5)
+    attr(filt, "label") <- "Every second day"
+    pp <- PrepareData("TimeSeries", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10)),
+        subset = filt)
+    expect_equal(dim(pp$data), c(5, 1))
+    expect_equal(colnames(pp$data), "Every second day")
 })
 
 test_that("PrepareData: crappy input to crappy data",
@@ -894,6 +901,9 @@ test_that("Basic crosstab input",{
                       transpose = TRUE, first.aggregate = TRUE))
     expect_equal( dim(as.matrix(pd$data)), 2:1)
 
+    filt <- structure(rep(c(0,0,1), length = nrow(colas)), label = "Random subset")
+    pd <- PrepareData("Column", input.data.raw = list(X=colas$d1), first.aggregate = T, subset = filt)
+    expect_equal(colnames(pd$data), "Random subset")
 
     set.seed(123456)
     yy <- table(rpois(20, 5))
