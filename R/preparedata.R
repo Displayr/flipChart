@@ -350,7 +350,7 @@ PrepareData <- function(chart.type,
         if (crosstab && !is.null(attr(data, "InvalidVariableJoining")))
             warning("The variables being crosstabbed have different lengths; ","
                     it is likely that the crosstab is invalid.")
-        data <- aggregateDataForCharting(data, weights, chart.type, 
+        data <- aggregateDataForCharting(data, weights, chart.type,
                     crosstab, categorical.as.binary, as.percentages)
         if (crosstab)
             group.by.last <- TRUE
@@ -395,7 +395,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
-    if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1)
+    if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
+        chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
         data <- as.matrix(data)
         colnames(data) <- attr(subset, "label")
@@ -471,7 +472,7 @@ crosstabOneVariable <- function(x, group, weights = NULL,
 {
     data <- data.frame(x = x, y = group)
     data$w <- if (is.null(weights)) rep.int(1L, NROW(data)) else weights
-    
+
     if (is.numeric(x) || !categorical.as.binary)
     {
         data$x <- AsNumeric(data$x, binary = FALSE)
@@ -507,15 +508,15 @@ crosstabOneVariable <- function(x, group, weights = NULL,
 #' @param chart.type character; type of chart to be plotted
 #' @param crosstab Aggregate using a contingency table.
 #' @param categorical.as.binary Whether to convert factors to indicator variables
-#' @param as.percentages Whether to return percentages instead of counts. 
-#'     This is only used if the chart.type is "Heat". The difference between these 
+#' @param as.percentages Whether to return percentages instead of counts.
+#'     This is only used if the chart.type is "Heat". The difference between these
 #'     calculations is this percentage uses the number of observations in the dataframe
 #'     as the denomicator. For bar/column charts, it is computing row percentages.
 #' @return aggregated data
 #' @noRd
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom flipTransformations AsNumeric
-aggregateDataForCharting <- function(data, weights, chart.type, crosstab, 
+aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
         categorical.as.binary, as.percentages)
 {
     if (chart.type != "Heat")
@@ -538,7 +539,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
         data <- as.data.frame(data)
         tmp.names <- names(data)
         k <- NCOL(data)
-        group.var <- data[,k] 
+        group.var <- data[,k]
 
         if (length(unique(group.var)) < 2)
             stop("Grouping variable must have more than one value")
@@ -550,7 +551,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
             if (attr(out, "statistic") == "Average")
                 attr(out, "categories.title") <- tmp.names[2]
             else
-                names(dimnames(out)) <- tmp.names 
+                names(dimnames(out)) <- tmp.names
         }
         else
         {
@@ -568,7 +569,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
     {
         if (is.null(categorical.as.binary))
             categorical.as.binary <- FALSE
-    
+
         if (categorical.as.binary)
         {
             tmp.dat <- data
@@ -635,7 +636,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # This is possible in Q5.1.2
     if (chart.type != "Scatter" && !is.null(x$Y) && is.list(x$X) && length(x$X) > 1)
     {
-        #x$X <- data.frame(x$X, Y = x$Y) 
+        #x$X <- data.frame(x$X, Y = x$Y)
         #warning("'Groups' variable ignored if more than one input variable is selected.")
         #x$Y <- NULL
     }
@@ -1041,7 +1042,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
             data <- data / sum(data, na.rm = TRUE)
-        else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic")))) 
+        else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
             data <- data
         else
             data <- asPercentages(data)

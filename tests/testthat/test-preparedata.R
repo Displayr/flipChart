@@ -213,14 +213,14 @@ test_that("PrepareData: pasted raw data",
 
 test_that("PrepareData: raw data with labels",
 {
-    pp <- PrepareData("TimeSeries", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10, B=2:11)))
+    pp <- PrepareData("Time Series", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10, B=2:11)))
     expect_equal(dim(pp$data), c(10, 2))
     expect_equal(pp$categories.title, "Date")
     expect_error(CChart("Time Series", pp$data), NA)
 
     filt <- rep(c(0, 1), 5)
     attr(filt, "label") <- "Every second day"
-    pp <- PrepareData("TimeSeries", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10)),
+    pp <- PrepareData("Time Series", input.data.raw = list(X = list(Date=Sys.Date()+1:10, A=1:10)),
         subset = filt)
     expect_equal(dim(pp$data), c(5, 1))
     expect_equal(colnames(pp$data), "Every second day")
@@ -1632,4 +1632,24 @@ test_that("Axis and Series names are both preserved",
     expect_equal(pd$categories.title, "Variable A")
     expect_equal(pd$values.title, "Variable B")
     expect_equal(colnames(pd$data), "Filter ABC")
+
+    dat2 <- list(X = list(`How many SMS sent in typical week` = structure(c(2,
+        10, 10, 50, 10, 15, 3, 0, 5, 0, NA, 6, 1, 0, 35, 0, 20, 15, 0,
+        20, 10, 10, 30, 0, 0, 0, 12, 0, 20, 0, 0, 30, 0, 2, 5, 0, 20,
+        100, 70, 0, 4, NA, 10, 8, 50, 0, 0, 35, 30, 10, 0, 0, 30, 20,
+        2, 15, 25, 20, 2, 10, 20, 2, 15, 30, 20, 0, 50, 2, 70, 10, 20,
+        1, 3, 10, 7, 10, 3, 5, NA, 1, 10, NA, NA, 40, 20, 20, 5, 30,
+        6, 1, NA, 10, 15, 0, 5, 0, 0, 3, 2, 4, 20, 50, 12, 10, 6, 0,
+        1, 10, 5, 1, 40, 30, 0, 20, 0, 0, 8, 30, 20, 21, 15, 3, 0, 0,
+        48, 30, 20, 25, 0, 0, 10, 30, 0, 70, 0, 10, 5, 10, 10, 0, 5,
+        10, 2, 10, 5, 5, 30, 15, 15, 0, 0, 0, 2, 15, 6), questiontype = "Number",
+        name = "q25", label = "How many SMS sent in typical week",
+        question = "How many SMS sent in typical week")),
+        Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    filt2 <- structure(rep(c(0, 1, 1), length = length(dat2$X[[1]])), label = "More random numbers")
+    pd <- PrepareData("Histogram", input.data.raw = dat2, subset = filt2)
+    expect_equal(attr(pd$data[[1]], "label"), "How many SMS sent in typical week")
+
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = dat2, subset = filt2))
+    expect_equal(length(pd$scatter.variable.indices), 5)
 })
