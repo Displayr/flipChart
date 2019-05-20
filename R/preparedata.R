@@ -398,7 +398,7 @@ PrepareData <- function(chart.type,
     if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
-        data <- as.matrix(data)
+        data <- CopyAttributes(as.matrix(data), data)
         colnames(data) <- attr(subset, "label")
         drop <- FALSE
     }

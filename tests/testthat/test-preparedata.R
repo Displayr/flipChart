@@ -1633,6 +1633,33 @@ test_that("Axis and Series names are both preserved",
     expect_equal(pd$values.title, "Variable B")
     expect_equal(colnames(pd$data), "Filter ABC")
 
+    dat1 <- list(X = list(Age = structure(c(2L, 6L, 8L, 8L, 4L, 9L, 6L, 3L,
+        9L, 9L, 5L, 9L, 1L, 9L, 5L, 8L, 8L, 8L, 7L, 8L, 2L, 8L, 1L, 4L,
+        2L, 9L, 5L, 6L, 4L, 1L, 2L, 5L, 4L, 5L, 8L, 4L, 2L, 4L, 2L, 6L,
+        5L, 6L, 6L, 8L, 1L, 2L, 9L, 6L, 7L, 8L, 9L, 8L, 3L, 5L, 4L, 6L,
+        8L, 4L, 5L, 6L, 4L, 8L, 4L, 7L, 7L, 4L, 2L, 3L, 3L, 7L, 1L, 7L,
+        2L, 8L, 8L, 4L, 9L, 6L, 6L, 8L, 3L, 3L, 4L, 7L, 8L, 3L, 2L, 4L,
+        8L, 7L, 8L, 3L, 8L, 3L, 6L, 5L, 6L, 5L, 6L, 2L, 4L, 5L, 5L, 1L,
+        5L, 3L, 1L, 5L, 6L, 3L, 3L, 6L, 7L, 5L, 8L, 9L, 3L, 1L, 1L, 7L,
+        3L, 9L, 6L, 1L, 8L, 8L, 8L, 1L, 1L, 1L, 3L, 9L, 6L, 5L, 4L, 5L,
+        7L, 4L, 2L, 5L, 2L, 4L, 2L, 1L, 1L, 9L, 3L, 1L, 7L, 5L, 8L, 3L,
+        1L, 1L, 3L, 9L, 5L, 1L, 5L, 1L, 1L, 9L, 4L, 1L, 7L, 1L, 1L, 3L,
+        2L, 2L, 2L, 6L, 4L, 8L, 7L, 7L, 8L, 5L, 2L, 5L, 4L, 8L, 5L, 4L,
+        5L, 2L, 8L, 8L, 1L, 3L, 5L, 9L, 8L, 3L, 6L, 7L, 3L, 8L, 8L, 8L,
+        1L, 2L, 5L, 7L, 9L, 2L, 3L, 4L, 2L, 9L, 9L, 5L, 9L, 1L, 7L, 8L,
+        1L, 8L, 7L, 8L, 8L, 1L, 6L, 8L, 5L, 7L, 5L, 7L, 4L, 8L, 2L, 9L,
+        6L, 7L, 5L, 8L, 6L, 4L, 7L, 7L, 2L, 9L, 6L, 7L, 8L, 9L, 2L, 3L,
+        3L, 8L, 8L, 7L, 5L, 5L, 4L, 2L, 4L, 7L, 1L, 2L, 8L, 4L, 7L, 7L,
+        4L, 2L, 3L, 3L, 7L, 3L, 3L, 7L), class = "factor", .Label = c("18 to 24",
+        "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54",
+        "55 to 64", "65 or more"), questiontype = "PickOne", name = "d1", label = "Age", question = "Age")),
+    Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    filt1 <- structure(rep(c(0, 1), length = length(dat1$X[[1]])), label = "Another random filter")
+    pd <- PrepareData("Column", input.data.raw = dat1, first.aggregate = TRUE, subset = filt1)
+    expect_equal(colnames(pd$data), "Another random filter")
+    expect_equal(pd$values.title, "Count")
+    expect_equal(pd$categories.title, "Age")
+
     dat2 <- list(X = list(`How many SMS sent in typical week` = structure(c(2,
         10, 10, 50, 10, 15, 3, 0, 5, 0, NA, 6, 1, 0, 35, 0, 20, 15, 0,
         20, 10, 10, 30, 0, 0, 0, 12, 0, 20, 0, 0, 30, 0, 2, 5, 0, 20,
