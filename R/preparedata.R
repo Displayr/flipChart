@@ -368,7 +368,9 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-    drop <- tidy && sum(nchar(select.columns), na.rm = TRUE) == 0
+    # Do not drop 1-column table to keep name for legend
+    drop <- tidy && !(sum(nchar(select.columns), na.rm = TRUE) > 0 &&
+        (chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -398,6 +400,7 @@ PrepareData <- function(chart.type,
     if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
+        # Do not drop 1-column table (from aggregated data) to keep name for legend
         data <- CopyAttributes(as.matrix(data), data)
         colnames(data) <- attr(subset, "label")
         drop <- FALSE
@@ -459,7 +462,7 @@ unlistTable <- function(x)
         return(x)
 }
 
-.isTableList <- function(x){class(x) == "list" && !is.data.frame(x) && is.list(x) && length(x) > 1 &&
+.isTableList <- function(x){"list" %in% class(x) && !is.data.frame(x) && is.list(x) && length(x) > 1 &&
                             (is.matrix(x[[1]]) || is.data.frame(x[[1]]) || is.numeric(x[[1]]))}
 
 isScatter <- function(chart.type)
@@ -740,7 +743,7 @@ processInputData <- function(x, subset, weights)
         warning("Weights have not been used. They can only be applied to variables and questions")
 
     # Handle list of tables
-    if (class(x) == "list" && is.list(x) && !is.data.frame(x))
+    if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
     {
         if (length(x) == 1)
             x <- x[[1]]
@@ -1347,7 +1350,7 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
         return(FALSE)
     #if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
     #    return(FALSE)
-    return(nms == c("X", "Y"))
+    return(all(nms == c("X", "Y")))
 }
 
 hasUserSuppliedRownames <- function(data)

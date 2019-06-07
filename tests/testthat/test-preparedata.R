@@ -1612,6 +1612,26 @@ test_that("Dimensions are dropped consistently",
     res2 <- PrepareData("Table", input.data.pasted = pasted1d)
     expect_equal(length(dim(res1$data)), 0)
     expect_equal(length(dim(res2$data)), 0)
+
+    tab2d <- structure(c(7, 15.5, 15.5, 22, 20.5, 18, 1.5, 100, 11, 16.5,
+        17, 17, 17, 21.5, 0, 100, 33.3333333333333, 0, 33.3333333333333,
+        0, 0, 0, 33.3333333333333, 100, 9.18114143920596, 15.8808933002481,
+        16.3771712158809, 19.3548387096774, 18.6104218362283, 19.6029776674938,
+        0.992555831265509, 100), statistic = "Column %", .Dim = c(8L,
+        4L), .Dimnames = list(c("15 to 24 years", "25 to 34 years", "35 to 44 years",
+        "45 to 54 years", "55 to 64 years", "65 years and over", "Under 15 years",
+        "NET"), c("Female", "Male", "Other / Prefer not to say", "NET"
+        )), name = "table.Q3.What.is.your.age.by.Q1.Are.you.", questions = c("Q3. What is your age?",
+        "Q1. Are you..."))
+
+    res1 <- PrepareData("Column", input.data.table = tab2d, select.columns = "Female")
+    expect_equal(dim(res1$data), c(7, 1))
+
+    res2 <- PrepareData("Pie", input.data.table = tab2d, select.columns = "Female")
+    expect_equal(length(res2$data), 7)
+
+    res3 <- PrepareData("Pie", input.data.table = tab2d, select.columns = "Female", tidy = FALSE)
+    expect_equal(dim(res3$data), c(7, 1))
 })
 
 
