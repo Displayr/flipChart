@@ -905,6 +905,9 @@ test_that("Basic crosstab input",{
     pd <- PrepareData("Column", input.data.raw = list(X=colas$d1), first.aggregate = T, subset = filt)
     expect_equal(colnames(pd$data), "Random subset")
 
+    pd <- PrepareData("Donut", input.data.raw = list(X=colas$d1), first.aggregate = T, subset = filt)
+    expect_true(is.null(dim(pd$data)))
+
     set.seed(123456)
     yy <- table(rpois(20, 5))
     ylen <- length(yy)
