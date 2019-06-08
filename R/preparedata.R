@@ -742,18 +742,15 @@ processInputData <- function(x, subset, weights)
     if (length(weights) > 0)
         warning("Weights have not been used. They can only be applied to variables and questions")
 
-    # Try to use S3 method to extract data
-    if (!all(class(x) == "list"))
-        x <- ExtractChartData(x)
-
     # Handle list of tables
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
     {
         if (length(x) == 1)
             x <- x[[1]]
-        else
-            return(x)
     }
+
+    # Try to use S3 method to extract data
+    x <- ExtractChartData(x)
 
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
