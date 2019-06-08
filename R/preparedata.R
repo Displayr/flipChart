@@ -370,7 +370,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # Do not drop 1-column table to keep name for legend
     drop <- tidy && !(sum(nchar(select.columns), na.rm = TRUE) > 0 &&
-        (chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))
+        (chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -398,7 +398,7 @@ PrepareData <- function(chart.type,
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
     if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
-        chart.type %in% c("Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
+        chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
         # Do not drop 1-column table (from aggregated data) to keep name for legend
         data <- CopyAttributes(as.matrix(data), data)
@@ -742,6 +742,9 @@ processInputData <- function(x, subset, weights)
     if (length(weights) > 0)
         warning("Weights have not been used. They can only be applied to variables and questions")
 
+    # Try to use S3 method to extract data
+    x <- ExtractChartData(x)
+
     # Handle list of tables
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
     {
@@ -750,9 +753,6 @@ processInputData <- function(x, subset, weights)
         else
             return(x)
     }
-
-    # Try to use S3 method to extract data
-    x <- ExtractChartData(x)
 
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
