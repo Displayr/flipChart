@@ -743,7 +743,8 @@ processInputData <- function(x, subset, weights)
         warning("Weights have not been used. They can only be applied to variables and questions")
 
     # Try to use S3 method to extract data
-    x <- ExtractChartData(x)
+    if (!all(class(x) == "list"))
+        x <- ExtractChartData(x)
 
     # Handle list of tables
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
