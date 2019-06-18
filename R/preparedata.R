@@ -368,6 +368,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
+    if (isTRUE(transpose) && isScatter(chart.type) && scatter.mult.yvals)
+    {
+        warning("Data was not transposed. This option is incompatible with 'y-values in multiple columns'")
+        transpose <- FALSE
+    }
+
     # Do not drop 1-column table to keep name for legend
     drop <- tidy && !(sum(nchar(select.columns), na.rm = TRUE) > 0 &&
         (chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))

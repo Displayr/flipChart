@@ -722,6 +722,10 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
 
+    expect_warning(res7 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)),
+        tidy.labels = TRUE, transpose = TRUE))
+    expect_equal(res6$data, res7$data)
+
     # Duplicated variables
     res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE,
                         hide.empty.rows = FALSE, hide.empty.columns = FALSE)
