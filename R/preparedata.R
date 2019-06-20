@@ -1388,13 +1388,17 @@ tidyLabels <- function(data, chart.type)
         if (!IsDateTime(orig.names))
         {
             tmp <- ExtractCommonPrefix(orig.names)
-            if (vertical.chart)
-                colnames(data) <- tmp$shortened.labels
-            else
+            if (!is.na(tmp$common.prefix))
             {
-                rownames(data) <- tmp$shortened.labels
-                if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
-                    attr(data, "categories.title") <- tmp$common.prefix
+                warning(sprintf("'%s' has been removed from labels. To turn off de-select 'DATA MANIPULATION > Tidy labels'", tmp$common.prefix))
+                if (vertical.chart)
+                    colnames(data) <- tmp$shortened.labels
+                else
+                {
+                    rownames(data) <- tmp$shortened.labels
+                    if (is.null(attr(data, "categories.title")))
+                        attr(data, "categories.title") <- tmp$common.prefix
+                }
             }
         }
     }
@@ -1403,9 +1407,13 @@ tidyLabels <- function(data, chart.type)
         if (!IsDateTime(names(data)))
         {
             tmp <- ExtractCommonPrefix(names(data))
-            names(data) <- tmp$shortened.labels
-            if (is.null(attr(data, "categories.title")) && !is.na(tmp$common.prefix))
-                attr(data, "categories.title") <- tmp$common.prefix
+            if (!is.na(tmp$common.prefix))
+            {
+                warning(sprintf("'%s' has been removed from labels. To turn off de-select 'DATA MANIPULATION > Tidy labels'", tmp$common.prefix))
+                names(data) <- tmp$shortened.labels
+                if (is.null(attr(data, "categories.title")))
+                    attr(data, "categories.title") <- tmp$common.prefix
+            }
         }
     }
     data

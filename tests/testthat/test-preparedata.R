@@ -1393,23 +1393,25 @@ test_that("Tidy labels",
 
     mat.string <- structure(c(1, 2, 3, 4, 5, 2.2, 4.7, 3.1, 5, 6.2), .Dim = c(5L,
 2L), .Dimnames = list(c("Row 1", "Row 2", "Row 3", "Row 4", "Row 5"), NULL))
-    res <- PrepareData("Table", input.data.table = mat.string, tidy.labels = TRUE)
+    expect_warning(res <- PrepareData("Table", input.data.table = mat.string, tidy.labels = TRUE),
+        "'Row' has been removed from labels.")
     expect_equal(res$categories.title, "Row")
 
     pst <- structure(c("Q1 - A", "1", "2", "3", "4", "5", "2", "5", "7",
         "5", "", "Q1 - B", "0", "0", "0", "0", "5", "8", "7", "1", "2",
         "1", "Q1 - C", "9", "9", "9", "9", "7", "7", "6", "", "", ""),
         .Dim = c(11L, 3L))
-    res <- PrepareData("Density", input.data.pasted=list(pst, FALSE), tidy.labels = TRUE)
+    expect_warning(res <- PrepareData("Density", input.data.pasted=list(pst, FALSE), tidy.labels = TRUE),
+        "'Q1' has been removed from labels.")
     expect_equal(colnames(res$data), c('A','B','C'))
 
     datL <- list('Q1 - A' = rnorm(20), 'Q1 - B' = rnorm(30), 'Q1 - C' = rnorm(30))
-    resL <- PrepareData("Density", input.data.table = datL, tidy.labels = TRUE)
+    expect_warning(resL <- PrepareData("Density", input.data.table = datL, tidy.labels = TRUE))
     expect_equal(names(resL$data), c('A','B','C'))
 
     datV = list('Q1 - A' = rbinom(10, 1, 0.5), 'Q1 - B' = rbinom(10, 1, 0.2),
                 'Q1 - C' = rbinom(10, 1, 0.9))
-    resV = PrepareData("Venn", input.data.raw = datV, tidy.labels = TRUE)
+    expect_warning(resV <- PrepareData("Venn", input.data.raw = datV, tidy.labels = TRUE))
     expect_equal(colnames(resV$data), c('A','B','C'))
 })
 
