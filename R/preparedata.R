@@ -368,9 +368,9 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
-    if (isTRUE(transpose) && isScatter(chart.type) && scatter.mult.yvals)
+    if (isTRUE(transpose) && isScatter(chart.type))
     {
-        warning("Data was not transposed. This option is incompatible with 'y-values in multiple columns'")
+        warning("Data was not transposed. This option is incompatible with Scatter charts")
         transpose <- FALSE
     }
 
