@@ -4,7 +4,8 @@
 \alias{CChart}
 \title{Creates charts}
 \usage{
-CChart(chart.type, x, small.multiples = FALSE, font.units = "px", ...,
+CChart(chart.type, x, small.multiples = FALSE,
+  multi.color.series = FALSE, font.units = "px", ...,
   warn.if.no.match = TRUE, append.data = FALSE)
 }
 \arguments{
@@ -13,6 +14,8 @@ CChart(chart.type, x, small.multiples = FALSE, font.units = "px", ...,
 \item{x}{The data to be plotted.}
 
 \item{small.multiples}{Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).}
+
+\item{multi.color.series}{Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.}
 
 \item{font.units}{One of "px" or "pt"}
 

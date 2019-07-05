@@ -3,6 +3,7 @@
 #' @param chart.type The name of plot to create, e.g \code{\link[flipStandardCharts]{Area}}, \code{\link[flipStandardCharts]{Bar}}, \code{\link[flipStandardCharts]{BarPictograph}}, \code{\link[flipStandardCharts]{Bean}}, \code{\link[flipStandardCharts]{Box}}, \code{\link[flipStandardCharts]{Column}}, \code{\link[flipStandardCharts]{Density}}, \code{\link[flipStandardCharts]{Donut}}, \code{\link[flipStandardCharts]{GeographicMap}}, \code{\link[flipStandardCharts]{Heat}}, \code{\link[flipStandardCharts]{Histogram}}, \code{\link[flipStandardCharts]{Line}}, \code{\link[flipStandardCharts]{Palm}}, \code{\link[flipStandardCharts]{Pie}}, \code{\link[flipStandardCharts]{Pyramid}}, \code{\link[flipStandardCharts]{Radar}}, \code{\link[flipStandardCharts]{Scatter}}, \code{\link[flipStandardCharts]{Stream}}, \code{\link[flipStandardCharts]{TimeSeries}}, \code{\link[flipStandardCharts]{Venn}}, \code{\link[flipStandardCharts]{Violin}}. Spaces will automatically be stripped.
 #' @param x The data to be plotted.
 #' @param small.multiples Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).
+#' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param font.units One of "px" or "pt"
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
@@ -255,11 +256,14 @@
 #' CChart("Column", x, colors = c("red", "green", "blue"), categories.title = "Categories")
 #' CChart("Bar", x, type = "Stacked", colors = grey(1:3/3), categories.title = "Categories")
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
-CChart <- function(chart.type, x, small.multiples = FALSE, font.units = "px",
+CChart <- function(chart.type, x, small.multiples = FALSE, 
+                   multi.color.series = FALSE, font.units = "px",
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
+    if (multi.color.series && chart.type %in% c("Bar", "Column"))
+        chart.type <- paste0(chart.type, "MultiColor")
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
 
@@ -291,7 +295,7 @@ substituteAxisNames <- function(chart.function, arguments)
     a.names <- names(arguments)
 
     # constrain to only the first position to prevent excessive matching
-    if (chart.function == "Bar" || chart.function == "Pyramid")
+    if (chart.function %in% c("Bar", "Pyramid", "BarMultiColor"))
     {
         a.names <- gsub("^categories", "y", a.names)
         a.names <- gsub("^values", "x", a.names)
