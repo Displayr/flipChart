@@ -6,8 +6,9 @@
 Wrapper for \code{GetNumColors} and \code{ChartColors}.}
 \usage{
 PrepareColors(dat, chart.type, small.multiples = FALSE,
-  scatter.colors.column = 4, palette = NULL,
-  palette.custom.color = NULL, palette.custom.gradient.start = NULL,
+  multi.color.series = FALSE, scatter.colors.column = 4,
+  palette = NULL, palette.custom.color = NULL,
+  palette.custom.gradient.start = NULL,
   palette.custom.gradient.end = NULL, palette.custom.palette = NULL,
   fit.palette = NULL, fit.palette.custom.color = NULL,
   fit.palette.custom.gradient.start = NULL,
@@ -27,7 +28,9 @@ PrepareColors(dat, chart.type, small.multiples = FALSE,
 
 \item{chart.type}{The name of plot to create.}
 
-\item{small.multiples}{Whether the chart is shown as small multiples.}
+\item{small.multiples}{Whether the chart is shown as small multiples.i}
+
+\item{multi.color.series}{Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.}
 
 \item{scatter.colors.column}{For scatterplot data, the column of data which is used to determine the colors of each point.}
 

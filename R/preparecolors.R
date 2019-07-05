@@ -3,7 +3,8 @@
 #'
 #' @param dat The data to be plotted, from which the number of required colors are deduced.
 #' @param chart.type The name of plot to create.
-#' @param small.multiples Whether the chart is shown as small multiples.
+#' @param small.multiples Whether the chart is shown as small multiples.i
+#' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param palette Specifies the color vector to be used for the chart data. It can be (1) A named palette from grDevices, RColorBrewer colorspace, or colorRamps; or
 #' (2) A vector of colors which will be recycled to the length of the number of colors needed; or
 #' (3) one of \code{"Custom color"}, \code{"Custom gradient"} or \code{"Custom palette"}.
@@ -34,7 +35,8 @@
 #' @param subslice.palette.custom.palette As per \code{palette.custom.palette}.
 #' @export
 #' @importFrom flipChartBasics GetNumColors ChartColors
-PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colors.column = 4,
+PrepareColors <- function(dat, chart.type, small.multiples = FALSE, multi.color.series = FALSE,
+                          scatter.colors.column = 4,
                           palette = NULL, palette.custom.color = NULL, palette.custom.gradient.start = NULL,
                           palette.custom.gradient.end = NULL, palette.custom.palette = NULL,
                           fit.palette = NULL, fit.palette.custom.color = NULL, fit.palette.custom.gradient.start = NULL,
@@ -42,7 +44,10 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, scatter.colo
                           fit.CI.palette = NULL, fit.CI.palette.custom.color = NULL, fit.CI.palette.custom.gradient.start = NULL,
                           fit.CI.palette.custom.gradient.end = NULL, fit.CI.palette.custom.palette = NULL,
                           subslice.palette = NULL, subslice.palette.custom.color = NULL, subslice.palette.custom.gradient.start = NULL,
-                          subslice.palette.custom.gradient.end = NULL, subslice.palette.custom.palette = NULL) {
+                          subslice.palette.custom.gradient.end = NULL, subslice.palette.custom.palette = NULL)
+{
+    if (multi.color.series && chart.type %in% c("Bar", "Column"))
+        chart.type <- "Pyramid"
 
     num.colors <- GetNumColors(dat, chart.type, scatter.colors.column)
 
