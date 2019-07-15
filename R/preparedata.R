@@ -1045,8 +1045,6 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
         if (!is.numeric(data) && !is.data.frame(data))
             warning(percentages.warning)
-        else if ((prod(NROW(data)*NCOL(data)) == 1) && table.counter == 1)
-            warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
             data <- data / sum(data, na.rm = TRUE)
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
