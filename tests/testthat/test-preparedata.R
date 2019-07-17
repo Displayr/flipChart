@@ -672,6 +672,13 @@ test_that("PrepareData: aggregate works for all formats",
     expect_equal(length(res.vector$data), zlen)
     expect_equal(length(res.matrix$data), zlen)
     expect_equal(length(res.list$data), zlen)
+
+    res.filter.counts <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE,
+        as.percentages = FALSE, subset = zvec ==3)$data
+    res.filter.percent <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE,
+        as.percentages = TRUE, subset = zvec ==3)$data
+    expect_equal(res.filter.counts, structure(c(`3` = 3L), statistic = "Count"))
+    expect_equal(res.filter.percent, structure(c(`3` = 1), statistic = "%"))
 })
 
 test_that("PrepareData: input and output format of raw data",
