@@ -634,6 +634,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @importFrom flipTables TidyTabularData
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
+#' @importFrom flipChartBasics MatchTable
 coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
     if (is.null(x))
@@ -683,9 +684,13 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     rlabels <- x$labels
     x$labels <- NULL
 
-    # Dealing with situation where first element of x is a list containing only one thing.
+    # Dealing with situation where x$X is a list containing only one thing.
     if (is.list(x[[1]]) && length(x[[1]]) == 1)
         x[[1]] <- x[[1]][[1]]
+    
+    # For Scatterplot, y-coordinates are entered by a multi comboBox
+    if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]) && length(x[[2]]) == 1)
+        x[[2]] <- x[[2]][[1]]
 
 
     if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
@@ -697,26 +702,89 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             x$labels <- NULL
         }
     }
+    
     # Checking to see if all the elements of x are single variables.
     all.variables <- all(sapply(x, NCOL) == 1)
     # Remove entries in the list which are null
     if(remove.NULLs)
         x <- Filter(Negate(is.null), x)
-    # Extracting variable names
-    nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
+    x.rows <- sapply(x, function(m) NROW(as.data.frame(m)))
+    k <- length(x.rows)
+    if (isScatter(chart.type))
+    {
+        input.names = c('X' = 'X-coordinates',
+                        'Z1' = 'Sizes',
+                        'Z2' = 'Colors',
+                        'groups' = 'Groups')
 
-    # Splicing together elements of the input list
+        # Trim Y if sizes or color variable is provided
+        if (NCOL(x$Y) > 1 && (!is.null(x$Z1) || !is.null(x$Z2) || !is.null(x$groups)))        
+        {
+            warning("Only the first column of 'Y-coordinates is used'")
+            x$Y <- x$Y[,1,drop = FALSE]
+        }
+        for (i in 1:k)
+        {
+            x.var <- names(x)[i]
+            if (x.var %in% names(input.names) && NCOL(x[[i]]) > 1)
+            {
+                warning("Only the first column of '", input.names[x.var], "' is used")
+                x[[i]] <- x[[i]][,1,drop = FALSE] 
+            }           
+        }
+    }
+
+    # Extracting variable names
+    if (isScatter(chart.type))
+        nms <- unlist(lapply(1:k, function(i) { if (NCOL(x[[i]]) == 1) names(x)[i] else colnames(x[[i]])}))
+    else
+        nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
+    
+    # Check for row names to match on
+    if (isScatter(chart.type) && length(x) > 1)
+    {
+        # Check for row names to match on
+        .getRowNames <- function(x) { if (is.null(nrow(x))) names(x) else rownames(x) }
+        x.all.rownames <- .getRowNames(x[[1]])
+        for (i in 2:k)
+        {
+            if (length(x.all.rownames) == 0)
+                x.all.rownames <- .getRowNames(x[[i]])
+            else
+            {
+                tmp.names <- .getRowNames(x[[i]])
+                if (length(tmp.names) > 0)
+                    x.all.rownames <- intersect(x.all.rownames, tmp.names)
+            }
+        }
+        
+        # This is only rearranging the tables into the right order/dimensions
+        # Note that we don't use MergeTables because this forces tables into the same type
+        if (length(x.all.rownames) > 0)
+        {
+            for (i in 1:k)
+                x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames, as.matrix = FALSE)
+            if (length(x.all.rownames) < max(x.rows))
+                warning("Rows that did not occur in all of the input tables were discarded")
+            if (length(rlabels) > 0)
+                warning("The 'Labels' variable has been ignored. Using row names of ",
+                        "'X-coordinates' and 'Y-coordinates' instead")
+            rlabels <- x.all.rownames
+        }
+    }
+
+    # Splicing together elements of the input list if lengths vary
+    # In the tests, invalid joining is only used when first.aggregate is true 
     # Note that elements of x can contain lists of variables
     invalid.joining <- FALSE
     if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
     {
-        lengths <- sapply(x, function(m) NROW(as.data.frame(m)))
-        if (invalid.joining <- sd(lengths) != 0)
+        if (invalid.joining <- sd(x.rows) != 0)
         {
-            k <- length(lengths)
-            out <- matrix(NA, max(lengths), k)
+            k <- length(x.rows)
+            out <- matrix(NA, max(x.rows), k)
             for (i in 1:k)
-                out[1:lengths[i], i] <- x[[i]]  # shouldn't work if x$Y is a list?? x$X handled in line 402
+                out[1:x.rows[i], i] <- x[[i]] 
             x <- out
         }
     }
@@ -748,7 +816,7 @@ processInputData <- function(x, subset, weights)
     if (length(weights) > 0)
         warning("Weights have not been used. They can only be applied to variables and questions")
 
-    # Handle list of tables
+    # Simplify input if only a single table has been specified
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
     {
         if (length(x) == 1)
@@ -815,8 +883,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
                  colors = if (NCOL(data) >= 4) 4 else NA,
                  groups = NCOL(data))
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
-        return(indices)
-
+   
     .getColumnIndex <- function(i)
     {
         if (i > len)
@@ -832,6 +899,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
             return(i)
         match(nm, nms)
     }
+
     # Indices corresponding to selections in input.raw.data
     indices["x"] <- .getColumnIndex(1)
     indices["y"] <- .getColumnIndex(2)
@@ -1099,7 +1167,8 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        if (isTRUE(scatter.mult.yvals) || NCOL(input.data.raw$Y[[1]]) > 1 ||
+            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)

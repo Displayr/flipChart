@@ -1716,3 +1716,23 @@ test_that("Axis and Series names are both preserved",
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = dat2, subset = filt2))
     expect_equal(length(pd$scatter.variable.indices), 5)
 })
+
+raw.named <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
+`Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
+`Dislike all cola` = 0.75, `Don't care` = 1.25, NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(
+    c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+    "Pepsi Max", "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+"SUMMARY")), Y = list(`Preferred cola by Gender` = structure(c(42.7848101265823,
+8.60759493670886, 14.9367088607595, 11.3924050632911, 1.77215189873418,
+17.9746835443038, 0.759493670886076, 1.77215189873418, 100, 42.4691358024691,
+13.5802469135802, 20.7407407407407, 6.66666666666667, 3.20987654320988,
+11.8518518518519, 0.740740740740741, 0.740740740740741, 100,
+42.625, 11.125, 17.875, 9, 2.5, 14.875, 0.75, 1.25, 100), statistic = "Column %", .Dim = c(9L,
+3L), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+"Pepsi ", "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care",
+"NET"), c("Male", "Female", "NET")), name = "Preferred cola by Gender", questions = c("Preferred cola",
+"Gender"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+
+raw.unordered <- list(X = structure(1:6, .Names = c("a", "b", "c", "d", "e", "f"
+)), Y = list(v2 = structure(1:6, .Names = c("f", "e", "d", "c",
+"b", "a"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
