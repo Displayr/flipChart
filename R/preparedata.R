@@ -883,7 +883,8 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
                  colors = if (NCOL(data) >= 4) 4 else NA,
                  groups = NCOL(data))
     if (is.null(input.data.raw) || is.data.frame(input.data.raw) || is.list(input.data.raw) && len == 1)
-   
+        return(indices)  
+ 
     .getColumnIndex <- function(i)
     {
         if (i > len)
