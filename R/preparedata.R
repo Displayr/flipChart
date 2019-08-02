@@ -763,8 +763,17 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         # Note that we don't use MergeTables because this forces tables into the same type
         if (length(x.all.rownames) > 0)
         {
+            ind.dup <- which(duplicated(x.all.rownames))
+            if (length(ind.dup) > 0)
+            {
+                warning("Only the first of the duplicated values used: '",
+                        paste(x.all.rownames[ind.dup], collapse = "', '"), "'.")
+                x.all.rownames <- x.all.rownames[-ind.dup]
+            } 
+
             for (i in 1:k)
-                x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames, as.matrix = FALSE)
+                x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames, 
+                                as.matrix = FALSE, silent.remove.duplicates = TRUE)
             if (length(x.all.rownames) < max(x.rows))
                 warning("Rows that did not occur in all of the input tables were discarded")
             if (length(rlabels) > 0)
