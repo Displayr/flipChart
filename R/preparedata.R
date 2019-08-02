@@ -361,7 +361,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     multiple.tables <- .isTableList(input.data.table) || .isTableList(input.data.tables)
     data <- prepareForSpecificCharts(data, multiple.tables, input.data.raw, chart.type,
-                                     weights, show.labels, date.format, scatter.mult.yvals)
+                                     weights, show.labels, date.format, scatter.mult.yvals,
+                                     row.names.to.remove, column.names.to.remove, split)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
 
@@ -1133,7 +1134,10 @@ prepareForSpecificCharts <- function(data,
                                      weights,
                                      show.labels,
                                      date.format,
-                                     scatter.mult.yvals)
+                                     scatter.mult.yvals,
+                                     row.names.to.remove,
+                                     column.names.to.remove,
+                                     split)
 {
     if (!isDistribution(chart.type) && chart.type != "Table" && !is.null(input.data.raw) &&
         is.list(input.data.raw$X) && length(input.data.raw$X) > 10)
@@ -1171,6 +1175,10 @@ prepareForSpecificCharts <- function(data,
         if (isTRUE(scatter.mult.yvals) || NCOL(input.data.raw$Y[[1]]) > 1 ||
             (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
+            # Remove rows and columns before rearranging
+            data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                                   column.names.to.remove = column.names.to.remove, split = split)
+
             n <- nrow(data)
             y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
