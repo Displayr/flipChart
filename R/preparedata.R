@@ -315,7 +315,7 @@ PrepareData <- function(chart.type,
                         "This may cause the results to be misleading.")
         }
         data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
-            suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing))
+            suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing, error.if.insufficient.obs = FALSE))
         else
             TidyRawData(data, subset = subset, weights = weights, missing = missing)
         if (invalid.joining)
