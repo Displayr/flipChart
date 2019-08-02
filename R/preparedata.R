@@ -682,8 +682,18 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE, fir
         x[[1]] <- x[[1]][[1]]
     
     # For Scatterplot, y-coordinates are entered by a multi comboBox
+    # Remove duplicates before rownames are messed up
     if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]))
-        x[[2]] <- as.data.frame(x[[2]])
+    {
+        for (i in 1:length(x[[2]]))
+        {
+            tmp.names <- rownames(x[[2]][[i]])
+            if (any(duplicated(tmp.names)))
+                rownames(x[[2]][[i]]) <- make.unique(tmp.names)
+        }
+        x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE, 
+        stringsAsFactors = FALSE)
+    }
 
 
     if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
