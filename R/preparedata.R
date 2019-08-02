@@ -739,10 +739,9 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE, fir
 
     # Extracting variable names
     if (isScatter(chart.type))
-        nms <- unlist(lapply(1:k, function(i) { if (NCOL(x[[i]]) == 1) names(x)[i] else colnames(x[[i]])}))
+        nms <- unlist(lapply(1:k, function(i) { if (NCOL(x[[i]]) == 1) input.names[i] else colnames(x[[i]])}))
     else
         nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
-    
     # Check for row names to match on
     if (isScatter(chart.type) && length(x) > 1)
     {
