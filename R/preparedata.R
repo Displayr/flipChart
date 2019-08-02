@@ -314,10 +314,12 @@ PrepareData <- function(chart.type,
                         any knowledge of which case should be matched with which. ",
                         "This may cause the results to be misleading.")
         }
-        data <- if (chart.type == "Scatter") # As we can potentially use the variable in two different ways, we suppress the warning
-            suppressWarnings(TidyRawData(data, subset = subset, weights = weights, missing = missing, error.if.insufficient.obs = FALSE))
+        # As we can potentially use the variable in two different ways, we suppress the warning
+        if (chart.type == "Scatter")
+            data <- suppressWarnings(TidyRawData(data, subset = subset, 
+                    weights = weights, missing = missing, error.if.insufficient.obs = FALSE))
         else
-            TidyRawData(data, subset = subset, weights = weights, missing = missing)
+            data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
         if (invalid.joining)
             attr(data, "InvalidVariableJoining") <- TRUE
         n.post <- NROW(data)
@@ -660,16 +662,6 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         else
             return(NROW(x))
     }
-    num.obs <- unlist(lapply(x, .nobs))
-    if (length(unique(num.obs[num.obs > 0])) > 1 && isScatter(chart.type))
-    {
-        # If data is aggregated (e.g. the mean of each variable) then the length can differ
-        names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
-        ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
-        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
-            "' differ in length from the variables for 'X coordinates'. ",
-            "Check that all variables are from the same data set.")
-    }
 
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
@@ -690,8 +682,8 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x[[1]] <- x[[1]][[1]]
     
     # For Scatterplot, y-coordinates are entered by a multi comboBox
-    if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]) && length(x[[2]]) == 1)
-        x[[2]] <- x[[2]][[1]]
+    if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]))
+        x[[2]] <- as.data.frame(x[[2]])
 
 
     if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
@@ -745,7 +737,15 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     if (isScatter(chart.type) && length(x) > 1)
     {
         # Check for row names to match on
-        .getRowNames <- function(x) { if (is.null(nrow(x))) names(x) else rownames(x) }
+        .getRowNames <- function(x)
+        { 
+            if (is.null(nrow(x)))
+                return(names(x)) 
+            else if (hasUserSuppliedRownames(x))
+                return(rownames(x))
+            else
+                return(NULL)
+        }
         x.all.rownames <- .getRowNames(x[[1]])
         for (i in 2:k)
         {
@@ -782,6 +782,18 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             rlabels <- x.all.rownames
         }
     }
+
+    num.obs <- unlist(lapply(x, .nobs))
+    if (length(unique(num.obs[num.obs > 0])) > 1 && isScatter(chart.type))
+    {
+        # If data is aggregated (e.g. the mean of each variable) then the length can differ
+        names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
+        ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
+        warning("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+            "' differ in length from the variables for 'X coordinates'. ",
+            "Check that all variables are from the same data set.")
+    }
+
 
     # Splicing together elements of the input list if lengths vary
     # In the tests, invalid joining is only used when first.aggregate is true 
