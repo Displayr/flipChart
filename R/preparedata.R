@@ -285,7 +285,7 @@ PrepareData <- function(chart.type,
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
-        data <- coerceToDataFrame(input.data.raw, chart.type)
+        data <- coerceToDataFrame(input.data.raw, chart.type, first.aggregate = isTRUE(first.aggregate))
     if (is.null(data))
         data <- input.data.other
     if (is.null(data))
@@ -638,7 +638,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
 #' @importFrom flipChartBasics MatchTable
-coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
+coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE, first.aggregate = TRUE)
 {
     if (is.null(x))
         return(x)
@@ -789,7 +789,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         # If data is aggregated (e.g. the mean of each variable) then the length can differ
         names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
         ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
-        warning("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
             "' differ in length from the variables for 'X coordinates'. ",
             "Check that all variables are from the same data set.")
     }
@@ -799,7 +799,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # In the tests, invalid joining is only used when first.aggregate is true 
     # Note that elements of x can contain lists of variables
     invalid.joining <- FALSE
-    if (NCOL(x) > 1 || is.list(x) && length(x) > 1)
+    if (first.aggregate && (NCOL(x) > 1 || is.list(x) && length(x) > 1))
     {
         if (invalid.joining <- sd(x.rows) != 0)
         {
