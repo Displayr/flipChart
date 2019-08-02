@@ -1175,8 +1175,9 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (isTRUE(scatter.mult.yvals) || NCOL(input.data.raw$Y[[1]]) > 1 ||
-            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1) ||
+           (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) && 
+            is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
         {
             # Remove rows and columns before rearranging
             data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
