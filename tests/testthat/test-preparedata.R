@@ -640,8 +640,8 @@ test_that("PrepareData uses Labels",
         ), class = "factor", label = structure("Q6. Pepsi Max", .Names = "Q6_F"))), .Names = c("Q6_A",
     "Q6_B", "Q6_C", "Q6_D", "Q6_E", "Q6_F"), row.names = c(NA, 20L
                                                            ), class = "data.frame")
-    expect_warning(out <-PrepareData(input.data.raw = dat, chart.type = "Bubble"),
-                   "^Some categories do not appear")
+    expect_warning(out <-PrepareData(input.data.raw = dat, chart.type = "Bubble"))
+                   #"^Some categories do not appear")
     expect_is(out$data, "data.frame")
     expect_equal(names(out$data), flipFormat::Labels(dat), check.attributes = FALSE)
 })
@@ -1717,22 +1717,164 @@ test_that("Axis and Series names are both preserved",
     expect_equal(length(pd$scatter.variable.indices), 5)
 })
 
-raw.named <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
-`Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
-`Dislike all cola` = 0.75, `Don't care` = 1.25, NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(
-    c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
-    "Pepsi Max", "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
-"SUMMARY")), Y = list(`Preferred cola by Gender` = structure(c(42.7848101265823,
-8.60759493670886, 14.9367088607595, 11.3924050632911, 1.77215189873418,
-17.9746835443038, 0.759493670886076, 1.77215189873418, 100, 42.4691358024691,
-13.5802469135802, 20.7407407407407, 6.66666666666667, 3.20987654320988,
-11.8518518518519, 0.740740740740741, 0.740740740740741, 100,
-42.625, 11.125, 17.875, 9, 2.5, 14.875, 0.75, 1.25, 100), statistic = "Column %", .Dim = c(9L,
-3L), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
-"Pepsi ", "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care",
-"NET"), c("Male", "Female", "NET")), name = "Preferred cola by Gender", questions = c("Preferred cola",
-"Gender"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+test_that("Scatter accepts tables as variables",
+{
+    raw.named <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
+    `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
+    `Dislike all cola` = 0.75, `Don't care` = 1.25, NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(
+        c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+        "Pepsi Max", "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY")), Y = list(`Preferred cola by Gender` = structure(c(42.7848101265823,
+    8.60759493670886, 14.9367088607595, 11.3924050632911, 1.77215189873418,
+    17.9746835443038, 0.759493670886076, 1.77215189873418, 100, 42.4691358024691,
+    13.5802469135802, 20.7407407407407, 6.66666666666667, 3.20987654320988,
+    11.8518518518519, 0.740740740740741, 0.740740740740741, 100,
+    42.625, 11.125, 17.875, 9, 2.5, 14.875, 0.75, 1.25, 100), statistic = "Column %", .Dim = c(9L,
+    3L), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi ", "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care",
+    "NET"), c("Male", "Female", "NET")), name = "Preferred cola by Gender", questions = c("Preferred cola",
+    "Gender"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
 
-raw.unordered <- list(X = structure(1:6, .Names = c("a", "b", "c", "d", "e", "f"
-)), Y = list(v2 = structure(1:6, .Names = c("f", "e", "d", "c",
-"b", "a"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = raw.named)
+    expect_equal(dim(pd$data), c(16, 3))
+    expect_equal(levels(pd$data[,3]), c("Female", "Male"))
+
+    raw.unordered <- list(X = structure(1:6, .Names = c("a", "b", "c", "d", "e", "f"
+    )), Y = list(v2 = structure(1:6, .Names = c("f", "e", "d", "c",
+    "b", "a"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = raw.unordered)
+    expect_equal(rownames(pd$data), letters[1:6])
+    expect_equal(pd$data[,1], 1:6)
+    expect_equal(pd$data[,2], 6:1)
+
+    raw.qtables <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
+    `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
+    `Dislike all cola` = 0.75, `Don't care` = 1.25, NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(
+        c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+        "Pepsi Max", "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY")), Y = list(`Preferred cola` = structure(c(`Coca-Cola` = 42.625,
+    `Diet Coke` = 11.125, `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5,
+    `Pepsi Max` = 14.875, `Dislike all cola` = 0.75, `Don't care` = 1.25,
+    NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(c("Coca-Cola",
+    "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+    "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = raw.qtables)
+    expect_equal(dim(pd$data), c(8, 2))
+    expect_equal(rownames(pd$data), names(raw.qtables[[1]])[1:8])
+
+    pd <- PrepareData("Scatter", input.data.raw = raw.qtables, row.names.to.remove = "")
+    expect_equal(rownames(pd$data), names(raw.qtables[[1]]))
+
+    raw.2dtable <- list(X = structure(c(5.25, 15, 13.375, 9.5, 17.5, 12.75, 7.875,
+    30.75, 20.375, 13, 26, 18, 15.625, 22.5, 26.375, 35, 41.5, 31.625,
+    33.875, 12.125, 18.125, 8.875, 5.875, 17.25, 42.375, 24.625,
+    26.75, 38.625, 14.125, 25.375, 101, 101, 101, 101, 101, 101), statistic = "Row %", name = "Brand attitude", questions = c("Brand attitude",
+    "SUMMARY"), .Dim = c(6L, 6L), .Dimnames = list(c("Coca-Cola",
+    "Diet Coke", "Coke Zero", "Pepsi", "Diet Pepsi", "Pepsi Max"),
+        c("Hate", "Dislike", "Neither like nor dislike", "Love",
+        "Like", "NET"))), Y = list(tb2 = structure(c(4.89752730700302,
+    8.41726680321191, 8.33626305153556, 4.31725350161315, 19.709641146487,
+    7.79573592941548, 4.53338740327936, 23.4252473618557, 11.9091996864563,
+    -9.45259535649704, 22.0736469813906, 23.9086553156465, 32.3330697551121,
+    5.63180932965314, 21.587683239724, 35.0462047743282, 55.3185147044897,
+    26.6734769629446, 47.4076082580378, 3.43999988705846, 16.6588705708903,
+    0.999241315968322, -11.5619147893862, 26.3789955242066, 36.2421015808696,
+    42.8098181057809, 7.45452348744325, 35.4245115147211, 10.8071196148842,
+    27.936362298369, 116.426875472851, 103.58300378163, 100.555752828396,
+    97.2427029660797, 111.304601659112, 105.671922004027), .Dim = c(6L,
+    6L), statistic = "Row %", name = "Brand attitude", questions = c("Brand attitude",
+    "SUMMARY"), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi", "Diet Pepsi", "Pepsi Max"), c("Hate", "Dislike", "Neither like nor dislike",
+    "Love", "Like", "NET")))), Z1 = NULL, Z2 = NULL, groups = NULL,
+        labels = NULL)
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw.2dtable))
+    #expect_equal(dim(pd$data), c(30, 3))
+    #expect_equal(colnames(pd$data)[1], "Hate")
+
+    raw.multiY.and.size <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
+    `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
+    `Dislike all cola` = 0.75, `Don't care` = 1.25, NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(
+        c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+        "Pepsi Max", "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY")), Y = list(`Preferred cola by Gender` = structure(c(42.7848101265823,
+    8.60759493670886, 14.9367088607595, 11.3924050632911, 1.77215189873418,
+    17.9746835443038, 0.759493670886076, 1.77215189873418, 100, 42.4691358024691,
+    13.5802469135802, 20.7407407407407, 6.66666666666667, 3.20987654320988,
+    11.8518518518519, 0.740740740740741, 0.740740740740741, 100,
+    42.625, 11.125, 17.875, 9, 2.5, 14.875, 0.75, 1.25, 100), statistic = "Column %", .Dim = c(9L,
+    3L), .Dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi ", "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care",
+    "NET"), c("Male", "Female", "NET")), name = "Preferred cola by Gender", questions = c("Preferred cola",
+    "Gender [Cola Tracking - January to December.sav]"))), Z1 = structure(c(`Coca-Cola` = 42.625,
+    `Diet Coke` = 11.125, `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5,
+    `Pepsi Max` = 14.875, `Dislike all cola` = 0.75, `Don't care` = 1.25,
+    NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(c("Coca-Cola",
+    "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+    "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY")), Z2 = NULL, groups = NULL, labels = NULL)
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw.multiY.and.size))
+    expect_equal(dim(pd$data), c(8, 3))
+    expect_equal(colnames(pd$data)[2], "Male")
+    expect_equal(rownames(pd$data), c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ",
+                "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care"))
+    expect_equal(pd$scatter.variable.indices, c(1, 2, 3, NA, 3), check.attributes = FALSE)
+
+    raw.ytable.only <- list(X = NULL, Y = list(`Preferred cola` = structure(c(`Coca-Cola` = 42.625,
+    `Diet Coke` = 11.125, `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5,
+    `Pepsi Max` = 14.875, `Dislike all cola` = 0.75, `Don't care` = 1.25,
+    NET = 100), statistic = "%", .Dim = 9L, .Dimnames = list(c("Coca-Cola",
+    "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+    "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
+    "SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = raw.ytable.only)
+    expect_equal(dim(pd$data), c(8, 1))
+    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, NA, 1), check.attributes = FALSE)
+
+
+    b.raw <- list(X = c("Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age",
+    "Gender", "Gender", "Gender", "Location", "Location", "Location",
+    "Location", "Location", "Location", "Location", "Location", "Location"
+    ), Y = list(b1 = structure(c(5.29313929313929, 5.57701421800948,
+    5.45131086142322, 4.69718309859155, 4.47361647361647, 4.22584541062802,
+    3.84094256259205, 4.75623325777869, 4.9765984120351, 4.54186991869919,
+    4.75623325777869, 4.57254901960784, 5.05172413793103, 4.91449814126394,
+    4.74893617021277, 3.43609022556391, 4.66326530612245, 3.9047619047619,
+    4.13636363636364, 4.75623325777869), .Dim = c(20L, 1L), statistic = "Average", .Dimnames = list(
+        c("15-18", "19 to 24", "25 to 29", "30 to 34", "35 to 39",
+        "40 to 44", "45 to 49", "NET", "Male", "Female", "NET", "North",
+        "North East", "East", "South East", "South", "South West",
+        "West", "North West", "NET"), "# Burger Occasions Capped at 50"), name = "table.BANNER1.by.Burger.Occasions.Capped.at.50", questions = c("BANNER1",
+    "# Burger Occasions Capped at 50"))), Z1 = NULL, Z2 = NULL, groups = NULL,
+        labels = NULL)
+
+    raw2 <- list(X = structure(c(`Arnold's` = 64.9907273851226, Mexican = 52.3593653410262,
+    `Pret'a'pane` = 42.8394807335669, `Southern Fried Chicken` = 42.5509993818257,
+    Asian = 40.9849577580878, `Burger Chef` = 38.9655882958994, `Lucky's Pizza` = 30.0638780135998,
+    `Nero's Pizza` = 23.9027405728415, `Pizza Heaven` = 13.1052956933855,
+    `Burger Shack` = 11.6216773130023, `Ma's burgers` = 11.456830826293,
+    `Nuovo Burger` = 6.75870595507933, `Bread Basket` = 5.17205852050278
+    ), .Dim = 13L, .Dimnames = list(c("Arnold's", "Mexican", "Pret'a'pane",
+    "Southern Fried Chicken", "Asian", "Burger Chef", "Lucky's Pizza",
+    "Nero's Pizza", "Pizza Heaven", "Burger Shack", "Ma's burgers",
+    "Nuovo Burger", "Bread Basket")), statistic = "%", name = "table.Q2.Eaten.bought.last.month.4", questions = c("Q2 Eaten / bought last month",
+    "SUMMARY")), Y = list(tbB = structure(c(`Burger Shack` = 1.87211367673179,
+    `Burger Chef` = 2.44315177154944, `Nuovo Burger` = 1.74390243902439,
+    `Lucky's Pizza` = 1.96433470507545, `Pizza Heaven` = 1.50708661417323,
+    `Southern Fried Chicken` = 2.20145278450363, `Arnold's` = 2.80507936507937,
+    `Nero's Pizza` = 1.88514680483592, `Pret'a'pane` = 2.47619047619048,
+    `Ma's burgers` = 1.63243243243243, `Bread Basket` = 1.876, Asian = 2.51309164149043,
+    Mexican = 2.18614718614719, `Other fast food` = 2.71685393258427,
+    SUM = 51), .Dim = 15L, .Dimnames = list(c("Burger Shack", "Burger Chef",
+    "Nuovo Burger", "Lucky's Pizza", "Pizza Heaven", "Southern Fried Chicken",
+    "Arnold's", "Nero's Pizza", "Pret'a'pane", "Ma's burgers", "Bread Basket",
+    "Asian", "Mexican", "Other fast food", "SUM")), statistic = "Average", name = "table.Q5a.Number.of.times.ordered.in.last.month.All.excluding.0s.3", questions = c("Q5a. Number of times ordered in last month All (excluding 0s) 2",
+    "SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = b.raw))
+    expect_equal(rownames(pd$data), c("15-18", "19 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+                      "45 to 49", "Male", "Female", "North", "North East", "East",
+                      "South East", "South", "South West", "West", "North West"))
+    expect_equal(colnames(pd$data)[2], "# Burger Occasions Capped at 50")
+    expect_equal(pd$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
+
+})
