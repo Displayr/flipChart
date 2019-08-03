@@ -927,9 +927,12 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
+        cat("nm:", nm, "\n")
+        cat("nms:", nms, "\n")
         if (is.null(nm) || length(nm) != 1)
             return(i)
         pos <- match(nm, nms)
+        cat("pos:", pos, "\n")
         if (is.na(pos))
             return(i)
         return(pos)
