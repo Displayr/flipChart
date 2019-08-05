@@ -434,8 +434,8 @@ PrepareData <- function(chart.type,
                 attr(data[[i]], "statistic") <- NULL
         }
     }
-    if (isScatter(chart.type))
-        data <- cleanScatterNames(data)
+    if (isScatter(chart.type) && !is.null(input.data.raw))
+        data <- rmScatterDefaultNames(data)
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
     if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
@@ -645,21 +645,13 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
 #' @importFrom flipChartBasics MatchTable
+#' @importFrom flipU MakeUniqueNames
 coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
     if (is.null(x))
         return(x)
     else if (is.data.frame(x))
         return(x)
-
-    # Check that input data is of the same length
-    .nobs <- function(x)
-    {
-        if (is.list(x))
-            return(lapply(x, .nobs))
-        else
-            return(NROW(x))
-    }
 
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
         return(as.data.frame(x[[1]]))
@@ -684,20 +676,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         names(x[[2]]) <- NULL
         for (i in 1:length(x[[2]]))
         {
-            y.i <- x[[2]][[i]]
-
-            # Silently remove duplicated 'NET' rows from banners
-            ind.net <- which(rownames(y.i) == "NET")
-            if (length(ind.net) > 1)
-                y.i <- y.i[-ind.net,,drop = FALSE]
+            y.rnames <- rownames(x[[2]][[i]])
+            is.dup <- duplicated(y.rnames)
             
-            # Remove other duplicated names before data.frame is called
-            is.dup <- duplicated(rownames(y.i))
+            # No warnings required because you may want points with the same label
             if (any(is.dup))
-                rownames(y.i) <- make.unique(rownames(y.i))
-
-            if (length(ind.net) > 1 || any(is.dup))
-                x[[2]][[i]] <- y.i
+                rownames(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
         }
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE, 
                         fix.empty.names = FALSE, stringsAsFactors = FALSE)
@@ -754,7 +738,9 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             else                         colnames(x[[i]]) }))
     else
         nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
+    
     # Check for row names to match on
+    x.all.rownames <- NULL
     if (isScatter(chart.type) && length(x) > 1)
     {
         # Check for row names to match on
@@ -786,7 +772,8 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         {
             for (i in 1:k)
                 x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames, 
-                                as.matrix = FALSE, silent.remove.duplicates = TRUE)
+                                as.matrix = FALSE, trim.whitespace = FALSE,
+                                silent.remove.duplicates = TRUE)
             if (length(x.all.rownames) < max(x.rows))
                 warning("Rows that did not occur in all of the input tables were discarded")
             if (length(rlabels) > 0)
@@ -795,15 +782,15 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             rlabels <- x.all.rownames
         }
     }
-
-    num.obs <- unlist(lapply(x, .nobs))
-    if (length(unique(num.obs[num.obs > 0])) > 1 && isScatter(chart.type))
+    
+    num.obs <- sapply(x, NROW)
+    if (isScatter(chart.type) && is.null(x.all.rownames) &&
+        length(unique(num.obs[num.obs > 0])) > 1)
     {
         # If data is aggregated (e.g. the mean of each variable) then the length can differ
-        names(num.obs) <- c("X coordinates", "Y coordinates", "Sizes", "Colors", "Groups", "Labels")
         ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
-        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
-            "' differ in length from the variables for 'X coordinates'. ",
+        stop("Variables '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+            "' differ in length from variables '", names(num.obs)[1], "'. ",
             "Check that all variables are from the same data set.")
     }
 
@@ -824,9 +811,9 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
 
     # Set column and rownames
-    names(x) <- nms
+    names(x) <- MakeUniqueNames(nms)
     if (!is.null(rlabels) && nrow(x) == length(rlabels))
-         rownames(x) <- make.unique(as.character(rlabels), sep = "")
+         rownames(x) <- MakeUniqueNames(as.character(rlabels))
     if (invalid.joining)
         attr(x, "InvalidVariableJoining") <- TRUE
     return(x)
@@ -917,6 +904,20 @@ scatterDefaultNames <- function(i)
          "Groups"))
 }
 
+rmScatterDefaultNames <- function(data)
+{
+    # Remove default names so they are not shown in the axis 
+    if (is.data.frame(data) && !is.null(colnames(data)))
+    {
+        if (colnames(data)[1] == "X")
+            colnames(data)[1] <- " "
+        if (NCOL(data) >= 2 && colnames(data)[2] == "Y")
+            colnames(data)[2] <- "  "
+    }
+    return(data)
+}
+
+
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Creating indices in situations where the user has provided a table.
@@ -940,12 +941,9 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
 
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
-        #cat("nm:", nm, "\n")
-        #cat("nms:", nms, "\n")
         if (is.null(nm) || length(nm) != 1)
             return(i)
         pos <- match(nm, nms)
-        #cat("pos:", pos, "\n")
         if (is.na(pos))
             return(i)
         return(pos)
@@ -1517,18 +1515,6 @@ hasUserSuppliedRownames <- function(data)
     return(TRUE)
 }
 
-cleanScatterNames <- function(data)
-{
-    # Remove default names so they are not shown in the axis 
-    if (is.data.frame(data) && !is.null(colnames(data)))
-    {
-        if (colnames(data)[1] == "X")
-            colnames(data)[1] <- " "
-        if (NCOL(data) >= 2 && colnames(data)[2] == "Y")
-            colnames(data)[2] <- "  "
-    }
-    return(data)
-}
 
 tidyLabels <- function(data, chart.type)
 {

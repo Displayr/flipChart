@@ -1715,6 +1715,30 @@ test_that("Axis and Series names are both preserved",
 
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = dat2, subset = filt2))
     expect_equal(length(pd$scatter.variable.indices), 5)
+
+    wrong.dataset <- list(X = structure(c(5.1, 4.9, 4.7, 4.6, 5, 5.4, 4.6, 5, 4.4,
+        4.9, 5.4, 4.8, 4.8, 4.3, 5.8, 5.7, 5.4, 5.1, 5.7, 5.1, 5.4, 5.1,
+        4.6, 5.1, 4.8, 5, 5, 5.2, 5.2, 4.7, 4.8, 5.4, 5.2, 5.5, 4.9,
+        5, 5.5, 4.9, 4.4, 5.1, 5, 4.5, 4.4, 5, 5.1, 4.8, 5.1, 4.6, 5.3,
+        5, 7, 6.4, 6.9, 5.5, 6.5, 5.7, 6.3, 4.9, 6.6, 5.2, 5, 5.9, 6,
+        6.1, 5.6, 6.7, 5.6, 5.8, 6.2, 5.6, 5.9, 6.1, 6.3, 6.1, 6.4, 6.6,
+        6.8, 6.7, 6, 5.7, 5.5, 5.5, 5.8, 6, 5.4, 6, 6.7, 6.3, 5.6, 5.5,
+        5.5, 6.1, 5.8, 5, 5.6, 5.7, 5.7, 6.2, 5.1, 5.7, 6.3, 5.8, 7.1,
+        6.3, 6.5, 7.6, 4.9, 7.3, 6.7, 7.2, 6.5, 6.4, 6.8, 5.7, 5.8, 6.4,
+        6.5, 7.7, 7.7, 6, 6.9, 5.6, 7.7, 6.3, 6.7, 7.2, 6.2, 6.1, 6.4,
+        7.2, 7.4, 7.9, 6.4, 6.3, 6.1, 7.7, 6.3, 6.4, 6, 6.9, 6.7, 6.9,
+        5.8, 6.8, 6.7, 6.7, 6.3, 6.5, 6.2, 5.9), questiontype = "NumberGrid",
+        name = "Sepal.Length", label = "Sepal.Length", question = "Grid"),
+        Y = list(pop15 = structure(c(29.35, 23.32, 23.8, 41.89, 42.19,
+        31.72, 39.74, 44.75, 46.64, 47.64, 24.42, 46.31, 27.84, 25.06,
+        23.31, 25.62, 46.05, 47.32, 34.03, 41.31, 31.16, 24.52, 27.01,
+        41.74, 21.8, 32.54, 25.95, 24.71, 32.61, 45.04, 43.56, 41.18,
+        44.19, 46.26, 28.96, 31.94, 31.92, 27.74, 21.44, 23.49, 43.42,
+        46.12, 23.27, 29.81, 46.4, 45.25, 41.12, 28.13, 43.69, 47.2
+        ), questiontype = "Number", name = "pop15", label = "pop15", question = "pop15")),
+        Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    expect_error(pd <- PrepareData("Scatter", input.data.raw = wrong.dataset),
+        "Check that all variables are from the same data set.")
 })
 
 test_that("Scatter accepts tables as variables",
@@ -1789,8 +1813,8 @@ test_that("Scatter accepts tables as variables",
     "Love", "Like", "NET")))), Z1 = NULL, Z2 = NULL, groups = NULL,
         labels = NULL)
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw.2dtable))
-    #expect_equal(dim(pd$data), c(30, 3))
-    #expect_equal(colnames(pd$data)[1], "Hate")
+    expect_equal(dim(pd$data), c(30, 3))
+    expect_equal(colnames(pd$data)[1], "Hate")
 
     raw.multiY.and.size <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
     `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
@@ -1832,10 +1856,8 @@ test_that("Scatter accepts tables as variables",
     expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, NA, 1), check.attributes = FALSE)
 
 
-    b.raw <- list(X = c("Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age",
-    "Gender", "Gender", "Gender", "Location", "Location", "Location",
-    "Location", "Location", "Location", "Location", "Location", "Location"
-    ), Y = list(b1 = structure(c(5.29313929313929, 5.57701421800948,
+    b.raw <- list(X = rep(c("Age", "Gender", "Location"), c(8, 3, 9)),
+    Y = list(b1 = structure(c(5.29313929313929, 5.57701421800948,
     5.45131086142322, 4.69718309859155, 4.47361647361647, 4.22584541062802,
     3.84094256259205, 4.75623325777869, 4.9765984120351, 4.54186991869919,
     4.75623325777869, 4.57254901960784, 5.05172413793103, 4.91449814126394,
@@ -1847,6 +1869,39 @@ test_that("Scatter accepts tables as variables",
         "West", "North West", "NET"), "# Burger Occasions Capped at 50"), name = "table.BANNER1.by.Burger.Occasions.Capped.at.50", questions = c("BANNER1",
     "# Burger Occasions Capped at 50"))), Z1 = NULL, Z2 = NULL, groups = NULL,
         labels = NULL)
+    pd.no.net <- PrepareData("Scatter", input.data.raw = b.raw, row.names.to.remove = "NET")
+    expect_equal(pd.no.net$data,
+                structure(list(` ` = c("Age", "Age", "Age", "Age", "Age", "Age",
+                    "Age", "Gender", "Gender", "Location", "Location", "Location",
+                    "Location", "Location", "Location", "Location", "Location"),
+                        `# Burger Occasions Capped at 50` = c(5.29313929313929, 5.57701421800948,
+                        5.45131086142322, 4.69718309859155, 4.47361647361647, 4.22584541062802,
+                        3.84094256259205, 4.9765984120351, 4.54186991869919, 4.57254901960784,
+                        5.05172413793103, 4.91449814126394, 4.74893617021277, 3.43609022556391,
+                        4.66326530612245, 3.9047619047619, 4.13636363636364)), row.names = c("15-18",
+                    "19 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+                    "Male", "Female", "North", "North East", "East", "South East",
+                    "South", "South West", "West", "North West"), scatter.variable.indices = c(x = 1,
+                    y = 2, sizes = NA, colors = NA, groups = 2), class = "data.frame"))
+    expect_equal(colnames(pd.no.net$data)[2], "# Burger Occasions Capped at 50")
+    expect_equal(pd.no.net$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
+
+    pd.with.net <- PrepareData("Scatter", input.data.raw = b.raw, row.names.to.remove = "")
+    expect_equal(pd.with.net$data,
+                structure(list(` ` = c("Age", "Age", "Age", "Age", "Age", "Age",
+                    "Age", "Age", "Gender", "Gender", "Gender", "Location", "Location",
+                    "Location", "Location", "Location", "Location", "Location", "Location",
+                    "Location"), `# Burger Occasions Capped at 50` = c(5.29313929313929,
+                    5.57701421800948, 5.45131086142322, 4.69718309859155, 4.47361647361647,
+                    4.22584541062802, 3.84094256259205, 4.75623325777869, 4.9765984120351,
+                    4.54186991869919, 4.75623325777869, 4.57254901960784, 5.05172413793103,
+                    4.91449814126394, 4.74893617021277, 3.43609022556391, 4.66326530612245,
+                    3.9047619047619, 4.13636363636364, 4.75623325777869)), row.names = c("15-18",
+                    "19 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+                    "NET", "Male", "Female", "NET ", "North", "North East", "East",
+                    "South East", "South", "South West", "West", "North West", "NET  "
+                ), scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA,
+                groups = 2), class = "data.frame"))
 
     raw2 <- list(X = structure(c(`Arnold's` = 64.9907273851226, Mexican = 52.3593653410262,
     `Pret'a'pane` = 42.8394807335669, `Southern Fried Chicken` = 42.5509993818257,
@@ -1870,11 +1925,10 @@ test_that("Scatter accepts tables as variables",
     "Arnold's", "Nero's Pizza", "Pret'a'pane", "Ma's burgers", "Bread Basket",
     "Asian", "Mexican", "Other fast food", "SUM")), statistic = "Average", name = "table.Q5a.Number.of.times.ordered.in.last.month.All.excluding.0s.3", questions = c("Q5a. Number of times ordered in last month All (excluding 0s) 2",
     "SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
-    expect_warning(pd <- PrepareData("Scatter", input.data.raw = b.raw))
-    expect_equal(rownames(pd$data), c("15-18", "19 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
-                      "45 to 49", "Male", "Female", "North", "North East", "East",
-                      "South East", "South", "South West", "West", "North West"))
-    expect_equal(colnames(pd$data)[2], "# Burger Occasions Capped at 50")
+
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw2), "discarded")
+    expect_equal(rownames(pd$data), rownames(raw2[[1]]))
+    expect_equal(ncol(pd$data), 2)
     expect_equal(pd$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
 
 })
