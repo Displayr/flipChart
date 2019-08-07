@@ -787,10 +787,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     if (isScatter(chart.type) && is.null(x.all.rownames) &&
         length(unique(num.obs[num.obs > 0])) > 1)
     {
-        # If data is aggregated (e.g. the mean of each variable) then the length can differ
+        # If data is aggregated (e.g. the mean of each variable) then
+        # the length can differ
+        names(num.obs) <- sapply(names(num.obs), tidyScatterDefaultNames)
         ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
-        stop("Variables '", paste(names(num.obs)[ind.diff], collapse = "', '"),
-            "' differ in length from variables '", names(num.obs)[1], "'. ",
+        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+            "' differ in length from variables for '", names(num.obs)[1], "'. ",
             "Check that all variables are from the same data set.")
     }
 
@@ -902,6 +904,15 @@ scatterDefaultNames <- function(i)
          "Sizes",
          "Colors",
          "Groups"))
+}
+
+tidyScatterDefaultNames <- function(x)
+{
+    return(switch(x,
+        X = "X coordinates",
+        Y = "Y coordinates",
+        Z1 = "Sizes",
+        Z2 = "Colors"))
 }
 
 rmScatterDefaultNames <- function(data)
