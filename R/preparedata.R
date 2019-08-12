@@ -689,9 +689,6 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         if (length(ind.autonames) > 0)
             colnames(x[[2]])[ind.autonames] <- " "
 
-        if (is.null(x$X))
-            x$X <- rep(0, nrow(x[[2]]))
-
     }
 
     if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
@@ -734,7 +731,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # Extracting variable names
     if (isScatter(chart.type))
         nms <- unlist(lapply(1:k, function(i) { 
-            if (length(dim(x[[i]])) < 2) scatterDefaultNames(i)
+            if (length(dim(x[[i]])) < 2) tidyScatterDefaultNames(names(x)[i])
             else                         colnames(x[[i]]) }))
     else
         nms <- if (all.variables) names(x) else unlist(lapply(x, names)) # i.e. 'X', 'Y', 'labels'
@@ -782,7 +779,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             rlabels <- x.all.rownames
         }
     }
-    
+   
     num.obs <- sapply(x, NROW)
     if (isScatter(chart.type) && is.null(x.all.rownames) &&
         length(unique(num.obs[num.obs > 0])) > 1)
@@ -920,9 +917,9 @@ rmScatterDefaultNames <- function(data)
     # Remove default names so they are not shown in the axis 
     if (is.data.frame(data) && !is.null(colnames(data)))
     {
-        if (colnames(data)[1] == "X")
+        if (colnames(data)[1] == "X coordinates")
             colnames(data)[1] <- " "
-        if (NCOL(data) >= 2 && colnames(data)[2] == "Y")
+        if (NCOL(data) >= 2 && colnames(data)[2] == "Y coordinates")
             colnames(data)[2] <- "  "
     }
     return(data)
@@ -945,6 +942,9 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     {
         if (i > len)
             return(NA)
+        if (raw.is.null[i])
+            return(NA)
+        ind <- cumsum(!raw.is.null)[i]
         lst <- input.data.raw[[i]]
         if (is.null(lst))
             return(NA)
@@ -953,18 +953,20 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
         # Match based on label/variable name to avoid problems with duplicates
         nm <- if (show.labels) Labels(lst) else Names(lst)
         if (is.null(nm) || length(nm) != 1)
-            return(i)
+            return(ind)
         pos <- match(nm, nms)
         if (is.na(pos))
-            return(i)
+            return(ind)
         return(pos)
     }
 
     # Indices corresponding to selections in input.raw.data
+    raw.is.null <- sapply(input.data.raw, is.null)
     indices["x"] <- .getColumnIndex(1)
     indices["y"] <- .getColumnIndex(2)
     indices["sizes"] <- .getColumnIndex(3)
     indices["colors"] <- .getColumnIndex(4)
+    indices["groups"] <- max(indices[1:4], na.rm = TRUE)
     indices
 }
 
@@ -1091,7 +1093,7 @@ transformTable <- function(data,
             old.names <- colnames(data)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyColumns)
                 else HideEmptyColumns(data)
-        if (isScatter(chart.type))
+        if (FALSE && isScatter(chart.type))
         {
             ind.rm <- which(!old.names %in% colnames(data))
             if (length(ind.rm) > 0)

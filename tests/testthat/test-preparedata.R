@@ -1931,4 +1931,43 @@ test_that("Scatter accepts tables as variables",
     expect_equal(ncol(pd$data), 2)
     expect_equal(pd$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
 
+    y.color.only <- list(X = NULL, Y = list(`Q3. Age` = structure(c(`Less than 18` = 0,
+        `18 to 24` = 13.4556574923547, `25 to 29` = 11.9266055045872,
+        `30 to 34` = 10.0917431192661, `35 to 39` = 11.0091743119266,
+        `40 to 44` = 10.7033639143731, `45 to 49` = 8.25688073394496,
+        `50 to 54` = 12.2324159021407, `55 to 64` = 15.5963302752294,
+        `65 or more` = 6.72782874617737, NET = 100), statistic = "%", .Dim = 11L, .Dimnames = list(
+            c("Less than 18", "18 to 24", "25 to 29", "30 to 34", "35 to 39",
+            "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
+            "NET")), name = "Q3. Age", questions = c("Q3. Age", "SUMMARY"
+        ))), Z1 = NULL, Z2 = structure(c(`Less than 18` = 0, `18 to 24` = 13.4556574923547,
+        `25 to 29` = 11.9266055045872, `30 to 34` = 10.0917431192661,
+        `35 to 39` = 11.0091743119266, `40 to 44` = 10.7033639143731,
+        `45 to 49` = 8.25688073394496, `50 to 54` = 12.2324159021407,
+        `55 to 64` = 15.5963302752294, `65 or more` = 6.72782874617737,
+        NET = 100), statistic = "%", .Dim = 11L, .Dimnames = list(c("Less than 18",
+        "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+        "50 to 54", "55 to 64", "65 or more", "NET")), name = "Q3. Age", questions = c("Q3. Age",
+        "SUMMARY")), groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = y.color.only)
+    expect_equal(dim(pd$data), c(9,2))
+    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, 2, 2), check.attributes = FALSE)
+
+    x.only <- list(X = structure(c(`Less than 18` = 0, `18 to 24` = 13.4556574923547,
+        `25 to 29` = 11.9266055045872, `30 to 34` = 10.0917431192661,
+        `35 to 39` = 11.0091743119266, `40 to 44` = 10.7033639143731,
+        `45 to 49` = 8.25688073394496, `50 to 54` = 12.2324159021407,
+        `55 to 64` = 15.5963302752294, `65 or more` = 6.72782874617737,
+        NET = 100), statistic = "%", .Dim = 11L, .Dimnames = list(c("Less than 18",
+        "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+        "50 to 54", "55 to 64", "65 or more", "NET")), name = "Q3. Age", questions = c("Q3. Age",
+        "SUMMARY")), Y = NULL, Z1 = NULL, Z2 = c(`Less than 18` = "Dog",
+        `18 to 24` = "Dog", `25 to 29` = "Dog", `30 to 34` = "Cat", `35 to 39` = "Cat",
+        `40 to 44` = "Lizard", `45 to 49` = "Lizard", `50 to 54` = "Spider",
+        `55 to 64` = "Spider", `65 or more` = "Spider", NET = "Spider"
+        ), groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = x.only)
+    expect_equal(dim(pd$data), c(10,2))
+    expect_equal(pd$scatter.variable.indices, c(1, NA, NA, 2, 2), check.attributes = FALSE)
+
 })
