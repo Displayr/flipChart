@@ -966,7 +966,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     indices["y"] <- .getColumnIndex(2)
     indices["sizes"] <- .getColumnIndex(3)
     indices["colors"] <- .getColumnIndex(4)
-    indices["groups"] <- max(indices[1:4], na.rm = TRUE)
+    indices["groups"] <- .getColumnIndex(5)
     indices
 }
 

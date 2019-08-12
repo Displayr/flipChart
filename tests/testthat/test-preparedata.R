@@ -737,11 +737,11 @@ test_that("PrepareData: input and output format of raw data",
     res7 <- PrepareData("Scatter", input.data.raw = list(X = yy, Y = yy), tidy.labels = TRUE,
                         hide.empty.rows = FALSE, hide.empty.columns = FALSE)
     expect_equal(dim(res7$data), c(100, 1))
-    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = 1))
+    expect_equal(res7$scatter.variable.indices, c(x = 1, y = 1, sizes = NA, colors = NA, groups = NA))
 
     res8 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = yy), tidy.labels = TRUE)
     expect_equal(dim(res8$data), c(100, 2))
-    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = 2))
+    expect_equal(res8$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
 
     res1 <- PrepareData("Column", input.data.raw = list(X = xx), first.aggregate = FALSE)
     expect_equal(res1$values.title, "")
@@ -1842,7 +1842,7 @@ test_that("Scatter accepts tables as variables",
     expect_equal(colnames(pd$data)[2], "Male")
     expect_equal(rownames(pd$data), c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ",
                 "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care"))
-    expect_equal(pd$scatter.variable.indices, c(1, 2, 3, NA, 3), check.attributes = FALSE)
+    expect_equal(pd$scatter.variable.indices, c(1, 2, 3, NA, NA), check.attributes = FALSE)
 
     raw.ytable.only <- list(X = NULL, Y = list(`Preferred cola` = structure(c(`Coca-Cola` = 42.625,
     `Diet Coke` = 11.125, `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5,
@@ -1853,7 +1853,7 @@ test_that("Scatter accepts tables as variables",
     "SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = raw.ytable.only)
     expect_equal(dim(pd$data), c(8, 1))
-    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, NA, 1), check.attributes = FALSE)
+    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, NA, NA), check.attributes = FALSE)
 
 
     b.raw <- list(X = rep(c("Age", "Gender", "Location"), c(8, 3, 9)),
@@ -1882,9 +1882,9 @@ test_that("Scatter accepts tables as variables",
                     "19 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
                     "Male", "Female", "North", "North East", "East", "South East",
                     "South", "South West", "West", "North West"), scatter.variable.indices = c(x = 1,
-                    y = 2, sizes = NA, colors = NA, groups = 2), class = "data.frame"))
+                    y = 2, sizes = NA, colors = NA, groups = NA), class = "data.frame"))
     expect_equal(colnames(pd.no.net$data)[2], "# Burger Occasions Capped at 50")
-    expect_equal(pd.no.net$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
+    expect_equal(pd.no.net$scatter.variable.indices, c(1,2,NA,NA,NA), check.attributes = FALSE)
 
     pd.with.net <- PrepareData("Scatter", input.data.raw = b.raw, row.names.to.remove = "")
     expect_equal(pd.with.net$data,
@@ -1901,7 +1901,7 @@ test_that("Scatter accepts tables as variables",
                     "NET", "Male", "Female", "NET ", "North", "North East", "East",
                     "South East", "South", "South West", "West", "North West", "NET  "
                 ), scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA,
-                groups = 2), class = "data.frame"))
+                groups = NA), class = "data.frame"))
 
     raw2 <- list(X = structure(c(`Arnold's` = 64.9907273851226, Mexican = 52.3593653410262,
     `Pret'a'pane` = 42.8394807335669, `Southern Fried Chicken` = 42.5509993818257,
@@ -1929,7 +1929,7 @@ test_that("Scatter accepts tables as variables",
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw2), "discarded")
     expect_equal(rownames(pd$data), rownames(raw2[[1]]))
     expect_equal(ncol(pd$data), 2)
-    expect_equal(pd$scatter.variable.indices, c(1,2,NA,NA,2), check.attributes = FALSE)
+    expect_equal(pd$scatter.variable.indices, c(1,2,NA,NA,NA), check.attributes = FALSE)
 
     y.color.only <- list(X = NULL, Y = list(`Q3. Age` = structure(c(`Less than 18` = 0,
         `18 to 24` = 13.4556574923547, `25 to 29` = 11.9266055045872,
@@ -1951,7 +1951,7 @@ test_that("Scatter accepts tables as variables",
         "SUMMARY")), groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = y.color.only)
     expect_equal(dim(pd$data), c(9,2))
-    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, 2, 2), check.attributes = FALSE)
+    expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, 2, NA), check.attributes = FALSE)
 
     x.only <- list(X = structure(c(`Less than 18` = 0, `18 to 24` = 13.4556574923547,
         `25 to 29` = 11.9266055045872, `30 to 34` = 10.0917431192661,
@@ -1968,6 +1968,6 @@ test_that("Scatter accepts tables as variables",
         ), groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = x.only)
     expect_equal(dim(pd$data), c(10,2))
-    expect_equal(pd$scatter.variable.indices, c(1, NA, NA, 2, 2), check.attributes = FALSE)
+    expect_equal(pd$scatter.variable.indices, c(1, NA, NA, 2, NA), check.attributes = FALSE)
 
 })
