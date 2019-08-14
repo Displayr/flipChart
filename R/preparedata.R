@@ -1106,6 +1106,19 @@ transformTable <- function(data,
         }
     }
 
+    # Switching rows and columns
+    # This is the first operation performed to ensure that both
+    # hide.rows.threshold and row.names.to.remove refer to rows AFTER tranposing
+    if (isTRUE(transpose))
+    {
+        if (length(dim(data)) > 2)
+            new.data <- aperm(data, c(2,1,3))
+        else
+            new.data <- t(data)
+        data <- CopyAttributes(new.data, data)
+        attr(data, "questions") <- rev(attr(data, "questions"))
+    }
+
     # Checking sample sizes (if available)
     # This needs to happen after row/columns have been (de)selected
     if (sum(hide.output.threshold, na.rm = TRUE) > 0)
@@ -1114,13 +1127,6 @@ transformTable <- function(data,
         data <- HideRowsWithSmallSampleSizes(data, hide.rows.threshold)
     if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
         data <- HideColumnsWithSmallSampleSizes(data, hide.columns.threshold)
-
-    ## Switching rows and columns
-    if (isTRUE(transpose))
-    {
-        data <- t(data)
-        attr(data, "questions") <- rev(attr(data, "questions"))
-    }
 
     # Set axis names before dropping dimensions (but AFTER transpose)
     data <- setAxisTitles(data, chart.type, drop)
