@@ -750,11 +750,9 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res1$categories.title, "VarA")
     expect_true(is.null(dimnames(res1$data)))
 
-    expect_warning(res2 <- PrepareData("Column", input.data.raw = list(X = xf, Y = yy), first.aggregate = FALSE),
-                   "Input data is always aggregated when 'Groups' variable is provided")
+    expect_error(res2 <- PrepareData("Column", input.data.raw = list(X = xf, Y = yy), first.aggregate = FALSE), NA)
     expect_equal(res2$values.title, "Counts")
-    expect_warning(res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE),
-                   "Input data is always aggregated when 'Groups' variable is provided")
+    expect_error(res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = FALSE), NA)
     expect_equal(res2$values.title, "Average")
 
     res2 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy))
@@ -2012,6 +2010,24 @@ test_that("Transpose and other manipulations",
             column.names.to.remove = "Don't care, NET", hide.rows.threshold = 50),
             "Rows 6,9 have sample size less than 50 and have been removed")
     expect_equal(dim(res$data), c(dim(res0$data)[1:2] - c(2,1)))
+})
 
+test_that("Remove unnecessary warnings",
+{
+    dat <- list(X = list(Country = structure(c(1L, 3L, 2L), class = "factor", .Label = c("Australia", "Denmark",
+            "France"), questiontype = "PickOne", name = "Country", label = "Country", question = "Country")),
+            Y = structure(c(1L, 2L, NA), class = "factor", .Label = c("1",
+            "2"), questiontype = "PickOne", name = "A", label = "A", question = "A"),
+            Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    filt <- structure(c(TRUE, TRUE, FALSE), name = "bQXIXC", label = "Australia")
+    #pd <- PrepareData("Column", input.data.raw = dat, subset = filt)
+
+    # No warning "Input data is always aggregated when 'Groups' variable provided"
+    dat <- list(X = list(Country = structure(c(1L, 4L, 2L, 3L), class = "factor", .Label = c("Australia",
+"Denmark", "Fiji", "France"), questiontype = "PickOne", name = "Country", label = "Country", question = "Country")),
+    Y = structure(c(1L, 2L, 3L, NA), class = "factor", .Label = c("1",
+    "2", "3"), questiontype = "PickOne", name = "A", label = "A", question = "A"),
+    Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    expect_error(PrepareData("Column", input.data.raw = dat, first.aggregate = FALSE), NA)
 
 })

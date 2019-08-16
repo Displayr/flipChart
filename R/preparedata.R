@@ -324,7 +324,8 @@ PrepareData <- function(chart.type,
                     weights = weights, missing = missing, error.if.insufficient.obs = FALSE))
         }
         if (!isScatter(chart.type))
-            data <- TidyRawData(data, subset = subset, weights = weights, missing = missing)
+            data <- TidyRawData(data, subset = subset, weights = weights, 
+                        missing = missing, error.if.insufficient.obs = FALSE)
         if (invalid.joining)
             attr(data, "InvalidVariableJoining") <- TRUE
         n.post <- NROW(data)
@@ -349,8 +350,6 @@ PrepareData <- function(chart.type,
         warning("Data is not aggregated for this chart type.")
         first.aggregate <- FALSE
     }
-    if (crosstab && !first.aggregate)
-        warning("Input data is always aggregated when 'Groups' variable is provided.")
     if (crosstab || first.aggregate)
     {
         #crosstab <- NCOL(data) == 2 || group.by.last
