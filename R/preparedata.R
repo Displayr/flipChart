@@ -559,10 +559,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
         k <- NCOL(data)
         group.var <- data[,k]
 
-        if (length(unique(group.var)) < 2)
-            stop("Grouping variable must have more than one value")
-
-        if (k == 2)
+        if (k <= 2)
         {
             out <- crosstabOneVariable(data[,1], group.var, weights,
                         categorical.as.binary, as.percentages)

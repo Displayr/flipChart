@@ -2019,8 +2019,19 @@ test_that("Remove unnecessary warnings",
             Y = structure(c(1L, 2L, NA), class = "factor", .Label = c("1",
             "2"), questiontype = "PickOne", name = "A", label = "A", question = "A"),
             Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
-    filt <- structure(c(TRUE, TRUE, FALSE), name = "bQXIXC", label = "Australia")
-    #pd <- PrepareData("Column", input.data.raw = dat, subset = filt)
+    filt <- structure(c(TRUE, TRUE, FALSE), name = "bQXIXC", label = "Filter")
+    filt2 <- structure(c(TRUE, FALSE, FALSE), name = "Another filter", label = "Filter")
+
+    expect_warning(pd <- PrepareData("Column", input.data.raw = dat, subset = filt))
+    expect_equal(dimnames(pd$data), list(Country = c("Australia", "France"), A = c("1", "2")))
+
+    expect_warning(pd2 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = FALSE))
+    expect_equal(dimnames(pd2$data), list(Country = "Australia", A = "Filter"))
+
+    # When there is only value in the grouping value, the column names uses the
+    # filter label instead of the grouping value
+    expect_warning(pd3 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = TRUE))
+    expect_equal(dimnames(pd3$data), list("Australia", "Filter"))
 
     # No warning "Input data is always aggregated when 'Groups' variable provided"
     dat <- list(X = list(Country = structure(c(1L, 4L, 2L, 3L), class = "factor", .Label = c("Australia",
