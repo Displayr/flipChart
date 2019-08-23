@@ -2042,3 +2042,26 @@ test_that("Remove unnecessary warnings",
     expect_error(PrepareData("Column", input.data.raw = dat, first.aggregate = FALSE), NA)
 
 })
+
+
+#dat <- list(structure(c("STATE", "Texas", "California", "Rhode Island",
+#"TOTAL", "12", "13", "12"), .Dim = c(4L, 2L)), FALSE, NULL, NULL)
+
+test_that("Remove first column if appropriate",
+{
+    p1 <- list(structure(c("Ant", "1", "Bee", "2", "Cockroach", "3"), .Dim = 2:3),
+        FALSE, NULL, NULL)
+    res1 <- PrepareData("Column", input.data.pasted = p1)
+    expect_equal(length(res1$data), 3)
+
+    p2 <- list(structure(c("", "Insect score", "Ant", "1", "Bee", "2",
+    "Cockroach", "3"), .Dim = c(2L, 4L)), FALSE, NULL, NULL)
+    res2 <- PrepareData("Column", input.data.pasted = p2)
+    expect_equal(length(res2$data), 3)
+
+    p3 <- list(structure(c("Year", "2001", "2002", "2003", "Ant", "1",
+    "3", "6", "Bee", "2", "2", "4", "Cockroach", "3", "6", "3"), .Dim = c(4L,
+    4L)), FALSE, NULL, NULL)
+    res3 <- PrepareData("Column", input.data.pasted = p3)
+    expect_equal(dim(res3$data), c(3, 3))
+})

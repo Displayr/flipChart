@@ -1371,6 +1371,8 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
 {
     if (length(dim(x)) != 2 || ncol(x) == 1)
         return(x)
+    if (NROW(x) == 1) # single row input
+        return(x)
     if (hasUserSuppliedRownames(x))
         return(x)
 
