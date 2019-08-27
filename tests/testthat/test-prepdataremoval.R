@@ -412,7 +412,7 @@ test_that("PrepareData R+C removal: input.data.raw with missing vals",
     expect_error(suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = FALSE,
                              column.names.to.remove = c("Gender", "Income"))),
-                 "Removing rows/columns gives empty input matrix")
+                 "Removing column 'Gender', 'Income' gives empty input matrix")
     pd <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Bar Chart",
                              first.aggregate = TRUE,
                              column.names.to.remove = c("Gender", "Income")))
