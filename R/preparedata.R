@@ -682,9 +682,11 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE, 
                         fix.empty.names = FALSE, stringsAsFactors = FALSE)
         ind.autonames <- grep("structure(", colnames(x[[2]]), fixed = TRUE)
-        if (length(ind.autonames) > 0)
-            colnames(x[[2]])[ind.autonames] <- " "
-
+        for (ii in ind.autonames)
+        {
+            tmp.name <- attr(x[[2]][,ii], "name")
+            colnames(x[[2]])[ii] <- if (!is.null(tmp.name)) tmp.name else " "
+        }
     }
 
     if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
@@ -955,6 +957,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
             return(ind)
         return(pos)
     }
+
 
     # Indices corresponding to selections in input.raw.data
     raw.is.null <- sapply(input.data.raw, is.null)
@@ -1279,9 +1282,9 @@ prepareForSpecificCharts <- function(data,
                 y.ind <- (1:m) + 1
                 xvar <- rep(data[,1], m)
             }
-            if (length(y.names) <= 1)
+            if (length(y.names) < m)
                 y.names <- colnames(data)[y.ind]
-            if (length(y.names) <= 1)
+            if (length(y.names) < m)
                 y.names <- paste("Group", 1:m)
 
             # newdata needs to use data rather than input.data.raw

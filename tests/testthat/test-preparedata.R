@@ -1945,7 +1945,7 @@ test_that("Scatter accepts tables as variables",
         `55 to 64` = 15.5963302752294, `65 or more` = 6.72782874617737,
         NET = 100), statistic = "%", .Dim = 11L, .Dimnames = list(c("Less than 18",
         "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
-        "50 to 54", "55 to 64", "65 or more", "NET")), name = "Q3. Age", questions = c("Q3. Age",
+        "50 to 54", "55 to 64", "65 or more", "NET")), name = "Q3. Age.2", questions = c("Q3. Age",
         "SUMMARY")), groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = y.color.only)
     expect_equal(dim(pd$data), c(9,2))
