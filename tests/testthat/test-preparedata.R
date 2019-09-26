@@ -2135,7 +2135,7 @@ test_that("Heatmap axis titles",
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")
 
-    res <- PrepareData("Heat", input.data.raw = vdat)
+    expect_warning(res <- PrepareData("Heat", input.data.raw = vdat))
     expect_equal(colnames(res$data), c("Male", "Female"))
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")

@@ -574,7 +574,12 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
                         weights = weights, categorical.as.binary = categorical.as.binary,
                         as.percentages = as.percentages)
             out <- do.call("rbind", res)
-            names(dimnames(out)) <- c("", tmp.names[2])
+
+            if (chart.type == "Heat")
+                names(dimnames(out)) <- c("", attr(group.var, "question"))
+            else
+                names(dimnames(out)) <- c("", tmp.names[2])
+
             attr.list <- sapply(res, function(x) attr(x, "statistic"))
             if (all(attr.list == attr.list[1]))
                 attr(out, "statistic") <- attr.list[1]
