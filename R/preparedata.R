@@ -1459,20 +1459,13 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 
     } else if (chart.type == "Heat")
     {
-        # Summary tables - or transpose of one
-        if (is.null(attr(x, "categories.title")) && 
-            length(attr(x, "questions")) == 2 && 
-            attr(x, "questions")[2] == "SUMMARY")
+        # No default axis labels for summary tables
+        # Because it depends on the question type used to create the table
+        if (length(attr(x, "questions")) == 2 && 
+            "SUMMARY" %in% attr(x, "questions"))
         {
-            attr(x, "categories.title") <- attr(x, "questions")[1]
-            attr(x, "values.title") <- ""
-        }
-        if (is.null(attr(x, "categories.title")) && 
-            length(attr(x, "questions")) == 2 && 
-            attr(x, "questions")[1] == "SUMMARY")
-        {
-            attr(x, "values.title") <- attr(x, "questions")[2]
             attr(x, "categories.title") <- ""
+            attr(x, "values.title") <- ""
         }
 
         if (is.null(attr(x, "categories.title")))

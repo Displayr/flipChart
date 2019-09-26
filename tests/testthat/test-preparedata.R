@@ -2163,12 +2163,12 @@ test_that("Heatmap axis titles",
 
     res <- PrepareData("Heat", input.data.table = summary.table)
     expect_equal(dim(res$data), c(6, 9))
-    expect_equal(res$categories.title, "Q9. Cola drinking frequency")
+    expect_equal(res$categories.title, "")
     expect_equal(res$values.title, "")
 
     res <- PrepareData("Heat", input.data.table = summary.table, transpose = TRUE)
     expect_equal(dim(res$data), c(9, 6))
-    expect_equal(res$values.title, "Q9. Cola drinking frequency")
+    expect_equal(res$values.title, "")
     expect_equal(res$categories.title, "")
 })
 
