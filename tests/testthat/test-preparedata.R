@@ -2065,3 +2065,80 @@ test_that("Remove first column if appropriate",
     res3 <- PrepareData("Column", input.data.pasted = p3)
     expect_equal(dim(res3$data), c(3, 3))
 })
+
+tb <- structure(c(0, 13.75, 11.25, 9.375, 10, 11.875, 8.125, 11.25,
+    16.875, 7.5, 100, 0, 13.1736526946108, 12.5748502994012, 10.7784431137725,
+    11.9760479041916, 9.58083832335329, 8.38323353293413, 13.1736526946108,
+    14.3712574850299, 5.98802395209581, 100, 0, 13.4556574923547,
+    11.9266055045872, 10.0917431192661, 11.0091743119266, 10.7033639143731,
+    8.25688073394496, 12.2324159021407, 15.5963302752294, 6.72782874617737,
+    100), .Dim = c(11L, 3L), statistic = "Column %", .Dimnames = list(
+        c("Less than 18", "18 to 24", "25 to 29", "30 to 34", "35 to 39",
+        "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
+        "NET"), c("Male", "Female", "NET")), name = "Q3. Age by Q2. Gender", questions = c("Q3. Age",
+    "Q2. Gender"))
+
+vdat <- list(X = list(`Q3. Age` = structure(c(3L, 7L, 3L, 3L, 9L, 9L,
+    8L, 5L, 10L, 7L, 7L, 9L, 9L, 4L, 10L, 3L, 4L, 8L, 5L, 2L, 8L,
+    7L, 9L, 8L, 4L, 3L, 5L, 6L, 3L, 9L, 8L, 9L, 4L, 2L, 9L, 4L, 9L,
+    7L, 2L, 6L, 9L, 7L, 9L, 6L, 7L, 3L, 5L, 6L, 6L, 7L, 2L, 9L, 5L,
+    3L, 6L, 4L, 9L, 4L, 10L, 2L, 5L, 6L, 2L, 7L, 2L, 4L, 10L, 5L,
+    3L, 5L, 5L, 2L, 4L, 6L, 7L, 8L, 6L, 9L, 9L, 10L, 8L, 4L, 5L,
+    2L, 3L, 2L, 8L, 9L, 4L, 2L, 2L, 10L, 7L, 4L, 2L, 8L, 9L, 9L,
+    5L, 9L, 2L, 2L, 7L, 5L, 2L, 4L, 2L, 2L, 4L, 10L, 8L, 7L, 5L,
+    6L, 6L, 5L, 2L, 6L, 9L, 8L, 8L, 5L, 3L, 6L, 3L, 5L, 4L, 10L,
+    3L, 2L, 2L, 10L, 4L, 2L, 8L, 6L, 9L, 8L, 9L, 9L, 4L, 9L, 2L,
+    2L, 4L, 10L, 6L, 2L, 6L, 2L, 2L, 10L, 5L, 7L, 5L, 2L, 8L, 6L,
+    2L, 2L, 4L, 3L, 3L, 3L, 3L, 4L, 4L, 7L, 6L, 5L, 8L, 9L, 8L, 8L,
+    8L, 9L, 6L, 5L, 3L, 3L, 6L, 2L, 5L, 9L, 6L, 5L, 6L, 3L, 3L, 3L,
+    9L, 3L, 9L, 3L, 2L, 2L, 7L, 4L, 6L, 9L, 2L, 10L, 3L, 8L, 9L,
+    4L, 7L, 8L, 4L, 9L, 9L, 9L, 2L, 3L, 6L, 8L, 10L, 7L, 3L, 3L,
+    4L, 5L, 3L, 10L, 10L, 6L, 6L, 10L, 2L, 10L, 2L, 8L, 6L, 9L, 2L,
+    9L, 9L, 8L, 9L, 5L, 9L, 3L, 9L, 2L, 5L, 3L, 10L, 6L, 7L, 8L,
+    9L, 5L, 2L, 3L, 6L, 8L, 6L, 5L, 6L, 8L, 9L, 5L, 2L, 9L, 3L, 5L,
+    8L, 10L, 3L, 7L, 7L, 8L, 6L, 9L, 7L, 7L, 5L, 8L, 7L, 8L, 9L,
+    2L, 3L, 10L, 7L, 8L, 4L, 10L, 9L, 10L, 3L, 4L, 9L, 4L, 4L, 9L,
+    9L, 8L, 6L, 5L, 7L, 9L, 5L, 6L, 5L, 3L, 8L, 6L, 7L, 5L, 8L, 2L,
+    3L, 9L, 5L, 8L, 8L, 8L, 5L, 3L, 4L, 4L, 8L, 4L, 2L, 4L, 8L), class = "factor", .Label = c("Less than 18",
+    "18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+    "50 to 54", "55 to 64", "65 or more"), questiontype = "PickOne", name = "Q3", label = "Q3. Age", question = "Q3. Age")),
+        Y = structure(c(2L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 2L, 1L,
+        1L, 1L, 1L, 2L, 2L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 1L, 1L, 2L,
+        2L, 2L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 1L, 1L, 2L, 2L, 2L, 1L,
+        1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 1L, 2L, 1L, 2L, 2L, 2L, 1L,
+        2L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 2L, 1L, 2L, 1L, 1L, 1L,
+        2L, 1L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 2L, 2L, 2L, 2L, 2L, 1L,
+        2L, 1L, 1L, 1L, 2L, 2L, 1L, 2L, 1L, 2L, 2L, 2L, 1L, 1L, 1L,
+        1L, 2L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 1L, 2L, 2L, 1L, 2L,
+        2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 1L, 2L, 2L, 1L, 2L, 1L,
+        2L, 2L, 1L, 2L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 2L,
+        1L, 2L, 1L, 1L, 2L, 1L, 1L, 2L, 1L, 1L, 2L, 2L, 1L, 2L, 1L,
+        1L, 1L, 2L, 2L, 2L, 2L, 1L, 1L, 2L, 1L, 2L, 1L, 2L, 2L, 2L,
+        2L, 2L, 2L, 2L, 1L, 1L, 2L, 1L, 2L, 1L, 1L, 2L, 1L, 1L, 2L,
+        1L, 2L, 2L, 1L, 1L, 2L, 1L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L,
+        1L, 2L, 2L, 1L, 1L, 2L, 2L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L,
+        1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 2L, 2L, 2L, 2L, 1L, 2L, 2L,
+        1L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 2L, 1L, 1L, 2L, 2L, 2L,
+        2L, 1L, 2L, 2L, 1L, 1L, 2L, 1L, 2L, 2L, 2L, 1L, 2L, 2L, 1L,
+        2L, 2L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 2L, 1L, 2L, 2L, 1L, 1L,
+        1L, 2L, 1L, 2L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 1L, 2L, 1L, 2L,
+        2L, 2L, 1L, 2L, 2L, 2L, 1L, 2L, 1L, 1L, 1L, 2L, 1L, 2L, 2L,
+        2L, 1L, 1L, 2L, 2L, 2L, 1L, 1L, 1L, 2L, 2L, 1L, 1L, 1L, 2L,
+        2L), class = "factor", .Label = c("Male", "Female"), questiontype = "PickOne", name = "Q2",
+        label = "Q2. Gender", question = "Q2. Gender"),
+        Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+
+test_that("Heatmap axis titles",
+{
+    res <- PrepareData("Heat", input.data.table = tb)
+    expect_equal(colnames(res$data), c("Male", "Female"))
+    expect_equal(res$categories.title, "Q2. Gender")
+    expect_equal(res$values.title, "Q3. Age")
+
+    res <- PrepareData("Heat", input.data.raw = vdat)
+    expect_equal(colnames(res$data), c("Male", "Female"))
+    expect_equal(res$categories.title, "Q2. Gender")
+    expect_equal(res$values.title, "Q3. Age")
+})
+
+
