@@ -2128,6 +2128,27 @@ vdat <- list(X = list(`Q3. Age` = structure(c(3L, 7L, 3L, 3L, 9L, 9L,
         label = "Q2. Gender", question = "Q2. Gender"),
         Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
 
+summary.table <- structure(c(-8.03443400756784, -0.362599159486435, 0.209925829176357,
+        -2.42368911867248, 9.82834563871125, 0.782450817839146, -2.89209226937453,
+        1.82510677193538, -2.04973529771204, 3.17287792659536, 0.140392828610414,
+        -0.196549960054579, -1.03211191919445, 0.516055959597225, -1.80619585859029,
+        2.64478679293578, -1.61267487374133, 1.29013989899307, 0.763605271365248,
+        0.424225150758472, -0.254535090455084, 2.9695760553093, -2.96957605530931,
+        -0.933295331668639, 1.51380943091758, 0.216258490131084, 0.216258490131084,
+        0.865033960524334, -2.595101881573, -0.216258490131082, 6.24340711873983,
+        -2.49736284749593, 0.832454282498644, NaN, -3.53793070061923,
+        -1.0405678531233, 5.80611561772338, -1.16122312354468, 1.08630550267083,
+        -2.06023457403088, -2.95924602451708, -0.711717398301574, 2.32058206788793,
+        2.64438421689554, -0.269835124173015, -3.18405446524157, -2.21264801821872,
+        0.701571322849838, 4.42421810285147, -1.17708555029993, 2.96300845420327,
+        -3.36890002327222, -2.88183014038949, 0.0405891569068948, NaN,
+        NaN, NaN, NaN, NaN, NaN), .Dim = c(6L, 10L), statistic = "z-Statistic", .Dimnames = list(
+            c("Coca Cola", "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Light",
+            "Pepsi Max"), c("Never", "Once or twice a year", "Once every 3 months",
+            "Once a month", "Once every 2 weeks", "Once a week", "2 to 3 days a week",
+            "4 to 5 days a week", "Every or nearly every day", "NET")), name = "Q9. Cola drinking frequency",
+            questions = c("Q9. Cola drinking frequency", "SUMMARY"))
+
 test_that("Heatmap axis titles",
 {
     res <- PrepareData("Heat", input.data.table = tb)
@@ -2139,6 +2160,16 @@ test_that("Heatmap axis titles",
     expect_equal(colnames(res$data), c("Male", "Female"))
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")
+
+    res <- PrepareData("Heat", input.data.table = summary.table)
+    expect_equal(dim(res$data), c(6, 9))
+    expect_equal(res$categories.title, "Q9. Cola drinking frequency")
+    expect_equal(res$values.title, "")
+
+    res <- PrepareData("Heat", input.data.table = summary.table, transpose = TRUE)
+    expect_equal(dim(res$data), c(9, 6))
+    expect_equal(res$values.title, "Q9. Cola drinking frequency")
+    expect_equal(res$categories.title, "")
 })
 
 

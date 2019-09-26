@@ -1459,16 +1459,31 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 
     } else if (chart.type == "Heat")
     {
-        # For heatmap axis are transposed
-        if (is.null(attr(x, "values.title")))
-            attr(x, "values.title") <- names(dimnames(x))[1]
-        if (is.null(attr(x, "values.title")))
-            attr(x, "values.title") <- attr(x, "questions")[1]
-        # For heatmap axis are transposed
+        # Summary tables - or transpose of one
+        if (is.null(attr(x, "categories.title")) && 
+            length(attr(x, "questions")) == 2 && 
+            attr(x, "questions")[2] == "SUMMARY")
+        {
+            attr(x, "categories.title") <- attr(x, "questions")[1]
+            attr(x, "values.title") <- ""
+        }
+        if (is.null(attr(x, "categories.title")) && 
+            length(attr(x, "questions")) == 2 && 
+            attr(x, "questions")[1] == "SUMMARY")
+        {
+            attr(x, "values.title") <- attr(x, "questions")[2]
+            attr(x, "categories.title") <- ""
+        }
+
         if (is.null(attr(x, "categories.title")))
             attr(x, "categories.title") <- names(dimnames(x))[2]
         if (is.null(attr(x, "categories.title")))
             attr(x, "categories.title") <- attr(x, "questions")[2]
+
+        if (is.null(attr(x, "values.title")))
+            attr(x, "values.title") <- names(dimnames(x))[1]
+        if (is.null(attr(x, "values.title")))
+            attr(x, "values.title") <- attr(x, "questions")[1]
     } else
     {
         # Extract categories.title from aggregated data
