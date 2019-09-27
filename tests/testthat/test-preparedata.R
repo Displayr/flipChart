@@ -2064,6 +2064,15 @@ test_that("Remove first column if appropriate",
     4L)), FALSE, NULL, NULL)
     res3 <- PrepareData("Column", input.data.pasted = p3)
     expect_equal(dim(res3$data), c(3, 3))
+
+    date.table <- list(structure(c("2015", "2016", "2017", "2018", "50%", "45%",
+        "60%", "35%"), .Dim = c(4L, 2L)), FALSE, NULL, NULL)
+    res4 <- PrepareData("Column", input.data.pasted = date.table)
+    expect_equal(names(res4$data), c("2015", "2016", "2017", "2018"))
+    expect_equal(attr(res4$data, "statistic"), "%")
+
+    #tb <- list(structure(c("a", "b", "c", "d", "50%", "45%",
+    #    "60%", "35%"), .Dim = c(4L, 2L)), FALSE, NULL, NULL)
 })
 
 tb <- structure(c(0, 13.75, 11.25, 9.375, 10, 11.875, 8.125, 11.25,

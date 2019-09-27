@@ -1353,8 +1353,10 @@ prepareForSpecificCharts <- function(data,
     else
     {
         # Set rownames before TidyTabularData so that factor are not converted to numeric
+        tmp.stat <- attr(data, "statistic")
         data <- useFirstColumnAsLabel(data,
             allow.numeric.rownames = chart.type %in% c("Area", "Bar", "Column", "Line", "Stream"))
+        attr(data, "statistic") <- tmp.stat
     }
     data
 }
