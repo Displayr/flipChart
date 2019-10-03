@@ -26,7 +26,8 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   hide.empty.rows = hide.empty.rows.and.columns,
   hide.empty.columns = hide.empty.rows.and.columns,
   as.percentages = FALSE, categorical.as.binary = NULL,
-  date.format = "Automatic", show.labels = TRUE, values.title = "")
+  date.format = "Automatic", show.labels = TRUE, column.labels = "",
+  row.labels = "", values.title = "")
 }
 \arguments{
 \item{chart.type}{Character; chart type to be plotted.}
@@ -198,6 +199,12 @@ if it cannot be deduced from the input data.}
 
 \item{show.labels}{Logical; If \code{TRUE}, labels are used for
 names in the data output if raw data is supplied.}
+
+\item{column.labels}{A comma separated list of names to replace the default column names
+of \code{pd$data}. This is applied after all other data manipulations}
+
+\item{row.labels}{A comma separated list of names to replace the default row names
+of \code{pd$data}. This is applied after all other data manipulations}
 
 \item{values.title}{The title for the values axis of a chart (e.g.,
 the y-axis of a column chart or the x-axis of a bar chart).}

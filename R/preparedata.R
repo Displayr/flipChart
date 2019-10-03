@@ -126,10 +126,15 @@
 #' if it cannot be deduced from the input data.
 #' @param values.title The title for the values axis of a chart (e.g.,
 #'     the y-axis of a column chart or the x-axis of a bar chart).
+#' @param column.labels A comma separated list of names to replace the default column names
+#'      of \code{pd$data}. This is applied after all other data manipulations 
+#' @param row.labels A comma separated list of names to replace the default row names
+#'      of \code{pd$data}. This is applied after all other data manipulations 
 #' @details It is assumed that only one of \code{input.data.pasted},
 #'     \code{input.data.table}, \code{input.data.tables},
 #'     \code{input.data.other}, \code{input.data.raw} is non-NULL.
 #'     They are checked for nullity in that order.
+#' @importFrom flipU ConvertCommaSeparatedStringToVector
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
 #' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
@@ -200,6 +205,8 @@ PrepareData <- function(chart.type,
                         categorical.as.binary = NULL,
                         date.format = "Automatic",
                         show.labels = TRUE,
+                        column.labels = "",
+                        row.labels = "",
                         values.title = "")
 {
 
@@ -450,6 +457,10 @@ PrepareData <- function(chart.type,
         data <- as.matrix(data)
         attr(data, "statistic") <- tmp
     }
+    if (sum(nchar(column.labels)) > 0)
+        data <- replaceDimNames(data, 2, column.labels)   
+    if (sum(nchar(row.labels)) > 0)
+        data <- replaceDimNames(data, 1, row.labels)
 
     list(data = data,
          weights = weights,
@@ -458,6 +469,19 @@ PrepareData <- function(chart.type,
          chart.title = chart.title,
          chart.footer = attr(data, "footer"),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
+}
+
+replaceDimNames <- function(x, dim, labels)
+{
+    if (length(dim(x)) < dim)
+        x <- CopyAttributes(as.matrix(x), x)
+    
+    new.labels <- paste0(dimnames(x)[[dim]], rep("", dim(x)[dim])) # get length right
+    tmp.labels <- ConvertCommaSeparatedStringToVector(labels)
+    tmp.len <- min(length(tmp.len), length(new.labels))
+    new.labels[1:tmp.len] <- tmp.labels[1:tmp.len]
+    dimnames(x)[[dim]] <- new.labels
+    return(x)
 }
 
 
