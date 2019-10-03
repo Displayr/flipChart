@@ -478,7 +478,7 @@ replaceDimNames <- function(x, dim, labels)
     
     new.labels <- paste0(dimnames(x)[[dim]], rep("", dim(x)[dim])) # get length right
     tmp.labels <- ConvertCommaSeparatedStringToVector(labels)
-    tmp.len <- min(length(tmp.len), length(new.labels))
+    tmp.len <- min(length(tmp.labels), length(new.labels))
     new.labels[1:tmp.len] <- tmp.labels[1:tmp.len]
     dimnames(x)[[dim]] <- new.labels
     return(x)
