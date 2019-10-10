@@ -1320,7 +1320,7 @@ prepareForSpecificCharts <- function(data,
             # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
                                   Y = as.vector(unlist(data[,y.ind])),
-                                  Groups = rep(y.names, each = n))
+                                  Groups = factor(rep(y.names, each = n), levels = y.names))
 
             if (!grepl("^No date", date.format) && date.format != "Automatic")
             {
