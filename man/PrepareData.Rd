@@ -18,11 +18,12 @@ PrepareData(chart.type, subset = TRUE, weights = NULL,
   auto.order.columns = FALSE, sort.columns = FALSE,
   sort.columns.exclude = c("NET", "SUM", "Total"),
   sort.columns.row = NULL, sort.columns.decreasing = FALSE,
-  hide.output.threshold = 0, hide.rows.threshold = 0,
-  hide.columns.threshold = 0, reverse.rows = FALSE,
-  reverse.columns = FALSE, row.names.to.remove = c("NET", "SUM",
-  "Total"), column.names.to.remove = c("NET", "SUM", "Total"),
-  split = "[;,]", hide.empty.rows.and.columns = TRUE,
+  hide.output.threshold = 0, hide.values.threshold = 0,
+  hide.rows.threshold = 0, hide.columns.threshold = 0,
+  reverse.rows = FALSE, reverse.columns = FALSE,
+  row.names.to.remove = c("NET", "SUM", "Total"),
+  column.names.to.remove = c("NET", "SUM", "Total"), split = "[;,]",
+  hide.empty.rows.and.columns = TRUE,
   hide.empty.rows = hide.empty.rows.and.columns,
   hide.empty.columns = hide.empty.rows.and.columns,
   as.percentages = FALSE, categorical.as.binary = NULL,
@@ -146,6 +147,11 @@ will be used for sorting.}
 then each cell in the input table will be checked to ensure
 'n' or 'Column n' is larger than specified threshold, otherwise an error
 message is given.}
+
+\item{hide.values.threshold}{Integer; If sample size ('Column n' or 'n') is provided
+then each cell in the input table will be checked to ensure
+'n' or 'Column n' is larger than specified threshold,
+otherwise the cell will be set to \code{NA}.}
 
 \item{hide.rows.threshold}{Integer; If sample size ('Column n' or 'n')
 is provided, then rows and with sample sizes smaller than threshold

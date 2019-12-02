@@ -99,6 +99,10 @@
 #'      then each cell in the input table will be checked to ensure
 #'      'n' or 'Column n' is larger than specified threshold, otherwise an error
 #'      message is given.
+#' @param hide.values.threshold Integer; If sample size ('Column n' or 'n') is provided
+#'      then each cell in the input table will be checked to ensure
+#'      'n' or 'Column n' is larger than specified threshold,
+#'      otherwise the cell will be set to \code{NA}.
 #' @param hide.rows.threshold Integer; If sample size ('Column n' or 'n')
 #'      is provided, then rows and with sample sizes smaller than threshold
 #'      will be removed from table. Vectors will be treated as 1-d matrices
@@ -137,7 +141,7 @@
 #' @importFrom flipU ConvertCommaSeparatedStringToVector
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideValuesWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -191,6 +195,7 @@ PrepareData <- function(chart.type,
                         sort.columns.row = NULL,
                         sort.columns.decreasing = FALSE,
                         hide.output.threshold = 0,
+                        hide.values.threshold = 0,
                         hide.rows.threshold = 0,
                         hide.columns.threshold = 0,
                         reverse.rows = FALSE,
@@ -393,7 +398,7 @@ PrepareData <- function(chart.type,
         (chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
-                   hide.output.threshold, hide.rows.threshold, hide.columns.threshold,
+                   hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
                    transpose, group.by.last || first.aggregate,
                    hide.empty.rows, hide.empty.columns, date.format)
 
@@ -1086,6 +1091,7 @@ transformTable <- function(data,
                            drop,
                            is.raw.data,
                            hide.output.threshold,
+                           hide.values.threshold,
                            hide.rows.threshold, hide.columns.threshold,
                            transpose,
                            first.aggregate,
@@ -1102,7 +1108,7 @@ transformTable <- function(data,
                                        FALSE,
                                        FALSE,
                                        is.raw.data,
-                                       0, 0, 0, # sample size not used
+                                       0, 0, 0, 0, # sample size not used
                                        transpose,
                                        first.aggregate,
                                        hide.empty.rows, hide.empty.columns,
@@ -1151,6 +1157,8 @@ transformTable <- function(data,
     # This needs to happen after row/columns have been (de)selected
     if (sum(hide.output.threshold, na.rm = TRUE) > 0)
         data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
+    if (sum(hide.values.threshold, na.rm = TRUE) > 0)
+        data <- HideValuesWithSmallSampleSizes(data, hide.values.threshold)
     if (sum(hide.rows.threshold, na.rm = TRUE) > 0)
         data <- HideRowsWithSmallSampleSizes(data, hide.rows.threshold)
     if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
