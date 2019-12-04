@@ -349,6 +349,7 @@ PrepareData <- function(chart.type,
     if (filt)
         attr(data, "assigned.rownames") <- FALSE
 
+
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
@@ -1328,7 +1329,8 @@ prepareForSpecificCharts <- function(data,
             # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
                                   Y = as.vector(unlist(data[,y.ind])),
-                                  Groups = factor(rep(y.names, each = n), levels = y.names))
+                                  Groups = factor(rep(y.names, each = n), levels = y.names),
+                                  stringsAsFactors = FALSE)
 
             if (!grepl("^No date", date.format) && date.format != "Automatic")
             {

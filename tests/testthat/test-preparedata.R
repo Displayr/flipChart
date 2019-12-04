@@ -1388,6 +1388,41 @@ test_that("Scatter input data column order",
 
 })
 
+test_that("Scatter x-axis tick order",
+{
+    raw.dat <- list(X = c("Value for money", "Internet speed", "Network coverage",
+"Understand the plans", "Support", "Upgrade/downgrade plans",
+"Understand your bill", "Cancel", "Check internet usage"), Y = list(
+    table.Performance.by.Main.phone.company.3 = structure(c(3.85304054054054,
+    4.02364864864865, 4.11993243243243, 3.83304347826087, 3.87033747779751,
+    3.86213235294118, 3.98795180722892, 3.67901234567901, 4.03368794326241,
+    3.75087108013937, 4.13414634146341, 4.33449477351916, 3.89087656529517,
+    3.8690036900369, 3.93371212121212, 4.08152173913043, 3.68913043478261,
+    4.10575139146568, 4.2483660130719, 4.2156862745098, 4.24183006535948,
+    4.09797297297297, 4.09756097560976, 4, 4.12627986348123,
+    3.97254901960784, 4.18118466898955, 3.66824644549763, 3.7345971563981,
+    3.66824644549763, 3.57, 3.65151515151515, 3.65957446808511,
+    3.85643564356436, 3.4327485380117, 4.01041666666667, 4.35757575757576,
+    3.98787878787879, 4.01818181818182, 4.33128834355828, 4.09554140127389,
+    4.25625, 4.37654320987654, 4.16447368421053, 4.28125, 4.44715447154472,
+    3.95121951219512, 3.89430894308943, 4.47933884297521, 4.05932203389831,
+    4.29310344827586, 4.475, 4.09259259259259, 4.24137931034483,
+    4.06903353057199, 4.05877712031558, 4.15897435897436, 4.0514378290806,
+    3.90654985398415, 3.99698795180723, 4.15860105734038, 3.87815326035221,
+    4.13693998309383, 4.50531914893617, 4.09929078014184, 4.25886524822695,
+    4.41261261261261, 3.88533834586466, 4.18110236220472, 4.41165755919854,
+    4.23880597014925, 4.23818897637795), .Dim = 9:8, statistic = "Average", .Dimnames = list(
+        c("Value for money", "Internet speed", "Network coverage",
+        "Understand the plans", "Support", "Upgrade/downgrade plans",
+        "Understand your bill", "Cancel", "Check internet usage"
+        ), c("AT&T", "Verizon", "T-Mobile", "Sprint", "Metro PCS",
+        "Boost Mobile", "NET", "Other")), name = "table.Performance.by.Main.phone.company.3", questions = c("Performance",
+    "Main phone company"))), Z1 = NULL, Z2 = NULL, groups = NULL,
+    labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = raw.dat)
+    expect_is(pd$data[,1], "character")
+})
+
 test_that("Tidy labels",
 {
     mat.date <- structure(c(1, 2, 3, 4, 5, 2.2, 4.7, 3.1, 5, 6.2), .Dim = c(5L,
