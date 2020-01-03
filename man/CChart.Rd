@@ -4,9 +4,16 @@
 \alias{CChart}
 \title{Creates charts}
 \usage{
-CChart(chart.type, x, small.multiples = FALSE,
-  multi.color.series = FALSE, font.units = "px", ...,
-  warn.if.no.match = TRUE, append.data = FALSE)
+CChart(
+  chart.type,
+  x,
+  small.multiples = FALSE,
+  multi.color.series = FALSE,
+  font.units = "px",
+  ...,
+  warn.if.no.match = TRUE,
+  append.data = FALSE
+)
 }
 \arguments{
 \item{chart.type}{The name of plot to create, e.g \code{\link[flipStandardCharts]{Area}}, \code{\link[flipStandardCharts]{Bar}}, \code{\link[flipStandardCharts]{BarPictograph}}, \code{\link[flipStandardCharts]{Bean}}, \code{\link[flipStandardCharts]{Box}}, \code{\link[flipStandardCharts]{Column}}, \code{\link[flipStandardCharts]{Density}}, \code{\link[flipStandardCharts]{Donut}}, \code{\link[flipStandardCharts]{GeographicMap}}, \code{\link[flipStandardCharts]{Heat}}, \code{\link[flipStandardCharts]{Histogram}}, \code{\link[flipStandardCharts]{Line}}, \code{\link[flipStandardCharts]{Palm}}, \code{\link[flipStandardCharts]{Pie}}, \code{\link[flipStandardCharts]{Pyramid}}, \code{\link[flipStandardCharts]{Radar}}, \code{\link[flipStandardCharts]{Scatter}}, \code{\link[flipStandardCharts]{Stream}}, \code{\link[flipStandardCharts]{TimeSeries}}, \code{\link[flipStandardCharts]{Venn}}, \code{\link[flipStandardCharts]{Violin}}. Spaces will automatically be stripped.}

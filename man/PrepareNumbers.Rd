@@ -4,9 +4,13 @@
 \alias{PrepareNumbers}
 \title{Generates all d3 formats for use by CChart.}
 \usage{
-PrepareNumbers(categories.format.list = NULL,
-  values.format.list = NULL, hover.format.list = NULL,
-  data.labels.format.list = NULL, as.percentages = FALSE)
+PrepareNumbers(
+  categories.format.list = NULL,
+  values.format.list = NULL,
+  hover.format.list = NULL,
+  data.labels.format.list = NULL,
+  as.percentages = FALSE
+)
 }
 \arguments{
 \item{categories.format.list}{A list of five unnamed items for formatting the categories-axis as

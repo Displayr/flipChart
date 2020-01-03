@@ -5,23 +5,33 @@
 \title{Generates vectors of colors for use by CChart.
 Wrapper for \code{GetNumColors} and \code{ChartColors}.}
 \usage{
-PrepareColors(dat, chart.type, small.multiples = FALSE,
-  multi.color.series = FALSE, scatter.colors.column = 4,
-  palette = NULL, palette.custom.color = NULL,
+PrepareColors(
+  dat,
+  chart.type,
+  small.multiples = FALSE,
+  multi.color.series = FALSE,
+  scatter.colors.column = 4,
+  palette = NULL,
+  palette.custom.color = NULL,
   palette.custom.gradient.start = NULL,
-  palette.custom.gradient.end = NULL, palette.custom.palette = NULL,
-  fit.palette = NULL, fit.palette.custom.color = NULL,
+  palette.custom.gradient.end = NULL,
+  palette.custom.palette = NULL,
+  fit.palette = NULL,
+  fit.palette.custom.color = NULL,
   fit.palette.custom.gradient.start = NULL,
   fit.palette.custom.gradient.end = NULL,
-  fit.palette.custom.palette = NULL, fit.CI.palette = NULL,
+  fit.palette.custom.palette = NULL,
+  fit.CI.palette = NULL,
   fit.CI.palette.custom.color = NULL,
   fit.CI.palette.custom.gradient.start = NULL,
   fit.CI.palette.custom.gradient.end = NULL,
-  fit.CI.palette.custom.palette = NULL, subslice.palette = NULL,
+  fit.CI.palette.custom.palette = NULL,
+  subslice.palette = NULL,
   subslice.palette.custom.color = NULL,
   subslice.palette.custom.gradient.start = NULL,
   subslice.palette.custom.gradient.end = NULL,
-  subslice.palette.custom.palette = NULL)
+  subslice.palette.custom.palette = NULL
+)
 }
 \arguments{
 \item{dat}{The data to be plotted, from which the number of required colors are deduced.}

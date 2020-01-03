@@ -37,7 +37,19 @@ tabWithN <- structure(c(12.2448979591837, 6.12244897959184, 4.08163265306122,
     "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"),
     c("Every or nearly every day", "4 to 5 days a week", "2 to 3 days a week",
     "Once a week", "Once every 2 weeks", "Once a month", "Less than once a month",
-    "Never"), c("Column %", "Column n", "Base n")), name = "Age by Exercise frequency",         questions = c("Age", "Exercise frequency"))
+    "Never"), c("Column %", "Column n", "Base n")), name = "Age by Exercise frequency",
+questions = c("Age", "Exercise frequency"))
+
+tab1d <- structure(c(12.375, 11.75, 10.375, 11.375, 11.625, 7.875, 11.875,
+     15.75, 7, 100, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800,
+     1.1375, 0.575, -0.6625, 0.237500000000001, 0.462500000000001,
+     -2.9125, 0.6875, 4.175, -3.7, 80, 0.255329324592568, 0.565291296994401,
+     0.507650834828445, 0.812268919201514, 0.643722802327307, 0.00358548200450471,
+     0.491767700760523, 2.97986053738875e-05, 0.000215599466954778,
+     0), .Dim = c(10L, 4L), .Dimnames = list(c("18 to 24", "25 to 29",
+       "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+       "65 or more", "NET"), c("%", "Base n", "z-Statistic", "p")),
+     name = "Age", questions = c("Age", "SUMMARY"))
 
 x2d <- tabWithN[,,1]
 
@@ -194,6 +206,17 @@ test_that("Preseve column name if SelectColumns is used",
     expect_warning(res <- PrepareData("Column", input.data.table = tabWithN, select.columns = "Never", tidy = TRUE),
         "Multiple statistics detected")
     expect_equal(dim(res$data), c(9, 1))
+})
+
+test_that("Statistics are preserved when percentages are computed",
+{
+    dat0 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = FALSE)$data
+    dat1 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = TRUE)$data
+    expect_equal(dat0[,,2], dat1[,,2])
+
+    dat0 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = FALSE)$data
+    dat1 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data
+    expect_equal(dat0[,2], dat1[,2])
 })
 
 

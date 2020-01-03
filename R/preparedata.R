@@ -1012,14 +1012,26 @@ asPercentages <- function(data)
         warning("Percentages calculated ignoring negative values.")
         data[ind.negative] <- 0
     }
-
-    if (NCOL(data) > 1)
+    
+    if (length(dim(data)) == 2 && length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
     {
+        # 1-dimensional table with statistics
+        data[,1] <- prop.table(data[,1])
+    }
+    else if (length(dim(data)) > 2)
+    {
+        # 2-dimensional table with statistics
+        data[,,1] <- prop.table(data[,,1])
+    }
+    else if (NCOL(data) > 1)
+    {
+        # 2-dimensional table without statistics
         data <- prop.table(data, 1)
         attr(data, "statistic") <- "Row %"
     }
     else
     {
+        # 1-dimensional table without statistics
         data <- prop.table(data)
         attr(data, "statistic") <- "%"
     }
