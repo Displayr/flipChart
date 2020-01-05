@@ -210,13 +210,17 @@ test_that("Preseve column name if SelectColumns is used",
 
 test_that("Statistics are preserved when percentages are computed",
 {
-    dat0 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = FALSE)$data
-    dat1 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = TRUE)$data
-    expect_equal(dat0[,,2], dat1[,,2])
+    expect_warning(dat0 <- PrepareData("Column", input.data.table = tabWithN, tidy = TRUE, as.percentages = TRUE)$data)
+    dat1 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = FALSE)$data
+    dat2 <- PrepareData("Column", input.data.table = tabWithN, tidy = FALSE, as.percentages = TRUE)$data
+    expect_equal(dat2[,,2], dat1[,,2])
+    expect_equal(dat2[,,1], dat0, check.attributes = FALSE)
 
-    dat0 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = FALSE)$data
-    dat1 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data
-    expect_equal(dat0[,2], dat1[,2])
+    expect_warning(dat0 <- PrepareData("Column", input.data.table = tab1d, tidy = TRUE, as.percentages = TRUE)$data)
+    dat1 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = FALSE)$data
+    expect_warning(dat2 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data)
+    expect_equal(dat2[,2], dat1[,2])
+    expect_equal(dat2[,1], dat0, check.attributes = FALSE)
 })
 
 
