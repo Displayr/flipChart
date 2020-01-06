@@ -51,6 +51,44 @@ tab1d <- structure(c(12.375, 11.75, 10.375, 11.375, 11.625, 7.875, 11.875,
        "65 or more", "NET"), c("%", "Base n", "z-Statistic", "p")),
      name = "Age", questions = c("Age", "SUMMARY"))
 
+tabAsChar <- structure(c("25.2327048028994", "31.2881504763389", "30.9835063713764",
+                         "17.5546469946982", "33.2850525773139", "21.3918060868462", "14.8891326905278",
+                         "99.999999992966", "32.1856718881156", "39.0384865558457", "38.7008828633533",
+                         "23.043980297302", "41.2332045095876", "27.6781998955081", "19.7445739902877",
+                         "99.9999999949984", "19.3901751154243", "24.5030129463578", "24.24112651755",
+                         "13.1766253337998", "26.232192530017", "16.2453846830681", "11.0864828737829",
+                         "99.9999999901313", "22.3980226347181", "28.0282076203562", "27.7424891486241",
+                         "15.4048099182854", "29.9076106591684", "18.8796593933267", "13.0142006255211",
+                         "99.9999999917754", "25.6383779654847", "31.7498370032718", "31.4427546535753",
+                         "17.866375634708", "33.7617270166789", "21.753694692716", "15.1622330335653",
+                         "99.9999999931149", "25.3986416353672", "31.4771442945425", "31.1714948165763",
+                         "17.682032200925", "33.4802311923131", "21.5397609802415", "15.0006948800344",
+                         "99.9999999930275", "18.6950249396378", "23.6784065423265", "23.422599150159",
+                         "12.6692243563911", "25.3689477903583", "15.6411012525024", "10.6496959686249",
+                         "99.9999999896761", "25.1773988570791", "31.2251150086532", "30.9208084668817",
+                         "17.5122283403448", "33.2199390423663", "21.342515643933", "14.8519946407419",
+                         "99.9999999929453", "38.3662387414414", "45.6491679510049", "45.2968741467223",
+                         "28.1990522244833", "47.9233721374194", "33.4197641302466", "24.3955306686821",
+                         "99.9999999961865", "87.274341983319", "90.2471601302471", "90.1213865181602",
+                         "81.22746990624", "91.0222544777148", "84.6863241611387", "78.0460628231802",
+                         "99.9999999996539", "B I", "C D E F G H", "C D G H", "B I", "C D E F G H",
+                         "c d g H", "H i", "-", "i", "C D E F G H", "A C D G H", "I",
+                         "C D E F G H", "A C D G H", "A D e H I", "-", "A B I", "E F H",
+                         "D H", "B I", "D E F G H", "h", "A B D E F H I", "-", "A B C E F G I",
+                         "E F H", "h", "A B C E F G I", "F H", "h", "H", "-", "A B C G I",
+                         "F", "A C D G H", "A B C I", "D F H", "A B C D f G H I", "a D H I",
+                         "-", "A B C G I", NA, "A B C D E G H", "A B C g I", NA, "A B C D G H",
+                         "A D H I", "-", "a B I", "E F H", "D H", "a B c I", "D E F H",
+                         NA, "A B C D E F H I", "-", "A B C D E F G I", "E F", NA, "A B C D E F G I",
+                         NA, NA, NA, "-", NA, "A B C D E F G H", "A B C D E G H", NA,
+                         "A B C D E F G H", "A B C D G H", "H", "-", "-", "-", "-", "-",
+                         "-", "-", "-", "-"), .Dim = c(8L, 10L, 2L), .Dimnames = list(
+                         c("Coke", "Diet Coke", "Coke Zero", "Pepsi", "Diet Pepsi",
+                         "Pepsi Max", "None of these", "NET"), c("Feminine", "Health-conscious",
+                         "Innocent", "Older", "Open to new experiences", "Rebellious",
+                         "Sleepy", "Traditional", "Weight-conscious", "NET"),
+                         c("Expected %", "Column Comparisons")), name = "q5 - column comparisons", questions = c("q5", "SUMMARY"))
+
 x2d <- tabWithN[,,1]
 
 # vector (with no dimensions)
@@ -221,6 +259,13 @@ test_that("Statistics are preserved when percentages are computed",
     expect_warning(dat2 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data)
     expect_equal(dat2[,2], dat1[,2])
     expect_equal(dat2[,1], dat0, check.attributes = FALSE)
+
+    expect_warning(dat0 <- PrepareData("Column", input.data.table = tabAsChar, tidy = TRUE, as.percentages = TRUE)$data)
+    dat1 <- PrepareData("Column", input.data.table = tabAsChar, tidy = FALSE, as.percentages = FALSE)$data
+    dat2 <- PrepareData("Column", input.data.table = tabAsChar, tidy = FALSE, as.percentages = TRUE)$data
+    expect_equal(dat2[,,2], dat1[,,2])
+    expect_equal(as.numeric(dat2[,,1]), dat0, check.attributes = FALSE)
+
 })
 
 

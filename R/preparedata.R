@@ -1013,15 +1013,16 @@ asPercentages <- function(data)
         data[ind.negative] <- 0
     }
 
-    if (length(dim(data)) == 2 && length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
+    if (length(dim(data)) == 2 && is.null(attr(data, "statistic")) &&
+        length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
     {
-        # 1-dimensional table with statistics
+        # 1-dimensional table with multiple statistics
         data[,1] <- prop.table(data[,1])
     }
     else if (length(dim(data)) > 2)
     {
         # 2-dimensional table with statistics
-        data[,,1] <- prop.table(data[,,1], 1)
+        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1)
     }
     else if (NCOL(data) > 1)
     {
@@ -1242,14 +1243,15 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
     {
         percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
-        if (!is.numeric(data) && !is.data.frame(data))
+        if (!is.numeric(data) && !is.data.frame(data) && 
+            (is.null(attr(data, "questions")) || chart.type %in% c("Pie", "Donut", "Heat")))
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
             data <- data / sum(data, na.rm = TRUE)
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
             data <- data
         else
-            data <- asPercentages(data)
+            data <- asPercentages(data) # converts character QTables to numeric
     }
     return(data)
 }
