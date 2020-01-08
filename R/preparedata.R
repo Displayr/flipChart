@@ -1339,12 +1339,24 @@ prepareForSpecificCharts <- function(data,
             if (length(y.names) < m)
                 y.names <- paste("Group", 1:m)
 
+            extravar <- NULL
+            if (length(dim(data)) <= 2)
+                yvar <- as.vector(unlist(data[,y.ind]))
+            else
+            {
+                yvar <- as.vector(unlist(data[,y.ind,1]))
+                extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
+            }
+
             # newdata needs to use data rather than input.data.raw
             # otherwise it will not handle filters etc
             newdata <- data.frame(X = xvar,
-                                  Y = as.vector(unlist(data[,y.ind])),
+                                  Y = yvar,
                                   Groups = factor(rep(y.names, each = n), levels = y.names),
                                   stringsAsFactors = FALSE)
+
+            if (length(extravar) > 0)
+                newdata <- cbind(newdata, extravar)
 
             if (!grepl("^No date", date.format) && date.format != "Automatic")
             {
@@ -1352,8 +1364,22 @@ prepareForSpecificCharts <- function(data,
                     newdata[,1] <- format(AsDate(as.character(newdata[,1]),
                     us.format = !grepl("International", date.format)), "%b %d %Y")
             }
+
+            # Preserve column names where possible
             if (!is.null(input.data.raw$X))
                 colnames(newdata)[1] <- colnames(data)[1]
+            else if (!is.null(qst <- attr(data, "questions")))
+            {
+                colnames(newdata)[1] <- qst[1]
+                if (length(qst) >= 2)
+                    colnames(newdata)[3] <- qst[2]
+            }
+            if (length(dim(data)) == 3)
+                colnames(newdata)[2] <- dimnames(data)[[3]][1]
+            else if (!is.null(attr(data, "statistic")))
+                colnames(newdata)[2] <- attr(data, "statistic")
+
+
             data <- newdata
             attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
             attr(data, "scatter.mult.yvals") <- TRUE
@@ -1362,6 +1388,7 @@ prepareForSpecificCharts <- function(data,
         {
             if (!is.data.frame(data) && !is.matrix(data))
                 data <- TidyTabularData(data)
+
             # Removing duplicate columns
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
