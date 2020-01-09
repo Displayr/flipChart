@@ -1291,7 +1291,7 @@ prepareForSpecificCharts <- function(data,
                                      split)
 {
     if (!isDistribution(chart.type) && chart.type != "Table" && !is.null(input.data.raw) &&
-        is.list(input.data.raw$X) && length(input.data.raw$X) > 10)
+        is.list(input.data.raw$X) && length(input.data.raw$X) > 10 && !inherits(input.data.raw$X, "Regression"))
         warning("With a large number of variables, it may be better to first create ",
                  "a table and then create a visualization using the table.")
 
