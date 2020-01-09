@@ -676,6 +676,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
 #' @importFrom flipChartBasics MatchTable
+#' @importFrom flipFormat TidyLabels
 #' @importFrom flipU MakeUniqueNames
 coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
@@ -692,9 +693,15 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         return(as.data.frame(x))
     }
 
-    # For plotting regression output in a scatterplot
-    if (isScatter(chart.type) && is.list(x) && any(reg.outputs <- sapply(x, function(e) inherits(e, "Regression"))))
-        x[reg.outputs] <- lapply(x[reg.outputs], ExtractChartData)
+    # For plotting regression output in a scatterplot, coerce regression object to chart data
+    if (isScatter(chart.type) && is.list(x) && any(reg.outputs <- checkRegressionOutput(x)))
+    {
+        if(reg.outputs[1])
+            x[[1]] <- extractRegressionScatterData(x[[1]])
+        if(reg.outputs[2])
+            x[[2]] <- lapply(x[[2]], extractRegressionScatterData)
+    }
+
 
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
@@ -966,8 +973,14 @@ rmScatterDefaultNames <- function(data)
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
     # Use ExtractChartData to convert any raw Regression input
-    if(any(reg.outputs <- sapply(input.data.raw, function(e) inherits(e, "Regression"))))
-        input.data.raw[reg.outputs] <- lapply(input.data.raw[reg.outputs], ExtractChartData)
+    if (any(reg.outputs <- checkRegressionOutput(input.data.raw)))
+    {
+        if(reg.outputs[1])
+            input.data.raw[[1]] <- extractRegressionScatterData(input.data.raw[[1]])
+        if(reg.outputs[2])
+            input.data.raw[[2]] <- lapply(input.data.raw[[2]], extractRegressionScatterData)
+    }
+
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
     indices <- c(x = 1,
@@ -1658,4 +1671,22 @@ tidyLabels <- function(data, chart.type)
         }
     }
     data
+}
+
+
+checkRegressionOutput <- function(x)
+{
+    # First element always a single element
+    # Second element is a list of elements
+    # Last four elements are Z1, Z2, groups and labels that should never be regression outputs
+    return(c(inherits(x$X, "Regression"), any(sapply(x$Y, function(e) inherits(e, "Regression")))))
+}
+
+#' @importFrom flipFormat TidyLabels
+extractRegressionScatterData <- function(x)
+{
+    chart.data <- ExtractChartData(x)
+    if(!is.null(x$importance))
+        names(chart.data) <- TidyLabels(names(chart.data))
+    return(chart.data)
 }
