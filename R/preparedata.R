@@ -692,6 +692,10 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         return(as.data.frame(x))
     }
 
+    # For plotting regression output in a scatterplot
+    if (isScatter(chart.type) && is.list(x) && any(reg.outputs <- sapply(x, function(e) inherits(e, "Regression"))))
+        x[reg.outputs] <- lapply(x[reg.outputs], ExtractChartData)
+
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
     x$labels <- NULL
@@ -961,6 +965,9 @@ rmScatterDefaultNames <- function(data)
 
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
+    # Use ExtractChartData to convert any raw Regression input
+    if(any(reg.outputs <- sapply(input.data.raw, function(e) inherits(e, "Regression"))))
+        input.data.raw[reg.outputs] <- lapply(input.data.raw[reg.outputs], ExtractChartData)
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
     indices <- c(x = 1,
@@ -1243,7 +1250,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
     {
         percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
-        if (!is.numeric(data) && !is.data.frame(data) && 
+        if (!is.numeric(data) && !is.data.frame(data) &&
             (is.null(attr(data, "questions")) || chart.type %in% c("Pie", "Donut", "Heat")))
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
@@ -1303,7 +1310,8 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1) ||
+        if (isTRUE(scatter.mult.yvals) ||
+            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1 && !inherits(input.data.raw$Y, "Regression")) ||
            (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
         {
@@ -1312,7 +1320,8 @@ prepareForSpecificCharts <- function(data,
                                    column.names.to.remove = column.names.to.remove, split = split)
 
             n <- nrow(data)
-            y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
+            if (!inherits(input.data.raw$Y, "Regression"))
+                y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
             {
                 # No X-coordinates supplied in variables
