@@ -727,7 +727,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         }
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE,
                         fix.empty.names = FALSE, stringsAsFactors = FALSE)
-        ind.autonames <- grep("structure(", colnames(x[[2]]), fixed = TRUE)
+        ind.autonames <- grep("^structure\\(|^c\\(", colnames(x[[2]]), perl = TRUE)
         for (ii in ind.autonames)
         {
             tmp.name <- attr(x[[2]][,ii], "name")
@@ -803,7 +803,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             {
                 tmp.names <- .getRowNames(x[[i]])
                 if (length(tmp.names) > 0)
+                {
+                    removed.rownames <- unique(c(setdiff(x.all.rownames, tmp.names),
+                                                 setdiff(tmp.names, x.all.rownames)))
                     x.all.rownames <- intersect(x.all.rownames, tmp.names)
+                }
+
             }
         }
 
@@ -816,7 +821,13 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                                 as.matrix = FALSE, trim.whitespace = FALSE,
                                 silent.remove.duplicates = TRUE)
             if (length(x.all.rownames) < max(x.rows))
-                warning("Rows that did not occur in all of the input tables were discarded")
+            {
+                discarded.rows <- if(length(removed.rownames) == 0) NULL else {
+                    paste0(": ", paste0(removed.rownames, collapse = ", "))
+                }
+                warning("Rows that did not occur in all of the input tables were discarded",
+                        discarded.rows)
+            }
             if (length(rlabels) > 0)
                 warning("The 'Labels' variable has been ignored. Using row names of ",
                         "'X-coordinates' and 'Y-coordinates' instead")
