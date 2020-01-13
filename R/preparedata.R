@@ -13,7 +13,8 @@
 #' @param input.data.tables List of array; each component is assumed
 #'     to be a Qtable and will be processed using.
 #'     \code{\link[flipTables]{AsTidyTabularData}}
-#' @param input.data.raw List, containing variables or data.frames.
+#' @param input.data.raw List, containing variables or data.frames or Regression outputs from flipRegression.
+#'     In the case of multiple Regression outputs, the labels default to the R name of the Regression output.
 #' @param input.data.pasted List of length six; the first component of
 #'     which is assumed to be from a user-entered/pasted table; will
 #'     be processed by \code{\link{ParseUserEnteredTable}}.
@@ -694,12 +695,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     }
 
     # For plotting regression output in a scatterplot, coerce regression object to chart data
-    if (isScatter(chart.type) && is.list(x) && any(reg.outputs <- checkRegressionOutput(x)))
+    if (any(reg.outputs <- checkRegressionOutput(x)) && isScatter(chart.type) && is.list(x))
     {
         if(reg.outputs[1])
             x[[1]] <- extractRegressionScatterData(x[[1]])
         if(reg.outputs[2])
-            x[[2]] <- lapply(x[[2]], extractRegressionScatterData)
+            x[[2]] <- lapply(x[[2]], extractRegressionScatterData, y.axis = TRUE)
     }
 
 
@@ -724,6 +725,20 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             # No warnings required because you may want points with the same label
             if (any(is.dup))
                 rownames(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
+        }
+        # Remap all Y elements to common array and keep attributes
+        if (!is.null(unlist(lapply(x[[2]], rownames))) && length(x[[2]]) >= 2 && reg.outputs[2])
+        {
+            y.all.rownames <- unique(unlist(lapply(x[[2]], rownames)))
+            base.values <- rep(NA, length(y.all.rownames))
+            x[[2]] <- lapply(seq_along(x[[2]]), function(i) {
+                vals <- base.values
+                indices <- match(y.all.rownames, names(x[[2]][[i]]), nomatch = 0)
+                vals[indices] <- x[[2]][[i]]
+                mostattributes(vals) <- attributes(x[[2]][[i]])
+                names(vals) <- y.all.rownames
+                vals
+            })
         }
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE,
                         fix.empty.names = FALSE, stringsAsFactors = FALSE)
@@ -989,7 +1004,7 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
         if(reg.outputs[1])
             input.data.raw[[1]] <- extractRegressionScatterData(input.data.raw[[1]])
         if(reg.outputs[2])
-            input.data.raw[[2]] <- lapply(input.data.raw[[2]], extractRegressionScatterData)
+            input.data.raw[[2]] <- lapply(input.data.raw[[2]], extractRegressionScatterData, y.axis = TRUE)
     }
 
     # Creating indices in situations where the user has provided a table.
@@ -1334,8 +1349,7 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (isTRUE(scatter.mult.yvals) ||
-            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1 && !inherits(input.data.raw$Y, "Regression")) ||
+        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1) ||
            (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
         {
@@ -1344,7 +1358,16 @@ prepareForSpecificCharts <- function(data,
                                    column.names.to.remove = column.names.to.remove, split = split)
 
             n <- nrow(data)
-            if (!inherits(input.data.raw$Y, "Regression"))
+            if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
+            {
+                extracted.data.raw.Y <- input.data.raw$Y
+                extracted.data.raw.Y[reg.outputs] <- lapply(input.data.raw$Y[reg.outputs], ExtractChartData)
+                regression.names <- names(input.data.raw$Y)
+                idx <- which(reg.outputs)
+                for(i in seq_along(idx))
+                    attr(extracted.data.raw.Y[[idx[i]]], "label") <- regression.names[idx[i]]
+                y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
+            } else
                 y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
             {
@@ -1694,10 +1717,14 @@ checkRegressionOutput <- function(x)
 }
 
 #' @importFrom flipFormat TidyLabels
-extractRegressionScatterData <- function(x)
+extractRegressionScatterData <- function(x, y.axis = FALSE)
 {
+    if (!inherits(x, "Regression"))
+        return(x)
     chart.data <- ExtractChartData(x)
-    if(!is.null(x$importance))
+    if (!is.null(x$importance))
         names(chart.data) <- TidyLabels(names(chart.data))
+    if (y.axis)
+        chart.data <- as.array(chart.data)
     return(chart.data)
 }
