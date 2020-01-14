@@ -1304,6 +1304,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
+#' @importFrom flipU MakeUniqueNames
 prepareForSpecificCharts <- function(data,
                                      multiple.tables,
                                      input.data.raw,
@@ -1382,7 +1383,6 @@ prepareForSpecificCharts <- function(data,
                 m <- ncol(data)
                 y.ind <- 1:m
                 xvar <- rep(rownames(data), m)
-
             } else
             {
                 # Otherwise use first column as X-coordinates
@@ -1401,6 +1401,10 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = factor(rep(y.names, each = n), levels = y.names),
                                   stringsAsFactors = FALSE)
+
+            if (any(reg.outputs) && m > 1)
+                rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
+
 
             if (!grepl("^No date", date.format) && date.format != "Automatic")
             {
