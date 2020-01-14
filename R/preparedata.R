@@ -13,7 +13,8 @@
 #' @param input.data.tables List of array; each component is assumed
 #'     to be a Qtable and will be processed using.
 #'     \code{\link[flipTables]{AsTidyTabularData}}
-#' @param input.data.raw List, containing variables or data.frames.
+#' @param input.data.raw List, containing variables or data.frames or Regression outputs from flipRegression.
+#'     In the case of multiple Regression outputs, the labels default to the R name of the Regression output.
 #' @param input.data.pasted List of length six; the first component of
 #'     which is assumed to be from a user-entered/pasted table; will
 #'     be processed by \code{\link{ParseUserEnteredTable}}.
@@ -676,6 +677,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @return A \code{\link{data.frame}})
 #' @importFrom stats sd
 #' @importFrom flipChartBasics MatchTable
+#' @importFrom flipFormat TidyLabels
 #' @importFrom flipU MakeUniqueNames
 coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
@@ -691,6 +693,16 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x <- TidyTabularData(x)
         return(as.data.frame(x))
     }
+
+    # For plotting regression output in a scatterplot, coerce regression object to chart data
+    if (any(reg.outputs <- checkRegressionOutput(x)) && isScatter(chart.type) && is.list(x))
+    {
+        if(reg.outputs[1])
+            x[[1]] <- extractRegressionScatterData(x[[1]])
+        if(reg.outputs[2])
+            x[[2]] <- lapply(x[[2]], extractRegressionScatterData, y.axis = TRUE)
+    }
+
 
     # if labels are present in raw data, extract and store for later
     rlabels <- x$labels
@@ -714,9 +726,23 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             if (any(is.dup))
                 rownames(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
         }
+        # Remap all Y elements to common array and keep attributes
+        if (!is.null(unlist(lapply(x[[2]], rownames))) && length(x[[2]]) >= 2 && reg.outputs[2])
+        {
+            y.all.rownames <- unique(unlist(lapply(x[[2]], rownames)))
+            base.values <- rep(NA, length(y.all.rownames))
+            x[[2]] <- lapply(seq_along(x[[2]]), function(i) {
+                vals <- base.values
+                indices <- match(y.all.rownames, names(x[[2]][[i]]), nomatch = 0)
+                vals[indices] <- x[[2]][[i]]
+                mostattributes(vals) <- attributes(x[[2]][[i]])
+                names(vals) <- y.all.rownames
+                vals
+            })
+        }
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE,
                         fix.empty.names = FALSE, stringsAsFactors = FALSE)
-        ind.autonames <- grep("structure(", colnames(x[[2]]), fixed = TRUE)
+        ind.autonames <- grep("^structure\\(|^c\\(", colnames(x[[2]]), perl = TRUE)
         for (ii in ind.autonames)
         {
             tmp.name <- attr(x[[2]][,ii], "name")
@@ -792,7 +818,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             {
                 tmp.names <- .getRowNames(x[[i]])
                 if (length(tmp.names) > 0)
+                {
+                    removed.rownames <- unique(c(setdiff(x.all.rownames, tmp.names),
+                                                 setdiff(tmp.names, x.all.rownames)))
                     x.all.rownames <- intersect(x.all.rownames, tmp.names)
+                }
+
             }
         }
 
@@ -805,7 +836,13 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                                 as.matrix = FALSE, trim.whitespace = FALSE,
                                 silent.remove.duplicates = TRUE)
             if (length(x.all.rownames) < max(x.rows))
-                warning("Rows that did not occur in all of the input tables were discarded")
+            {
+                discarded.rows <- if(length(removed.rownames) == 0) NULL else {
+                    paste0(": ", paste0(removed.rownames, collapse = ", "))
+                }
+                warning("Rows that did not occur in all of the input tables were discarded",
+                        discarded.rows)
+            }
             if (length(rlabels) > 0)
                 warning("The 'Labels' variable has been ignored. Using row names of ",
                         "'X-coordinates' and 'Y-coordinates' instead")
@@ -961,6 +998,15 @@ rmScatterDefaultNames <- function(data)
 
 scatterVariableIndices <- function(input.data.raw, data, show.labels)
 {
+    # Use ExtractChartData to convert any raw Regression input
+    if (any(reg.outputs <- checkRegressionOutput(input.data.raw)))
+    {
+        if(reg.outputs[1])
+            input.data.raw[[1]] <- extractRegressionScatterData(input.data.raw[[1]])
+        if(reg.outputs[2])
+            input.data.raw[[2]] <- lapply(input.data.raw[[2]], extractRegressionScatterData, y.axis = TRUE)
+    }
+
     # Creating indices in situations where the user has provided a table.
     len <- length(input.data.raw)
     indices <- c(x = 1,
@@ -1243,7 +1289,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
     {
         percentages.warning <- paste0("The data has not been converted to percentages/proportions. ",
         "To convert to percentages, first convert to a more suitable type (e.g., create a table).")
-        if (!is.numeric(data) && !is.data.frame(data) && 
+        if (!is.numeric(data) && !is.data.frame(data) &&
             (is.null(attr(data, "questions")) || chart.type %in% c("Pie", "Donut", "Heat")))
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
@@ -1258,6 +1304,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
 
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
+#' @importFrom flipU MakeUniqueNames
 prepareForSpecificCharts <- function(data,
                                      multiple.tables,
                                      input.data.raw,
@@ -1271,7 +1318,7 @@ prepareForSpecificCharts <- function(data,
                                      split)
 {
     if (!isDistribution(chart.type) && chart.type != "Table" && !is.null(input.data.raw) &&
-        is.list(input.data.raw$X) && length(input.data.raw$X) > 10)
+        is.list(input.data.raw$X) && length(input.data.raw$X) > 10 && !inherits(input.data.raw$X, "Regression"))
         warning("With a large number of variables, it may be better to first create ",
                  "a table and then create a visualization using the table.")
 
@@ -1312,7 +1359,17 @@ prepareForSpecificCharts <- function(data,
                                    column.names.to.remove = column.names.to.remove, split = split)
 
             n <- nrow(data)
-            y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
+            if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
+            {
+                extracted.data.raw.Y <- input.data.raw$Y
+                extracted.data.raw.Y[reg.outputs] <- lapply(input.data.raw$Y[reg.outputs], ExtractChartData)
+                regression.names <- names(input.data.raw$Y)
+                idx <- which(reg.outputs)
+                for(i in seq_along(idx))
+                    attr(extracted.data.raw.Y[[idx[i]]], "label") <- regression.names[idx[i]]
+                y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
+            } else
+                y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
             if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
             {
                 # No X-coordinates supplied in variables
@@ -1326,7 +1383,6 @@ prepareForSpecificCharts <- function(data,
                 m <- ncol(data)
                 y.ind <- 1:m
                 xvar <- rep(rownames(data), m)
-
             } else
             {
                 # Otherwise use first column as X-coordinates
@@ -1345,6 +1401,10 @@ prepareForSpecificCharts <- function(data,
                                   Y = as.vector(unlist(data[,y.ind])),
                                   Groups = factor(rep(y.names, each = n), levels = y.names),
                                   stringsAsFactors = FALSE)
+
+            if (any(reg.outputs) && m > 1)
+                rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
+
 
             if (!grepl("^No date", date.format) && date.format != "Automatic")
             {
@@ -1649,4 +1709,26 @@ tidyLabels <- function(data, chart.type)
         }
     }
     data
+}
+
+
+checkRegressionOutput <- function(x)
+{
+    # First element always a single element
+    # Second element is a list of elements
+    # Last four elements are Z1, Z2, groups and labels that should never be regression outputs
+    return(c(inherits(x$X, "Regression"), any(sapply(x$Y, function(e) inherits(e, "Regression")))))
+}
+
+#' @importFrom flipFormat TidyLabels
+extractRegressionScatterData <- function(x, y.axis = FALSE)
+{
+    if (!inherits(x, "Regression"))
+        return(x)
+    chart.data <- ExtractChartData(x)
+    if (!is.null(x$importance))
+        names(chart.data) <- TidyLabels(names(chart.data))
+    if (y.axis)
+        chart.data <- as.array(chart.data)
+    return(chart.data)
 }
