@@ -76,7 +76,8 @@ which is then processed using
 to be a Qtable and will be processed using.
 \code{\link[flipTables]{AsTidyTabularData}}}
 
-\item{input.data.raw}{List, containing variables or data.frames.}
+\item{input.data.raw}{List, containing variables or data.frames or Regression outputs from flipRegression.
+In the case of multiple Regression outputs, the labels default to the R name of the Regression output.}
 
 \item{input.data.pasted}{List of length six; the first component of
 which is assumed to be from a user-entered/pasted table; will

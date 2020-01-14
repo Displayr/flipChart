@@ -9,11 +9,13 @@ Description: Wrapper for other chart functions, such that they can be access via
     type without having to change arguments (whcih are automatically mapped to
     the appropriate parameters).
 License: GPL-3
+Depends: R (>= 3.5.0)
 Encoding: UTF-8
 LazyData: true
 Suggests:
     grDevices,
     flipExampleData,
+    flipRegression,
     testthat
 Imports:
     methods,
@@ -30,6 +32,7 @@ Remotes:
     Displayr/flipChartBasics,
     Displayr/flipData,
     Displayr/flipFormat,
+    Displayr/flipRegression,
     Displayr/flipStatistics,
     Displayr/flipStandardCharts,
     Displayr/flipTables,
