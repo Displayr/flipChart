@@ -802,7 +802,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         # Check for row names to match on
         .getRowNames <- function(x)
         {
-            if (is.null(nrow(x)))
+            if (is.null(nrow(x)) && !is.list(x))
                 return(names(x))
             else if (hasUserSuppliedRownames(x))
                 return(rownames(x))
@@ -1449,10 +1449,6 @@ prepareForSpecificCharts <- function(data,
             # Removing duplicate columns
             if (any(d <- duplicated(names(data))))
                 data <- data[, !d]
-            if (NCOL(data) > 5)
-                warning("Columns ", paste(colnames(data)[6:ncol(data)], collapse = ", "),
-                    " not used in Scatter plot.",
-                    " Consider selecting checkbox for 'Input data contains y-values in multiple columns'.")
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
             if (is.null(attr(data, "scatter.variable.indices")))
