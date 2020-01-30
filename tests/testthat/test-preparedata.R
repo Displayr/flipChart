@@ -249,8 +249,8 @@ test_that("PrepareData: pasted, non-raw data",
     QFilter <- structure(TRUE, name = "", label = "Total sample")
     QPopulationWeight <- NULL
     chart.type <- "Scatter"
-    expect_warning(out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type,
-                   subset = QFilter, weights = QPopulationWeight))
+    expect_error(out <- PrepareData(input.data.pasted = pasted, chart.type = chart.type,
+                   subset = QFilter, weights = QPopulationWeight), NA)
     expect_is(out$data, "matrix")
     expect_equal(dim(out$data), dim(dat) - c(1, 1))
 })
@@ -640,8 +640,8 @@ test_that("PrepareData uses Labels",
         ), class = "factor", label = structure("Q6. Pepsi Max", .Names = "Q6_F"))), .Names = c("Q6_A",
     "Q6_B", "Q6_C", "Q6_D", "Q6_E", "Q6_F"), row.names = c(NA, 20L
                                                            ), class = "data.frame")
-    expect_warning(out <-PrepareData(input.data.raw = dat, chart.type = "Bubble"))
-                   #"^Some categories do not appear")
+    expect_error(out <-PrepareData(input.data.raw = dat, chart.type = "Bubble"), NA)
+                   #"^Some categories do not appear", NA)
     expect_is(out$data, "data.frame")
     expect_equal(names(out$data), flipFormat::Labels(dat), check.attributes = FALSE)
 })
