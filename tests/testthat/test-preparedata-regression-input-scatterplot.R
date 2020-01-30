@@ -47,7 +47,7 @@ quasi.poisson.importance <- Regression(NumericAttitude ~ Beautiful + Carefree + 
                                        type = "Quasi-Poisson", output = "Relative Importance Analysis")
 multinomial.summary <- Regression(Attitude ~ Beautiful + Carefree + Charming + Confident + DownToEarth,
                                   data = stacked.cola.associations,
-                                  type = "Ordered Logit", output = "Summary")
+                                  type = "Multinomial Logit", output = "Summary")
 
 # table of regressor to add to regression
 large.performance.table <-
@@ -141,7 +141,7 @@ for (regression in importance.regression.types)
 for (regression in standard.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        if(grepl("^(ordered|multinomial)", regression, perl = TRUE))
+        if(grepl("^ordered", regression, perl = TRUE, ignore.case = TRUE))
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\)"
@@ -172,7 +172,7 @@ for (regression in importance.regression.types)
 for (regression in standard.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        if(grepl("^(ordered|multinomial)", regression, perl = TRUE))
+        if(grepl("^ordered", regression, perl = TRUE))
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\), Feminine"
@@ -205,7 +205,7 @@ for (regression in importance.regression.types)
 for (regression in standard.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        if(grepl("^(ordered|multinomial)", regression, perl = TRUE))
+        if(grepl("^ordered", regression, perl = TRUE))
             warning.suffix <- "DownToEarth, Don t Know"
         else
             warning.suffix <- "\\(Intercept\\), DownToEarth"
@@ -238,7 +238,7 @@ for (regression in importance.regression.types)
 for (regression in standard.regression.types)
     test_that(paste0("Test table input X against regression input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        if(grepl("^(ordered|multinomial)", regression, perl = TRUE))
+        if(grepl("^ordered", regression, perl = TRUE))
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\)"
@@ -273,7 +273,7 @@ large.warning.suffix <- paste0("Feminine, Fun, Health-conscious, Hip, Honest, Hu
 for (regression in standard.regression.types)
     test_that(paste0("Test table input X against regression input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        if(grepl("^(ordered|multinomial)", regression, perl = TRUE))
+        if(grepl("^ordered", regression, perl = TRUE))
             warning.suffix <- paste0(large.warning.suffix, "Don t Know")
         else
             warning.suffix <- paste0(large.warning.suffix, "\\(Intercept\\)")
