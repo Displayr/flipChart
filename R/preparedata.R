@@ -381,10 +381,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     multiple.tables <- .isTableList(input.data.table) || .isTableList(input.data.tables)
     data <- prepareForSpecificCharts(data, multiple.tables, input.data.raw, chart.type,
-                                     weights, show.labels, date.format, scatter.mult.yvals,
-                                     row.names.to.remove, column.names.to.remove, split)
+                                     weights, show.labels, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
+    if (scatter.mult.yvals)
+        data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format,
+                                     row.names.to.remove, column.names.to.remove)
 
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
@@ -1311,11 +1313,7 @@ prepareForSpecificCharts <- function(data,
                                      chart.type,
                                      weights,
                                      show.labels,
-                                     date.format,
-                                     scatter.mult.yvals,
-                                     row.names.to.remove,
-                                     column.names.to.remove,
-                                     split)
+                                     scatter.mult.yvals)
 {
     if (!isDistribution(chart.type) && chart.type != "Table" && !is.null(input.data.raw) &&
         is.list(input.data.raw$X) && length(input.data.raw$X) > 10 && !inherits(input.data.raw$X, "Regression"))
@@ -1354,91 +1352,8 @@ prepareForSpecificCharts <- function(data,
            (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
         {
-            # Remove rows and columns before rearranging
-            data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                                   column.names.to.remove = column.names.to.remove, split = split)
-
-            n <- nrow(data)
-            if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
-            {
-                extracted.data.raw.Y <- input.data.raw$Y
-                extracted.data.raw.Y[reg.outputs] <- lapply(input.data.raw$Y[reg.outputs], ExtractChartData)
-                regression.names <- names(input.data.raw$Y)
-                idx <- which(reg.outputs)
-                for(i in seq_along(idx))
-                    attr(extracted.data.raw.Y[[idx[i]]], "label") <- regression.names[idx[i]]
-                y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
-            } else
-                y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
-            if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
-            {
-                # No X-coordinates supplied in variables
-                m <- length(input.data.raw$Y)
-                y.ind <- 1:m
-                xvar <- rep(1:n, m)
-
-            } else if (is.null(input.data.raw$Y) && hasUserSuppliedRownames(data))
-            {
-                # Use rowlabels as X-coordinate if character labels given
-                m <- ncol(data)
-                y.ind <- 1:m
-                xvar <- rep(rownames(data), m)
-            } else
-            {
-                # Otherwise use first column as X-coordinates
-                m <- ncol(data) - 1
-                y.ind <- (1:m) + 1
-                xvar <- rep(data[,1], m)
-            }
-            if (length(y.names) < m)
-                y.names <- colnames(data)[y.ind]
-            if (length(y.names) < m)
-                y.names <- paste("Group", 1:m)
-
-            extravar <- NULL
-            if (length(dim(data)) <= 2)
-                yvar <- as.vector(unlist(data[,y.ind]))
-            else
-            {
-                yvar <- as.vector(unlist(data[,y.ind,1]))
-                extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
-            }
-
-            # newdata needs to use data rather than input.data.raw
-            # otherwise it will not handle filters etc
-            newdata <- data.frame(X = xvar,
-                                  Y = yvar,
-                                  Groups = factor(rep(y.names, each = n), levels = y.names),
-                                  stringsAsFactors = FALSE)
-
-            if (length(extravar) > 0)
-                newdata <- cbind(newdata, extravar)
-            if (any(reg.outputs) && m > 1)
-                rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
-            if (!grepl("^No date", date.format) && date.format != "Automatic")
-            {
-                if (IsDateTime(as.character(newdata[,1])))
-                    newdata[,1] <- format(AsDate(as.character(newdata[,1]),
-                    us.format = !grepl("International", date.format)), "%b %d %Y")
-            }
-
-            # Preserve column names where possible
-            if (!is.null(input.data.raw$X))
-                colnames(newdata)[1] <- colnames(data)[1]
-            else if (!is.null(qst <- attr(data, "questions")))
-            {
-                colnames(newdata)[1] <- qst[1]
-                if (length(qst) >= 2)
-                    colnames(newdata)[3] <- qst[2]
-            }
-            if (length(dim(data)) == 3)
-                colnames(newdata)[2] <- dimnames(data)[[3]][1]
-            else if (!is.null(attr(data, "statistic")))
-                colnames(newdata)[2] <- attr(data, "statistic")
-
-
-            data <- newdata
-            attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
+            # Tag data from reformatting but this is preformed later after 
+            # Row/column manipulations
             attr(data, "scatter.mult.yvals") <- TRUE
 
         } else
@@ -1751,4 +1666,95 @@ extractRegressionScatterData <- function(x, y.axis = FALSE)
     if (y.axis)
         chart.data <- as.array(chart.data)
     return(chart.data)
+}
+
+convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels, date.format,
+                                     row.names.to.remove, column.names.to.remove)
+{
+    # Remove rows and columns before rearranging
+    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
+                           column.names.to.remove = column.names.to.remove)
+
+    n <- nrow(data)
+    if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
+    {
+        extracted.data.raw.Y <- input.data.raw$Y
+        extracted.data.raw.Y[reg.outputs] <- lapply(input.data.raw$Y[reg.outputs], ExtractChartData)
+        regression.names <- names(input.data.raw$Y)
+        idx <- which(reg.outputs)
+        for(i in seq_along(idx))
+            attr(extracted.data.raw.Y[[idx[i]]], "label") <- regression.names[idx[i]]
+        y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
+    } else
+        y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
+    if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
+    {
+        # No X-coordinates supplied in variables
+        m <- length(input.data.raw$Y)
+        y.ind <- 1:m
+        xvar <- rep(1:n, m)
+
+    } else if (is.null(input.data.raw$Y) && hasUserSuppliedRownames(data))
+    {
+        # Use rowlabels as X-coordinate if character labels given
+        m <- ncol(data)
+        y.ind <- 1:m
+        xvar <- rep(rownames(data), m)
+    } else
+    {
+        # Otherwise use first column as X-coordinates
+        m <- ncol(data) - 1
+        y.ind <- (1:m) + 1
+        xvar <- rep(data[,1], m)
+    }
+    if (length(y.names) < m)
+        y.names <- colnames(data)[y.ind]
+    if (length(y.names) < m)
+        y.names <- paste("Group", 1:m)
+
+    extravar <- NULL
+    if (length(dim(data)) <= 2)
+        yvar <- as.vector(unlist(data[,y.ind]))
+    else
+    {
+        yvar <- as.vector(unlist(data[,y.ind,1]))
+        extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
+    }
+
+    # newdata needs to use data rather than input.data.raw
+    # otherwise it will not handle filters etc
+    newdata <- data.frame(X = xvar,
+                          Y = yvar,
+                          Groups = factor(rep(y.names, each = n), levels = y.names),
+                          stringsAsFactors = FALSE)
+
+    if (length(extravar) > 0)
+        newdata <- cbind(newdata, extravar)
+    if (any(reg.outputs) && m > 1)
+        rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
+    if (!grepl("^No date", date.format) && date.format != "Automatic")
+    {
+        if (IsDateTime(as.character(newdata[,1])))
+            newdata[,1] <- format(AsDate(as.character(newdata[,1]),
+            us.format = !grepl("International", date.format)), "%b %d %Y")
+    }
+
+    # Preserve column names where possible
+    if (!is.null(input.data.raw$X))
+        colnames(newdata)[1] <- colnames(data)[1]
+    else if (!is.null(qst <- attr(data, "questions")))
+    {
+        colnames(newdata)[1] <- qst[1]
+        if (length(qst) >= 2)
+            colnames(newdata)[3] <- qst[2]
+    }
+    if (length(dim(data)) == 3)
+        colnames(newdata)[2] <- dimnames(data)[[3]][1]
+    else if (!is.null(attr(data, "statistic")))
+        colnames(newdata)[2] <- attr(data, "statistic")
+
+
+    data <- newdata
+    attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
+    return(data)
 }
