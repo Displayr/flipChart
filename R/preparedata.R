@@ -384,10 +384,7 @@ PrepareData <- function(chart.type,
                                      weights, show.labels, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
-    if (scatter.mult.yvals)
-        data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format,
-                                     row.names.to.remove, column.names.to.remove)
-
+   
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
@@ -417,6 +414,10 @@ PrepareData <- function(chart.type,
                                  sort.rows.exclude, reverse.rows,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
+
+     if (scatter.mult.yvals)
+        data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
+
 
     # Calculate percentages after all the select/hide operations are completed
     data <- convertPercentages(data, as.percentages, chart.type, multiple.tables)
@@ -1668,13 +1669,8 @@ extractRegressionScatterData <- function(x, y.axis = FALSE)
     return(chart.data)
 }
 
-convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels, date.format,
-                                     row.names.to.remove, column.names.to.remove)
+convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels, date.format)
 {
-    # Remove rows and columns before rearranging
-    data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
-                           column.names.to.remove = column.names.to.remove)
-
     n <- nrow(data)
     if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
     {
