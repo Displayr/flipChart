@@ -139,4 +139,10 @@ test_that("Handle y-values in multiple columns + multiple statistics",
     expect_equal(levels(res4$data[,3]), c("$150,001 to $200,000", "$120,001 to $150,000", "$90,001 to $120,000",
                                           "$60,001 to $90,000", "$45,001 to $60,000", "$30,001 to $45,000",
                                           "$200,001 or more", "$15,001 to $30,000", "Less than $15,000"))
+
+    res5 <- PrepareData("Scatter", input.data.table = tb.with.stats,
+                        select.columns = "Less than $15",
+                        scatter.mult.yvals = TRUE)
+    expect_equal(res5$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
+    expect_equal(dim(res5$data), c(9, 5))
 })

@@ -454,7 +454,8 @@ PrepareData <- function(chart.type,
         data <- rmScatterDefaultNames(data)
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
-    if (isScatter(chart.type) && sum(nchar(select.columns), na.rm = TRUE) > 0)
+    if (isScatter(chart.type) && !scatter.mult.yvals &&
+        sum(nchar(select.columns), na.rm = TRUE) > 0)
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
