@@ -118,4 +118,25 @@ test_that("Handle y-values in multiple columns + multiple statistics",
     expect_equal(colnames(res0$data), c("Age", "Column %", "Income"))
     res1 <- PrepareData("Scatter", input.data.table = tb.with.stats, scatter.mult.yvals = TRUE)
     expect_equal(colnames(res1$data), c("Age", "Column %", "Income", "Standard Error", "p"))
+    res1 <- PrepareData("Scatter", input.data.table = tb.with.stats, scatter.mult.yvals = TRUE)
+
+
+    res2 <- PrepareData("Scatter", input.data.table = tb.with.stats,
+                        row.names.to.remove = "65 or more",
+                        scatter.mult.yvals = TRUE)
+    expect_true(!"65 or more" %in% res2$data[,1])
+
+
+    res3 <- PrepareData("Scatter", input.data.table = tb.with.stats,
+                        first.k.columns = 3,
+                        scatter.mult.yvals = TRUE)
+    expect_equal(nlevels(res3$data[,3]), 3)
+    expect_equal(dim(res3$data), c(27,5))
+
+    res4 <- PrepareData("Scatter", input.data.table = tb.with.stats,
+                        sort.columns = TRUE, sort.columns.row = "18 to 24",
+                        scatter.mult.yvals = TRUE)
+    expect_equal(levels(res4$data[,3]), c("$150,001 to $200,000", "$120,001 to $150,000", "$90,001 to $120,000",
+                                          "$60,001 to $90,000", "$45,001 to $60,000", "$30,001 to $45,000",
+                                          "$200,001 or more", "$15,001 to $30,000", "Less than $15,000"))
 })
