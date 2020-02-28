@@ -415,7 +415,13 @@ PrepareData <- function(chart.type,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 
-     if (scatter.mult.yvals)
+    if (sum(nchar(column.labels)) > 0)
+        data <- replaceDimNames(data, 2, column.labels)
+    if (sum(nchar(row.labels)) > 0)
+        data <- replaceDimNames(data, 1, row.labels)
+
+
+    if (scatter.mult.yvals)
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
 
 
@@ -468,10 +474,6 @@ PrepareData <- function(chart.type,
         data <- as.matrix(data)
         attr(data, "statistic") <- tmp
     }
-    if (sum(nchar(column.labels)) > 0)
-        data <- replaceDimNames(data, 2, column.labels)
-    if (sum(nchar(row.labels)) > 0)
-        data <- replaceDimNames(data, 1, row.labels)
 
     list(data = data,
          weights = weights,

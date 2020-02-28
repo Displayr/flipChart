@@ -2320,4 +2320,10 @@ test_that("Heatmap axis titles",
     expect_equal(res$categories.title, "")
 })
 
+test_that("Row labels",
+{
+    res <- PrepareData("Column", input.data.table = tb, row.labels = "Under 18")
+    expect_equal(rownames(res$data), c("Under 18", "25 to 29", "30 to 34", "35 to 39",
+        "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"))
+})
 

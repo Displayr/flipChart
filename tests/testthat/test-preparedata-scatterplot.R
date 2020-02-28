@@ -122,9 +122,12 @@ test_that("Handle y-values in multiple columns + multiple statistics",
 
 
     res2 <- PrepareData("Scatter", input.data.table = tb.with.stats,
-                        row.names.to.remove = "65 or more",
+                        row.names.to.remove = "65 or more", column.labels = "Small",
                         scatter.mult.yvals = TRUE)
     expect_true(!"65 or more" %in% res2$data[,1])
+    expect_equal(levels(res2$data[,3]), c("Small", "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+                       "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+                       "$150,001 to $200,000", "$200,001 or more"))
 
 
     res3 <- PrepareData("Scatter", input.data.table = tb.with.stats,
