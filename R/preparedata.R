@@ -395,8 +395,9 @@ PrepareData <- function(chart.type,
     }
 
     # Do not drop 1-column table to keep name for legend
-    drop <- tidy && !(sum(nchar(select.columns), na.rm = TRUE) > 0 &&
-        (chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series")))
+    drop <- (tidy && 
+            sum(nchar(select.columns), na.rm = TRUE) == 0 &&
+            sum(nchar(column.labels), na.rm = TRUE) == 0)
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -419,7 +420,6 @@ PrepareData <- function(chart.type,
         data <- replaceDimNames(data, 2, column.labels)
     if (sum(nchar(row.labels)) > 0)
         data <- replaceDimNames(data, 1, row.labels)
-
 
     if (scatter.mult.yvals)
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
