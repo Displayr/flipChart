@@ -395,7 +395,7 @@ PrepareData <- function(chart.type,
     }
 
     # Do not drop 1-column table to keep name for legend
-    drop <- (tidy && (chart.type == "Pie" || 
+    drop <- (tidy && (chart.type %in% c("Pie", "Donut") || 
             sum(nchar(select.columns), na.rm = TRUE) == 0 &&
             sum(nchar(column.labels), na.rm = TRUE) == 0))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
