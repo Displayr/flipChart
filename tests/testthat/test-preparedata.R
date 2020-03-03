@@ -1678,6 +1678,7 @@ test_that("Dimensions are dropped consistently",
 
     res2 <- PrepareData("Pie", input.data.table = tab2d, select.columns = "Female")
     expect_equal(length(res2$data), 7)
+    expect_equal(colnames(res2$data), NULL)
 
     res3 <- PrepareData("Pie", input.data.table = tab2d, select.columns = "Female", tidy = FALSE)
     expect_equal(dim(res3$data), c(7, 1))
