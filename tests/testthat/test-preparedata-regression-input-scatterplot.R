@@ -298,7 +298,7 @@ standard.regression.types <- paste0(regression.types, ".summary")
 # Loop over standard regression in X and importance in Y
 for (reg.index  in seq_along(standard.regression.types))
     test_that(paste0("Test regression in both X and Y with table in Y: X is ",
-                     standard.regression.types[reg.index], " and Y is",
+                     standard.regression.types[reg.index], " and Y is ",
                      importance.regression.types[reg.index]
                      ), {
         X.regression <- suppressWarnings(get(standard.regression.types[reg.index]))
@@ -313,8 +313,100 @@ for (reg.index  in seq_along(standard.regression.types))
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = X.regression,
-                                                               Y = list(Y.regression,
-                                                                        large.performance.table))),
+                                                               Y = list(reg = Y.regression,
+                                                                        tab = large.performance.table))),
                        expected.warning, perl = TRUE, )
         expect_true(isValidPrepareData(pd))
     })
+
+
+######################################################################
+### Test Regression in X position against two tables in Y           ##
+######################################################################
+
+head.table <- flipU::CopyAttributes(large.performance.table[1:7], large.performance.table)
+n.rows <- length(large.performance.table)
+tail.table <- flipU::CopyAttributes(large.performance.table[(n.rows - 6):n.rows], large.performance.table)
+attr(tail.table, "name") <- "table.Performance2"
+attr(tail.table, "questions") <- c("Performance2", "SUMMARY")
+
+large.linear.importance <- Regression(NumericAttitude ~ Beautiful + Carefree + Charming + Confident +
+                                          DownToEarth + Feminine + Fun + Hip + Honest + Humorous +
+                                          Imaginative + Individualistic + Innocent + Intelligent +
+                                          Masculine + Older + Outdoorsy + Rebellious + Reckless +
+                                          Reliable + Sexy + Sleepy + Tough + Traditional,
+                                      data = stacked.cola.associations,
+                                      type = "Linear", output = "Relative Importance Analysis",
+                                      importance.absolute = TRUE)
+test_that("Multiple tables in Y with Regression in X", {
+    expect_warning(pd <- PrepareData(chart.type = "Scatter",
+                                     input.data.raw = list(X = large.linear.importance,
+                                                           Y = list(head.table,
+                                                                    tail.table))),
+                   "^Rows that did not occur in all of the input tables were discarded")
+    expect_true(isValidPrepareData(pd))
+})
+
+large.regression.vars <- c("Beautiful", "Carefree", "Charming", "Confident", "DownToEarth",
+                           "Feminine", "Fun", "Hip", "Honest", "Humorous", "Imaginative",
+                           "Individualistic", "Innocent", "Intelligent", "Masculine", "Older",
+                           "Outdoorsy", "Rebellious", "Reckless", "Reliable", "Sexy", "Sleepy",
+                           "Tough", "Traditional")
+other.regression.vars <-  c("Unconventional", "Urban", "Wholesome", "Youthful")
+
+other.regression <- Regression(NumericAttitude ~ Unconventional + Urban + Wholesome + Youthful,
+                               data = stacked.cola.associations, type = "Linear",
+                               output = "Relative Importance Analysis",
+                               importance.absolute = TRUE)
+
+base.error.msg <- paste0("The X coordinate and Y coordinate inputs don't have any variables with ",
+                         "matching names. Please ensure that there is matching input for both the ",
+                         "X and Y coordinate input. The X coordinate input has names:")
+
+
+test_that("Handle incompatible inputs properly", {
+    bad.table <- head.table
+    names(bad.table) <- LETTERS[1:length(bad.table)]
+    # Table doesn't have any names that match regression coefficients
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = large.linear.importance,
+                                                         Y = list(bad.table))),
+                 paste(base.error.msg, paste0(paste(sQuote(large.regression.vars), collapse = ", "), "."),
+                       "The Y coordinate input has names:",
+                       paste(sQuote(names(bad.table)), collapse = ", ")),
+                 fixed = TRUE)
+    # Add another table
+    bad.table2 <- bad.table
+    names(bad.table2) <- LETTERS[3:(length(bad.table2) + 2)]
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = large.linear.importance,
+                                                         Y = list(tab = bad.table, tab2 = bad.table2))),
+                 paste(base.error.msg, paste0(paste(sQuote(large.regression.vars), collapse = ", "), "."),
+                       "The Y coordinate input has names:",
+                       paste(sQuote(unique(c(names(bad.table), names(bad.table2)))), collapse = ", ")),
+                 fixed = TRUE)
+    # Two regression inputs (X and Y)
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = large.linear.importance,
+                                                         Y = list(reg = other.regression))),
+                 paste(base.error.msg, paste0(paste(sQuote(large.regression.vars), collapse = ", "), "."),
+                       "The Y coordinate input has names:",
+                       paste(sQuote(other.regression.vars), collapse = ", ")),
+                 fixed = TRUE)
+    # Regression input X, regression and table Y
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = large.linear.importance,
+                                                         Y = list(reg = other.regression, tab = bad.table))),
+                 paste(base.error.msg, paste0(paste(sQuote(large.regression.vars), collapse = ", "), "."),
+                       "The Y coordinate input has names:",
+                       paste(sQuote(c(other.regression.vars, names(bad.table))), collapse = ", ")),
+                 fixed = TRUE)
+    # table input X, regression and table Y
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = bad.table,
+                                                         Y = list(reg = other.regression, imp = large.linear.importance))),
+                 paste(base.error.msg, paste0(paste(sQuote(names(bad.table)), collapse = ", "), "."),
+                       "The Y coordinate input has names:",
+                       paste(sQuote(c(other.regression.vars, large.regression.vars)), collapse = ", ")),
+                 fixed = TRUE)
+})

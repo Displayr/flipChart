@@ -317,7 +317,7 @@ PrepareData <- function(chart.type,
     filt <- length(subset) > 1 && NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
-        missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey"))
+        missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey") && !any(checkRegressionOutput(input.data.raw)))
             "Exclude cases with missing data" else "Use partial data"
         n <- NROW(data)
         if (invalid.joining <- !is.null(attr(data, "InvalidVariableJoining")))
@@ -706,7 +706,11 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         if(reg.outputs[1])
             x[[1]] <- extractRegressionScatterData(x[[1]])
         if(reg.outputs[2])
-            x[[2]] <- lapply(x[[2]], extractRegressionScatterData, y.axis = TRUE)
+        {
+            x[[2]] <- mapply(extractRegressionScatterData,
+                             x = x[[2]], y.axis = TRUE, name = names(x[[2]]), SIMPLIFY = FALSE)
+        }
+
     }
 
 
@@ -733,13 +737,14 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 rownames(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
         }
         # Remap all Y elements to common array and keep attributes
-        if (!is.null(unlist(lapply(x[[2]], rownames))) && length(x[[2]]) >= 2 && reg.outputs[2])
+        if (!is.null(unlist(lapply(x[[2]], rownames))) && length(x[[2]]) >= 2 && any(reg.outputs))
         {
             y.all.rownames <- unique(unlist(lapply(x[[2]], rownames)))
             base.values <- rep(NA, length(y.all.rownames))
             x[[2]] <- lapply(seq_along(x[[2]]), function(i) {
                 vals <- base.values
-                indices <- match(y.all.rownames, names(x[[2]][[i]]), nomatch = 0)
+                indices <- match(names(x[[2]][[i]]), y.all.rownames, nomatch = 0)
+                attr(x[[2]][[i]], "name") <- sub("^table.", "", attr(x[[2]][[i]], "name"))
                 vals[indices] <- x[[2]][[i]]
                 mostattributes(vals) <- attributes(x[[2]][[i]])
                 names(vals) <- y.all.rownames
@@ -854,6 +859,16 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                         "'X-coordinates' and 'Y-coordinates' instead")
             rlabels <- x.all.rownames
         }
+    }
+
+    if (any(reg.outputs) && length(x.all.rownames) == 0)
+    {
+        x.names <- paste0(sQuote(names(x[[1]])), collapse = ", ")
+        y.names <- paste0(sQuote(rownames(x[[2]])), collapse = ", ")
+        stop("The X coordinate and Y coordinate inputs don't have any variables with matching names. ",
+             "Please ensure that there is matching input for both the X and Y coordinate input. ",
+             "The X coordinate input has names: ", x.names, ". ",
+             "The Y coordinate input has names: ", y.names, ".")
     }
 
     num.obs <- sapply(x, NROW)
@@ -1660,7 +1675,7 @@ checkRegressionOutput <- function(x)
 }
 
 #' @importFrom flipFormat TidyLabels
-extractRegressionScatterData <- function(x, y.axis = FALSE)
+extractRegressionScatterData <- function(x, y.axis = FALSE, name = NULL)
 {
     if (!inherits(x, "Regression"))
         return(x)
@@ -1668,7 +1683,10 @@ extractRegressionScatterData <- function(x, y.axis = FALSE)
     if (!is.null(x$importance))
         names(chart.data) <- TidyLabels(names(chart.data))
     if (y.axis)
+    {
         chart.data <- as.array(chart.data)
+        attr(chart.data, "name") <- name
+    }
     return(chart.data)
 }
 
