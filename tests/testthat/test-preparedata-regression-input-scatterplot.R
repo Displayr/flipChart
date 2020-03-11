@@ -137,6 +137,9 @@ for (regression in importance.regression.types)
         expect_true(isValidPrepareData(pd))
     })
 
+base.warning <- paste0("Y input coefficients that did not appear in the list of X input ",
+                       "coefficients were discarded")
+
 # Expect warning about intercepts in table output
 for (regression in standard.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
@@ -145,7 +148,7 @@ for (regression in standard.regression.types)
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\)"
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = regression.to.input,
@@ -159,7 +162,7 @@ for (regression in standard.regression.types)
 for (regression in importance.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    "Feminine, Fun, Health-conscious, Hip, Honest, Humorous, Imaginativ")
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = regression.to.input,
@@ -176,7 +179,7 @@ for (regression in standard.regression.types)
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\), Feminine"
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = regression.to.input,
@@ -192,7 +195,7 @@ for (regression in standard.regression.types)
 for (regression in importance.regression.types)
     test_that(paste0("Test regression input X against table input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    "DownToEarth")
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = regression.to.input,
@@ -209,7 +212,7 @@ for (regression in standard.regression.types)
             warning.suffix <- "DownToEarth, Don t Know"
         else
             warning.suffix <- "\\(Intercept\\), DownToEarth"
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = regression.to.input,
@@ -242,7 +245,7 @@ for (regression in standard.regression.types)
             warning.suffix <- "Don t Know"
         else
             warning.suffix <- "\\(Intercept\\)"
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = performance.table,
@@ -256,7 +259,7 @@ for (regression in standard.regression.types)
 for (regression in importance.regression.types)
     test_that(paste0("Test table input X against regression input Y: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    "Feminine, Fun, Health-conscious, Hip, Honest, Humorous, Imaginativ")
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = large.performance.table,
@@ -277,8 +280,7 @@ for (regression in standard.regression.types)
             warning.suffix <- paste0(large.warning.suffix, "Don t Know")
         else
             warning.suffix <- paste0(large.warning.suffix, "\\(Intercept\\)")
-        expected.warning <- paste0("Rows that did not occur in all of the input tables were discarded: ",
-                                   warning.suffix)
+        expected.warning <- paste0(base.warning, ": ", warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = large.performance.table,
                                                                Y = list(model = regression.to.input))),
@@ -309,7 +311,7 @@ for (reg.index  in seq_along(standard.regression.types))
                                      ", Feminine")
         else
             warning.suffix <- c("\\(Intercept\\), Feminine")
-        expected.warning <- paste0("^Rows that did not occur in all of the input tables were discarded: ",
+        expected.warning <- paste0(base.warning, ": ",
                                    warning.suffix)
         expect_warning(pd <- PrepareData(chart.type = "Scatter",
                                          input.data.raw = list(X = X.regression,
@@ -343,7 +345,7 @@ test_that("Multiple tables in Y with Regression in X", {
                                      input.data.raw = list(X = large.linear.importance,
                                                            Y = list(head.table,
                                                                     tail.table))),
-                   "^Rows that did not occur in all of the input tables were discarded")
+                   base.warning)
     expect_true(isValidPrepareData(pd))
 })
 

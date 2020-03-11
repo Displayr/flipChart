@@ -850,8 +850,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 discarded.rows <- if(length(removed.rownames) == 0) NULL else {
                     paste0(": ", paste0(removed.rownames, collapse = ", "))
                 }
-                warning("Rows that did not occur in all of the input tables were discarded",
-                        discarded.rows)
+                if (any(reg.outputs))
+                    base.warning <- paste0("Y input coefficients that did not appear in the list of X input ",
+                                           "coefficients were discarded")
+                else
+                    base.warning <- "Rows that did not occur in all of the input tables were discarded"
+                warning(base.warning, discarded.rows)
             }
             if (length(rlabels) > 0)
                 warning("The 'Labels' variable has been ignored. Using row names of ",
