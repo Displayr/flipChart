@@ -744,7 +744,6 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             x[[2]] <- lapply(seq_along(x[[2]]), function(i) {
                 vals <- base.values
                 indices <- match(names(x[[2]][[i]]), y.all.rownames, nomatch = 0)
-                attr(x[[2]][[i]], "name") <- sub("^table.", "", attr(x[[2]][[i]], "name"))
                 vals[indices] <- x[[2]][[i]]
                 mostattributes(vals) <- attributes(x[[2]][[i]])
                 names(vals) <- y.all.rownames
