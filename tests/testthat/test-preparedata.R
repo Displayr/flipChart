@@ -934,9 +934,8 @@ test_that("Scatterplot with duplicated variable",{
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 2)
+    expect_equal(length(w), 1)
     expect_equal(w[1], "Variables containing duplicated variable names have been removed (give the variables unique names if you do not want this to happen): Age.")
-    expect_true(grepl("^Some categories do not appear ", w[2]))
     w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
                       tidy = FALSE, data.source = "Link to variables in 'Data'"))
@@ -2165,15 +2164,15 @@ test_that("Remove unnecessary warnings",
     filt <- structure(c(TRUE, TRUE, FALSE), name = "bQXIXC", label = "Filter")
     filt2 <- structure(c(TRUE, FALSE, FALSE), name = "Another filter", label = "Filter")
 
-    expect_warning(pd <- PrepareData("Column", input.data.raw = dat, subset = filt))
+    expect_error(pd <- PrepareData("Column", input.data.raw = dat, subset = filt), NA)
     expect_equal(dimnames(pd$data), list(Country = c("Australia", "France"), A = c("1", "2")))
 
-    expect_warning(pd2 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = FALSE))
+    expect_error(pd2 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = FALSE), NA)
     expect_equal(dimnames(pd2$data), list(Country = "Australia", A = "Filter"))
 
     # When there is only value in the grouping value, the column names uses the
     # filter label instead of the grouping value
-    expect_warning(pd3 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = TRUE))
+    expect_error(pd3 <- PrepareData("Column", input.data.raw = dat, subset = filt2, tidy = TRUE), NA)
     expect_equal(dimnames(pd3$data), list("Australia", "Filter"))
 
     # No warning "Input data is always aggregated when 'Groups' variable provided"
@@ -2308,8 +2307,10 @@ test_that("Heatmap axis titles",
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")
 
-    expect_warning(res <- PrepareData("Heat", input.data.raw = vdat))
+    expect_error(res <- PrepareData("Heat", input.data.raw = vdat, hide.empty.rows.and.columns = FALSE), NA)
     expect_equal(colnames(res$data), c("Male", "Female"))
+    expect_equal(rownames(res$data), c("Less than 18", "18 to 24", "25 to 29", "30 to 34", "35 to 39",
+                                       "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"))
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")
 

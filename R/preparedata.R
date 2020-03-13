@@ -334,11 +334,13 @@ PrepareData <- function(chart.type,
             # them WITHOUT warning
             #colnames(data) <- make.unique(colnames(data))
             data <- suppressWarnings(TidyRawData(data, subset = subset,
-                    weights = weights, missing = missing, error.if.insufficient.obs = FALSE))
+                    weights = weights, missing = missing, error.if.insufficient.obs = FALSE,
+                    remove.missing.levels = FALSE))
         }
         if (!isScatter(chart.type))
             data <- TidyRawData(data, subset = subset, weights = weights,
-                        missing = missing, error.if.insufficient.obs = FALSE)
+                        missing = missing, error.if.insufficient.obs = FALSE,
+                        remove.missing.levels = isDistribution(chart.type))
         if (invalid.joining)
             attr(data, "InvalidVariableJoining") <- TRUE
         n.post <- NROW(data)
@@ -384,7 +386,7 @@ PrepareData <- function(chart.type,
                                      weights, show.labels, scatter.mult.yvals)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
-   
+
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
@@ -395,7 +397,7 @@ PrepareData <- function(chart.type,
     }
 
     # Do not drop 1-column table to keep name for legend
-    drop <- (tidy && (chart.type %in% c("Pie", "Donut") || 
+    drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
             sum(nchar(select.columns), na.rm = TRUE) == 0 &&
             sum(nchar(column.labels), na.rm = TRUE) == 0))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
@@ -1374,7 +1376,7 @@ prepareForSpecificCharts <- function(data,
            (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
         {
-            # Tag data from reformatting but this is preformed later after 
+            # Tag data from reformatting but this is preformed later after
             # Row/column manipulations
             attr(data, "scatter.mult.yvals") <- TRUE
 
