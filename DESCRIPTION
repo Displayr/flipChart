@@ -36,7 +36,7 @@ Remotes:
     Displayr/flipStatistics,
     Displayr/flipStandardCharts,
     Displayr/flipTables,
-    Displayr/flipTransformations,
+    Displayr/flipTransformations@DS-2702,
     Displayr/flipTime,
-    Displayr/flipU
+    Displayr/flipU@DS-2702
 RoxygenNote: 7.0.2
