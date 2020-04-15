@@ -412,3 +412,16 @@ test_that("Handle incompatible inputs properly", {
                        paste(sQuote(c(other.regression.vars, large.regression.vars)), collapse = ", ")),
                  fixed = TRUE)
 })
+
+test_that("Handle single inputs correctly", {
+    # Single regression object input in X position
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = linear.importance, Y = NULL)),
+                 NA)
+    expect_true(isValidPrepareData(pd))
+    # Single regression object input in Y position
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = NULL, Y = list(a = linear.importance))),
+                 NA)
+    expect_true(isValidPrepareData(pd))
+})
