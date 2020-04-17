@@ -866,7 +866,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         }
     }
 
-    if (any(reg.outputs) && length(x.all.rownames) == 0)
+    if (any(reg.outputs) && length(x.all.rownames) == 0 && length(x) > 1)
     {
         x.names <- paste0(sQuote(names(x[[1]])), collapse = ", ")
         y.names <- paste0(sQuote(rownames(x[[2]])), collapse = ", ")
