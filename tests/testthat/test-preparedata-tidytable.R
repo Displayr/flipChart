@@ -113,10 +113,10 @@ test_that("Select Rows",
     expect_equal(colnames(res$data), rev(colnames(LifeCycleSavings)))
     expect_equal(rownames(res$data), c("Libya", "Jamaica", "Japan", "Malta", "Netherlands",
                                        "Portugal", "China", "Greece", "Korea", "Zambia"))
-    # select rows before hide rows
-    expect_warning(res <- PrepareData("Table", input.data.table = tabWithN, first.k.rows = 4,
-                                      row.names.to.remove = "18 to 24"))
-    expect_equal(rownames(res$data), c("25 to 29", "30 to 34", "35 to 39"))
+    # hide rows before selecting first/last rows
+    expect_warning(res <- PrepareData("Table", input.data.table = tabWithN, last.k.rows = 4,
+                        row.names.to.remove = "65 or more, NET"), "Multiple statistics detected")
+    expect_equal(rownames(res$data),c("40 to 44", "45 to 49", "50 to 54", "55 to 64"))
 })
 
 test_that("Sorting rows",
@@ -273,6 +273,21 @@ data("EuStockMarkets")
 test_that("Time series object",
 {
     expect_error(res <- PrepareData("Table", input.data.table = EuStockMarkets, first.k.rows = 10), NA)
+    res <- PrepareData("Column", input.data.table = EuStockMarkets, sort.columns = TRUE,
+                sort.columns.row = 1860, first.k.columns = 1, tidy = FALSE)
+    expect_equal(colnames(res$data), "CAC")
 })
 
+data("LifeCycleSavings")
+test_that("Sort occurs after select",
+{
+    # Select top 5 coutries based on DPI
+    res <- PrepareData("Column", input.data.table = LifeCycleSavings,
+                sort.rows = TRUE, sort.rows.column = "dpi", last.k.rows = 5)
+    expect_equal(rownames(res$data),
+                c("Denmark", "Switzerland", "Canada", "Sweden", "United States"))
+    res <- PrepareData("Column", input.data.table = LifeCycleSavings,
+                sort.rows = TRUE, sort.rows.column = "dpi", last.k.rows = 1, first.k.rows = 1)
+    expect_equal(rownames(res$data), c("India", "United States"))
+})
 

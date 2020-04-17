@@ -128,16 +128,16 @@ be transposed?}
 \item{select.rows}{String; Comma separated list of rows, by name or index
 to select from input table. If blank (default), then all rows are selected.}
 
-\item{first.k.rows}{Integer; Number of rows to select from the top of the input table.}
+\item{first.k.rows}{Integer; Number of rows to select from the top of the input table. This occurs after select and sort.}
 
-\item{last.k.rows}{Integer; Number of rows to select from the bottom of the input table.}
+\item{last.k.rows}{Integer; Number of rows to select from the bottom of the input table. This occurs after select and sort.}
 
 \item{select.columns}{String; Comma separated list of columns, by name or index
 to select from input table. If blank (default), then all columns are selected.}
 
-\item{first.k.columns}{Integer; Number of columns to select from the left of the input table.}
+\item{first.k.columns}{Integer; Number of columns to select from the left of the input table. This occurs after select and sort.}
 
-\item{last.k.columns}{Integer; Number of columns to select from the right of the input table.}
+\item{last.k.columns}{Integer; Number of columns to select from the right of the input table. This occurs after select and sort.}
 
 \item{auto.order.rows}{Logical; Automatically order rows by correspondence analysis.}
 
