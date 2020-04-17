@@ -127,6 +127,11 @@ test_that("Sorting rows",
     expect_warning(res1 <- PrepareData("Column", input.data.table = tabWithN, tidy = TRUE, sort.rows = TRUE),
                    "Multiple statistics detected")
     expect_equal(rownames(res0$data), rownames(res1$data))
+
+    expect_warning(res2 <- PrepareData("Column", input.data.table = tabWithN, sort.rows = TRUE,
+            column.names.to.remove = "Never"), "Multiple statistics detected")
+    expect_equal(rownames(res2$data), c("35 to 39", "65 or more", "18 to 24",
+        "30 to 34", "45 to 49", "50 to 54", "40 to 44", "25 to 29", "55 to 64"))
 })
 
 test_that("Automatic ordering",

@@ -1140,9 +1140,6 @@ RearrangeRowsColumns <- function(data,
     # Select first so that sorting only occurs in rows/columns of interest
     data <- SelectRows(data, select = select.rows)
     data <- SelectColumns(data, select = select.columns)
-    data <- RemoveRowsAndOrColumns(data, 
-                row.names.to.remove = row.names.to.remove,
-                column.names.to.remove = column.names.to.remove, split = split)
 
     if (auto.order.rows)
     {
@@ -1165,6 +1162,12 @@ RearrangeRowsColumns <- function(data,
         data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
     if (reverse.columns)
         data <- ReverseColumns(data)
+
+    # Keep hidden rows/columns until after sorting
+    # Sort is often performed on the NET values
+    data <- RemoveRowsAndOrColumns(data, 
+                row.names.to.remove = row.names.to.remove,
+                column.names.to.remove = column.names.to.remove, split = split)
 
     # Keep last to retain order from sorting
     data <- SelectRows(data, first.k = first.k.rows, last.k = last.k.rows)
