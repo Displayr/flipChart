@@ -4,7 +4,9 @@
 \name{stacked.cola.associations}
 \alias{stacked.cola.associations}
 \title{stacked.cola.associations}
-\format{A \code{\link{data.frame}}}
+\format{
+A \code{\link{data.frame}}
+}
 \source{
 Study by Displayr Australia Pty Ltd
 }

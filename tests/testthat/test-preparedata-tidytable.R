@@ -273,6 +273,19 @@ data("EuStockMarkets")
 test_that("Time series object",
 {
     expect_error(res <- PrepareData("Table", input.data.table = EuStockMarkets, first.k.rows = 10), NA)
+    res <- PrepareData("Column", input.data.table = EuStockMarkets, sort.columns = TRUE,
+                sort.columns.row = 1860, first.k.columns = 1, tidy = FALSE)
+    expect_equal(colnames(res$data), "CAC")
 })
 
+data("LifeCycleSavings")
+test_that("Sort occurs after select",
+{
+    # Select top 5 coutries based on DPI
+    res <- PrepareData("Column", input.data.table = LifeCycleSavings,
+                sort.rows = TRUE, sort.rows.column = "dpi", last.k.rows = 5)
+    expect_equal(rownames(res$data),
+                c("Denmark", "Switzerland", "Canada", "Sweden", "United States"))
+
+})
 

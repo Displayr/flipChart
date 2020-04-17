@@ -110,10 +110,10 @@
 #' @param hide.columns.threshold Integer; If sample size ('Column n' or 'n')
 #'      is provided, then columns with sample sizes smaller than threshold
 #'      will be removed from table. Vectors will not be affected.
-#' @param first.k.rows Integer; Number of rows to select from the top of the input table.
-#' @param last.k.rows Integer; Number of rows to select from the bottom of the input table.
-#' @param first.k.columns Integer; Number of columns to select from the left of the input table.
-#' @param last.k.columns Integer; Number of columns to select from the right of the input table.
+#' @param first.k.rows Integer; Number of rows to select from the top of the input table. This occurs after select and sort.
+#' @param last.k.rows Integer; Number of rows to select from the bottom of the input table. This occurs after select and sort.
+#' @param first.k.columns Integer; Number of columns to select from the left of the input table. This occurs after select and sort.
+#' @param last.k.columns Integer; Number of columns to select from the right of the input table. This occurs after select and sort.
 #' @param reverse.rows Logical; Whether to reverse order of rows. This operation is
 #'      performed after row selection and sorting.
 #' @param reverse.columns Logical; Whether to reverse order of columns. This operation
@@ -1137,6 +1137,10 @@ RearrangeRowsColumns <- function(data,
         return(data)
     }
 
+    # DS-2844
+    data <- SelectRows(data, select = select.rows)
+    data <- SelectColumns(data, select = select.columns)
+
     if (auto.order.rows)
     {
         data <- try(AutoOrderRows(data))
@@ -1159,9 +1163,8 @@ RearrangeRowsColumns <- function(data,
     if (reverse.columns)
         data <- ReverseColumns(data)
 
-    data <- SelectRows(data, select.rows, first.k.rows, last.k.rows)
-    data <- SelectColumns(data, select.columns,
-                first.k.columns, last.k.columns)
+    data <- SelectRows(data, first.k = first.k.rows, last.k = last.k.rows)
+    data <- SelectColumns(data, first.k = first.k.columns, last.k = last.k.columns)
 
     data <- RemoveRowsAndOrColumns(data, row.names.to.remove = row.names.to.remove,
                                    column.names.to.remove = column.names.to.remove, split = split)
