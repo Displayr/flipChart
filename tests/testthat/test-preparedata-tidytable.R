@@ -286,6 +286,8 @@ test_that("Sort occurs after select",
                 sort.rows = TRUE, sort.rows.column = "dpi", last.k.rows = 5)
     expect_equal(rownames(res$data),
                 c("Denmark", "Switzerland", "Canada", "Sweden", "United States"))
-
+    res <- PrepareData("Column", input.data.table = LifeCycleSavings,
+                sort.rows = TRUE, sort.rows.column = "dpi", last.k.rows = 1, first.k.rows = 1)
+    expect_equal(rownames(res$data), c("India", "United States"))
 })
 
