@@ -1741,7 +1741,8 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         y.names <- colnames(data)[y.ind]
     if (length(y.names) < m)
         y.names <- paste("Group", 1:m)
-
+    if (any(checkRegressionOutput(input.data.raw)) && length(y.names) >= m)
+        y.names <- colnames(data)[y.ind]
     extravar <- NULL
     if (length(dim(data)) <= 2)
         yvar <- as.vector(unlist(data[,y.ind]))
@@ -1760,7 +1761,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
 
     if (length(extravar) > 0)
         newdata <- cbind(newdata, extravar)
-    if (any(reg.outputs) && m > 1)
+    if (any(checkRegressionOutput(input.data.raw)) && m >= 1)
         rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {

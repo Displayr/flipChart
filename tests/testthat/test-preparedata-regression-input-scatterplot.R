@@ -88,7 +88,7 @@ small.performance.table <-
               statistic = "%", name = "table.Performance", questions = c("Performance", "SUMMARY"))
 
 ## Helper function to check output from PrepareData is what is expected.
-isValidPrepareData <- function(x, single = FALSE)
+isValidPrepareData <- function(x, x.input, single = FALSE)
 {
     preparedata.length <- 7
     if (length(x) != preparedata.length)
@@ -101,6 +101,19 @@ isValidPrepareData <- function(x, single = FALSE)
         stop("PrepareData should return an element called data that is a 'data.frame' when X and Y are input")
     if (single && !is.matrix(x$data))
         stop("PrepareData should return an element called data that is a 'matrix' when only X is input")
+    # Find chart data names, catching the multinomial case as necessary
+    if (inherits(x.input, "Regression"))
+    {
+        chart.data <- attr(x.input, "ChartData")
+        if (any(c("Std. Error", "Standard Error") %in% colnames(chart.data)))
+            chart.data.names <- rownames(chart.data)
+        else
+            chart.data.names <- colnames(chart.data)
+    } else
+        chart.data.names <- rownames(x.input)
+
+    if (!any(chart.data.names %in% rownames(x$data)))
+        stop("Labels not preserved")
     return(TRUE)
 }
 
@@ -119,8 +132,8 @@ for (regression in all.regression.types)
     test_that(paste0("Test regression inputs to scatter: ", regression), {
         regression.to.input <- suppressWarnings(get(regression))
         expect_error(pd <- PrepareData(chart.type = "Scatter", input.data.table = regression.to.input), NA)
-        # expect_true(isValidPrepareData(pd))
-    })
+        expect_true(isValidPrepareData(pd, regression.to.input, single = TRUE))
+    debug})
 
 #######################################################
 ### Test Regression in X position against table in Y ##
@@ -134,7 +147,7 @@ for (regression in importance.regression.types)
         expect_error(pd <- PrepareData(chart.type = "Scatter",
                                        input.data.raw = list(X = regression.to.input,
                                                              Y = performance.table)), NA)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 base.warning <- paste0("Y input coefficients that did not appear in the list of X input ",
@@ -154,7 +167,7 @@ for (regression in standard.regression.types)
                                          input.data.raw = list(X = regression.to.input,
                                                                Y = performance.table)),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 # Test against larger table (more than relevant entries)
@@ -168,7 +181,7 @@ for (regression in importance.regression.types)
                                          input.data.raw = list(X = regression.to.input,
                                                                Y = large.performance.table)),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 
@@ -185,7 +198,7 @@ for (regression in standard.regression.types)
                                          input.data.raw = list(X = regression.to.input,
                                                                Y = large.performance.table)),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 
@@ -201,7 +214,7 @@ for (regression in importance.regression.types)
                                          input.data.raw = list(X = regression.to.input,
                                                                Y = small.performance.table)),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 
@@ -218,7 +231,7 @@ for (regression in standard.regression.types)
                                          input.data.raw = list(X = regression.to.input,
                                                                Y = small.performance.table)),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 #######################################################
@@ -234,7 +247,7 @@ for (regression in importance.regression.types)
         expect_error(pd <- PrepareData(chart.type = "Scatter",
                                        input.data.raw = list(X = performance.table,
                                                              Y = list(model = regression.to.input))), NA)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, regression.to.input))
     })
 
 # Expect warning about intercepts in table output
@@ -251,7 +264,7 @@ for (regression in standard.regression.types)
                                          input.data.raw = list(X = performance.table,
                                                                Y = list(model = regression.to.input))),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, performance.table))
     })
 
 # Test against larger table (more than relevant entries)
@@ -265,7 +278,7 @@ for (regression in importance.regression.types)
                                          input.data.raw = list(X = large.performance.table,
                                                                Y = list(model = regression.to.input))),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, large.performance.table))
     })
 
 large.warning.suffix <- paste0("Feminine, Fun, Health-conscious, Hip, Honest, Humorous, Imaginative, ",
@@ -285,7 +298,7 @@ for (regression in standard.regression.types)
                                          input.data.raw = list(X = large.performance.table,
                                                                Y = list(model = regression.to.input))),
                        expected.warning)
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, large.performance.table))
     })
 
 ######################################################################
@@ -318,7 +331,7 @@ for (reg.index  in seq_along(standard.regression.types))
                                                                Y = list(reg = Y.regression,
                                                                         tab = large.performance.table))),
                        expected.warning, perl = TRUE, )
-        expect_true(isValidPrepareData(pd))
+        expect_true(isValidPrepareData(pd, X.regression))
     })
 
 
@@ -346,7 +359,7 @@ test_that("Multiple tables in Y with Regression in X", {
                                                            Y = list(head.table,
                                                                     tail.table))),
                    base.warning)
-    expect_true(isValidPrepareData(pd))
+    expect_true(isValidPrepareData(pd, large.linear.importance))
 })
 
 large.regression.vars <- c("Beautiful", "Carefree", "Charming", "Confident", "DownToEarth",
@@ -418,10 +431,10 @@ test_that("Handle single inputs correctly", {
     expect_error(pd <- PrepareData(chart.type = "Scatter",
                                    input.data.raw = list(X = linear.importance, Y = NULL)),
                  NA)
-    expect_true(isValidPrepareData(pd))
+    expect_true(isValidPrepareData(pd, linear.importance))
     # Single regression object input in Y position
     expect_error(pd <- PrepareData(chart.type = "Scatter",
                                    input.data.raw = list(X = NULL, Y = list(a = linear.importance))),
                  NA)
-    expect_true(isValidPrepareData(pd))
+    expect_true(isValidPrepareData(pd, linear.importance))
 })
