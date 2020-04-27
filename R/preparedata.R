@@ -709,8 +709,11 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             x[[1]] <- extractRegressionScatterData(x[[1]])
         if(reg.outputs[2])
         {
+            # Always expect names attributes of the models or table to be passed by Q/Displayr
+            # However, catch case where names arent provided in the Y element of input.data.raw
+            reg.names <- if (!is.null(names(x[[2]]))) names(x[[2]]) else LETTERS[1:length(x[[2]])]
             x[[2]] <- mapply(extractRegressionScatterData,
-                             x = x[[2]], y.axis = TRUE, name = names(x[[2]]), SIMPLIFY = FALSE)
+                             x = x[[2]], y.axis = TRUE, name = reg.names, SIMPLIFY = FALSE)
         }
 
     }
@@ -747,9 +750,8 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 vals <- base.values
                 indices <- match(names(x[[2]][[i]]), y.all.rownames, nomatch = 0)
                 vals[indices] <- x[[2]][[i]]
-                mostattributes(vals) <- attributes(x[[2]][[i]])
                 names(vals) <- y.all.rownames
-                vals
+                CopyAttributes(vals, x[[2]][[i]])
             })
         }
         x[[2]] <- data.frame(x[[2]], check.names = FALSE, check.rows = FALSE,
@@ -1165,7 +1167,7 @@ RearrangeRowsColumns <- function(data,
 
     # Keep hidden rows/columns until after sorting
     # Sort is often performed on the NET values
-    data <- RemoveRowsAndOrColumns(data, 
+    data <- RemoveRowsAndOrColumns(data,
                 row.names.to.remove = row.names.to.remove,
                 column.names.to.remove = column.names.to.remove, split = split)
 

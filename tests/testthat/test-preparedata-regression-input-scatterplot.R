@@ -438,3 +438,22 @@ test_that("Handle single inputs correctly", {
                  NA)
     expect_true(isValidPrepareData(pd, linear.importance))
 })
+
+test_that("Check name attributes used properly", {
+    # Expect names always provided in the Y element of input.data.raw
+    # However, check unnamed list doesn't throw error
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = ordered.importance,
+                                                         Y = list(performance.table, linear.importance))),
+                 NA)
+    expect_true(isValidPrepareData(pd, x.input = ordered.importance))
+    # Check default names assigned if name attribute isn't available
+    expect_true(identical(c("table.Performance", "B"), levels(pd$data$Groups)))
+    # Check default name attribute used if available
+    expect_error(pd <- PrepareData(chart.type = "Scatter",
+                                   input.data.raw = list(X = ordered.importance,
+                                                         Y = list(performance.table, linear.model = linear.importance))),
+                 NA)
+    expect_true(isValidPrepareData(pd, x.input = ordered.importance))
+    expect_true(identical(c("table.Performance", "linear.model"), levels(pd$data$Groups)))
+})
