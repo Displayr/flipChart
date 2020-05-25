@@ -1707,6 +1707,7 @@ extractRegressionScatterData <- function(x, y.axis = FALSE, name = NULL)
 
 convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels, date.format)
 {
+    data.row.labels <- rownames(data)
     n <- nrow(data)
     if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
     {
@@ -1732,6 +1733,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         m <- ncol(data)
         y.ind <- 1:m
         xvar <- rep(rownames(data), m)
+        data.row.labels <- rep("", nrow(data))
     } else
     {
         # Otherwise use first column as X-coordinates
@@ -1739,6 +1741,9 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         y.ind <- (1:m) + 1
         xvar <- rep(data[,1], m)
     }
+    if (!hasUserSuppliedRownames(data))
+        data.row.labels <- rep("", nrow(data))
+
     if (length(y.names) < m)
         y.names <- colnames(data)[y.ind]
     if (length(y.names) < m)
@@ -1753,7 +1758,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         yvar <- as.vector(unlist(data[,y.ind,1]))
         extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
     }
-
+    
     # newdata needs to use data rather than input.data.raw
     # otherwise it will not handle filters etc
     newdata <- data.frame(X = xvar,
@@ -1763,8 +1768,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
 
     if (length(extravar) > 0)
         newdata <- cbind(newdata, extravar)
-    if (any(checkRegressionOutput(input.data.raw)) && m >= 1)
-        rownames(newdata) <- MakeUniqueNames(rep(rownames(data), m))
+    rownames(newdata) <- MakeUniqueNames(rep(data.row.labels, m))
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
         if (IsDateTime(as.character(newdata[,1])))

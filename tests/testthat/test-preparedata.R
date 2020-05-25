@@ -728,6 +728,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_true(attr(res6$data, "scatter.mult.yvals"))
     expect_equal(res6$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
     expect_equal(as.character(res6$data[101,3]), "VarC")
+    expect_equal(sum(nchar(trimws(rownames(res6$data)))), 0)
 
     expect_warning(res7 <- PrepareData("Scatter", input.data.raw = list(X = xx, Y = list(yy, y2)),
         tidy.labels = TRUE, transpose = TRUE))
@@ -1373,10 +1374,12 @@ test_that("Scatter input data column order",
 
     res <- PrepareData("Scatter", input.data.other = tb, scatter.mult.yvals = TRUE)
     expect_equal(dim(res$data), c(30, 3))
+    expect_equal(sum(nchar(trimws(rownames(res$data)))), 0)
     expect_equal(attr(res$data, "scatter.mult.yvals"), TRUE)
     res <- PrepareData("Scatter", input.data.pasted = pst, scatter.mult.yvals = TRUE)
     expect_equal(levels(res$data$Groups), c('B','C'))
     res <- PrepareData("Scatter", input.data.pasted = p.dates, date.format = "International", scatter.mult.yvals = TRUE)
+    expect_equal(sum(nchar(trimws(rownames(res$data)))), 0)
     expect_equal(res$data[,1], sprintf("Jan %02d 2017", c(1:4, 1:4)))
     res <- PrepareData("Scatter", input.data.pasted = p.unnamed, scatter.mult.yvals = TRUE)
     expect_equal(levels(res$data$Groups), c('Group 1','Group 2'))
@@ -1484,7 +1487,8 @@ test_that("PrepareData with lists and dataframes",
         pop15 = c(30.35, 24.32, 24.8, 42.89, 43.19)), .Names = c("sr",
         "pop15"), row.names = c("Australia", "Austria", "Belgium",
         "Bolivia", "Brazil"), class = "data.frame"))
-    expect_silent(PrepareData("Scatter", input.data.table = dfL))
+    expect_silent(res <- PrepareData("Scatter", input.data.table = dfL))
+    expect_equal(rownames(res$data[[2]]), rownames(dfL[[2]]))
 })
 
 test_that("Heatmap allows numeric rownames",
@@ -1798,6 +1802,10 @@ test_that("Scatter accepts tables as variables",
     pd <- PrepareData("Scatter", input.data.raw = raw.named)
     expect_equal(dim(pd$data), c(16, 3))
     expect_equal(levels(pd$data[,3]), c("Male", "Female"))
+    expect_equal(rownames(pd$data), c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+        "Pepsi Max", "Dislike all cola", "Don't care", "Coca-Cola ",
+        "Diet Coke ", "Coke Zero ", "Pepsi  ", "Diet Pepsi ", "Pepsi Max ",
+        "Dislike all cola ", "Don't care "))
 
     raw.unordered <- list(X = structure(1:6, .Names = c("a", "b", "c", "d", "e", "f"
     )), Y = list(v2 = structure(1:6, .Names = c("f", "e", "d", "c",
@@ -1851,6 +1859,13 @@ test_that("Scatter accepts tables as variables",
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw.2dtable))
     expect_equal(dim(pd$data), c(30, 3))
     expect_equal(colnames(pd$data)[1], "Hate")
+    expect_equal(rownames(pd$data), c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi", "Diet Pepsi",
+        "Pepsi Max", "Coca-Cola ", "Diet Coke ", "Coke Zero ", "Pepsi ",
+        "Diet Pepsi ", "Pepsi Max ", "Coca-Cola  ", "Diet Coke  ", "Coke Zero  ",
+        "Pepsi  ", "Diet Pepsi  ", "Pepsi Max  ", "Coca-Cola   ", "Diet Coke   ",
+        "Coke Zero   ", "Pepsi   ", "Diet Pepsi   ", "Pepsi Max   ",
+        "Coca-Cola    ", "Diet Coke    ", "Coke Zero    ", "Pepsi    ",
+        "Diet Pepsi    ", "Pepsi Max    "))
 
     raw.multiY.and.size <- list(X = structure(c(`Coca-Cola` = 42.625, `Diet Coke` = 11.125,
     `Coke Zero` = 17.875, `Pepsi ` = 9, `Diet Pepsi` = 2.5, `Pepsi Max` = 14.875,
@@ -1931,6 +1946,7 @@ test_that("Scatter accepts tables as variables",
             Z2 = NULL, groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = raw.multi.ytable)
     expect_equal(nlevels(pd$data$Groups), sum(sapply(raw.multi.ytable$Y, ncol)) - 2)
+    expect_equal(rownames(pd$data), MakeUniqueNames(rep(rownames(raw.multi.ytable$X)[2:10], 11)))
 
 
     raw.ytable.only <- list(X = NULL, Y = list(`Preferred cola` = structure(c(`Coca-Cola` = 42.625,
@@ -1943,7 +1959,7 @@ test_that("Scatter accepts tables as variables",
     pd <- PrepareData("Scatter", input.data.raw = raw.ytable.only)
     expect_equal(dim(pd$data), c(8, 1))
     expect_equal(pd$scatter.variable.indices, c(NA, 1, NA, NA, NA), check.attributes = FALSE)
-
+    expect_equal(rownames(pd$data), names(raw.ytable.only$Y[[1]])[-9])
 
     b.raw <- list(X = rep(c("Age", "Gender", "Location"), c(8, 3, 9)),
     Y = list(b1 = structure(c(5.29313929313929, 5.57701421800948,
