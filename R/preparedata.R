@@ -1705,6 +1705,20 @@ extractRegressionScatterData <- function(x, y.axis = FALSE, name = NULL)
     return(chart.data)
 }
 
+
+# This function is used when scatter.mult.yvals = TRUE
+# It converts the input data frame which a data series in each column
+# into a the standard input format, where the data series
+# is indicated by the value in the "Groups" column
+# If x-coordinates are supplied in input.data.raw$X, then
+# rownames attached to the x-coordinates will be used as
+# rownames of the resulting data frame
+# Otherwise, the rownames of data will be used as the 
+# x-coordinates and the rownames of the output data
+# will be blank (with spaces as padding for uniqueness)
+# This function also updates the attribute "scatter.variable.indices"
+# to describe the format of the output data frame
+
 convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels, date.format)
 {
     data.row.labels <- rownames(data)
