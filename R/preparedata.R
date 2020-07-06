@@ -1317,7 +1317,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
     ## Note that R outputs and pasted data will already be in decimals
     stat <- attr(data, "statistic")
     qst <- attr(data, "questions")
-    if (!is.null(stat) && !is.null(qst) && grepl("%$", stat))
+    if (!is.null(stat) && !is.null(qst) && grepl("%)?$", stat))
         data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
