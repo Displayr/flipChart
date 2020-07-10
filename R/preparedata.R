@@ -1713,7 +1713,7 @@ extractRegressionScatterData <- function(x, y.axis = FALSE, name = NULL)
 # If x-coordinates are supplied in input.data.raw$X, then
 # rownames attached to the x-coordinates will be used as
 # rownames of the resulting data frame
-# Otherwise, the rownames of data will be used as the 
+# Otherwise, the rownames of data will be used as the
 # x-coordinates and the rownames of the output data
 # will be blank (with spaces as padding for uniqueness)
 # This function also updates the attribute "scatter.variable.indices"
@@ -1772,7 +1772,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         yvar <- as.vector(unlist(data[,y.ind,1]))
         extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
     }
-    
+
     # newdata needs to use data rather than input.data.raw
     # otherwise it will not handle filters etc
     newdata <- data.frame(X = xvar,
@@ -1782,7 +1782,8 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
 
     if (length(extravar) > 0)
         newdata <- cbind(newdata, extravar)
-    rownames(newdata) <- MakeUniqueNames(rep(data.row.labels, m))
+    rownames(newdata) <- if (length(unique(data.row.labels)) <= 1) NULL
+                         else                                      MakeUniqueNames(rep(data.row.labels, m))
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
         if (IsDateTime(as.character(newdata[,1])))
