@@ -1618,13 +1618,11 @@ PrepareForCbind <- function(x, use.span = FALSE)
         else 
             rownames(new.dat) <- names(x)
     }
-    else if (!is.data.frame(x))
-        new.dat <- as.matrix(x)
-    else
+    else if (!is.list(x)) # include dataframes different types still retained
         new.dat <- as.matrix(x)
 
     # Multi-column tables are generally already correctly named
-    if (ncol(new.dat) == 1 && !is.null(attr(x, "name")))
+    if (!is.list(x) && ncol(new.dat) == 1 && !is.null(attr(x, "name")))
         colnames(new.dat) <- attr(x, "name") 
     return(new.dat)
 }
