@@ -242,6 +242,8 @@ test_that("Using tables with banners",
     tables.with.banners[[7]] <- PrepareForCbind(tables.with.banners[[7]])
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = tables.with.banners), "discarded")
 
+    expect_error(PrepareForCbind(tables.with.banners[[2]]), NA)
+
     tb2 <- tables.with.banners
     tb2$X <- PrepareForCbind(tb2$X)
     expect_warning(pd2 <- PrepareData("Scatter", input.data.raw = tb2), "discarded")

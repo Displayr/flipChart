@@ -1620,6 +1620,8 @@ PrepareForCbind <- function(x, use.span = FALSE)
     }
     else if (!is.list(x)) # include dataframes different types still retained
         new.dat <- as.matrix(x)
+    else
+        new.dat <- x
 
     # Multi-column tables are generally already correctly named
     if (!is.list(x) && ncol(new.dat) == 1 && !is.null(attr(x, "name")))
