@@ -1599,16 +1599,22 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 #'
 #' @param x Q table or variable
 #' @param use.span Logical; Whether the span categories should be returned
-#'      instead of the values in the table. Row names will be preserved.
-#'      A warning will be given if this option is selected but no span
-#'      attribute is found in \code{x}.
+#'  instead of the values in the table. Row names will be preserved.
+#'  A warning will be given if this option is selected but no span
+#'  attribute is found in \code{x}.
+#' @param show.labels This option is only relevant for Q variables.
+#'   For tables, the resulting variable will always be named by 
+#'   by 'name' attribute, but for variables both the 'label' and
+#'   'name' attribute can be used.
 #' @export
-PrepareForCbind <- function(x, use.span = FALSE)
+PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE)
 {
     if (is.null(x))
         return(x)
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
+    if (inherits(x, c("POSIXct", "POSIXt", "Date")))
+        return(x)
 
     if (use.span && !is.null(attr(x, "span")))
     {
@@ -1624,8 +1630,14 @@ PrepareForCbind <- function(x, use.span = FALSE)
         new.dat <- x
 
     # Multi-column tables are generally already correctly named
-    if (!is.list(x) && ncol(new.dat) == 1 && !is.null(attr(x, "name")))
-        colnames(new.dat) <- attr(x, "name") 
+    if (!is.list(x) && ncol(new.dat) == 1)
+    {
+        if (!is.null(attr(x, "label")) && show.labels)     # x is a variable
+            colnames(new.dat) <- attr(x, "label")
+        else if (!is.null(attr(x, "name"))) # x is a table or a variable
+            colnames(new.dat) <- attr(x, "name") 
+    }
+    new.dat <- CopyAttributes(new.dat, x)
     return(new.dat)
 }
 

@@ -257,3 +257,22 @@ test_that("Using tables with banners",
     expect_equal(pd3$data[,1], c("Income", "Income", "Income", "Income",
         "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"))
 })
+
+vv <- structure(c(0.287577520124614, 0.788305135443807, 0.4089769218117,
+    0.883017404004931, 0.940467284293845, 0.0455564993899316, 0.528105488047004,
+    0.892419044394046, 0.551435014465824, 0.456614735303447, 0.956833345349878,
+    0.835255319951102, 0.143817043630406, 0.192815946880728, 0.896738682640716,
+    0.308119554305449, 0.363300543511286, 0.783946478739381), questiontype = "Number",
+    dataset = "timedata", name = "v1", label = "Variable A", question = "Variable A")
+
+test_that("PrepareForCbind with names shown",
+{
+    res0 <- PrepareData("Scatter", input.data.raw = list(X = vv, Y = NULL,
+            Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL), show.labels = FALSE)
+    res <- PrepareData("Scatter", input.data.raw = list(X = PrepareForCbind(vv, show.labels = FALSE),
+            Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL), show.labels = FALSE)
+    expect_equal(colnames(res0$data), colnames(res$data))
+})
+
+
+
