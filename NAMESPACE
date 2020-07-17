@@ -3,6 +3,7 @@
 export(CChart)
 export(PrepareColors)
 export(PrepareData)
+export(PrepareForCbind)
 export(PrepareNumbers)
 importFrom(flipChartBasics,ChartColors)
 importFrom(flipChartBasics,ChartNumberFormat)

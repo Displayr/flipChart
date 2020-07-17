@@ -1602,6 +1602,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 #'      instead of the values in the table. Row names will be preserved.
 #'      A warning will be given if this option is selected but no span
 #'      attribute is found in \code{x}.
+#' @export
 PrepareForCbind <- function(x, use.span = FALSE)
 {
     if (is.null(x))
