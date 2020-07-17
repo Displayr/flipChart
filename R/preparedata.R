@@ -1592,6 +1592,43 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
     x
 }
 
+#' Helps tidy Q variables and tables
+#' @description Inputs supplied via input.data.raw can be in a range of
+#'  formats. This function does a minimal job of checking for attribute
+#'  and using these as names when appropriate.
+#'
+#' @param x Q table or variable
+#' @param use.span Logical; Whether the span categories should be returned
+#'      instead of the values in the table. Row names will be preserved.
+#'      A warning will be given if this option is selected but no span
+#'      attribute is found in \code{x}.
+PrepareForCbind <- function(x, use.span = FALSE)
+{
+    if (is.null(x))
+        return(x)
+    if (use.span && is.null(attr(x, "span")))
+        warning("Spans were not used as this attribute was not found in the data.")
+
+    if (use.span && !is.null(attr(x, "span")))
+    {
+        new.dat <- as.matrix(attr(x, "span")$rows[,1])
+        if (!is.null(rownames(x)))
+            rownames(new.dat) <- rownames(x)
+        else 
+            rownames(new.dat) <- names(x)
+    }
+    else if (!is.data.frame(x))
+        new.dat <- as.matrix(x)
+    else
+        new.dat <- as.matrix(x)
+
+    # Multi-column tables are generally already correctly named
+    if (ncol(new.dat) == 1 && !is.null(attr(x, "name")))
+        colnames(new.dat) <- attr(x, "name") 
+    return(new.dat)
+}
+
+
 
 rawDataLooksCrosstabbable <- function(input.data.raw, data)
 {
