@@ -275,4 +275,26 @@ test_that("PrepareForCbind with names shown",
 })
 
 
+v2 <- structure(c(9L, 9L, 9L, 7L, 6L, 6L, 7L, 7L, 9L, 4L, 7L, 6L, 5L, 8L, 4L, 9L,
+    6L, 9L, 7L, 7L, 4L, 6L, 6L, 9L, 8L, 9L, 7L, 4L, 5L, 7L, 7L, 9L,
+    8L, 9L, 9L, 6L, 7L, 9L, 9L, 9L, 8L, 9L, 6L, 6L, 5L, 9L, 8L, 4L,
+    6L, 4L, 9L, 8L, 7L, 7L, 9L, 7L, 6L, 4L), class = "factor", .Label = c("Never",
+    "Once or twice a year", "Once every 3 months", "Once a month",
+    "Once every 2 weeks", "Once a week", "2 to 3 days a week", "4 to 5 days a week",
+    "Every or nearly every day"), questiontype = "PickOneMulti",
+    dataset = "Visualization - Standard R Charts.sav", values = c(Never = 1,
+    `Once or twice a year` = 2, `Once every 3 months` = 3, `Once a month` = 4,
+    `Once every 2 weeks` = 5, `Once a week` = 6, `2 to 3 days a week` = 7,
+    `4 to 5 days a week` = 8, `Every or nearly every day` = 9), sourcevalues = c(Never = 1,
+    `Once or twice a year` = 2, `Once every 3 months` = 3, `Once a month` = 4,
+    `Once every 2 weeks` = 5, `Once a week` = 6, `2 to 3 days a week` = 7,
+    `4 to 5 days a week` = 8, `Every or nearly every day` = 9), name = "Q4_A",
+    label = "Colas (e.g., Coca Cola, Pepsi Max)?", question = "Q4. Frequency of drinking cola")
+
+test_that("PrepareForCbind with factors",
+{
+    v2b <- PrepareForCbind(v2)
+    expect_equal(levels(v2), levels(v2b))
+})
+
 

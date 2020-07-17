@@ -1613,7 +1613,12 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE)
         return(x)
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
+
+    # For variables, this function is not really required
+    # and for certain types it results in info being lost
     if (inherits(x, c("POSIXct", "POSIXt", "Date")))
+        return(x)
+    if (is.factor(x))
         return(x)
 
     if (use.span && !is.null(attr(x, "span")))
