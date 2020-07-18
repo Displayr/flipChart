@@ -149,3 +149,152 @@ test_that("Handle y-values in multiple columns + multiple statistics",
     expect_equal(res5$scatter.variable.indices, c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3))
     expect_equal(dim(res5$data), c(9, 5))
 })
+
+tables.with.banners <- list(X = structure(c(3.25318246110325, 10.8910891089109, 10.3253182461103,
+18.2461103253182, 22.3479490806223, 14.5685997171146, 8.34512022630834,
+6.22347949080622, 5.7991513437058, 100, 49.375, 50.625, 100,
+-15.85213900942, -11.4519011349191, -11.7778446811784, -7.2146350335478,
+-4.85154432316768, -9.33326808423343, -12.918647093086, -14.1409353915585,
+-14.385393051253, 39.884207400925, 11.4020968466331, 12.1681291929185,
+42.4264068711928, 1.35876092092925e-56, 2.30044126687814e-30,
+5.07748161228579e-32, 5.4078820119266e-13, 1.22503824673038e-06,
+1.02655768301792e-20, 3.53298929345856e-38, 2.12441682682102e-45,
+6.39139645248431e-47, 0, 0, 0, 0), .Dim = c(13L, 3L), .Dimnames = list(
+    c("Less than $15,000", "$15,001 to $30,000", "$30,001 to $45,000",
+    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+    "NET", "Male", "Female", "NET"), c("%", "z-Statistic", "p"
+    )), basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Income", "Income", "Income", "Income",
+    "Income", "Income", "Income", "Income", "Income", "Income",
+    "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+    ""), row.names = c(NA, 13L))), name = "table.BANNER.2", questions = c("BANNER",
+"SUMMARY")), Y = list(table.BANNER.by.Unique.Identifier = structure(c(1623.91304347826,
+1540.68831168831, 1600.98630136986, 1582.82170542636, 1656.58860759494,
+1527.40776699029, 1604.22033898305, 1512.13636363636, 1732.58536585366,
+1595.92927864215, 1567.88101265823, 1632.31358024691, 1600.5), .Dim = c(13L,
+1L), statistic = "Average", .Dimnames = list(c("Less than $15,000",
+"$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+"$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+"$150,001 to $200,000", "$200,001 or more", "NET", "Male", "Female",
+"NET"), "Unique Identifier"), basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = c("PickAny", "Number"
+), span = list(rows = structure(list(c("Income", "Income", "Income",
+"Income", "Income", "Income", "Income", "Income", "Income", "Income",
+"Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+"$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+"$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+"$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+""), row.names = c(NA, 13L)), columns = structure(list("Unique Identifier"), class = "data.frame", .Names = "", row.names = 1L)), name = "table.BANNER.by.Unique.Identifier", questions = c("BANNER",
+"Unique Identifier"))), Z1 = structure(c(`Less than $15,000` = 3.25318246110325,
+`$15,001 to $30,000` = 10.8910891089109, `$30,001 to $45,000` = 10.3253182461103,
+`$45,001 to $60,000` = 18.2461103253182, `$60,001 to $90,000` = 22.3479490806223,
+`$90,001 to $120,000` = 14.5685997171146, `$120,001 to $150,000` = 8.34512022630834,
+`$150,001 to $200,000` = 6.22347949080622, `$200,001 or more` = 5.7991513437058,
+NET = 100, Male = 49.375, Female = 50.625, NET = 100), .Dim = 13L, .Dimnames = list(
+    c("Less than $15,000", "$15,001 to $30,000", "$30,001 to $45,000",
+    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+    "NET", "Male", "Female", "NET")), statistic = "%", basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Income", "Income", "Income", "Income",
+    "Income", "Income", "Income", "Income", "Income", "Income",
+    "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+    ""), row.names = c(NA, 13L))), name = "table.BANNER", questions = c("BANNER",
+"SUMMARY")), Z2 = NULL, groups = NULL, labels = NULL, structure(c(`Less than $15,000` = -15.85213900942,
+`$15,001 to $30,000` = -11.4519011349191, `$30,001 to $45,000` = -11.7778446811784,
+`$45,001 to $60,000` = -7.2146350335478, `$60,001 to $90,000` = -4.85154432316768,
+`$90,001 to $120,000` = -9.33326808423343, `$120,001 to $150,000` = -12.918647093086,
+`$150,001 to $200,000` = -14.1409353915585, `$200,001 or more` = -14.385393051253,
+NET = 39.884207400925, Male = 11.4020968466331, Female = 12.1681291929185,
+NET = 42.4264068711928), .Dim = 13L, .Dimnames = list(c("Less than $15,000",
+"$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+"$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+"$150,001 to $200,000", "$200,001 or more", "NET", "Male", "Female",
+"NET")), statistic = "z-Statistic", basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Income", "Income", "Income", "Income",
+    "Income", "Income", "Income", "Income", "Income", "Income",
+    "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+    ""), row.names = c(NA, 13L))), name = "table.BANNER.3", questions = c("BANNER",
+"SUMMARY")))
+
+test_that("Using tables with banners",
+{
+    tables.with.banners[[7]] <- PrepareForCbind(tables.with.banners[[7]])
+    expect_warning(pd <- PrepareData("Scatter", input.data.raw = tables.with.banners), "discarded")
+
+    expect_error(PrepareForCbind(tables.with.banners[[2]]), NA)
+
+    tb2 <- tables.with.banners
+    tb2$X <- PrepareForCbind(tb2$X)
+    expect_warning(pd2 <- PrepareData("Scatter", input.data.raw = tb2), "discarded")
+    expect_equal(pd$data, pd2$data)
+
+    tb3 <- tables.with.banners
+    tb3$X <- PrepareForCbind(tb3$X, use.span = TRUE)
+    expect_warning(pd3 <- PrepareData("Scatter", input.data.raw = tb3), "discarded")
+    expect_equal(dim(pd3$data), dim(pd$data))
+    expect_equal(rownames(pd3$data), rownames(pd$data))
+    expect_equal(pd3$data[,1], c("Income", "Income", "Income", "Income",
+        "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"))
+})
+
+vv <- structure(c(0.287577520124614, 0.788305135443807, 0.4089769218117,
+    0.883017404004931, 0.940467284293845, 0.0455564993899316, 0.528105488047004,
+    0.892419044394046, 0.551435014465824, 0.456614735303447, 0.956833345349878,
+    0.835255319951102, 0.143817043630406, 0.192815946880728, 0.896738682640716,
+    0.308119554305449, 0.363300543511286, 0.783946478739381), questiontype = "Number",
+    dataset = "timedata", name = "v1", label = "Variable A", question = "Variable A")
+
+test_that("PrepareForCbind with names shown",
+{
+    res0 <- PrepareData("Scatter", input.data.raw = list(X = vv, Y = NULL,
+            Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL), show.labels = FALSE)
+    res <- PrepareData("Scatter", input.data.raw = list(X = PrepareForCbind(vv, show.labels = FALSE),
+            Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL), show.labels = FALSE)
+    expect_equal(colnames(res0$data), colnames(res$data))
+})
+
+
+v2 <- structure(c(9L, 9L, 9L, 7L, 6L, 6L, 7L, 7L, 9L, 4L, 7L, 6L, 5L, 8L, 4L, 9L,
+    6L, 9L, 7L, 7L, 4L, 6L, 6L, 9L, 8L, 9L, 7L, 4L, 5L, 7L, 7L, 9L,
+    8L, 9L, 9L, 6L, 7L, 9L, 9L, 9L, 8L, 9L, 6L, 6L, 5L, 9L, 8L, 4L,
+    6L, 4L, 9L, 8L, 7L, 7L, 9L, 7L, 6L, 4L), class = "factor", .Label = c("Never",
+    "Once or twice a year", "Once every 3 months", "Once a month",
+    "Once every 2 weeks", "Once a week", "2 to 3 days a week", "4 to 5 days a week",
+    "Every or nearly every day"), questiontype = "PickOneMulti",
+    dataset = "Visualization - Standard R Charts.sav", values = c(Never = 1,
+    `Once or twice a year` = 2, `Once every 3 months` = 3, `Once a month` = 4,
+    `Once every 2 weeks` = 5, `Once a week` = 6, `2 to 3 days a week` = 7,
+    `4 to 5 days a week` = 8, `Every or nearly every day` = 9), sourcevalues = c(Never = 1,
+    `Once or twice a year` = 2, `Once every 3 months` = 3, `Once a month` = 4,
+    `Once every 2 weeks` = 5, `Once a week` = 6, `2 to 3 days a week` = 7,
+    `4 to 5 days a week` = 8, `Every or nearly every day` = 9), name = "Q4_A",
+    label = "Colas (e.g., Coca Cola, Pepsi Max)?", question = "Q4. Frequency of drinking cola")
+
+test_that("PrepareForCbind with factors",
+{
+    v2b <- PrepareForCbind(v2)
+    expect_equal(levels(v2), levels(v2b))
+})
+
+
