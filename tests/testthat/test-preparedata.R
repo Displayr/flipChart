@@ -936,12 +936,10 @@ test_that("Scatterplot with duplicated variable",{
     expect_equal(NCOL(pd$data), 3)
     expect_equal(length(w), 1)
     expect_equal(w[1], "Variables containing duplicated variable names have been removed (give the variables unique names if you do not want this to happen): Age.")
-    w = capture_warnings(pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
+    pd <- PrepareData("Scatter", TRUE, NULL, input.data.raw = z,
                       transpose = FALSE, first.aggregate = FALSE,
-                      tidy = FALSE, data.source = "Link to variables in 'Data'"))
+                      tidy = FALSE, data.source = "Link to variables in 'Data'")
     expect_equal(NCOL(pd$data), 3)
-    expect_equal(length(w), 1)
-    expect_true(grepl("^After removing missing ", w[1]))
 })
 
 
@@ -1750,7 +1748,7 @@ test_that("Axis and Series names are both preserved",
     pd <- PrepareData("Histogram", input.data.raw = dat2, subset = filt2)
     expect_equal(attr(pd$data[[1]], "label"), "How many SMS sent in typical week")
 
-    expect_warning(pd <- PrepareData("Scatter", input.data.raw = dat2, subset = filt2))
+    expect_error(pd <- PrepareData("Scatter", input.data.raw = dat2, subset = filt2), NA)
     expect_equal(length(pd$scatter.variable.indices), 5)
 
     wrong.dataset <- list(X = structure(c(5.1, 4.9, 4.7, 4.6, 5, 5.4, 4.6, 5, 4.4,

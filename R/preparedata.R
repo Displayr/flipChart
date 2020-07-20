@@ -462,8 +462,7 @@ PrepareData <- function(chart.type,
         data <- rmScatterDefaultNames(data)
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
-    if (isScatter(chart.type) && !scatter.mult.yvals &&
-        sum(nchar(select.columns), na.rm = TRUE) > 0)
+    if (isScatter(chart.type) && !scatter.mult.yvals)
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
@@ -858,8 +857,16 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                     base.warning <- paste0("Y input coefficients that did not appear in the list of X input ",
                                            "coefficients were discarded")
                 else
+                {
+                    # Suppress warnings when removed rows are named "NET"
+                    # This happens often when inputs are BANNERS    
+                    if (length(removed.rownames) > 0)
+                        removed.rownames <- removed.rownames[trimws(removed.rownames) != "NET"]
                     base.warning <- "Rows that did not occur in all of the input tables were discarded"
-                warning(base.warning, discarded.rows)
+                }
+                
+                if (length(removed.rownames) > 0)
+                    warning(base.warning, discarded.rows)
             }
             if (length(rlabels) > 0)
                 warning("The 'Labels' variable has been ignored. Using row names of ",
@@ -1615,7 +1622,11 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 #' Helps tidy Q variables and tables
 #' @description Inputs supplied via input.data.raw can be in a range of
 #'  formats. This function does a minimal job of checking for attribute
-#'  and using these as names when appropriate.
+#'  and using these as names when appropriate. Currently, it does
+#'  two functions. (1) Returns the span instead of the values and
+#'  (2) assigns column names to 1-dimensional Q tables. Inputs which
+#'  cannot be safely converted to a matrix (e.g. date/time or factors)
+#'  are returned as is without any changes.
 #'
 #' @param x Q table or variable
 #' @param use.span Logical; Whether the span categories should be returned
@@ -1635,7 +1646,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE)
         warning("Spans were not used as this attribute was not found in the data.")
 
     # For variables, this function is not really required
-    # and for certain types it results in info being lost
+    # and for non-atomic types it results in info being lost
     if (inherits(x, c("POSIXct", "POSIXt", "Date")))
         return(x)
     if (is.factor(x))
@@ -1856,12 +1867,15 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         y.names <- dimnames(input.data.raw$Y[[1]])[[2]]
         tmp.ind <- charmatch(y.names, colnames(data)[y.ind])
         y.names <- y.names[!is.na(tmp.ind)]
+        y.names.patt <- paste(paste0("\\Q", y.names, "\\E"), collapse = "|")
         stat.names <- dimnames(input.data.raw$Y[[1]])[[3]]
         extravar <- matrix(NA, nrow = length(yvar), ncol = length(stat.names) - 1)
 
         for (i in 2:length(stat.names))
         {
-            tmp.ind <- grep(paste0("\\Q", stat.names[i], "\\E$"), colnames(data))
+            stat.names.patt <- paste0("\\Q.", stat.names[i], "\\E$") # make patt strict (e.g 'p')!
+            tmp.ind <- intersect(grep(stat.names.patt, colnames(data)),
+                                 grep(y.names.patt, colnames(data)))
             if (length(tmp.ind) > 0)
                 extravar[,i-1] <- unlist(data[,tmp.ind])
         }
