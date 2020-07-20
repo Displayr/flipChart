@@ -462,7 +462,12 @@ PrepareData <- function(chart.type,
         data <- rmScatterDefaultNames(data)
     if (scatter.mult.yvals)
         attr(data, "scatter.mult.yvals") <- TRUE
-    if (isScatter(chart.type) && !scatter.mult.yvals)
+
+    # Do not re-assign scatter variable indices if it already
+    # exists - this is sometimes set in ExtractChartData
+    # for some S3 classes 
+    if (isScatter(chart.type) && !scatter.mult.yvals &&
+        is.null(attr(data, "scatter.variable.indices")))
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
