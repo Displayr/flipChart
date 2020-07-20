@@ -317,7 +317,7 @@ PrepareData <- function(chart.type,
     filt <- length(subset) > 1 && NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
-        missing <- if (chart.type %in% c("Scatter", "Venn", "Sankey") && !any(checkRegressionOutput(input.data.raw)))
+        missing <- if (chart.type %in% c("Venn", "Sankey") && !any(checkRegressionOutput(input.data.raw)))
             "Exclude cases with missing data" else "Use partial data"
         n <- NROW(data)
         if (invalid.joining <- !is.null(attr(data, "InvalidVariableJoining")))
@@ -1382,14 +1382,34 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        if (isTRUE(scatter.mult.yvals) || (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1) ||
-           (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
-            is.null(input.data.raw$Z2) && is.null(input.data.raw$groups)))
+        .isQTableWithMultStatistic <- function(x)
         {
-            # Tag data from reformatting but this is preformed later after
+            !is.null(attr(x, "questions")) && !is.null(attr(x, "name")) && is.null(attr(x, "statistic"))
+        }
+    
+
+        if (isTRUE(scatter.mult.yvals) || 
+            (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
+        {
+            # Tag data for reformatting but this is preformed later after
             # Row/column manipulations
             attr(data, "scatter.mult.yvals") <- TRUE
-
+        
+        } else if (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
+            is.null(input.data.raw$Z2) && is.null(input.data.raw$groups))
+        {
+            if (!(.isQTableWithMultStatistic(input.data.raw$Y[[1]]) && 
+                  length(dim(input.data.raw$Y[[1]])) < 3))
+                attr(data, "scatter.mult.yvals") <- TRUE
+            
+            if (.isQTableWithMultStatistic(input.data.raw$Y[[1]]))
+            {
+                if (length(dim(input.data.raw$Y[[1]])) < 3)
+                    attr(data, "ycol") <- 1
+                else
+                    attr(data, "ycol") <- NCOL(input.data.raw$Y[[1]])
+            }
+            
         } else
         {
             if (!is.data.frame(data) && !is.matrix(data))
@@ -1789,6 +1809,8 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
     } else
         y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
+
+    # Figure out which columns to use as the X and Y coordinates
     if (is.list(input.data.raw$Y) && is.null(input.data.raw$X))
     {
         # No X-coordinates supplied in variables
@@ -1800,6 +1822,8 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     {
         # Use rowlabels as X-coordinate if character labels given
         m <- ncol(data)
+        if (!is.null(attr(data, "ycol")))
+            m <- attr(data, "ycol")
         y.ind <- 1:m
         xvar <- rep(rownames(data), m)
         data.row.labels <- rep("", nrow(data))
@@ -1807,26 +1831,51 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     {
         # Otherwise use first column as X-coordinates
         m <- ncol(data) - 1
+        if (!is.null(attr(data, "ycol")))
+            m <- attr(data, "ycol") - 1
         y.ind <- (1:m) + 1
         xvar <- rep(data[,1], m)
     }
+
     if (!hasUserSuppliedRownames(data))
         data.row.labels <- rep("", nrow(data))
-
     if (length(y.names) < m)
         y.names <- colnames(data)[y.ind]
     if (length(y.names) < m)
         y.names <- paste("Group", 1:m)
     if (any(checkRegressionOutput(input.data.raw)) && length(y.names) >= m)
         y.names <- colnames(data)[y.ind]
+
+    # Data from other statistics is restructured and appended separately   
     extravar <- NULL
-    if (length(dim(data)) <= 2)
-        yvar <- as.vector(unlist(data[,y.ind]))
-    else
+    if (!is.null(attr(data, "ycol")))
     {
+        # Other statistics are in the rest of input.data.raw$Y[[1]]
+        # But we need to take from data because we may have removed row/cols 
+        yvar <- as.vector(unlist(data[,y.ind]))
+        y.names <- dimnames(input.data.raw$Y[[1]])[[2]]
+        tmp.ind <- charmatch(y.names, colnames(data)[y.ind])
+        y.names <- y.names[!is.na(tmp.ind)]
+        stat.names <- dimnames(input.data.raw$Y[[1]])[[3]]
+        extravar <- matrix(NA, nrow = length(yvar), ncol = length(stat.names) - 1)
+
+        for (i in 2:length(stat.names))
+        {
+            tmp.ind <- grep(paste0("\\Q", stat.names[i], "\\E$"), colnames(data))
+            if (length(tmp.ind) > 0)
+                extravar[,i-1] <- unlist(data[,tmp.ind])
+        }
+        colnames(extravar) <- stat.names[-1] 
+    
+    } else if (length(dim(data)) >= 3) 
+    {
+        # Other statistics are in the 3rd dimension of table
         yvar <- as.vector(unlist(data[,y.ind,1]))
         extravar <- apply(data[, y.ind, -1, drop = FALSE], 3, unlist)
-    }
+
+    } else # simple case with no other statistics
+        yvar <- as.vector(unlist(data[,y.ind]))
+
 
     # newdata needs to use data rather than input.data.raw
     # otherwise it will not handle filters etc
