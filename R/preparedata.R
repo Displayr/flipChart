@@ -464,10 +464,11 @@ PrepareData <- function(chart.type,
         attr(data, "scatter.mult.yvals") <- TRUE
 
     # Do not re-assign scatter variable indices if it already
-    # exists - this is sometimes set in ExtractChartData
-    # for some S3 classes 
+    # exists (this is sometimes set in ExtractChartData
+    # for some S3 classes) unless specifically requested
     if (isScatter(chart.type) && !scatter.mult.yvals &&
-        is.null(attr(data, "scatter.variable.indices")))
+        (is.null(attr(data, "scatter.variable.indices")) ||
+         sum(nchar(select.columns), na.rm = TRUE) > 0))
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
@@ -864,12 +865,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 else
                 {
                     # Suppress warnings when removed rows are named "NET"
-                    # This happens often when inputs are BANNERS    
+                    # This happens often when inputs are BANNERS
                     if (length(removed.rownames) > 0)
                         removed.rownames <- removed.rownames[trimws(removed.rownames) != "NET"]
                     base.warning <- "Rows that did not occur in all of the input tables were discarded"
                 }
-                
+
                 if (length(removed.rownames) > 0)
                     warning(base.warning, discarded.rows)
             }
@@ -1398,22 +1399,22 @@ prepareForSpecificCharts <- function(data,
         {
             !is.null(attr(x, "questions")) && !is.null(attr(x, "name")) && is.null(attr(x, "statistic"))
         }
-    
 
-        if (isTRUE(scatter.mult.yvals) || 
+
+        if (isTRUE(scatter.mult.yvals) ||
             (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
             # Tag data for reformatting but this is preformed later after
             # Row/column manipulations
             attr(data, "scatter.mult.yvals") <- TRUE
-        
+
         } else if (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups))
         {
-            if (!(.isQTableWithMultStatistic(input.data.raw$Y[[1]]) && 
+            if (!(.isQTableWithMultStatistic(input.data.raw$Y[[1]]) &&
                   length(dim(input.data.raw$Y[[1]])) < 3))
                 attr(data, "scatter.mult.yvals") <- TRUE
-            
+
             if (.isQTableWithMultStatistic(input.data.raw$Y[[1]]))
             {
                 if (length(dim(input.data.raw$Y[[1]])) < 3)
@@ -1421,7 +1422,7 @@ prepareForSpecificCharts <- function(data,
                 else
                     attr(data, "ycol") <- NCOL(input.data.raw$Y[[1]])
             }
-            
+
         } else
         {
             if (!is.data.frame(data) && !is.matrix(data))
@@ -1639,44 +1640,67 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
 #'  A warning will be given if this option is selected but no span
 #'  attribute is found in \code{x}.
 #' @param show.labels This option is only relevant for Q variables.
-#'   For tables, the resulting variable will always be named by 
-#'   by 'name' attribute, but for variables both the 'label' and
+#'   For tables, the resulting variable will always be named by
+#'   by the 'name' attribute, but for variables both the 'label' and
 #'   'name' attribute can be used.
+#' @param is.scatter.annot.data This condition is applied to input
+#'   data expected to be used for annotation data for scatterplots.
+#'   it checks that the data is one-dimensional and stops immediately
+#'   and gives an error if this condition is not met. This avoid
+#'   some nonsense output or misleading error messages that might
+#'   be given by PrepareData.
+#'
 #' @export
-PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE)
+PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
+                        is.scatter.annot.data = FALSE)
 {
     if (is.null(x))
         return(x)
+    if (is.scatter.annot.data && NCOL(x) > 1)
+        stop("Annotation data for Scatterplots should be a single-column table or variable with the same number of values as the number of points in the chart")
+
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
 
-    # For variables, this function is not really required
-    # and for non-atomic types it results in info being lost
-    if (inherits(x, c("POSIXct", "POSIXt", "Date")))
-        return(x)
-    if (is.factor(x))
-        return(x)
-
-    if (use.span && !is.null(attr(x, "span")))
+    new.dat <- NULL
+    cname.prefix <- ""
+    if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
     {
+        # For variables, this function is not really required
+        # and for non-atomic types it results in info being lost
+        new.dat <- data.frame(x)
+
+    } else if (use.span && !is.null(attr(x, "span")))
+    {
+        # Q tables can always be converted to a matrix 
         new.dat <- as.matrix(attr(x, "span")$rows[,1])
         if (!is.null(rownames(x)))
             rownames(new.dat) <- rownames(x)
-        else 
+        else
             rownames(new.dat) <- names(x)
+
+        # Assign a blank name, so this column is not
+        # accidentally used for another variable
+        # The space is needed to avoid ugly R defaults 
+        colnames(new.dat) <- " "
+        return(new.dat)
     }
-    else if (!is.list(x)) # include dataframes different types still retained
+    else if (!is.list(x))
+    {
+        # Avoid trying to convert complex data structures 
+        # including dataframes which might have different types
         new.dat <- as.matrix(x)
-    else
+    
+    } else
         new.dat <- x
 
     # Multi-column tables are generally already correctly named
-    if (!is.list(x) && ncol(new.dat) == 1)
+    if ((is.data.frame(x) || !is.list(x)) && ncol(new.dat) == 1)
     {
         if (!is.null(attr(x, "label")) && show.labels)     # x is a variable
             colnames(new.dat) <- attr(x, "label")
         else if (!is.null(attr(x, "name"))) # x is a table or a variable
-            colnames(new.dat) <- attr(x, "name") 
+            colnames(new.dat) <- attr(x, "name")
     }
     new.dat <- CopyAttributes(new.dat, x)
     return(new.dat)
@@ -1862,12 +1886,12 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     if (any(checkRegressionOutput(input.data.raw)) && length(y.names) >= m)
         y.names <- colnames(data)[y.ind]
 
-    # Data from other statistics is restructured and appended separately   
+    # Data from other statistics is restructured and appended separately
     extravar <- NULL
     if (!is.null(attr(data, "ycol")))
     {
         # Other statistics are in the rest of input.data.raw$Y[[1]]
-        # But we need to take from data because we may have removed row/cols 
+        # But we need to take from data because we may have removed row/cols
         yvar <- as.vector(unlist(data[,y.ind]))
         y.names <- dimnames(input.data.raw$Y[[1]])[[2]]
         tmp.ind <- charmatch(y.names, colnames(data)[y.ind])
@@ -1884,9 +1908,9 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
             if (length(tmp.ind) > 0)
                 extravar[,i-1] <- unlist(data[,tmp.ind])
         }
-        colnames(extravar) <- stat.names[-1] 
-    
-    } else if (length(dim(data)) >= 3) 
+        colnames(extravar) <- stat.names[-1]
+
+    } else if (length(dim(data)) >= 3)
     {
         # Other statistics are in the 3rd dimension of table
         yvar <- as.vector(unlist(data[,y.ind,1]))

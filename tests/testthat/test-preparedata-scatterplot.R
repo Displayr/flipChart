@@ -324,6 +324,49 @@ tables.with.banners <- list(X = structure(c(3.25318246110325, 10.8910891089109, 
     ""), row.names = c(NA, 13L))), name = "table.BANNER.3", questions = c("BANNER",
 "SUMMARY")))
 
+xy.same.inputs <- list(X = structure(c(`Less than $15,000` = 3.25318246110325,
+`$15,001 to $30,000` = 10.8910891089109, `$30,001 to $45,000` = 10.3253182461103,
+`$45,001 to $60,000` = 18.2461103253182, `$60,001 to $90,000` = 22.3479490806223,
+`$90,001 to $120,000` = 14.5685997171146, `$120,001 to $150,000` = 8.34512022630834,
+`$150,001 to $200,000` = 6.22347949080622, `$200,001 or more` = 5.7991513437058,
+NET = 100, Male = 49.375, Female = 50.625, NET = 100), statistic = "%", .Dim = 13L, .Dimnames = list(
+    c("Less than $15,000", "$15,001 to $30,000", "$30,001 to $45,000",
+    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+    "NET", "Male", "Female", "NET")), basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Income", "Income", "Income", "Income",
+    "Income", "Income", "Income", "Income", "Income", "Income",
+    "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+    ""), row.names = c(NA, 13L))), name = "table.BANNER", questions = c("BANNER",
+"SUMMARY")), Y = list(table.BANNER = structure(c(`Less than $15,000` = 3.25318246110325,
+`$15,001 to $30,000` = 10.8910891089109, `$30,001 to $45,000` = 10.3253182461103,
+`$45,001 to $60,000` = 18.2461103253182, `$60,001 to $90,000` = 22.3479490806223,
+`$90,001 to $120,000` = 14.5685997171146, `$120,001 to $150,000` = 8.34512022630834,
+`$150,001 to $200,000` = 6.22347949080622, `$200,001 or more` = 5.7991513437058,
+NET = 100, Male = 49.375, Female = 50.625, NET = 100), statistic = "%", .Dim = 13L, .Dimnames = list(
+    c("Less than $15,000", "$15,001 to $30,000", "$30,001 to $45,000",
+    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+    "NET", "Male", "Female", "NET")), basedescriptiontext = "sample size = from 707 to 800; total sample size = 800; 93 missing", basedescription = list(
+    Minimum = 707L, Maximum = 800L, Range = TRUE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickAny", span = list(
+    rows = structure(list(c("Income", "Income", "Income", "Income",
+    "Income", "Income", "Income", "Income", "Income", "Income",
+    "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame", .Names = c("",
+    ""), row.names = c(NA, 13L))), name = "table.BANNER", questions = c("BANNER",
+"SUMMARY"))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+
+
 ## Tests start here
 test_that("Handle y-values in multiple columns + multiple statistics",
 {
@@ -447,8 +490,29 @@ v2 <- structure(c(9L, 9L, 9L, 7L, 6L, 6L, 7L, 7L, 9L, 4L, 7L, 6L, 5L, 8L, 4L, 9L
 test_that("PrepareForCbind with factors",
 {
     v2b <- PrepareForCbind(v2)
-    expect_equal(levels(v2), levels(v2b))
+    expect_equal(levels(v2), levels(unlist(v2b)))
+    expect_equal(colnames(v2b), "Colas (e.g., Coca Cola, Pepsi Max)?")
 })
 
+test_that("Check that a table can be used twice for the span and values",
+{
+    tmp.input <- xy.same.inputs
+    tmp.input[[1]] <- PrepareForCbind(tmp.input[[1]], use.span = TRUE)
+    tmp.input[[2]] <- PrepareForCbind(tmp.input[[2]])
+
+    res <- PrepareData("Scatter", input.data.raw = tmp.input)
+    expect_equal(res$data, structure(list(` ` = c("Income", "Income", "Income",
+        "Income", "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"),
+        `  ` = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
+        18.2461103253182, 22.3479490806223, 14.5685997171146, 8.34512022630834,
+        6.22347949080622, 5.7991513437058, 49.375, 50.625)), row.names = c("Less than $15,000",
+        "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+        "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+        "$150,001 to $200,000", "$200,001 or more", "Male", "Female"),
+        scatter.variable.indices = c(x = 1,
+        y = 2, sizes = NA, colors = NA, groups = NA), class = "data.frame"))
+    expect_equal(res$scatter.variable.indices,
+        c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
+})
 
 
