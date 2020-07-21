@@ -4,7 +4,12 @@
 \alias{PrepareForCbind}
 \title{Helps tidy Q variables and tables}
 \usage{
-PrepareForCbind(x, use.span = FALSE, show.labels = TRUE)
+PrepareForCbind(
+  x,
+  use.span = FALSE,
+  show.labels = TRUE,
+  is.scatter.annot.data = FALSE
+)
 }
 \arguments{
 \item{x}{Q table or variable}
@@ -15,9 +20,16 @@ A warning will be given if this option is selected but no span
 attribute is found in \code{x}.}
 
 \item{show.labels}{This option is only relevant for Q variables.
-For tables, the resulting variable will always be named by 
-by 'name' attribute, but for variables both the 'label' and
+For tables, the resulting variable will always be named by
+by the 'name' attribute, but for variables both the 'label' and
 'name' attribute can be used.}
+
+\item{is.scatter.annot.data}{This condition is applied to input
+data expected to be used for annotation data for scatterplots.
+it checks that the data is one-dimensional and stops immediately
+and gives an error if this condition is not met. This avoid
+some nonsense output or misleading error messages that might
+be given by PrepareData.}
 }
 \description{
 Inputs supplied via input.data.raw can be in a range of
