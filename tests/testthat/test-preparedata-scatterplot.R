@@ -491,7 +491,7 @@ test_that("PrepareForCbind with factors",
 {
     v2b <- PrepareForCbind(v2)
     expect_equal(levels(v2), levels(unlist(v2b)))
-    expect_equal(colnames(v2b), "Colas (e.g., Coca Cola, Pepsi Max)?")
+    expect_equal(colnames(v2b), "Q4. Frequency of drinking cola: Colas (e.g., Coca Cola, Pepsi Max)?")
 })
 
 test_that("Check that a table can be used twice for the span and values",

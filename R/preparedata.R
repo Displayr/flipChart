@@ -1672,7 +1672,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
 
     } else if (use.span && !is.null(attr(x, "span")))
     {
-        # Q tables can always be converted to a matrix 
+        # Q tables can always be converted to a matrix
         new.dat <- as.matrix(attr(x, "span")$rows[,1])
         if (!is.null(rownames(x)))
             rownames(new.dat) <- rownames(x)
@@ -1681,16 +1681,16 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
 
         # Assign a blank name, so this column is not
         # accidentally used for another variable
-        # The space is needed to avoid ugly R defaults 
+        # The space is needed to avoid ugly R defaults
         colnames(new.dat) <- " "
         return(new.dat)
     }
     else if (!is.list(x))
     {
-        # Avoid trying to convert complex data structures 
+        # Avoid trying to convert complex data structures
         # including dataframes which might have different types
         new.dat <- as.matrix(x)
-    
+
     } else
         new.dat <- x
 
@@ -1698,9 +1698,9 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
     if ((is.data.frame(x) || !is.list(x)) && ncol(new.dat) == 1)
     {
         if (!is.null(attr(x, "label")) && show.labels)     # x is a variable
-            colnames(new.dat) <- attr(x, "label")
+            colnames(new.dat) <- Labels(x)
         else if (!is.null(attr(x, "name"))) # x is a table or a variable
-            colnames(new.dat) <- attr(x, "name")
+            colnames(new.dat) <- Names(x)
     }
     new.dat <- CopyAttributes(new.dat, x)
     return(new.dat)
