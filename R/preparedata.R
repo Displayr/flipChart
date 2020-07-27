@@ -1699,7 +1699,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
     {
         if (!is.null(attr(x, "label")) && show.labels)     # x is a variable
             colnames(new.dat) <- Labels(x)
-        else if (!is.null(attr(x, "name"))) # x is a table or a variable
+        else if (!is.null(attr(x, "name")) && length(Names(x)) == 1) # x is a table or a variable
             colnames(new.dat) <- Names(x)
     }
     new.dat <- CopyAttributes(new.dat, x)

@@ -460,6 +460,8 @@ vv <- structure(c(0.287577520124614, 0.788305135443807, 0.4089769218117,
     0.835255319951102, 0.143817043630406, 0.192815946880728, 0.896738682640716,
     0.308119554305449, 0.363300543511286, 0.783946478739381), questiontype = "Number",
     dataset = "timedata", name = "v1", label = "Variable A", question = "Variable A")
+v.unnamed <- structure(1:10, .Names = c("a", "b", "c", "d", "e", "f", "g",
+    "h", "i", "j"))
 
 test_that("PrepareForCbind shows names for a single variable",
 {
@@ -468,6 +470,10 @@ test_that("PrepareForCbind shows names for a single variable",
     res <- PrepareData("Scatter", input.data.raw = list(X = PrepareForCbind(vv, show.labels = FALSE),
             Y = NULL, Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL), show.labels = FALSE)
     expect_equal(colnames(res0$data), colnames(res$data))
+
+    res.unnamed <- PrepareForCbind(v.unnamed)
+    expect_equal(res.unnamed, structure(1:10, .Dim = c(10L, 1L),
+        .Dimnames = list(c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"), NULL)))
 })
 
 
