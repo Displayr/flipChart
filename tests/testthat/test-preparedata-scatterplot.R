@@ -473,7 +473,7 @@ test_that("PrepareForCbind shows names for a single variable",
 
     res.unnamed <- PrepareForCbind(v.unnamed)
     expect_equal(res.unnamed, structure(1:10, .Dim = c(10L, 1L),
-        .Dimnames = list(c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"), NULL)))
+        .Dimnames = list(c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"), "v.unnamed")))
 })
 
 
