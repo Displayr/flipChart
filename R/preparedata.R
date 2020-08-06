@@ -1429,7 +1429,7 @@ prepareForSpecificCharts <- function(data,
                 data <- TidyTabularData(data)
 
             # Removing duplicate columns
-            if (any(d <- duplicated(names(data))))
+            if (length(dim(data)) == 2 && any(d <- duplicated(names(data))))
                 data <- data[, !d]
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
