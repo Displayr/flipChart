@@ -1884,7 +1884,7 @@ test_that("Scatter accepts tables as variables",
     "Dislike all cola", "Don't care", "NET")), name = "Preferred cola", questions = c("Preferred cola",
     "SUMMARY")), Z2 = NULL, groups = NULL, labels = NULL)
     expect_warning(pd <- PrepareData("Scatter", input.data.raw = raw.multiY.and.size))
-    expect_equal(dim(pd$data), c(8, 3))
+    expect_equal(dim(pd$data), c(8, 4))
     expect_equal(colnames(pd$data)[2], "Male")
     expect_equal(rownames(pd$data), c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ",
                 "Diet Pepsi", "Pepsi Max", "Dislike all cola", "Don't care"))
