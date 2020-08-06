@@ -786,6 +786,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x <- Filter(Negate(is.null), x)
     x.rows <- sapply(x, function(m) NROW(as.data.frame(m)))
     k <- length(x.rows)
+    extra.cols <- NULL
     if (isScatter(chart.type))
     {
         # Trim Y if sizes or color variable is provided
@@ -793,6 +794,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         {
             warning("Only the first column of '", scatterDefaultNames(2),
                     "' variables is used'")
+            extra.cols <- x$Y[,-1,drop = FALSE]
             x$Y <- x$Y[,1,drop = FALSE]
         }
         for (i in 1:k)
@@ -854,6 +856,12 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames,
                                 as.matrix = FALSE, trim.whitespace = FALSE,
                                 silent.remove.duplicates = TRUE)
+            
+            if (!is.null(extra.cols))
+                extra.cols <- MatchTable(extra.cols, ref.names = x.all.rownames,
+                                as.matrix = FALSE, trim.whitespace = FALSE,
+                                silent.remove.duplicates = TRUE)
+
             if (length(x.all.rownames) < max(x.rows))
             {
                 discarded.rows <- if(length(removed.rownames) == 0) NULL else {
@@ -919,9 +927,11 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         }
     }
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
-
-    # Set column and rownames
     names(x) <- MakeUniqueNames(nms)
+    if (!is.null(extra.cols))
+        x <- data.frame(x, extra.cols, stringsAsFactors = FALSE, check.names = FALSE)
+    
+    # Set rownames
     if (!is.null(rlabels) && nrow(x) == length(rlabels))
          rownames(x) <- MakeUniqueNames(as.character(rlabels))
     if (invalid.joining)
