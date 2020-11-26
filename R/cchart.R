@@ -278,9 +278,42 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    attr(result,  "ChartData") <- x #Used by Displayr to permit exporting of the raw data.
+    attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    attr(result,  "ChartSettings") <- getPPTSettings(chart.type, user.args) # Used for exporting to powerpoint 
     result
 }
+
+getPPTSettings <- function(chart.type, args)
+{
+    series.settings <- lapply(args$colors,
+        function(x){list(BackgroundColor = x)})
+    # also need to add DataLabelsFont, ShowDataLabels,
+    # Marker, OutlineColor, OutlineStyle?
+
+    # Legend settings seems to be not needed?
+    # Axis settings
+
+    res <- list(TemplateSeries = series.settings,
+        ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family))
+
+    # Chart-specfic parameters
+    if (chart.type %in% "Donut")
+    {
+        res$HoleSize = args$pie.inner.radius
+        #FirstAngleSlice is never used 
+    }
+    if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
+    {
+        res$GapWidth = args$bar.gap * 100
+    }
+    if (chart.type %in% c("Scatter"))
+    {
+        res$BubbleSizeType = isTRUE(args$scatter.sizes.as.diameter)
+        res$BubbleScale = args$marker.size
+    }
+    return(res)
+}
+
 
 #' substituteAxisNames
 #'
@@ -311,7 +344,7 @@ substituteAxisNames <- function(chart.function, arguments)
 
 #' scaleFontSizes
 #'
-#' Convert font size from pixel to point.
+#' Convert font size from point to pixel.
 #' @details All of the charts in flipStandardChart
 #' take font sizes to be in units of pixels, however, textboxes in Displayr
 #' assumes font sizes are in units of points. This function iterates through
