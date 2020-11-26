@@ -269,9 +269,13 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
-    user.args <- substituteAxisNames(chart.function, user.args)
     if (tolower(font.units) %in% c("pt", "points"))
         user.args <- scaleFontSizes(user.args)
+
+    if (append.data)
+        chart.settings <- getPPTSettings(chart.type, user.args)
+
+    user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
@@ -279,7 +283,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
-    attr(result,  "ChartSettings") <- getPPTSettings(chart.type, user.args) # Used for exporting to powerpoint 
+    attr(result,  "ChartSettings") <- chart.settings
     result
 }
 
@@ -293,20 +297,26 @@ getPPTSettings <- function(chart.type, args)
     # Legend settings seems to be not needed?
     # Axis settings
 
-    res <- list(TemplateSeries = series.settings,
-        PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
+    res <- list()
+    res[["TemplateSeries"]] = series.settings
+    res[["Legend"]] = list(Font = list(color = args$legend.font.color,
+            family = args$legend.font.family, size = args$legend.font.size/1.3333))
+    res[["ChartTitleFont"]] = list(color = args$title.font.color, family = args$title.font.family,
+            size = args$title.font.size/1.3333)
+
+
+    if (!chart.type %in% c("Pie", "Donut"))
+    {
+        res[["PrimaryAxis"]] = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family, size = args$categories.tick.font.size/1.3333),
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family, size = args$categories.title.font.size/1.3333),
-            RotateLabels = isTRUE(args$categories.tick.angle == 90)),
-        ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
+            RotateLabels = isTRUE(args$categories.tick.angle == 90))
+        res[["ValueAxis"]] = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = args$values.tick.font.size/1.3333),
             TitleFont = list(color = args$values.title.font.color,
-            family = args$values.title.font.family, size = args$values.title.font.size/1.3333)),
-        Legend = list(Font = list(color = args$legend.font.color,
-            family = args$legend.font.family, size = args$legend.font.size/1.3333)),
-        ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
-            size = args$title.font.size/1.3333))
+            family = args$values.title.font.family, size = args$values.title.font.size/1.3333))
+    }
 
     # Chart-specfic parameters
     if (chart.type %in% "Donut")
