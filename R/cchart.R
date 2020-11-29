@@ -297,7 +297,7 @@ getPPTSettings <- function(chart.type, args)
 
     series.settings <- lapply(args$colors,
     function(cc) {list(
-            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*256)),
+            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
@@ -320,21 +320,26 @@ getPPTSettings <- function(chart.type, args)
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
+        # Using MajorGridLine causes errors when exporting 
+
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
-            family = args$categories.tick.font.family, size = args$categories.tick.font.size/1.3333),
+            family = args$categories.tick.font.family, 
+            size = args$categories.tick.font.size/1.3333),
             TitleFont = list(color = args$categories.title.font.color,
-            family = args$categories.title.font.family, size = args$categories.title.font.size/1.3333),
-            AxisLine = list(Style = "Solid", Color = args$categories.line.color,
-            Width = args$categories.line.width/1.3333), MajorGridLine = list(Style = "Solid",
-            Color = args$categories.grid.color, Width = args$categories.grid.width/1.3333),
+            family = args$categories.title.font.family, 
+            size = args$categories.title.font.size/1.3333),
+            AxisLine = list(Color = args$categories.line.color,
+            Width = args$categories.line.width/1.3333,
+            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"), 
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = args$values.tick.font.size/1.3333),
             TitleFont = list(color = args$values.title.font.color,
             family = args$values.title.font.family, size = args$values.title.font.size/1.3333),
-            AxisLine = list(Style = "Solid", Color = args$values.line.color,
-            Width = args$values.line.width/1.3333), MajorGridLine = list(Style = "Solid",
-            Color = args$values.grid.color, Width = args$values.grid.width/1.3333))
+            AxisLine = list(Color = args$values.line.color,
+            Width = args$values.line.width/1.3333,
+            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid") 
+            )
     }
 
     # Chart-specfic parameters
