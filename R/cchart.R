@@ -289,36 +289,57 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
 getPPTSettings <- function(chart.type, args)
 {
-    series.settings <- lapply(args$colors,
-        function(x){list(BackgroundColor = x)})
-    # also need to add DataLabelsFont, ShowDataLabels,
-    # Marker, OutlineColor, OutlineStyle?
+    tmp.opacity <- args$opacity
+    if (is.null(tmp.opacity))
+        tmp.opacity <- if (chart.type %in% c("Area", "Radar")) 0.4 else 1.0
+    tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
+    tmp.line.thickness <- args$line.thickness
 
-    # Legend settings seems to be not needed?
-    # Axis settings
+    series.settings <- lapply(args$colors,
+    function(cc) {list(
+            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*256)),
+            OutlineColor = cc,
+            OutlineStyle = tmp.line.style)})
+
+    if (chart.type %in% c("Line", "Radar", "TimeSeries"))
+    {
+        tmp.n <- length(args$colors)
+        ww <- as.numeric(ConvertCommaSeparatedStringToVector(tmp.line.thickness))
+        ww <- rep(ww, length = tmp.n)/1.3333
+        for (i in 1:tmp.n)
+            series.settings[[i]]$OutlineWidth = ww[i]
+    }
 
     res <- list()
-    res[["TemplateSeries"]] = series.settings
-    res[["Legend"]] = list(Font = list(color = args$legend.font.color,
+    res$TemplateSeries = series.settings
+    res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = args$legend.font.size/1.3333))
-    res[["ChartTitleFont"]] = list(color = args$title.font.color, family = args$title.font.family,
+    res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = args$title.font.size/1.3333)
 
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
-        res[["PrimaryAxis"]] = list(LabelsFont = list(color = args$categories.tick.font.color,
+        res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family, size = args$categories.tick.font.size/1.3333),
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family, size = args$categories.title.font.size/1.3333),
+            AxisLine = list(Style = "Solid", Color = args$categories.line.color,
+            Width = args$categories.line.width/1.3333), MajorGridLine = list(Style = "Solid",
+            Color = args$categories.grid.color, Width = args$categories.grid.width/1.3333),
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
-        res[["ValueAxis"]] = list(LabelsFont = list(color = args$values.tick.font.color,
+        res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = args$values.tick.font.size/1.3333),
             TitleFont = list(color = args$values.title.font.color,
-            family = args$values.title.font.family, size = args$values.title.font.size/1.3333))
+            family = args$values.title.font.family, size = args$values.title.font.size/1.3333),
+            AxisLine = list(Style = "Solid", Color = args$values.line.color,
+            Width = args$values.line.width/1.3333), MajorGridLine = list(Style = "Solid",
+            Color = args$values.grid.color, Width = args$values.grid.width/1.3333))
     }
 
     # Chart-specfic parameters
+    if (chart.type == "Radar")
+        res$RadarStyle = "Filled"
     if (chart.type %in% "Donut")
     {
         res$HoleSize = args$pie.inner.radius
