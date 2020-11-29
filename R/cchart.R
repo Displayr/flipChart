@@ -292,8 +292,9 @@ getPPTSettings <- function(chart.type, args)
     tmp.opacity <- args$opacity
     if (is.null(tmp.opacity))
         tmp.opacity <- if (chart.type %in% c("Area", "Radar")) 0.4 else 1.0
-    tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
-    tmp.line.thickness <- args$line.thickness
+    tmp.line.style <- "None"
+    if (chart.type %in% c("Line", "Radar", "TimeSeries"))
+        tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
 
     series.settings <- lapply(args$colors,
     function(cc) {list(
@@ -304,7 +305,7 @@ getPPTSettings <- function(chart.type, args)
     if (chart.type %in% c("Line", "Radar", "TimeSeries"))
     {
         tmp.n <- length(args$colors)
-        ww <- as.numeric(ConvertCommaSeparatedStringToVector(tmp.line.thickness))
+        ww <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
         ww <- rep(ww, length = tmp.n)/1.3333
         for (i in 1:tmp.n)
             series.settings[[i]]$OutlineWidth = ww[i]
@@ -314,13 +315,16 @@ getPPTSettings <- function(chart.type, args)
     res$TemplateSeries = series.settings
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = args$legend.font.size/1.3333))
+
+    # Chart and Axis titles always seem to be ignored 
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = args$title.font.size/1.3333)
 
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
-        # Using MajorGridLine causes errors when exporting 
+        # Using MajorGridLine causes errors when exporting
+        # Percentages shown as decimals? 
 
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family, 
@@ -338,22 +342,14 @@ getPPTSettings <- function(chart.type, args)
             family = args$values.title.font.family, size = args$values.title.font.size/1.3333),
             AxisLine = list(Color = args$values.line.color,
             Width = args$values.line.width/1.3333,
-            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid") 
-            )
+            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid")) 
     }
 
     # Chart-specfic parameters
-    if (chart.type == "Radar")
-        res$RadarStyle = "Filled"
     if (chart.type %in% "Donut")
-    {
         res$HoleSize = args$pie.inner.radius
-        #FirstAngleSlice is never used 
-    }
     if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
-    {
         res$GapWidth = args$bar.gap * 100
-    }
     if (chart.type %in% c("Scatter"))
     {
         res$BubbleSizeType = isTRUE(args$scatter.sizes.as.diameter)
