@@ -299,6 +299,7 @@ getPPTSettings <- function(chart.type, args)
     series.settings <- lapply(args$colors,
     function(cc) {list(
             BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
+            Marker = list(BackgroundColor = cc),
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
