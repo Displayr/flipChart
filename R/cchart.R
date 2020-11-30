@@ -290,34 +290,52 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 getPPTSettings <- function(chart.type, args)
 {
     tmp.opacity <- args$opacity
+    tmp.is.stacked <- isTRUE(args$type == "Stacked")
     if (is.null(tmp.opacity))
-        tmp.opacity <- if (chart.type %in% c("Area", "Radar")) 0.4 else 1.0
+        tmp.opacity <- if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked) 0.4 else 1.0
     tmp.line.style <- "None"
-    if (chart.type %in% c("Line", "Radar", "TimeSeries"))
+    if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
+    
+    # Currently with GUI controls, data.label.show can only be a single value
+    # But R code accepts a vector 
+    tmp.data.label.show <- isTRUE(args$data.label.show)
 
     series.settings <- lapply(args$colors,
     function(cc) {list(
             BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
             Marker = list(BackgroundColor = cc),
+            ShowDataLabels = tmp.data.label.show,
+            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333),
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
-    if (chart.type %in% c("Line", "Radar", "TimeSeries"))
+    if (chart.type %in% c("Line", "Radar", "Time Series"))
     {
-        tmp.n <- length(args$colors)
+        tmp.n <- length(series.settings)
         ww <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
-        ww <- rep(ww, length = tmp.n)/1.3333
+        ww <- rep(ww, length = tmp.n)/1.3333 # convert pixels to points
         for (i in 1:tmp.n)
             series.settings[[i]]$OutlineWidth = ww[i]
     }
 
+    if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph"))
+    {
+        tmp.colors <- list()
+        for (i in 1:length(args$colors))
+            tmp.colors <- list(Index = i-1, BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
+        series.settings <- series.settings[1]
+        series.settings[[1]]$CustomPoints = tmp.colors
+    }
+
     res <- list()
-    res$TemplateSeries = series.settings
+    if (length(series.settings) > 0)
+        res$TemplateSeries = series.settings
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = args$legend.font.size/1.3333))
 
-    # Chart and Axis titles always seem to be ignored 
+    # Chart and Axis titles always seem to be ignored
+    # Waiting on RS-7208 
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = args$title.font.size/1.3333)
 
@@ -325,8 +343,6 @@ getPPTSettings <- function(chart.type, args)
     if (!chart.type %in% c("Pie", "Donut"))
     {
         # Using MajorGridLine causes errors when exporting
-        # Percentages shown as decimals? 
-
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family, 
             size = args$categories.tick.font.size/1.3333),
@@ -335,7 +351,10 @@ getPPTSettings <- function(chart.type, args)
             size = args$categories.title.font.size/1.3333),
             AxisLine = list(Color = args$categories.line.color,
             Width = args$categories.line.width/1.3333,
-            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"), 
+            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
+            MajorGridLine = list(Color = args$categories.grid.color,
+            # Width - currently causes an error,
+            Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = args$values.tick.font.size/1.3333),
@@ -343,7 +362,10 @@ getPPTSettings <- function(chart.type, args)
             family = args$values.title.font.family, size = args$values.title.font.size/1.3333),
             AxisLine = list(Color = args$values.line.color,
             Width = args$values.line.width/1.3333,
-            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid")) 
+            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
+            MajorGridLine = list(Color = args$values.grid.color,
+            # Width - currently causes an error
+            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid")) 
     }
 
     # Chart-specfic parameters
@@ -351,9 +373,11 @@ getPPTSettings <- function(chart.type, args)
         res$HoleSize = args$pie.inner.radius
     if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
         res$GapWidth = args$bar.gap * 100
+    if (chart.type == "Line")
+        res$Smooth = isTRUE(args$shape == "Curved")
     if (chart.type %in% c("Scatter"))
     {
-        res$BubbleSizeType = isTRUE(args$scatter.sizes.as.diameter)
+        res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size
     }
     return(res)
