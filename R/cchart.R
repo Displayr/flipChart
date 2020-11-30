@@ -272,6 +272,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (tolower(font.units) %in% c("pt", "points"))
         user.args <- scaleFontSizes(user.args)
 
+    # This needs to be called before categories/values is converted
+    # into x/y axis but after font sizes have been converted to pixels
     if (append.data)
         chart.settings <- getPPTSettings(chart.type, user.args)
 
@@ -296,6 +298,9 @@ getPPTSettings <- function(chart.type, args)
     tmp.line.style <- "None"
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
+    tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
+    if (chart.type %in% c("Line", "Scatter"))
+        tmp.data.label.font.color <- args$colors
     
     # Currently with GUI controls, data.label.show can only be a single value
     # But R code accepts a vector 
@@ -306,19 +311,29 @@ getPPTSettings <- function(chart.type, args)
             BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
             Marker = list(BackgroundColor = cc),
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333),
+            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
+                color = tmp.data.label.font.color[1]),
+            # DataLabelPosition is still in progress
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
+    tmp.n <- length(series.settings)
     if (chart.type %in% c("Line", "Radar", "Time Series"))
     {
-        tmp.n <- length(series.settings)
         ww <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
         ww <- rep(ww, length = tmp.n)/1.3333 # convert pixels to points
         for (i in 1:tmp.n)
-            series.settings[[i]]$OutlineWidth = ww[i]
+            series.settings[[i]]$OutlineWidth <- ww[i]
+    }
+    if (length(tmp.data.label.font.color) > 1)
+    {
+        tmp.data.label.font.color <- rep(tmp.data.label.font.color, length = tmp.n)
+        for (i in 1:tmp.n)
+            series.settings[[i]]$DataLabelsFont$color <- tmp.data.label.font.color[i]
+
     }
 
+    # Multi-color series
     if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph"))
     {
         tmp.colors <- list()
@@ -342,7 +357,6 @@ getPPTSettings <- function(chart.type, args)
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
-        # Using MajorGridLine causes errors when exporting
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family, 
             size = args$categories.tick.font.size/1.3333),
@@ -353,7 +367,7 @@ getPPTSettings <- function(chart.type, args)
             Width = args$categories.line.width/1.3333,
             Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$categories.grid.color,
-            # Width - currently causes an error,
+            Width = args$categories.grid.width/1.3333,
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
@@ -364,7 +378,7 @@ getPPTSettings <- function(chart.type, args)
             Width = args$values.line.width/1.3333,
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$values.grid.color,
-            # Width - currently causes an error
+            Width = args$values.grid.width/1.3333,
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid")) 
     }
 
@@ -375,6 +389,9 @@ getPPTSettings <- function(chart.type, args)
         res$GapWidth = args$bar.gap * 100
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
+
+    # There are some issues with Scatterplot exporting
+    # See RS-7154 - try master.displayr.com 
     if (chart.type %in% c("Scatter"))
     {
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
