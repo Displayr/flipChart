@@ -323,7 +323,7 @@ getPPTSettings <- function(chart.type, args)
     {
         tmp.colors <- list()
         for (i in 1:length(args$colors))
-            tmp.colors <- list(Index = i-1, BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
+            tmp.colors[[i]] <- list(Index = i-1, BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
         series.settings <- series.settings[1]
         series.settings[[1]]$CustomPoints = tmp.colors
     }
