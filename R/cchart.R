@@ -299,13 +299,24 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
     tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
+    
+    # Behaviour of 'Automatically' set font colors 
+    # changes depending on the chart type 
     if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
-    # Autocolor for stacked charts    
+    if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
+    {
+        if (chart.type == "Area")
+            tmp.data.label.font.color <- c(autoFontColor(args$colors[-1]), args$global.font.color)
+        else
+            tmp.data.label.font.color <- autoFontColor(args$colors)
+    }
     
     # Currently with GUI controls, data.label.show can only be a single value
     # But R code accepts a vector 
     tmp.data.label.show <- isTRUE(args$data.label.show)
+    if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
+        tmp.data.label.show <- TRUE
 
     # When scatterplots use colors as a numerical scale
     # we can assume a single template series
@@ -412,6 +423,15 @@ getPPTSettings <- function(chart.type, args, data)
     }
     return(res)
 }
+
+#' @importFrom grDevices col2rgb rgb2hsv
+autoFontColor <- function (colors)
+{
+    tmp.rgb <- col2rgb(colors)
+    tmp.lum <- apply(tmp.rgb, 2, function(x) return(0.299*x[1] + 0.587*x[2] + 0.114*x[3]))
+    return(ifelse(tmp.lum > 126, "#2C2C2C", "#FFFFFF"))
+}
+
 
 #' @importFrom grDevices colorRamp rgb
 getColorsAsNumericScale <- function(data, colors, opacity)
