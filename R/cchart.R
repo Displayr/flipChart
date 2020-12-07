@@ -275,7 +275,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # This needs to be called before categories/values is converted
     # into x/y axis but after font sizes have been converted to pixels
     if (append.data)
-        chart.settings <- getPPTSettings(chart.type, user.args)
+        chart.settings <- getPPTSettings(chart.type, user.args, x)
 
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
@@ -289,7 +289,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result
 }
 
-getPPTSettings <- function(chart.type, args)
+getPPTSettings <- function(chart.type, args, data)
 {
     tmp.opacity <- args$opacity
     tmp.is.stacked <- isTRUE(args$type == "Stacked")
@@ -299,21 +299,33 @@ getPPTSettings <- function(chart.type, args)
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
     tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
-    if (chart.type %in% c("Line", "Scatter"))
+    if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
+    # Autocolor for stacked charts    
     
     # Currently with GUI controls, data.label.show can only be a single value
     # But R code accepts a vector 
     tmp.data.label.show <- isTRUE(args$data.label.show)
 
-    series.settings <- lapply(args$colors,
-    function(cc) {list(
-            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
-            Marker = list(BackgroundColor = cc),
+    # When scatterplots use colors as a numerical scale
+    # we can assume a single template series
+    if (chart.type == "Scatter" && !args$scatter.colors.as.categorical)
+        series.settings <- list(list(
+            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
                 color = tmp.data.label.font.color[1]),
-            # DataLabelPosition is still in progress
+            OutlineStyle = "None"))
+
+    else
+        series.settings <- lapply(args$colors,
+        function(cc) {list(
+            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
+            Marker = list(BackgroundColor = cc), # mainly for markers shown on lines
+            ShowDataLabels = tmp.data.label.show,
+            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
+                color = tmp.data.label.font.color[1]),
+            DataLabelPosition = if (tmp.is.stacked) "InsideEnd" else "BestFit",
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
@@ -325,6 +337,7 @@ getPPTSettings <- function(chart.type, args)
         for (i in 1:tmp.n)
             series.settings[[i]]$OutlineWidth <- ww[i]
     }
+
     if (length(tmp.data.label.font.color) > 1)
     {
         tmp.data.label.font.color <- rep(tmp.data.label.font.color, length = tmp.n)
@@ -398,6 +411,27 @@ getPPTSettings <- function(chart.type, args)
         res$BubbleScale = args$marker.size
     }
     return(res)
+}
+
+#' @importFrom grDevices colorRamp rgb
+getColorsAsNumericScale <- function(data, colors, opacity)
+{
+    color.index <- attr(data, "scatter.variable.indices")["colors"]
+    if (NCOL(data) < color.index)
+        return(NULL)
+    if (length(colors) < 2)
+        return(NULL)
+    
+    color.data <- data[,color.index]
+    color.func <- colorRamp(unique(colors))
+    dat.scaled <- (color.data - min(color.data, na.rm = TRUE))/
+        diff(range(color.data, na.rm = TRUE))
+    color.vec <- rgb(color.func(dat.scaled), alpha = 255 * opacity,
+        maxColorValue = 255)
+    ind <- which(!is.na(color.data))
+    data.points <- lapply(ind, function(i) {list(Index = i - 1, 
+        BackgroundColor = color.vec[i])})
+    return(data.points)
 }
 
 
