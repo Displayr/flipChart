@@ -317,6 +317,12 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.data.label.show <- isTRUE(args$data.label.show)
     if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
         tmp.data.label.show <- TRUE
+    tmp.data.label.position <- "BestFit"
+    if (chart.type == "Area") # including when stacked
+        tmp.data.label.position <- "OutsideEnd"
+    else if (tmp.is.stacked)
+        tmp.data.label.position <- "InsideEnd"
+
 
     # When scatterplots use colors as a numerical scale
     # we can assume a single template series
@@ -336,7 +342,7 @@ getPPTSettings <- function(chart.type, args, data)
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
                 color = tmp.data.label.font.color[1]),
-            DataLabelPosition = if (tmp.is.stacked) "InsideEnd" else "BestFit",
+            DataLabelPosition = tmp.data.label.position,
             OutlineColor = cc,
             OutlineStyle = tmp.line.style)})
 
@@ -364,7 +370,8 @@ getPPTSettings <- function(chart.type, args, data)
         for (i in 1:length(args$colors))
             tmp.colors[[i]] <- list(Index = i-1, BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
         series.settings <- series.settings[1]
-        series.settings[[1]]$CustomPoints = tmp.colors
+        series.settings[[1]]$CustomPoints <- tmp.colors
+        series.settings[[1]]$ShowDataLabels <- FALSE
     }
 
     res <- list()
