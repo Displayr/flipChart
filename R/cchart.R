@@ -357,6 +357,7 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type == "Scatter" && args$scatter.colors.as.categorical)
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
+                OutlineStyle = "None",
                 BackgroundColor = sprintf("%s%X", args$colors[[i]], round(tmp.opacity*255))) 
 
     if (length(tmp.data.label.font.color) > 1)
