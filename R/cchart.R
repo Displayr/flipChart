@@ -317,11 +317,13 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.data.label.show <- isTRUE(args$data.label.show)
     if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
         tmp.data.label.show <- TRUE
+    
+    # DataLabelPosition isn't supported for Area Chart
     tmp.data.label.position <- "BestFit"
-    if (chart.type == "Area") # including when stacked
-        tmp.data.label.position <- "OutsideEnd"
-    else if (tmp.is.stacked)
-        tmp.data.label.position <- "InsideEnd"
+    #if (chart.type == "Area")
+    #    tmp.data.label.position <- "OutsideEnd"
+    #else if (tmp.is.stacked)
+    #    tmp.data.label.position <- "InsideEnd"
 
 
     # When scatterplots use colors as a numerical scale
@@ -430,7 +432,7 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type %in% c("Scatter"))
     {
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
-        res$BubbleScale = args$marker.size
+        res$BubbleScale = args$marker.size * 10
     }
     return(res)
 }
