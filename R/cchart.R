@@ -411,7 +411,7 @@ getPPTSettings <- function(chart.type, args, data)
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
-                BackgroundColor = sprintf("%s%X", arg$colors[i], round(tmp.opacity*255))) 
+                BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255))) 
 
     # Initialise return output
     res <- list()
