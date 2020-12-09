@@ -355,7 +355,7 @@ getPPTSettings <- function(chart.type, args, data)
     }
     if (length(tmp.data.label.font.color) < length(args$colors))
         tmp.data.label.font.color <- rep(tmp.data.label.font.color,
-               length = length(tmp.data.label.font.color))
+               length = length(args$colors))
 
 
     # Initialise series-specific parameters
