@@ -284,6 +284,12 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+
+    # For Scatterplot do some cleaning of the data
+    # Color variables cannot be character -> convert to factor
+    # Size variable should be converted to Numeric, including value attributes # but ignore is.ordered
+    # Probably X and Y should also be converted
+
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
@@ -295,14 +301,49 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.opacity <- args$opacity
     tmp.is.stacked <- isTRUE(args$type == "Stacked")
     if (is.null(tmp.opacity))
-        tmp.opacity <- if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked) 0.4 else 1.0
+    {
+        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked) 
+            tmp.opacity <- 0.4 
+        else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] < NCOL(data)))
+            tmp.opacity <- 0.4
+        else 
+            tmp.opacity <- 1.0
+    }
+    
     tmp.line.style <- "None"
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
-    tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
+    if (!is.null(args$marker.border.opacity))
+        tmp.line.style <- "Solid"
+
+    tmp.line.thickness <- 1
+    if (chart.type %in% c("Line", "Radar", "Time Series"))
+        tmp.line.thickness <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
+    else if (chart.type %in% c("Pie", "Donut"))
+        tmp.line.thickness <- 1
+    #else if (!is.null(args$marker.border.opacity))
+    #    tmp.line.thickness <- args$marker.border.width
+    tmp.line.thickness <- rep(tmp.line.thickness, length = length(args$colors))/1.3333
+
+    tmp.line.color <- args$colors
+    if (chart.type %in% c("Pie", "Donut"))
+        tmp.line.color <- args$pie.border.color
+    else if (!is.null(args$marker.border.opacity))
+        tmp.line.color <- args$marker.border.color
+    tmp.line.color <- rep(tmp.line.color, length = length(args$colors))
+
+    tmp.data.label.show <- isTRUE(args$data.label.show)
+    if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
+        tmp.data.label.show <- TRUE
     
-    # Behaviour of 'Automatically' set font colors 
-    # changes depending on the chart type 
+    # DataLabelPosition not supported for Area Chart
+    tmp.data.label.position <- "BestFit"
+    if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
+        tmp.data.label.position <- "InsideEnd"
+
+    # Behaviour of 'Automatically' set data label font colors 
+    # change depending on the chart type 
+    tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
     if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
     if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
@@ -312,87 +353,67 @@ getPPTSettings <- function(chart.type, args, data)
         else
             tmp.data.label.font.color <- autoFontColor(args$colors)
     }
-    
-    tmp.data.label.show <- isTRUE(args$data.label.show)
-    if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
-        tmp.data.label.show <- TRUE
-    
-    # DataLabelPosition isn't supported for Area Chart
-    tmp.data.label.position <- "BestFit"
-    #if (chart.type == "Area")
-    #    tmp.data.label.position <- "OutsideEnd"
-    #else if (tmp.is.stacked)
-    #    tmp.data.label.position <- "InsideEnd"
-    if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
-        tmp.data.label.position <- "InsideEnd"
+    if (length(tmp.data.label.font.color) < length(args$colors))
+        tmp.data.label.font.color <- rep(tmp.data.label.font.color,
+               length = length(tmp.data.label.font.color))
 
 
     # Initialise series-specific parameters
-    # When scatterplots use colors as a numerical scale
-    # we can assume a single template series
     if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
+    {
+        # When scatterplots use colors as a numerical scale
+        # we can assume a single template series
         series.settings <- list(list(
             CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
+            DataLabelsFont = list(family = args$data.label.font.family, 
+                size = args$data.label.font.size/1.333,
                 color = tmp.data.label.font.color[1]),
             OutlineStyle = "None"))
 
-    else
-        series.settings <- lapply(args$colors,
-        function(cc) {list(
-            BackgroundColor = sprintf("%s%X", cc, round(tmp.opacity*255)),
-            Marker = list(BackgroundColor = cc), # mainly for markers shown on lines
+    } else if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", 
+               "Pyramid", "Bar Pictograph"))
+    {
+        # Multi-color series is implemented as a single series
+        # with manu CustomPoints 
+        tmp.colors <- list()
+        for (i in 1:length(args$colors))
+            tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X", 
+                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
+        series.settings <- list(CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, size = args$data.label.font.size/1.333,
+            DataLabelsFont = list(family = args$data.label.font.family, 
+                size = args$data.label.font.size/1.333,
                 color = tmp.data.label.font.color[1]),
             DataLabelPosition = tmp.data.label.position,
-            OutlineColor = cc,
+            OutlineColor = tmp.line.color[1], # style is none if no border color defined
+            OutlineWidth = tmp.line.thickness[1],
+            OutlineStyle = tmp.line.style)
+
+    } else
+        series.settings <- lapply(1:length(args$colors),
+        function(i) {list(
+            BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)),
+            Marker = list(BackgroundColor = args$colors[i]), # for line charts 
+            ShowDataLabels = tmp.data.label.show,
+            DataLabelsFont = list(family = args$data.label.font.family, 
+                size = args$data.label.font.size/1.333,
+                color = tmp.data.label.font.color[i]),
+            DataLabelPosition = tmp.data.label.position,
+            OutlineColor = tmp.line.color[i],
+            OutlineWidth = tmp.line.thickness[i],
             OutlineStyle = tmp.line.style)})
 
 
     tmp.n <- length(series.settings)
-    if (chart.type %in% c("Line", "Radar", "Time Series"))
-    {
-        ww <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
-        ww <- rep(ww, length = tmp.n)/1.3333 # convert pixels to points
-        for (i in 1:tmp.n)
-            series.settings[[i]]$OutlineWidth <- ww[i]
-    }
-    if (!is.null(args$marker.border.opacity) && chart.type %in% c("Bar", 
-        "Column", "BarMultiColor", "ColumnMultiColor", "Pyramid"))
-        for (i in 1:tmp.n)
-        {
-            series.settings[[i]]$OutlineStyle = "Solid"
-            series.settings[[i]]$OutlineColor = args$marker.border.color
-            series.settings[[i]]$OutlineWidth = args$marker.border.width/1.3333
-        }
-
     if (chart.type == "Scatter" && isTRUE(args$scatter.colors.as.categorical))
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
                 BackgroundColor = sprintf("%s%X", arg.colors[i], round(tmp.opacity*255))) 
 
-    if (length(tmp.data.label.font.color) > 1)
-    {
-        tmp.data.label.font.color <- rep(tmp.data.label.font.color, length = tmp.n)
-        for (i in 1:tmp.n)
-            series.settings[[i]]$DataLabelsFont$color <- tmp.data.label.font.color[i]
-
-    }
-
-    # Multi-color series
-    if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph"))
-    {
-        tmp.colors <- list()
-        for (i in 1:length(args$colors))
-            tmp.colors[[i]] <- list(Index = i-1, BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
-        series.settings <- series.settings[1]
-        series.settings[[1]]$CustomPoints <- tmp.colors
-    }
-    
+    # Initialise return output
     res <- list()
     if (length(series.settings) > 0)
         res$TemplateSeries = series.settings
@@ -403,7 +424,6 @@ getPPTSettings <- function(chart.type, args, data)
     # Waiting on RS-7208 
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = args$title.font.size/1.3333)
-
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
@@ -439,6 +459,10 @@ getPPTSettings <- function(chart.type, args, data)
         res$GapWidth = args$bar.gap * 100
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
+    if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
+        (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical)))
+        res$ShowLegend <- FALSE
+
 
     # There are some issues with Scatterplot exporting
     # See RS-7154 - try master.displayr.com 
