@@ -321,8 +321,8 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.line.thickness <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
     else if (chart.type %in% c("Pie", "Donut"))
         tmp.line.thickness <- 1
-    #else if (!is.null(args$marker.border.opacity))
-    #    tmp.line.thickness <- args$marker.border.width
+    else if (!is.null(args$marker.border.opacity))
+        tmp.line.thickness <- args$marker.border.width
     tmp.line.thickness <- rep(tmp.line.thickness, length = length(args$colors))/1.3333
 
     tmp.line.color <- args$colors
@@ -411,7 +411,7 @@ getPPTSettings <- function(chart.type, args, data)
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
-                BackgroundColor = sprintf("%s%X", arg.colors[i], round(tmp.opacity*255))) 
+                BackgroundColor = sprintf("%s%X", arg$colors[i], round(tmp.opacity*255))) 
 
     # Initialise return output
     res <- list()
