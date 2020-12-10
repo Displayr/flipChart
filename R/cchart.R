@@ -276,8 +276,6 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # into x/y axis but after font sizes have been converted to pixels
     if (append.data)
     {
-        if (chart.type %in% c("Scatter", "Bubble"))
-            x <- convertChartDataToNumeric(x)
         chart.settings <- getPPTSettings(chart.type, user.args, x)
     }
 
@@ -289,7 +287,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
 
-
+    # Convert data after the charting function has been applied
+    if (chart.type %in% c("Scatter", "Bubble"))
+        x <- convertChartDataToNumeric(x)
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
@@ -746,7 +746,7 @@ convertChartDataToNumeric <- function(data)
                         i <= NCOL(data))}
 
     v.ind <- attr(data, "scatter.variable.indices")
-    new.data <- AsNumeric(data, binary = FALSE)
+    new.data <- suppressWarnings(AsNumeric(data, binary = FALSE))
 
     # Color variable can be returned as a factor to retain
     # label names 

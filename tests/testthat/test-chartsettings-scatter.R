@@ -117,3 +117,48 @@ test_that("ChartSettings - Scatter",
             Marker = list(BackgroundColor = "#FF141466"))))
 })
 
+
+dat.char.colors <- structure(list(`X-coord` = c(2, 6, 7, 3, 4), `Y-coord` = c(3,
+5, 7, 3, 8), Size = c(1, 2, 3, 4, 5), Group = c("A", "A", "B",
+"B", "C")), row.names = c("alpha", "beta", "gamma", "delta",
+"epsilon"), scatter.variable.indices = c(x = 1, y = 2, sizes = 3,
+colors = 4, groups = 4), class = "data.frame")
+
+dat.char.coords <- structure(list(Day = c("Monday", "Tuesday", "Monday", "Wednesay",
+"Friday", "Monday", "Tuesday", "Thursday", "Wednesday"), Time = c("Lunch",
+"Dinner", "Breakfast", "Breakfast", "Lunch", "Lunch", "Dinner",
+"Lunch", "Lunch")), row.names = c("Amy", "Ben", "Jim", "Tim",
+"Ian", "Sara", "Rod", "Bob", "Liz"), scatter.variable.indices = c(x = 1,
+y = 2, sizes = NA, colors = NA, groups = 2), class = "data.frame")
+
+dat.factor.coords <- structure(list(Species = structure(c(2L, 2L, 2L, 1L, 3L, 2L,
+3L, 3L, 2L, 2L, 2L, 2L, 3L, 2L, 2L, 3L, 3L, 3L, 1L, 1L), .Label = c("setosa",
+"versicolor", "virginica"), class = "factor"), `Grid: Petal.Length` = c(4.7,
+4.4, 4.1, 1.7, 5.1, 3.7, 4.8, 6.4, 4.4, 4.7, 4.1, 4.5, 5.1, 4.5,
+4.1, 6.7, 5.4, 5.7, 1.6, 1.4)), scatter.variable.indices = c(x = 1,
+y = 2, sizes = NA, colors = NA, groups = NA), row.names = c(64L,
+91L, 68L, 24L, 111L, 82L, 139L, 132L, 88L, 51L, 89L, 69L, 134L,
+85L, 100L, 123L, 140L, 125L, 26L, 18L), class = "data.frame")
+
+test_that("Scatterplot ChartData conversion",
+{
+    res <- convertChartDataToNumeric(dat.char.colors)
+    expect_equal(unlist(lapply(res, class)), c(`X-coord` = "numeric",
+            `Y-coord` = "numeric", Size = "numeric", Group = "factor"))
+    expect_equal(dim(res), dim(dat.char.colors))
+    expect_equal(attr(res, "scatter.variable.indices"),
+            attr(dat.char.colors, "scatter.variable.indices"))
+
+    res <- convertChartDataToNumeric(dat.char.coords)
+    expect_equal(unlist(lapply(res, class)), c(Day = "integer", Time = "integer"))
+    expect_equal(dim(res), dim(dat.char.coords))
+    expect_equal(attr(res, "scatter.variable.indices"),
+            attr(dat.char.coords, "scatter.variable.indices"))
+
+    res <- convertChartDataToNumeric(dat.factor.coords)
+    expect_equal(unlist(lapply(res, class)),
+            c(Species = "integer", `Grid: Petal.Length` = "numeric"))
+    expect_equal(dim(res), dim(dat.factor.coords))
+    expect_equal(attr(res, "scatter.variable.indices"),
+            attr(dat.factor.coords, "scatter.variable.indices"))
+})
