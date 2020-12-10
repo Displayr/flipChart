@@ -275,7 +275,11 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # This needs to be called before categories/values is converted
     # into x/y axis but after font sizes have been converted to pixels
     if (append.data)
+    {
+        if (chart.type %in% c("Scatter", "Bubble"))
+            x <- convertChartDataToNumeric(x)
         chart.settings <- getPPTSettings(chart.type, user.args, x)
+    }
 
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
@@ -285,10 +289,6 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
 
-    # For Scatterplot do some cleaning of the data
-    # Color variables cannot be character -> convert to factor
-    # Size variable should be converted to Numeric, including value attributes # but ignore is.ordered
-    # Probably X and Y should also be converted
 
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
@@ -731,4 +731,29 @@ loadPackage <- function(chart.type)
         package <- "flipStandardCharts"
     if (!is.null(package))
         require(package, character.only = TRUE)
+}
+
+# Convert ChartData attribute so that it is readable by Powerpoint
+# For X, Y and Size variables, this needs to numeric
+# which means that any label information will be lost
+# For Color variables, factor levels can be retained
+
+#' @importFrom flipTransformations AsNumeric
+#' @importFrom flipU CopyAttributes
+convertChartDataToNumeric <- function(data)
+{
+    .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
+                        i <= NCOL(data))}
+
+    v.ind <- attr(data, "scatter.variable.indices")
+    new.data <- AsNumeric(data, binary = FALSE)
+
+    # Color variable can be returned as a factor to retain
+    # label names 
+    ind.color <- v.ind["colors"]
+    if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
+        new.data[,ind.color] <- data[,ind.color]
+    else if (.isValidIndex(ind.color) && is.character(data[,ind.color]))
+        new.data[,ind.color] <- as.factor(data[,ind.color])
+    return(CopyAttributes(new.data, data))
 }
