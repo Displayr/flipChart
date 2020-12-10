@@ -311,9 +311,11 @@ getPPTSettings <- function(chart.type, args, data)
     }
     
     tmp.line.style <- "None"
-    if (chart.type %in% c("Line", "Radar", "Time Series"))
+    if (chart.type %in% c("Donut", "Pie"))
+        tmp.line.style <- "Solid"
+    else if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
-    if (!is.null(args$marker.border.opacity))
+    else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
     tmp.line.thickness <- 1
@@ -346,7 +348,7 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
     if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
-    if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
+    else if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
     {
         if (chart.type == "Area")
             tmp.data.label.font.color <- c(autoFontColor(args$colors[-1]), args$global.font.color)
@@ -368,7 +370,7 @@ getPPTSettings <- function(chart.type, args, data)
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family, 
-                size = args$data.label.font.size/1.333,
+                size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[1]),
             OutlineStyle = "None"))
 
@@ -376,38 +378,38 @@ getPPTSettings <- function(chart.type, args, data)
                "Pyramid", "Bar Pictograph"))
     {
         # Multi-color series is implemented as a single series
-        # with manu CustomPoints 
+        # with many CustomPoints 
         tmp.colors <- list()
         for (i in 1:length(args$colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X", 
                 args$colors[i], round(tmp.opacity*255)), Index = i - 1)
-        series.settings <- list(CustomPoints = tmp.colors,
+        series.settings <- list(list(
+            CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family, 
-                size = args$data.label.font.size/1.333,
+                size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[1]),
             DataLabelPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
             OutlineWidth = tmp.line.thickness[1],
-            OutlineStyle = tmp.line.style)
+            OutlineStyle = tmp.line.style))
 
     } else
         series.settings <- lapply(1:length(args$colors),
         function(i) {list(
             BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)),
-            Marker = list(BackgroundColor = args$colors[i]), # for line charts 
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family, 
-                size = args$data.label.font.size/1.333,
+                size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[i]),
             DataLabelPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[i],
             OutlineWidth = tmp.line.thickness[i],
             OutlineStyle = tmp.line.style)})
-
-
     tmp.n <- length(series.settings)
-    if (chart.type == "Scatter" && isTRUE(args$scatter.colors.as.categorical))
+
+
+    if ((chart.type == "Scatter" && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
@@ -487,7 +489,7 @@ autoFontColor <- function (colors)
 getColorsAsNumericScale <- function(data, colors, opacity)
 {
     color.index <- attr(data, "scatter.variable.indices")["colors"]
-    if (NCOL(data) < color.index)
+    if (is.na(color.index) || NCOL(data) < color.index)
         return(NULL)
     if (length(colors) < 2)
         return(NULL)
