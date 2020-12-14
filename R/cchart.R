@@ -256,7 +256,7 @@
 #' CChart("Column", x, colors = c("red", "green", "blue"), categories.title = "Categories")
 #' CChart("Bar", x, type = "Stacked", colors = grey(1:3/3), categories.title = "Categories")
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
-CChart <- function(chart.type, x, small.multiples = FALSE, 
+CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
@@ -297,19 +297,19 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
 getPPTSettings <- function(chart.type, args, data)
 {
-    # Opacity is by default set to NULL in the javascript code 
+    # Opacity is by default set to NULL in the javascript code
     tmp.opacity <- args$opacity
     tmp.is.stacked <- isTRUE(args$type == "Stacked")
     if (is.null(tmp.opacity))
     {
-        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked) 
-            tmp.opacity <- 0.4 
+        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked)
+            tmp.opacity <- 0.4
         else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] < NCOL(data)))
             tmp.opacity <- 0.4
-        else 
+        else
             tmp.opacity <- 1.0
     }
-    
+
     tmp.line.style <- "None"
     if (chart.type %in% c("Donut", "Pie"))
         tmp.line.style <- "Solid"
@@ -335,16 +335,24 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.line.color <- rep(tmp.line.color, length = length(args$colors))
 
     tmp.data.label.show <- isTRUE(args$data.label.show)
+    tmp.data.label.show.category.labels <- FALSE
     if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
         tmp.data.label.show <- TRUE
-    
+    if (chart.type %in% c("Donut", "Pie"))
+    {
+        tmp.data.label.show <- TRUE
+        tmp.data.label.show.category.labels <- TRUE # maybe also for Radar?
+    }
+
     # DataLabelPosition not supported for Area Chart
     tmp.data.label.position <- "BestFit"
     if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
         tmp.data.label.position <- "InsideEnd"
+    if (chart.type %in% c("Donut", "Pie"))
+        tmp.data.label.position <- "OutsideEnd"
 
-    # Behaviour of 'Automatically' set data label font colors 
-    # change depending on the chart type 
+    # Behaviour of 'Automatically' set data label font colors
+    # change depending on the chart type
     tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
     if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
@@ -361,7 +369,12 @@ getPPTSettings <- function(chart.type, args, data)
 
 
     # Initialise series-specific parameters
-    if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
+    if (isDistribution(chart.type))
+    {
+        series.settings <- list(list(
+            BackgroundColor = args$density.color))
+
+    } else if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
     {
         # When scatterplots use colors as a numerical scale
         # we can assume a single template series
@@ -369,24 +382,24 @@ getPPTSettings <- function(chart.type, args, data)
             CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, 
+            DataLabelsFont = list(family = args$data.label.font.family,
                 size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[1]),
             OutlineStyle = "None"))
 
-    } else if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", 
+    } else if (chart.type %in% c("BarMultiColor", "ColumnMultiColor",
                "Pyramid", "Bar Pictograph"))
     {
         # Multi-color series is implemented as a single series
-        # with many CustomPoints 
+        # with many CustomPoints
         tmp.colors <- list()
         for (i in 1:length(args$colors))
-            tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X", 
+            tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
                 args$colors[i], round(tmp.opacity*255)), Index = i - 1)
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, 
+            DataLabelsFont = list(family = args$data.label.font.family,
                 size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[1]),
             DataLabelPosition = tmp.data.label.position,
@@ -399,7 +412,8 @@ getPPTSettings <- function(chart.type, args, data)
         function(i) {list(
             BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)),
             ShowDataLabels = tmp.data.label.show,
-            DataLabelsFont = list(family = args$data.label.font.family, 
+            ShowCategoryNames = tmp.data.label.show.category.labels,
+            DataLabelsFont = list(family = args$data.label.font.family,
                 size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[i]),
             DataLabelPosition = tmp.data.label.position,
@@ -413,27 +427,29 @@ getPPTSettings <- function(chart.type, args, data)
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
-                BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255))) 
+                BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
 
     # Initialise return output
     res <- list()
     if (length(series.settings) > 0)
         res$TemplateSeries = series.settings
+    if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
+        res$ShowLegend <- FALSE
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = args$legend.font.size/1.3333))
 
     # Chart and Axis titles always seem to be ignored
-    # Waiting on RS-7208 
+    # Waiting on RS-7208
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = args$title.font.size/1.3333)
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
-            family = args$categories.tick.font.family, 
+            family = args$categories.tick.font.family,
             size = args$categories.tick.font.size/1.3333),
             TitleFont = list(color = args$categories.title.font.color,
-            family = args$categories.title.font.family, 
+            family = args$categories.title.font.family,
             size = args$categories.title.font.size/1.3333),
             AxisLine = list(Color = args$categories.line.color,
             Width = args$categories.line.width/1.3333,
@@ -451,7 +467,7 @@ getPPTSettings <- function(chart.type, args, data)
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$values.grid.color,
             Width = args$values.grid.width/1.3333,
-            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid")) 
+            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
     }
 
     # Chart-specfic parameters
@@ -467,7 +483,7 @@ getPPTSettings <- function(chart.type, args, data)
 
 
     # There are some issues with Scatterplot exporting
-    # See RS-7154 - try master.displayr.com 
+    # See RS-7154 - try master.displayr.com
     if (chart.type %in% c("Scatter"))
     {
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
@@ -493,7 +509,7 @@ getColorsAsNumericScale <- function(data, colors, opacity)
         return(NULL)
     if (length(colors) < 2)
         return(NULL)
-    
+
     color.data <- data[,color.index]
     color.func <- colorRamp(unique(colors))
     dat.scaled <- (color.data - min(color.data, na.rm = TRUE))/
@@ -501,8 +517,8 @@ getColorsAsNumericScale <- function(data, colors, opacity)
     color.vec <- rgb(color.func(dat.scaled), alpha = 255 * opacity,
         maxColorValue = 255)
     ind <- which(!is.na(color.data))
-    data.points <- lapply(ind, function(i) {list(Index = i - 1, 
-        BackgroundColor = color.vec[i], 
+    data.points <- lapply(ind, function(i) {list(Index = i - 1,
+        BackgroundColor = color.vec[i],
         Marker = list(BackgroundColor = color.vec[i]))})
     return(data.points)
 }
@@ -749,7 +765,7 @@ convertChartDataToNumeric <- function(data)
     new.data <- suppressWarnings(AsNumeric(data, binary = FALSE))
 
     # Color variable can be returned as a factor to retain
-    # label names 
+    # label names
     ind.color <- v.ind["colors"]
     if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
         new.data[,ind.color] <- data[,ind.color]
