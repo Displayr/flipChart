@@ -113,6 +113,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineColor, "#ED7D31")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 1.50003750093752)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowCategoryNames, TRUE)
 
     res <- CChart("Donut", dat.1d[1:4], append.data = TRUE, colors = col.1d.multicolor[1:4],
             pie.inner.radius = 40, pie.border.color = "#FFFFFF")
@@ -131,6 +132,9 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[5]]$BackgroundColor, "#EC83BAFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineColor, "#333333")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowCategoryNames, TRUE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$DataLabelsPosition, "OutsideEnd")
 
     res <- CChart("ColumnMultiColor", dat.1d, append.data = TRUE, bar.gap = 0.4,
             colors = col.1d.multicolor, opacity = 0.7, marker.border.opacity = 1,
