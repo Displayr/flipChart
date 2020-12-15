@@ -347,9 +347,9 @@ getPPTSettings <- function(chart.type, args, data)
     # DataLabelPosition not supported for Area Chart
     tmp.data.label.position <- "BestFit"
     if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
-        tmp.data.label.position <- "InsideEnd"
+        tmp.data.label.position <- "Inside End"
     if (chart.type %in% c("Donut", "Pie"))
-        tmp.data.label.position <- "OutsideEnd"
+        tmp.data.label.position <- "Outside End"
 
     # Behaviour of 'Automatically' set data label font colors
     # change depending on the chart type
