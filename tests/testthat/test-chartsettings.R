@@ -49,6 +49,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
+            NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
@@ -78,6 +79,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
+            NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
