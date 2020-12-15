@@ -341,10 +341,13 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type %in% c("Donut", "Pie"))
     {
         tmp.data.label.show <- TRUE
-        tmp.data.label.show.category.labels <- TRUE # maybe also for Radar?
+        tmp.data.label.show.category.labels <- TRUE
     }
+    if (chart.type == "Radar")
+        tmp.data.label.show.category.labels <- TRUE
 
-    # DataLabelPosition not supported for Area Chart
+
+    # DataLabelsPosition not supported for Area Chart
     tmp.data.label.position <- "BestFit"
     if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
         tmp.data.label.position <- "InsideEnd"
@@ -402,7 +405,7 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsFont = list(family = args$data.label.font.family,
                 size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[1]),
-            DataLabelPosition = tmp.data.label.position,
+            DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
             OutlineWidth = tmp.line.thickness[1],
             OutlineStyle = tmp.line.style))
@@ -416,7 +419,7 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsFont = list(family = args$data.label.font.family,
                 size = args$data.label.font.size/1.3333,
                 color = tmp.data.label.font.color[i]),
-            DataLabelPosition = tmp.data.label.position,
+            DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[i],
             OutlineWidth = tmp.line.thickness[i],
             OutlineStyle = tmp.line.style)})
@@ -470,6 +473,13 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$values.grid.color,
             Width = args$values.grid.width/1.3333,
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+
+        # We don't want to manually set axis label position
+        # if they are shown
+        if (!is.null(args$values.axis.show) && args$values.axis.show == FALSE)
+            res$ValueAxis$LabelPosition <- "None"
+        if (!is.null(args$categories.axis.show) && args$categories.axis.show == FALSE)
+            res$PrimaryAxis$LabelPosition <- "None"
     }
 
     # Chart-specfic parameters

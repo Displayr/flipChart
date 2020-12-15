@@ -24,7 +24,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#BAE4B3FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$BackgroundColor, "#74C476FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$BackgroundColor, "#238B45FF")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelPosition, "BestFit")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsPosition, "BestFit")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsFont,
@@ -66,7 +66,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$BackgroundColor, "#74C476FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$BackgroundColor, "#238B45FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, TRUE)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelPosition, "InsideEnd")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsPosition, "InsideEnd")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsFont$color, "#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color, "#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color, "#FFFFFF")
