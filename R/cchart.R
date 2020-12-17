@@ -325,7 +325,7 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.line.thickness <- 1
     else if (!is.null(args$marker.border.opacity))
         tmp.line.thickness <- args$marker.border.width
-    tmp.line.thickness <- rep(tmp.line.thickness, length = length(args$colors))/1.3333
+    tmp.line.thickness <- rep(px2pt(tmp.line.thickness), length = length(args$colors))
 
     tmp.line.color <- args$colors
     if (chart.type %in% c("Pie", "Donut"))
@@ -386,7 +386,7 @@ getPPTSettings <- function(chart.type, args, data)
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family,
-                size = args$data.label.font.size/1.3333,
+                size = px2pt(args$data.label.font.size),
                 color = tmp.data.label.font.color[1]),
             OutlineStyle = "None"))
 
@@ -403,7 +403,7 @@ getPPTSettings <- function(chart.type, args, data)
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family,
-                size = args$data.label.font.size/1.3333,
+                size = px2pt(args$data.label.font.size),
                 color = tmp.data.label.font.color[1]),
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
@@ -417,7 +417,7 @@ getPPTSettings <- function(chart.type, args, data)
             ShowDataLabels = tmp.data.label.show,
             ShowCategoryNames = tmp.data.label.show.category.labels,
             DataLabelsFont = list(family = args$data.label.font.family,
-                size = args$data.label.font.size/1.3333,
+                size = px2pt(args$data.label.font.size),
                 color = tmp.data.label.font.color[i]),
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[i],
@@ -439,39 +439,39 @@ getPPTSettings <- function(chart.type, args, data)
     if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
         res$ShowLegend <- FALSE
     res$Legend = list(Font = list(color = args$legend.font.color,
-            family = args$legend.font.family, size = args$legend.font.size/1.3333))
+            family = args$legend.font.family, size = px2pt(args$legend.font.size)))
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
-            size = args$title.font.size/1.3333)
+            size = px2pt(args$title.font.size))
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
-            size = args$categories.tick.font.size/1.3333),
+            size = px2pt(args$categories.tick.font.size)),
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family,
-            size = args$categories.title.font.size/1.3333),
+            size = px2pt(args$categories.title.font.size)),
             AxisLine = list(Color = args$categories.line.color,
-            Width = args$categories.line.width/1.3333,
+            Width = px2pt(args$categories.line.width),
             Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$categories.grid.color,
-            Width = args$categories.grid.width/1.3333,
+            Width = px2pt(args$categories.grid.width),
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
-            family = args$values.tick.font.family, size = args$values.tick.font.size/1.3333),
+            family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
             TitleFont = list(color = args$values.title.font.color,
 
-            family = args$values.title.font.family, size = args$values.title.font.size/1.3333),
+            family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
             NumberFormat = if (isTRUE(grepl("%", attr(data, "statistic")))) "0%" else "General",
             AxisLine = list(Color = args$values.line.color,
-            Width = args$values.line.width/1.3333,
+            Width = px2pt(args$values.line.width),
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$values.grid.color,
-            Width = args$values.grid.width/1.3333,
+            Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
 
         # We don't want to manually set axis label position
@@ -512,6 +512,19 @@ getPPTSettings <- function(chart.type, args, data)
     }
     return(res)
 }
+
+# converts sizes from pixels (which is used by plotly)
+# into points (which is used in Displayr and PPT exporting)
+px2pt <- function(x)
+{
+    return(x/1.3333)
+}
+
+
+# This function determines whether the font should be shown in black or white
+# on the brightness of background. The coefficients are the same as in 
+# flipStandardCharts and rhtmlHeatmap. The values are originally from
+# http://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
 
 #' @importFrom grDevices col2rgb rgb2hsv
 autoFontColor <- function (colors)
