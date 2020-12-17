@@ -492,6 +492,15 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
         (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical)))
         res$ShowLegend <- FALSE
+    if (chart.type == "Scatter" && tmp.data.label.show && isTRUE(args$grid.show))
+    {
+        # LabeledScatter does not have options to control color and width of grid
+        res$PrimaryAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
+            Color = "#E1E1E1")
+        res$ValueAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
+            Color = "#E1E1E1")
+
+    }
 
 
     # There are some issues with Scatterplot exporting

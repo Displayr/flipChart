@@ -9,6 +9,8 @@ test_that("ChartSettings - Scatter",
     res <- CChart("Scatter", dat, scatter.labels.as.hovertext = FALSE,
             scatter.colors.column = NA, data.label.font.autocolor = TRUE,
             scatter.sizes.as.diameter = FALSE, scatter.colors.as.categorical = TRUE,
+            values.grid.width = 0, categories.grid.width = 0, # defaults for unused controls
+            grid.show = TRUE,
             colors = "#0000FF", marker.size = 6, opacity = 0.3, append.data = TRUE)
     expect_equal(attr(res, "ChartSettings")$BubbleScale, 60)
     expect_equal(attr(res, "ChartSettings")$BubbleSizeType, "Area")
@@ -17,6 +19,11 @@ test_that("ChartSettings - Scatter",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#0000FF4C")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$Marker,
             list(Size = 6, OutlineStyle = "None", BackgroundColor = "#0000FF4C"))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$MajorGridLine,
+            list(Style = "Solid", Width = 1, Color = "#E1E1E1"))
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$MajorGridLine,
+            list(Style = "Solid", Width = 1, Color = "#E1E1E1"))
+
 
     v.ind <-  c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
     attr(dat, "scatter.variable.indices") <- v.ind
