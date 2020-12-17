@@ -304,7 +304,7 @@ getPPTSettings <- function(chart.type, args, data)
     {
         if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked)
             tmp.opacity <- 0.4
-        else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] < NCOL(data)))
+        else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
             tmp.opacity <- 0.4
         else
             tmp.opacity <- 1.0

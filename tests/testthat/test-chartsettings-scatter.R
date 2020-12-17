@@ -122,6 +122,16 @@ test_that("ChartSettings - Scatter",
             list(Index = 48, BackgroundColor = "#FF040466", Marker = list(
             BackgroundColor = "#FF040466")), list(Index = 49, BackgroundColor = "#FF141466",
             Marker = list(BackgroundColor = "#FF141466"))))
+
+    pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
+            "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",
+            "8", "9", "z", "1", "2", "3", "4", "5", "6", "7"), .Dim = c(8L,
+            4L)), FALSE, NULL, NULL)
+    pd <- PrepareData("Scatter", input.data.pasted = pasted)
+    res <- CChart("Scatter", pd$data, colors = "#FF0000", opacity = NULL,
+                  append.data = TRUE, scatter.colors.as.categorical = TRUE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#FF000066")
+
 })
 
 
