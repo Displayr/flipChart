@@ -545,6 +545,9 @@ getColorsAsNumericScale <- function(data, colors, opacity)
         return(NULL)
 
     color.data <- data[,color.index]
+    if (is.ordered(color.data))
+        class(color.data) <- "factor"
+    color.data <- suppressWarnings(AsNumeric(color.data, binary = FALSE))
     color.func <- colorRamp(unique(colors))
     dat.scaled <- (color.data - min(color.data, na.rm = TRUE))/
         diff(range(color.data, na.rm = TRUE))
