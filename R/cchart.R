@@ -256,7 +256,7 @@
 #' CChart("Column", x, colors = c("red", "green", "blue"), categories.title = "Categories")
 #' CChart("Bar", x, type = "Stacked", colors = grey(1:3/3), categories.title = "Categories")
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
-CChart <- function(chart.type, x, small.multiples = FALSE, 
+CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
@@ -269,18 +269,297 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
-    user.args <- substituteAxisNames(chart.function, user.args)
     if (tolower(font.units) %in% c("pt", "points"))
         user.args <- scaleFontSizes(user.args)
+
+    # This needs to be called before categories/values is converted
+    # into x/y axis but after font sizes have been converted to pixels
+    if (append.data)
+    {
+        chart.settings <- getPPTSettings(chart.type, user.args, x)
+    }
+
+    user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    attr(result,  "ChartData") <- x #Used by Displayr to permit exporting of the raw data.
+
+    # Convert data after the charting function has been applied
+    if (chart.type %in% c("Scatter", "Bubble"))
+        x <- convertChartDataToNumeric(x)
+    attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    attr(result,  "ChartSettings") <- chart.settings
     result
 }
+
+getPPTSettings <- function(chart.type, args, data)
+{
+    # Opacity is by default set to NULL in the javascript code
+    tmp.opacity <- args$opacity
+    tmp.is.stacked <- isTRUE(args$type == "Stacked")
+    if (is.null(tmp.opacity))
+    {
+        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked)
+            tmp.opacity <- 0.4
+        else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
+            tmp.opacity <- 0.4
+        else
+            tmp.opacity <- 1.0
+    }
+
+    tmp.line.style <- "None"
+    if (chart.type %in% c("Donut", "Pie"))
+        tmp.line.style <- "Solid"
+    else if (chart.type %in% c("Line", "Radar", "Time Series"))
+        tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
+    else if (!is.null(args$marker.border.opacity))
+        tmp.line.style <- "Solid"
+
+    tmp.line.thickness <- 1
+    if (chart.type %in% c("Line", "Radar", "Time Series"))
+        tmp.line.thickness <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
+    else if (chart.type %in% c("Pie", "Donut"))
+        tmp.line.thickness <- 1
+    else if (!is.null(args$marker.border.opacity))
+        tmp.line.thickness <- args$marker.border.width
+    tmp.line.thickness <- rep(px2pt(tmp.line.thickness), length = length(args$colors))
+
+    tmp.line.color <- args$colors
+    if (chart.type %in% c("Pie", "Donut"))
+        tmp.line.color <- args$pie.border.color
+    else if (!is.null(args$marker.border.opacity))
+        tmp.line.color <- args$marker.border.color
+    tmp.line.color <- rep(tmp.line.color, length = length(args$colors))
+
+    tmp.data.label.show <- isTRUE(args$data.label.show)
+    tmp.data.label.show.category.labels <- FALSE
+    if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
+        tmp.data.label.show <- TRUE
+    if (chart.type %in% c("Donut", "Pie"))
+    {
+        tmp.data.label.show <- TRUE
+        tmp.data.label.show.category.labels <- TRUE
+    }
+    if (chart.type == "Radar")
+        tmp.data.label.show.category.labels <- TRUE
+
+
+    # DataLabelsPosition not supported for Area Chart
+    tmp.data.label.position <- "BestFit"
+    if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
+        tmp.data.label.position <- "InsideEnd"
+    if (chart.type %in% c("Donut", "Pie"))
+        tmp.data.label.position <- "OutsideEnd"
+
+    # Behaviour of 'Automatically' set data label font colors
+    # change depending on the chart type
+    tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
+    if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
+        tmp.data.label.font.color <- args$colors
+    else if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
+    {
+        if (chart.type == "Area")
+            tmp.data.label.font.color <- c(autoFontColor(args$colors[-1]), args$global.font.color)
+        else
+            tmp.data.label.font.color <- autoFontColor(args$colors)
+    }
+    if (length(tmp.data.label.font.color) < length(args$colors))
+        tmp.data.label.font.color <- rep(tmp.data.label.font.color,
+               length = length(args$colors))
+
+
+    # Initialise series-specific parameters
+    if (isDistribution(chart.type))
+    {
+        series.settings <- list(list(
+            BackgroundColor = args$density.color))
+
+    } else if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
+    {
+        # When scatterplots use colors as a numerical scale
+        # we can assume a single template series
+        series.settings <- list(list(
+            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
+            Marker = list(Size = args$marker.size, OutlineStyle = "None"),
+            ShowDataLabels = tmp.data.label.show,
+            DataLabelsFont = list(family = args$data.label.font.family,
+                size = px2pt(args$data.label.font.size),
+                color = tmp.data.label.font.color[1]),
+            OutlineStyle = "None"))
+
+    } else if (chart.type %in% c("BarMultiColor", "ColumnMultiColor",
+               "Pyramid", "Bar Pictograph"))
+    {
+        # Multi-color series is implemented as a single series
+        # with many CustomPoints
+        tmp.colors <- list()
+        for (i in 1:length(args$colors))
+            tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
+                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
+        series.settings <- list(list(
+            CustomPoints = tmp.colors,
+            ShowDataLabels = tmp.data.label.show,
+            DataLabelsFont = list(family = args$data.label.font.family,
+                size = px2pt(args$data.label.font.size),
+                color = tmp.data.label.font.color[1]),
+            DataLabelsPosition = tmp.data.label.position,
+            OutlineColor = tmp.line.color[1], # style is none if no border color defined
+            OutlineWidth = tmp.line.thickness[1],
+            OutlineStyle = tmp.line.style))
+
+    } else
+        series.settings <- lapply(1:length(args$colors),
+        function(i) {list(
+            BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)),
+            ShowDataLabels = tmp.data.label.show,
+            ShowCategoryNames = tmp.data.label.show.category.labels,
+            DataLabelsFont = list(family = args$data.label.font.family,
+                size = px2pt(args$data.label.font.size),
+                color = tmp.data.label.font.color[i]),
+            DataLabelsPosition = tmp.data.label.position,
+            OutlineColor = tmp.line.color[i],
+            OutlineWidth = tmp.line.thickness[i],
+            OutlineStyle = tmp.line.style)})
+    tmp.n <- length(series.settings)
+
+
+    if ((chart.type == "Scatter" && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
+        for (i in 1:tmp.n)
+            series.settings[[i]]$Marker = list(Size = args$marker.size,
+                OutlineStyle = "None",
+                BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
+
+    # Initialise return output
+    res <- list()
+    if (length(series.settings) > 0)
+        res$TemplateSeries = series.settings
+    if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
+        res$ShowLegend <- FALSE
+    res$Legend = list(Font = list(color = args$legend.font.color,
+            family = args$legend.font.family, size = px2pt(args$legend.font.size)))
+
+    # Chart and Axis titles always seem to be ignored
+    # Waiting on RS-7208
+    res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
+            size = px2pt(args$title.font.size))
+
+    if (!chart.type %in% c("Pie", "Donut"))
+    {
+        res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
+            family = args$categories.tick.font.family,
+            size = px2pt(args$categories.tick.font.size)),
+            TitleFont = list(color = args$categories.title.font.color,
+            family = args$categories.title.font.family,
+            size = px2pt(args$categories.title.font.size)),
+            AxisLine = list(Color = args$categories.line.color,
+            Width = px2pt(args$categories.line.width),
+            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
+            MajorGridLine = list(Color = args$categories.grid.color,
+            Width = px2pt(args$categories.grid.width),
+            Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
+            RotateLabels = isTRUE(args$categories.tick.angle == 90))
+        res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
+            family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
+            TitleFont = list(color = args$values.title.font.color,
+
+            family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
+            NumberFormat = if (isTRUE(grepl("%", attr(data, "statistic")))) "0%" else "General",
+            AxisLine = list(Color = args$values.line.color,
+            Width = px2pt(args$values.line.width),
+            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
+            MajorGridLine = list(Color = args$values.grid.color,
+            Width = px2pt(args$values.grid.width),
+            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+
+        # We don't want to manually set axis label position
+        # if they are shown
+        if (!is.null(args$values.axis.show) && args$values.axis.show == FALSE)
+            res$ValueAxis$LabelPosition <- "None"
+        if (!is.null(args$categories.axis.show) && args$categories.axis.show == FALSE)
+            res$PrimaryAxis$LabelPosition <- "None"
+    }
+
+    # Chart-specfic parameters
+    if (chart.type %in% "Donut")
+        res$HoleSize = args$pie.inner.radius
+    if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
+        res$GapWidth = args$bar.gap * 100
+    if (chart.type == "Line")
+        res$Smooth = isTRUE(args$shape == "Curved")
+    if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
+        (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical)))
+        res$ShowLegend <- FALSE
+    if (chart.type == "Scatter" && tmp.data.label.show && isTRUE(args$grid.show))
+    {
+        # LabeledScatter does not have options to control color and width of grid
+        res$PrimaryAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
+            Color = "#E1E1E1")
+        res$ValueAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
+            Color = "#E1E1E1")
+
+    }
+
+
+    # There are some issues with Scatterplot exporting
+    # See RS-7154 - try master.displayr.com
+    if (chart.type %in% c("Scatter"))
+    {
+        res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
+        res$BubbleScale = args$marker.size * 10
+    }
+    return(res)
+}
+
+# converts sizes from pixels (which is used by plotly)
+# into points (which is used in Displayr and PPT exporting)
+px2pt <- function(x)
+{
+    return(x/1.3333)
+}
+
+
+# This function determines whether the font should be shown in black or white
+# on the brightness of background. The coefficients are the same as in 
+# flipStandardCharts and rhtmlHeatmap. The values are originally from
+# http://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
+
+#' @importFrom grDevices col2rgb rgb2hsv
+autoFontColor <- function (colors)
+{
+    tmp.rgb <- col2rgb(colors)
+    tmp.lum <- apply(tmp.rgb, 2, function(x) return(0.299*x[1] + 0.587*x[2] + 0.114*x[3]))
+    return(ifelse(tmp.lum > 126, "#2C2C2C", "#FFFFFF"))
+}
+
+
+#' @importFrom grDevices colorRamp rgb
+getColorsAsNumericScale <- function(data, colors, opacity)
+{
+    color.index <- attr(data, "scatter.variable.indices")["colors"]
+    if (is.na(color.index) || NCOL(data) < color.index)
+        return(NULL)
+    if (length(colors) < 2)
+        return(NULL)
+
+    color.data <- data[,color.index]
+    if (is.ordered(color.data))
+        class(color.data) <- "factor"
+    color.data <- suppressWarnings(AsNumeric(color.data, binary = FALSE))
+    color.func <- colorRamp(unique(colors))
+    dat.scaled <- (color.data - min(color.data, na.rm = TRUE))/
+        diff(range(color.data, na.rm = TRUE))
+    color.vec <- rgb(color.func(dat.scaled), alpha = 255 * opacity,
+        maxColorValue = 255)
+    ind <- which(!is.na(color.data))
+    data.points <- lapply(ind, function(i) {list(Index = i - 1,
+        BackgroundColor = color.vec[i],
+        Marker = list(BackgroundColor = color.vec[i]))})
+    return(data.points)
+}
+
 
 #' substituteAxisNames
 #'
@@ -311,7 +590,7 @@ substituteAxisNames <- function(chart.function, arguments)
 
 #' scaleFontSizes
 #'
-#' Convert font size from pixel to point.
+#' Convert font size from point to pixel.
 #' @details All of the charts in flipStandardChart
 #' take font sizes to be in units of pixels, however, textboxes in Displayr
 #' assumes font sizes are in units of points. This function iterates through
@@ -505,4 +784,29 @@ loadPackage <- function(chart.type)
         package <- "flipStandardCharts"
     if (!is.null(package))
         require(package, character.only = TRUE)
+}
+
+# Convert ChartData attribute so that it is readable by Powerpoint
+# For X, Y and Size variables, this needs to numeric
+# which means that any label information will be lost
+# For Color variables, factor levels can be retained
+
+#' @importFrom flipTransformations AsNumeric
+#' @importFrom flipU CopyAttributes
+convertChartDataToNumeric <- function(data)
+{
+    .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
+                        i <= NCOL(data))}
+
+    v.ind <- attr(data, "scatter.variable.indices")
+    new.data <- suppressWarnings(AsNumeric(data, binary = FALSE))
+
+    # Color variable can be returned as a factor to retain
+    # label names
+    ind.color <- v.ind["colors"]
+    if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
+        new.data[,ind.color] <- data[,ind.color]
+    else if (.isValidIndex(ind.color) && is.character(data[,ind.color]))
+        new.data[,ind.color] <- as.factor(data[,ind.color])
+    return(CopyAttributes(new.data, data))
 }

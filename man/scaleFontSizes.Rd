@@ -10,7 +10,7 @@ scaleFontSizes(arguments)
 \item{arguments}{List of arguments supplied by user}
 }
 \description{
-Convert font size from pixel to point.
+Convert font size from point to pixel.
 }
 \details{
 All of the charts in flipStandardChart
