@@ -349,7 +349,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     # DataLabelsPosition not supported for Area Chart
     tmp.data.label.position <- "BestFit"
-    if (chart.type == "Column" && tmp.is.stacked && !args$data.label.centered)
+    if (chart.type == "Column" && tmp.is.stacked && !isTRUE(args$data.label.centered))
         tmp.data.label.position <- "InsideEnd"
     if (chart.type %in% c("Donut", "Pie"))
         tmp.data.label.position <- "OutsideEnd"
@@ -396,9 +396,11 @@ getPPTSettings <- function(chart.type, args, data)
         # Multi-color series is implemented as a single series
         # with many CustomPoints
         tmp.colors <- list()
-        for (i in 1:length(args$colors))
+        for (i in seq_along(args$colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
                 args$colors[i], round(tmp.opacity*255)), Index = i - 1)
+        if (length(tmp.colors) == 0)
+            tmp.colors <- NULL
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
@@ -522,7 +524,7 @@ px2pt <- function(x)
 
 
 # This function determines whether the font should be shown in black or white
-# on the brightness of background. The coefficients are the same as in 
+# on the brightness of background. The coefficients are the same as in
 # flipStandardCharts and rhtmlHeatmap. The values are originally from
 # http://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
 
@@ -548,13 +550,15 @@ getColorsAsNumericScale <- function(data, colors, opacity)
     if (is.ordered(color.data))
         class(color.data) <- "factor"
     color.data <- suppressWarnings(AsNumeric(color.data, binary = FALSE))
+    not.na <- which(!is.na(color.data))
     color.func <- colorRamp(unique(colors))
     dat.scaled <- (color.data - min(color.data, na.rm = TRUE))/
         diff(range(color.data, na.rm = TRUE))
+    dat.scaled[is.na(color.data)] <- 0
+
     color.vec <- rgb(color.func(dat.scaled), alpha = 255 * opacity,
         maxColorValue = 255)
-    ind <- which(!is.na(color.data))
-    data.points <- lapply(ind, function(i) {list(Index = i - 1,
+    data.points <- lapply(not.na, function(i) {list(Index = i - 1,
         BackgroundColor = color.vec[i],
         Marker = list(BackgroundColor = color.vec[i]))})
     return(data.points)
