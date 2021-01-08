@@ -166,7 +166,9 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$GapWidth, 60)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
 
-    res <- CChart("Histogram", list(x=1:10, y=rnorm(20)), density.color = "#FF0000", append.data = T)
+    res <- CChart("Histogram", list(x=1:10, y=rnorm(20)), density.color = "#FF0000", append.data = T,
+            background.fill.color = "#0000FF", background.fill.opacity = 0.2)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor,
                  "#FF0000")
+    expect_equal(attr(res, "ChartSettings")$BackgroundColor, "#0000FF33")
 })

@@ -442,6 +442,10 @@ getPPTSettings <- function(chart.type, args, data)
         res$ShowLegend <- FALSE
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = px2pt(args$legend.font.size)))
+    if (isTRUE(nchar(args$background.fill.color) > 0) &&
+        args$background.fill.color != "transparent")
+        res$BackgroundColor <- sprintf("%s%X", args$background.fill.color,
+                                       round(args$background.fill.opacity * 255))
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
