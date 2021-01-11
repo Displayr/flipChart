@@ -491,6 +491,8 @@ getPPTSettings <- function(chart.type, args, data)
     # Chart-specfic parameters
     if (chart.type %in% "Donut")
         res$HoleSize = args$pie.inner.radius
+    if (chart.type %in% c("Donut", "Pie"))
+        res$FirstSliceAngle <- 270
     if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
         res$GapWidth = args$bar.gap * 100
     if (chart.type == "Line")
