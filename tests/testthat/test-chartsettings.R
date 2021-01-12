@@ -169,8 +169,11 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
 
     res <- CChart("Histogram", list(x=1:10, y=rnorm(20)), density.color = "#FF0000", append.data = T,
+            title = "Histogram Chart", footer = "This chart is for testing",
             background.fill.color = "#0000FF", background.fill.opacity = 0.2)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor,
                  "#FF0000")
     expect_equal(attr(res, "ChartSettings")$BackgroundColor, "#0000FF33")
+    expect_equal(attr(attr(res, "ChartData"), "title"), "Histogram Chart")
+    expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
 })

@@ -2,7 +2,7 @@ context("CChart - small multiples")
 
 xx <- structure(list(`1 - 6CvrwXdVdJ` = 1:10, `2 - 9UwNndFTfm` = 2:11,
     `3 - W71N36nz3i` = 3:12), .Names = c("1 - 6CvrwXdVdJ", "2 - 9UwNndFTfm",
-"3 - W71N36nz3i"), row.names = c(NA, -10L), class = "data.frame")
+"3 - W71N36nz3i"), row.names = c(NA, -10L), class = "data.frame", title = "Main title")
 
 test_that("Small multiples",
 {

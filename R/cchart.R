@@ -290,6 +290,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
         x <- convertChartDataToNumeric(x)
+    attr(x, "title") <- user.args$title
+    attr(x, "footer") <- user.args$footer
+    attr(x, "values.title") <- user.args$values.title
+    attr(x, "categories.title") <- user.args$categories.title
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
