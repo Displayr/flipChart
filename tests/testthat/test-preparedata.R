@@ -68,7 +68,7 @@ test_that("PrepareData: single table, single stat",
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
     expect_equal(dim(out$data), dim(input.data.table))
-    expect_equal(round(out$data[1,1],3), 0.484)
+    expect_equal(round(out$data[1,1],1), 48.4)
 
     out2 <- PrepareData("Column", input.data.table = input.data.table, transpose = TRUE)
     expect_equal(out2$categories.title, "Age")
@@ -177,7 +177,7 @@ test_that("PrepareData: pasted raw data",
         "7.34%", "6.42%", "8.87%", "11.93%", "5.81%"), .Dim = c(13L,
         7L)), NULL, NULL, NULL, NULL)
     out2 <- PrepareData("Scatter", input.data.pasted = dat2)
-    expect_equal(out2$data[1,1], 0.1131)
+    expect_equal(out2$data[1,1], 11.31)
 
     dat3 <- list(structure(c("", "Main title", "", "", "", "Product", "", "",
                 "", "", "", "", "", "", "", "", "", "", "Coke", "Diet Coke",
@@ -678,7 +678,7 @@ test_that("PrepareData: aggregate works for all formats",
     res.filter.percent <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE,
         as.percentages = TRUE, subset = zvec ==3)$data
     expect_equal(res.filter.counts, structure(c(`3` = 3L), statistic = "Count"))
-    expect_equal(res.filter.percent, structure(c(`3` = 1), statistic = "%"))
+    expect_equal(res.filter.percent, structure(c(`3` = 100L), statistic = "%"))
 })
 
 test_that("PrepareData: input and output format of raw data",
@@ -1001,7 +1001,7 @@ test_that("Pasted data",{
         "Bear", "Zebra", "", "", "", "3%", "7%", "5%"), .Dim = c(6L,
         3L)), NULL, NULL, NULL)
     pd <- PrepareData("Column", input.data.pasted = pst, as.percentages = T)
-    expect_equal(sum(pd$data), 1)
+    expect_equal(sum(pd$data), 100)
 })
 
 test_that("DS-1659: histogram, variables from data",
@@ -1036,7 +1036,7 @@ test_that("DS-1689 Bar chart from one variable raw data",{
     w = capture_warnings(pd <- PrepareData("Column", TRUE, NULL, input.data.raw = z,
                                            transpose = FALSE, first.aggregate = TRUE, as.percent = TRUE,
                                            tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
+    expect_equal(unname(pd$data[1]), 13.455657, tol = 0.000001)
 })
 
 test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
@@ -1644,7 +1644,7 @@ test_that("Question attribute is not accidently dropped",
 "Pass"))
     expect_error(res <- PrepareData("Column", input.data.table = tb), NA)
     expect_equal(attr(res$data, "questions"), c("Facility Type - Coded1", "Pass"))
-    expect_equal(res$data[1], c(Pantry = 0.865979381443299))
+    expect_equal(res$data[1], c(Pantry = 86.5979381443299))
 })
 
 test_that("Dimensions are dropped consistently",

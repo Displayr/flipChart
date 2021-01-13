@@ -1114,23 +1114,23 @@ asPercentages <- function(data)
         length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
     {
         # 1-dimensional table with multiple statistics
-        data[,1] <- prop.table(data[,1])
+        data[,1] <- prop.table(data[,1]) * 100
     }
     else if (length(dim(data)) > 2)
     {
         # 2-dimensional table with statistics
-        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1)
+        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
     }
     else if (NCOL(data) > 1)
     {
         # 2-dimensional table without statistics
-        data <- prop.table(data, 1)
+        data <- prop.table(data, 1) * 100
         attr(data, "statistic") <- "Row %"
     }
     else
     {
         # 1-dimensional table without statistics
-        data <- prop.table(data)
+        data <- prop.table(data) * 100
         attr(data, "statistic") <- "%"
     }
     data
@@ -1336,12 +1336,12 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
         return(data)
     }
 
-    ## If data is already percentages in Qtable then divide by 100
-    ## Note that R outputs and pasted data will already be in decimals
-    stat <- attr(data, "statistic")
-    qst <- attr(data, "questions")
-    if (!is.null(stat) && !is.null(qst) && grepl("%)?$", stat))
-        data <- data / 100
+    ### If data is already percentages in Qtable then divide by 100
+    ### Note that R outputs and pasted data will already be in decimals
+    #stat <- attr(data, "statistic")
+    #qst <- attr(data, "questions")
+    #if (!is.null(stat) && !is.null(qst) && grepl("%)?$", stat))
+    #    data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages && chart.type != "Venn")
