@@ -262,8 +262,8 @@ test_that("Statistics are preserved when percentages are computed",
     expect_warning(dat0 <- PrepareData("Column", input.data.table = tab1d, tidy = TRUE, as.percentages = TRUE)$data)
     dat1 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = FALSE)$data
     expect_warning(dat2 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data)
-    expect_equal(dat2[,2], dat1[,2])
-    expect_equal(dat2[,1], dat0, check.attributes = FALSE)
+    expect_equal(dat2[,,2], dat1[,,2])
+    expect_equal(dat2[,1,1], dat0, check.attributes = FALSE)
 
     expect_warning(dat0 <- PrepareData("Column", input.data.table = tabAsChar, tidy = TRUE, as.percentages = TRUE)$data)
     dat1 <- PrepareData("Column", input.data.table = tabAsChar, tidy = FALSE, as.percentages = FALSE)$data

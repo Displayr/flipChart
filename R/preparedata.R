@@ -142,7 +142,7 @@
 #' @importFrom flipU ConvertCommaSeparatedStringToVector
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideValuesWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideValuesWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns ConvertQTableToArray
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -480,6 +480,19 @@ PrepareData <- function(chart.type,
         tmp <- attr(data, "statistic")
         data <- as.matrix(data)
         attr(data, "statistic") <- tmp
+    }
+
+    # Modify multi-stat QTables so they are 3 dimensional arrays
+    # and statistic attribute from the primary statistic
+    # This is needed to correctly export chart to powerpoint and
+    # R GUI code checks the statistic attribute to determine axis formatting
+    if (!tidy && is.array(data) && !is.null(attr(data, "questions")) && 
+        is.null(attr(data, "statistic")))
+    {
+        data <- ConvertQTableToArray(data)
+        attr(data, "statistic") <- dimnames(data)[[3]][1]
+        attr(data, "multi-stat") <- TRUE
+
     }
 
     list(data = data,

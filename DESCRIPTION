@@ -34,7 +34,7 @@ Remotes:
     Displayr/flipFormat,
     Displayr/flipRegression,
     Displayr/flipStatistics,
-    Displayr/flipStandardCharts,
+    Displayr/flipStandardCharts@DS-3202,
     Displayr/flipTables@DS-3202,
     Displayr/flipTransformations@DS-3202,
     Displayr/flipTime,
