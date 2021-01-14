@@ -15,6 +15,9 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install libgit2-dev
   - sudo apt-get install -y r-cran-rcppeigen
+  - export flipTransformations_BRANCH_NAME=DS-3202
+  - export flipTables_BRANCH_NAME=DS-3202
+  - export flipStandardCharts_BRANCH_NAME=DS-3202
   - rcode="options('testthat.progress.max_fails' = Inf); "
   - rcode+="tfile <- tempfile(); capture.output(res<-devtools::test(), file = tfile); out <- readLines(tfile); cat(out, sep = '\n'); "
   - rcode+="line.fail <- max(grep('FAIL', out)); "
