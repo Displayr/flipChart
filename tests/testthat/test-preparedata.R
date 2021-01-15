@@ -2343,3 +2343,25 @@ test_that("Row labels",
         "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"))
 })
 
+test_that("Calculate percentages",
+{
+    xx <- structure(c(4, 5, 6, 3, 2, 13, 5, 6, 1, 7, 3, 2), .Dim = 4:3,
+        .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma")), statistic = "%")
+
+    expect_equal(PrepareData("Bar", input.data.table = xx, as.percentages = T)$data,
+        structure(c(57.1428571428571, 20, 42.8571428571429, 27.2727272727273,
+        28.5714285714286, 52, 35.7142857142857, 54.5454545454545, 14.2857142857143,
+        28, 21.4285714285714, 18.1818181818182), .Dim = 4:3, statistic = "Row %",
+        assigned.rownames = TRUE, .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma"))))
+
+    expect_equal(PrepareData("Pie", input.data.table = xx, as.percentages = T)$data,
+        structure(c(7.01754385964912, 8.7719298245614, 10.5263157894737,
+        5.26315789473684, 3.50877192982456, 22.8070175438596, 8.7719298245614,
+        10.5263157894737, 1.75438596491228, 12.280701754386, 5.26315789473684,
+        3.50877192982456), statistic = "%", assigned.rownames = TRUE, .Dim = 4:3,
+        .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma"))))
+})
+
