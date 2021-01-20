@@ -588,7 +588,7 @@ test_that("PrepareData: input.data.raw with missing vals",
 {
     out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Area"))
     expect_is(out$data, "matrix")
-    num.na <- Sum(rowSums(is.na(dat)) > 0)
+    num.na <- Sum(SumRows(is.na(dat)) > 0)
     expect_equal(nrow(out$data), 800)
     # expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar",
     #                          missing = "Error if missing data"),

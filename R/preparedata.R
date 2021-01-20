@@ -1368,6 +1368,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
 #' @importFrom flipU MakeUniqueNames
+#' @importFrom verbs SumRows
 prepareForSpecificCharts <- function(data,
                                      multiple.tables,
                                      input.data.raw,
@@ -1395,7 +1396,7 @@ prepareForSpecificCharts <- function(data,
     }
     else if (chart.type == "Venn")
     {
-        missing.data.rows <- rowSums(as.matrix(is.na(data))) > 0
+        missing.data.rows <- SumRows(as.matrix(is.na(data))) > 0
         if (any(missing.data.rows))
         {
             data <- data[!missing.data.rows, ]
