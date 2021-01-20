@@ -26,8 +26,9 @@ Imports:
     flipStatistics,
     flipTables (>= 2.5.5),
     flipTime,
+    flipTransformations (>= 1.6.3),
     flipU,
-    flipTransformations (>= 1.6.3)
+    verbs
 Remotes:
     Displayr/flipChartBasics,
     Displayr/flipData,
@@ -38,5 +39,6 @@ Remotes:
     Displayr/flipTables,
     Displayr/flipTransformations,
     Displayr/flipTime,
-    Displayr/flipU
+    Displayr/flipU,
+    Dispplayr/verbs
 RoxygenNote: 7.1.1

@@ -442,7 +442,7 @@ test_that("PrepareData: Binary variable for Venn",
                   800L), questiontype = "PickAny", question = "Brand attitude: Love + Like")
 
     QFilter <- rbinom(nrow(input.data.raw), 1, .25)
-    n.filter <- sum(QFilter ==  1)
+    n.filter <- Sum(QFilter ==  1)
     out <- PrepareData(input.data.raw = input.data.raw, chart.type = "Venn")
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.raw))
@@ -588,7 +588,7 @@ test_that("PrepareData: input.data.raw with missing vals",
 {
     out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Area"))
     expect_is(out$data, "matrix")
-    num.na <- sum(rowSums(is.na(dat)) > 0)
+    num.na <- Sum(rowSums(is.na(dat)) > 0)
     expect_equal(nrow(out$data), 800)
     # expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar",
     #                          missing = "Error if missing data"),
@@ -599,7 +599,7 @@ test_that("PrepareData: input.data.raw subset and weights",
 {
     QPopulationWeight <- prop.table(runif(nrow(dat)))
     QFilter <- rbinom(nrow(dat), 1, .5)
-    n.filter <- sum(QFilter ==  1L)
+    n.filter <- Sum(QFilter ==  1L)
     out <- suppressWarnings(PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot"))
 
     expect_equal(nrow(out$data), n.filter)
@@ -1001,7 +1001,7 @@ test_that("Pasted data",{
         "Bear", "Zebra", "", "", "", "3%", "7%", "5%"), .Dim = c(6L,
         3L)), NULL, NULL, NULL)
     pd <- PrepareData("Column", input.data.pasted = pst, as.percentages = T)
-    expect_equal(sum(pd$data), 1)
+    expect_equal(Sum(pd$data), 1)
 })
 
 test_that("DS-1659: histogram, variables from data",
@@ -1286,7 +1286,7 @@ test_that("Automatic crosstab of two input variables",
     z = suppressWarnings(PrepareData("Histogram",
                                 input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
                                first.aggregate = TRUE, group.by.last = TRUE))
-    expect_equal(sum(unlist(z$data)), sum(zz))
+    expect_equal(Sum(unlist(z$data)), Sum(zz))
 
 })
 
@@ -1940,7 +1940,7 @@ test_that("Scatter accepts tables as variables",
         "Q12. How  often do you drink cola with alcohol"))), Z1 = NULL,
             Z2 = NULL, groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = raw.multi.ytable)
-    expect_equal(nlevels(pd$data$Groups), sum(sapply(raw.multi.ytable$Y, ncol)) - 2)
+    expect_equal(nlevels(pd$data$Groups), Sum(sapply(raw.multi.ytable$Y, ncol)) - 2)
     expect_equal(rownames(pd$data), MakeUniqueNames(rep(rownames(raw.multi.ytable$X)[2:10], 11)))
 
 
