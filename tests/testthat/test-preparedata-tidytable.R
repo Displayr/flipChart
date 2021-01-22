@@ -262,8 +262,10 @@ test_that("Statistics are preserved when percentages are computed",
     expect_warning(dat0 <- PrepareData("Column", input.data.table = tab1d, tidy = TRUE, as.percentages = TRUE)$data)
     dat1 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = FALSE)$data
     expect_warning(dat2 <- PrepareData("Column", input.data.table = tab1d, tidy = FALSE, as.percentages = TRUE)$data)
-    expect_equal(dat2[,2], dat1[,2])
-    expect_equal(dat2[,1], dat0, check.attributes = FALSE)
+    expect_equal(dat2[,,2], dat1[,,2])
+    expect_equal(dat2[,1,1], dat0, check.attributes = FALSE)
+    expect_equal(attr(dat1, "statistic"), "%")
+    expect_equal(attr(dat1, "multi-stat"), TRUE)
 
     expect_warning(dat0 <- PrepareData("Column", input.data.table = tabAsChar, tidy = TRUE, as.percentages = TRUE)$data)
     dat1 <- PrepareData("Column", input.data.table = tabAsChar, tidy = FALSE, as.percentages = FALSE)$data
@@ -352,7 +354,7 @@ tb.relpct <- structure(c(5.00326180684867, 7.285650634158, 8.40518598530936,
     {
         res <- PrepareData("Table", input.data.table = tb.relpct)
         expect_equal(res$data,
-            structure(c(0.0500326180684867, 0.07285650634158, 0.0840518598530936,
+            structure(100*c(0.0500326180684867, 0.07285650634158, 0.0840518598530936,
             0.0165355506560255, 0.0118760515702743, 0.00521327814156639,
             0.0439786697496822, 0.0175140820408684, 0.0111568225085694, 0.0137727686766775,
             0.0761129131532569, 0.349813460703661, 0.247085418536258, 0.14268685096228,

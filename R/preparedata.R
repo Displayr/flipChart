@@ -142,7 +142,7 @@
 #' @importFrom flipU ConvertCommaSeparatedStringToVector
 #' @importFrom flipTransformations ParseUserEnteredTable
 #'     SplitVectorToList
-#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideValuesWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns
+#' @importFrom flipTables TidyTabularData RemoveRowsAndOrColumns SelectRows SelectColumns SortRows SortColumns ReverseRows ReverseColumns HideOutputsWithSmallSampleSizes HideValuesWithSmallSampleSizes HideRowsWithSmallSampleSizes HideColumnsWithSmallSampleSizes AutoOrderRows AutoOrderColumns ConvertQTableToArray
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
@@ -480,6 +480,19 @@ PrepareData <- function(chart.type,
         tmp <- attr(data, "statistic")
         data <- as.matrix(data)
         attr(data, "statistic") <- tmp
+    }
+
+    # Modify multi-stat QTables so they are 3 dimensional arrays
+    # and statistic attribute from the primary statistic
+    # This is needed to correctly export chart to powerpoint and
+    # R GUI code checks the statistic attribute to determine axis formatting
+    if (!tidy && is.array(data) && !is.null(attr(data, "questions")) && 
+        is.null(attr(data, "statistic")))
+    {
+        data <- ConvertQTableToArray(data)
+        attr(data, "statistic") <- dimnames(data)[[3]][1]
+        attr(data, "multi-stat") <- TRUE
+
     }
 
     list(data = data,
@@ -1114,23 +1127,23 @@ asPercentages <- function(data)
         length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
     {
         # 1-dimensional table with multiple statistics
-        data[,1] <- prop.table(data[,1])
+        data[,1] <- prop.table(data[,1]) * 100
     }
     else if (length(dim(data)) > 2)
     {
         # 2-dimensional table with statistics
-        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1)
+        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
     }
     else if (NCOL(data) > 1)
     {
         # 2-dimensional table without statistics
-        data <- prop.table(data, 1)
+        data <- prop.table(data, 1) * 100
         attr(data, "statistic") <- "Row %"
     }
     else
     {
         # 1-dimensional table without statistics
-        data <- prop.table(data)
+        data <- prop.table(data) * 100
         attr(data, "statistic") <- "%"
     }
     data
@@ -1336,12 +1349,12 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
         return(data)
     }
 
-    ## If data is already percentages in Qtable then divide by 100
-    ## Note that R outputs and pasted data will already be in decimals
-    stat <- attr(data, "statistic")
-    qst <- attr(data, "questions")
-    if (!is.null(stat) && !is.null(qst) && grepl("%)?$", stat))
-        data <- data / 100
+    ### If data is already percentages in Qtable then divide by 100
+    ### Note that R outputs and pasted data will already be in decimals
+    #stat <- attr(data, "statistic")
+    #qst <- attr(data, "questions")
+    #if (!is.null(stat) && !is.null(qst) && grepl("%)?$", stat))
+    #    data <- data / 100
 
     # Convert to percentages - this must happen AFTER transpose and RemoveRowsAndOrColumns
     if (as.percentages && chart.type != "Venn")
@@ -1352,7 +1365,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             (is.null(attr(data, "questions")) || chart.type %in% c("Pie", "Donut", "Heat")))
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
-            data <- data / sum(data, na.rm = TRUE)
+            data <- data / sum(data, na.rm = TRUE) * 100
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
             data <- data
         else
