@@ -2363,5 +2363,9 @@ test_that("Calculate percentages",
         3.50877192982456), statistic = "%", assigned.rownames = TRUE, .Dim = 4:3,
         .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
         c("Alpha", "Beta", "Gamma"))))
+
+    expect_equal(PrepareData("Pie", input.data.table = 1:5, as.percentages = T)$data,
+        structure(c(`1` = 6.66666666666667, `2` = 13.3333333333333, `3` = 20,
+        `4` = 26.6666666666667, `5` = 33.3333333333333), statistic = "%"))
 })
 

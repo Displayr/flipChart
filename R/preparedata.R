@@ -1365,7 +1365,10 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             (is.null(attr(data, "questions")) || chart.type %in% c("Pie", "Donut", "Heat")))
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
+        {
             data <- data / sum(data, na.rm = TRUE) * 100
+            attr(data, "statistic") <- "%"
+        }
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
             data <- data
         else
