@@ -486,12 +486,12 @@ PrepareData <- function(chart.type,
     # and statistic attribute from the primary statistic
     # This is needed to correctly export chart to powerpoint and
     # R GUI code checks the statistic attribute to determine axis formatting
-    if (!tidy && is.array(data) && !is.null(attr(data, "questions")) && 
+    if (!tidy && is.array(data) && !is.null(attr(data, "questions")) &&
         is.null(attr(data, "statistic")))
     {
         data <- ConvertQTableToArray(data)
-        attr(data, "statistic") <- dimnames(data)[[3]][1]
-        attr(data, "multi-stat") <- TRUE
+        #attr(data, "statistic") <- dimnames(data)[[3]][1]
+        #attr(data, "multi-stat") <- TRUE
 
     }
 
@@ -869,7 +869,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
                 x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames,
                                 as.matrix = FALSE, trim.whitespace = FALSE,
                                 silent.remove.duplicates = TRUE)
-            
+
             if (!is.null(extra.cols))
                 extra.cols <- MatchTable(extra.cols, ref.names = x.all.rownames,
                                 as.matrix = FALSE, trim.whitespace = FALSE,
@@ -943,7 +943,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     names(x) <- MakeUniqueNames(nms)
     if (!is.null(extra.cols))
         x <- data.frame(x, extra.cols, stringsAsFactors = FALSE, check.names = FALSE)
-    
+
     # Set rownames
     if (!is.null(rlabels) && nrow(x) == length(rlabels))
          rownames(x) <- MakeUniqueNames(as.character(rlabels))
