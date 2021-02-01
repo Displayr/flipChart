@@ -306,7 +306,7 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.is.stacked <- isTRUE(args$type == "Stacked")
     if (is.null(tmp.opacity))
     {
-        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked)
+        if (chart.type %in% c("Area", "Radar", "Palm") && !tmp.is.stacked)
             tmp.opacity <- 0.4
         else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
             tmp.opacity <- 0.4
@@ -315,7 +315,7 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     tmp.line.style <- "None"
-    if (chart.type %in% c("Donut", "Pie"))
+    if (chart.type %in% c("Donut", "Pie", "Palm"))
         tmp.line.style <- "Solid"
     else if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
@@ -347,7 +347,7 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.data.label.show <- TRUE
         tmp.data.label.show.category.labels <- TRUE
     }
-    if (chart.type == "Radar")
+    if (chart.type == "Radar" && tmp.data.label.show)
         tmp.data.label.show.category.labels <- TRUE
 
 
