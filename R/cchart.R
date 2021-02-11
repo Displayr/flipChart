@@ -593,7 +593,8 @@ substituteAxisNames <- function(chart.function, arguments)
         a.names <- gsub("^categories", "y", a.names)
         a.names <- gsub("^values", "x", a.names)
 
-    } else if (chart.function %in% c("Area", "Column", "Line", "Radar", "Scatter", "LabeledScatter"))
+    } else if (chart.function %in% c("Area", "Column", "ColumnMultiColor",
+                    "Line", "Radar", "Scatter", "LabeledScatter"))
     {
         a.names <- gsub("^categories", "x", a.names)
         a.names <- gsub("^values", "y", a.names)
