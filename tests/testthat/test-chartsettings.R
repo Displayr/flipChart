@@ -16,6 +16,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$BackgroundColor, "#A5A5A566")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowDataLabels, FALSE)
+    expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
@@ -182,4 +183,6 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$BackgroundColor, "#0000FF33")
     expect_equal(attr(attr(res, "ChartData"), "title"), "Histogram Chart")
     expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
+    expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
 })

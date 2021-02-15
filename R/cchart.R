@@ -379,6 +379,7 @@ getPPTSettings <- function(chart.type, args, data)
     if (isDistribution(chart.type))
     {
         series.settings <- list(list(
+            ShowDataLabels = FALSE,
             BackgroundColor = args$density.color))
 
     } else if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
@@ -453,6 +454,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
+    res$ShowChartTitle = isTRUE(nchar(args$title) > 0)
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = px2pt(args$title.font.size))
 
