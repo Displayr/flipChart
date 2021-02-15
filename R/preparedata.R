@@ -146,6 +146,7 @@
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
+#' @importFrom verbs Sum
 #' @return A list with components \itemize{ \item \code{data} - If
 #'     possible, a named vector or matrix, or if that is not posible
 #'     or a data.frame is requested, a data.frame.  \item
@@ -398,8 +399,8 @@ PrepareData <- function(chart.type,
 
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
-            sum(nchar(select.columns), na.rm = TRUE) == 0 &&
-            sum(nchar(column.labels), na.rm = TRUE) == 0))
+            !any(nchar(select.columns), na.rm = TRUE) &&
+            !any(nchar(column.labels), na.rm = TRUE)))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -418,9 +419,9 @@ PrepareData <- function(chart.type,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 
-    if (sum(nchar(column.labels)) > 0)
+    if (any(nchar(column.labels)))
         data <- replaceDimNames(data, 2, column.labels)
-    if (sum(nchar(row.labels)) > 0)
+    if (any(nchar(row.labels)))
         data <- replaceDimNames(data, 1, row.labels)
 
     if (scatter.mult.yvals)
@@ -468,7 +469,7 @@ PrepareData <- function(chart.type,
     # for some S3 classes) unless specifically requested
     if (isScatter(chart.type) && !scatter.mult.yvals &&
         (is.null(attr(data, "scatter.variable.indices")) ||
-         sum(nchar(select.columns), na.rm = TRUE) > 0))
+         any(nchar(select.columns), na.rm = TRUE)))
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
 
     # This is a work around bug RS-3402
@@ -542,6 +543,7 @@ isScatter <- function(chart.type)
     grepl("Scatter|Bubble", chart.type)
 }
 
+#' @importFrom verbs Sum
 crosstabOneVariable <- function(x, group, weights = NULL,
         categorical.as.binary = FALSE, as.percentages = FALSE)
 {
@@ -564,7 +566,7 @@ crosstabOneVariable <- function(x, group, weights = NULL,
         out <- Table(w~x+y, data = data, FUN = sum)
         if (as.percentages)
         {
-            out <- out / sum(data$w * !is.na(data$x))
+            out <- out / Sum(data$w * !is.na(data$x), remove.missing = FALSE)
             attr(out, "statistic") <- "%"
 
         } else
@@ -1011,10 +1013,11 @@ processPastedData <- function(input.data.pasted, warn, date.format, subset, weig
     return(processed)
 }
 
+#' @importFrom verbs Sum
 checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, pasted, other)
 {
     data.provided <- !sapply(list(table, tables, raw, pasted, other), is.null)
-    n.data <- sum(data.provided)
+    n.data <- Sum(data.provided, remove.missing = TRUE)
     if (n.data == 0)
         stop("No data has been provided.")
     else if (is.null(data.source.index))
@@ -1216,6 +1219,7 @@ RearrangeRowsColumns <- function(data,
 #' @importFrom flipTables RemoveRowsAndOrColumns HideEmptyRows HideEmptyColumns
 #' @importFrom flipTime AsDate AsDateTime IsDateTime
 #' @importFrom flipU CopyAttributes
+#' @importFrom verbs Sum
 transformTable <- function(data,
                            chart.type,
                            multiple.tables,
@@ -1266,7 +1270,7 @@ transformTable <- function(data,
             {
                 new.indices <- attr(data, "scatter.variable.indices")
                 for (i in 1:length(new.indices))
-                    new.indices[i] <- new.indices[i] - sum(ind.rm <= new.indices[i], na.rm = TRUE)
+                    new.indices[i] <- new.indices[i] - Sum(ind.rm <= new.indices[i], remove.missing = TRUE)
                 attr(data, "scatter.variable.indices") <- new.indices
             }
         }
@@ -1287,13 +1291,13 @@ transformTable <- function(data,
 
     # Checking sample sizes (if available)
     # This needs to happen after row/columns have been (de)selected
-    if (sum(hide.output.threshold, na.rm = TRUE) > 0)
+    if (any(as.integer(hide.output.threshold), na.rm = TRUE))
         data <- HideOutputsWithSmallSampleSizes(data, hide.output.threshold)
-    if (sum(hide.values.threshold, na.rm = TRUE) > 0)
+    if (any(as.integer(hide.values.threshold), na.rm = TRUE))
         data <- HideValuesWithSmallSampleSizes(data, hide.values.threshold)
-    if (sum(hide.rows.threshold, na.rm = TRUE) > 0)
+    if (any(as.integer(hide.rows.threshold), na.rm = TRUE))
         data <- HideRowsWithSmallSampleSizes(data, hide.rows.threshold)
-    if (sum(hide.columns.threshold, na.rm = TRUE) > 0)
+    if (any(as.integer(hide.columns.threshold), na.rm = TRUE))
         data <- HideColumnsWithSmallSampleSizes(data, hide.columns.threshold)
 
     # Set axis names before dropping dimensions (but AFTER transpose)
@@ -1366,7 +1370,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
         {
-            data <- data / sum(data, na.rm = TRUE) * 100
+            data <- data / Sum(data) * 100 
             attr(data, "statistic") <- "%"
         }
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
@@ -1380,6 +1384,7 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
 #' @importFrom flipTables TidyTabularData
 #' @importFrom flipTransformations AsNumeric
 #' @importFrom flipU MakeUniqueNames
+#' @importFrom verbs SumRows
 prepareForSpecificCharts <- function(data,
                                      multiple.tables,
                                      input.data.raw,
@@ -1407,11 +1412,11 @@ prepareForSpecificCharts <- function(data,
     }
     else if (chart.type == "Venn")
     {
-        missing.data.rows <- rowSums(as.matrix(is.na(data))) > 0
+        missing.data.rows <- SumRows(as.matrix(is.na(data))) > 0
         if (any(missing.data.rows))
         {
             data <- data[!missing.data.rows, ]
-            warning(sum(missing.data.rows), " case(s) with missing data have been removed.")
+            warning(Sum(missing.data.rows), " case(s) with missing data have been removed.")
         }
     }
     else if (chart.type == "Sankey")
@@ -1466,7 +1471,7 @@ prepareForSpecificCharts <- function(data,
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
     {
-        len <- sum(!vapply(input.data.raw, is.null, FALSE))
+        len <- Sum(!vapply(input.data.raw, is.null, FALSE))
         if (len > 1L)  # variables from multiple GUI controls
         {
             if (NCOL(input.data.raw[[1]]) > 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
@@ -1625,7 +1630,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"
-        else if (sum(nchar(attr(x, "statistic"))) > 0)
+        else if (any(nchar(attr(x, "statistic"))))
             attr(x, "values.title") <- attr(x, "statistic")
     }
     if (sum(nchar(values.title)) > 0)
@@ -1747,7 +1752,7 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
         return(FALSE)
     if (length(not.nulls) > 2)
     {
-        if (sum(not.nulls) != 2)
+        if (Sum(not.nulls) != 2)
             return(FALSE)
         input.data.raw <- input.data.raw[1:2]
     }

@@ -702,7 +702,7 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
     p.names <- parameter.names
     a.unmatched <- !a.names %in% p.names
     p.unmatched <- !p.names %in% a.names
-    if (sum(a.unmatched) > 0) # Some argument names do not match parameter names
+    if (any(a.unmatched)) # Some argument names do not match parameter names
     {
         # Perform matches and update a.names
         .replaceMatches <- function(aa, pp)
@@ -722,7 +722,7 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
         # Substituting synonyms
         a.unmatched <- !a.names %in% p.names
         p.unmatched <- !p.names %in% a.names
-        if (sum(a.unmatched) > 0)
+        if (any(a.unmatched))
         {
             .replaceSynonyms <- function(names)
             {
@@ -741,7 +741,7 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
         }
     }
     a.unmatched <- !a.names %in% p.names
-    if (sum(a.unmatched) > 0 && warn.if.no.match)
+    if (any(a.unmatched) && warn.if.no.match)
         warning("The following arguments have been ignored: ", paste(a.names[a.unmatched], collapse = ", "))
     names(arguments) <- a.names
     arguments[!a.unmatched]
