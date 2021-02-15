@@ -68,7 +68,7 @@ test_that("PrepareData: single table, single stat",
     expect_equal(attr(out$data, "statistic"), attr(input.data.table, "statistic"))
     expect_is(out$data,  "matrix")
     expect_equal(dim(out$data), dim(input.data.table))
-    expect_equal(round(out$data[1,1],3), 0.484)
+    expect_equal(round(out$data[1,1],1), 48.4)
 
     out2 <- PrepareData("Column", input.data.table = input.data.table, transpose = TRUE)
     expect_equal(out2$categories.title, "Age")
@@ -177,7 +177,7 @@ test_that("PrepareData: pasted raw data",
         "7.34%", "6.42%", "8.87%", "11.93%", "5.81%"), .Dim = c(13L,
         7L)), NULL, NULL, NULL, NULL)
     out2 <- PrepareData("Scatter", input.data.pasted = dat2)
-    expect_equal(out2$data[1,1], 0.1131)
+    expect_equal(out2$data[1,1], 11.31)
 
     dat3 <- list(structure(c("", "Main title", "", "", "", "Product", "", "",
                 "", "", "", "", "", "", "", "", "", "", "Coke", "Diet Coke",
@@ -442,7 +442,7 @@ test_that("PrepareData: Binary variable for Venn",
                   800L), questiontype = "PickAny", question = "Brand attitude: Love + Like")
 
     QFilter <- rbinom(nrow(input.data.raw), 1, .25)
-    n.filter <- Sum(QFilter ==  1)
+    n.filter <- sum(QFilter ==  1)
     out <- PrepareData(input.data.raw = input.data.raw, chart.type = "Venn")
     expect_is(out$data, "data.frame")
     expect_named(out$data, names(input.data.raw))
@@ -588,7 +588,7 @@ test_that("PrepareData: input.data.raw with missing vals",
 {
     out <- suppressWarnings(PrepareData(input.data.raw = dat, chart.type = "Area"))
     expect_is(out$data, "matrix")
-    num.na <- Sum(SumRows(is.na(dat)) > 0)
+    num.na <- sum(rowSums(is.na(dat)) > 0)
     expect_equal(nrow(out$data), 800)
     # expect_error(PrepareData(input.data.raw = dat, chart.type = "Bar",
     #                          missing = "Error if missing data"),
@@ -599,7 +599,7 @@ test_that("PrepareData: input.data.raw subset and weights",
 {
     QPopulationWeight <- prop.table(runif(nrow(dat)))
     QFilter <- rbinom(nrow(dat), 1, .5)
-    n.filter <- Sum(QFilter ==  1L)
+    n.filter <- sum(QFilter ==  1L)
     out <- suppressWarnings(PrepareData(input.data.raw = list(dat), subset = QFilter, chart.type = "Scatter Plot"))
 
     expect_equal(nrow(out$data), n.filter)
@@ -678,7 +678,7 @@ test_that("PrepareData: aggregate works for all formats",
     res.filter.percent <- PrepareData("Column", input.data.raw = list(X = zvec), first.aggregate = TRUE,
         as.percentages = TRUE, subset = zvec ==3)$data
     expect_equal(res.filter.counts, structure(c(`3` = 3L), statistic = "Count"))
-    expect_equal(res.filter.percent, structure(c(`3` = 1), statistic = "%"))
+    expect_equal(res.filter.percent, structure(c(`3` = 100L), statistic = "%"))
 })
 
 test_that("PrepareData: input and output format of raw data",
@@ -1001,7 +1001,7 @@ test_that("Pasted data",{
         "Bear", "Zebra", "", "", "", "3%", "7%", "5%"), .Dim = c(6L,
         3L)), NULL, NULL, NULL)
     pd <- PrepareData("Column", input.data.pasted = pst, as.percentages = T)
-    expect_equal(Sum(pd$data), 1)
+    expect_equal(sum(pd$data), 100)
 })
 
 test_that("DS-1659: histogram, variables from data",
@@ -1036,7 +1036,7 @@ test_that("DS-1689 Bar chart from one variable raw data",{
     w = capture_warnings(pd <- PrepareData("Column", TRUE, NULL, input.data.raw = z,
                                            transpose = FALSE, first.aggregate = TRUE, as.percent = TRUE,
                                            tidy = FALSE, data.source = "Link to variables in 'Data'"))
-    expect_equal(unname(pd$data[1]), 0.13455657, tol = 0.000001)
+    expect_equal(unname(pd$data[1]), 13.455657, tol = 0.000001)
 })
 
 test_that("as.percentages from pasted data and raw data work by dividing by nrow if NOT venn",{
@@ -1286,7 +1286,7 @@ test_that("Automatic crosstab of two input variables",
     z = suppressWarnings(PrepareData("Histogram",
                                 input.data.raw = list(X = zz, Y = c(1,2,1,2,1)),
                                first.aggregate = TRUE, group.by.last = TRUE))
-    expect_equal(Sum(unlist(z$data)), Sum(zz))
+    expect_equal(sum(unlist(z$data)), sum(zz))
 
 })
 
@@ -1644,7 +1644,7 @@ test_that("Question attribute is not accidently dropped",
 "Pass"))
     expect_error(res <- PrepareData("Column", input.data.table = tb), NA)
     expect_equal(attr(res$data, "questions"), c("Facility Type - Coded1", "Pass"))
-    expect_equal(res$data[1], c(Pantry = 0.865979381443299))
+    expect_equal(res$data[1], c(Pantry = 86.5979381443299))
 })
 
 test_that("Dimensions are dropped consistently",
@@ -1940,7 +1940,7 @@ test_that("Scatter accepts tables as variables",
         "Q12. How  often do you drink cola with alcohol"))), Z1 = NULL,
             Z2 = NULL, groups = NULL, labels = NULL)
     pd <- PrepareData("Scatter", input.data.raw = raw.multi.ytable)
-    expect_equal(nlevels(pd$data$Groups), Sum(sapply(raw.multi.ytable$Y, ncol)) - 2)
+    expect_equal(nlevels(pd$data$Groups), sum(sapply(raw.multi.ytable$Y, ncol)) - 2)
     expect_equal(rownames(pd$data), MakeUniqueNames(rep(rownames(raw.multi.ytable$X)[2:10], 11)))
 
 
@@ -2341,5 +2341,31 @@ test_that("Row labels",
     res <- PrepareData("Column", input.data.table = tb, row.labels = "Under 18")
     expect_equal(rownames(res$data), c("Under 18", "25 to 29", "30 to 34", "35 to 39",
         "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"))
+})
+
+test_that("Calculate percentages",
+{
+    xx <- structure(c(4, 5, 6, 3, 2, 13, 5, 6, 1, 7, 3, 2), .Dim = 4:3,
+        .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma")), statistic = "%")
+
+    expect_equal(PrepareData("Bar", input.data.table = xx, as.percentages = T)$data,
+        structure(c(57.1428571428571, 20, 42.8571428571429, 27.2727272727273,
+        28.5714285714286, 52, 35.7142857142857, 54.5454545454545, 14.2857142857143,
+        28, 21.4285714285714, 18.1818181818182), .Dim = 4:3, statistic = "Row %",
+        assigned.rownames = TRUE, .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma"))))
+
+    expect_equal(PrepareData("Pie", input.data.table = xx, as.percentages = T)$data,
+        structure(c(7.01754385964912, 8.7719298245614, 10.5263157894737,
+        5.26315789473684, 3.50877192982456, 22.8070175438596, 8.7719298245614,
+        10.5263157894737, 1.75438596491228, 12.280701754386, 5.26315789473684,
+        3.50877192982456), statistic = "%", assigned.rownames = TRUE, .Dim = 4:3,
+        .Dimnames = list(c("Dog", "Cat", "Lizard", "Beetle"),
+        c("Alpha", "Beta", "Gamma"))))
+
+    expect_equal(PrepareData("Pie", input.data.table = 1:5, as.percentages = T)$data,
+        structure(c(`1` = 6.66666666666667, `2` = 13.3333333333333, `3` = 20,
+        `4` = 26.6666666666667, `5` = 33.3333333333333), statistic = "%"))
 })
 

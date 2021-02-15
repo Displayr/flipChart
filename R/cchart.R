@@ -290,6 +290,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
         x <- convertChartDataToNumeric(x)
+    attr(x, "title") <- user.args$title
+    attr(x, "footer") <- user.args$footer
+    attr(x, "values.title") <- user.args$values.title
+    attr(x, "categories.title") <- user.args$categories.title
     attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
@@ -302,7 +306,7 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.is.stacked <- isTRUE(args$type == "Stacked")
     if (is.null(tmp.opacity))
     {
-        if (chart.type %in% c("Area", "Radar") && !tmp.is.stacked)
+        if (chart.type %in% c("Area", "Radar", "Palm") && !tmp.is.stacked)
             tmp.opacity <- 0.4
         else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
             tmp.opacity <- 0.4
@@ -311,7 +315,7 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     tmp.line.style <- "None"
-    if (chart.type %in% c("Donut", "Pie"))
+    if (chart.type %in% c("Donut", "Pie", "Palm"))
         tmp.line.style <- "Solid"
     else if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.style <- if (is.null(args$line.type)) "Solid" else args$line.type
@@ -343,7 +347,7 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.data.label.show <- TRUE
         tmp.data.label.show.category.labels <- TRUE
     }
-    if (chart.type == "Radar")
+    if (chart.type == "Radar" && tmp.data.label.show)
         tmp.data.label.show.category.labels <- TRUE
 
 
@@ -589,7 +593,8 @@ substituteAxisNames <- function(chart.function, arguments)
         a.names <- gsub("^categories", "y", a.names)
         a.names <- gsub("^values", "x", a.names)
 
-    } else if (chart.function %in% c("Area", "Column", "Line", "Radar", "Scatter", "LabeledScatter"))
+    } else if (chart.function %in% c("Area", "Column", "ColumnMultiColor",
+                    "Line", "Radar", "Scatter", "LabeledScatter"))
     {
         a.names <- gsub("^categories", "x", a.names)
         a.names <- gsub("^values", "y", a.names)

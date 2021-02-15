@@ -113,7 +113,13 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineColor, "#ED7D31")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 1.50003750093752)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowCategoryNames, TRUE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowCategoryNames, FALSE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
+
+    res <- CChart("Palm", abs(dat.2d), append.data = TRUE, colors = col.2d)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#5C9AD366")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineColor, "#ED7D31")
 
     res <- CChart("Donut", dat.1d[1:4], append.data = TRUE, colors = col.1d.multicolor[1:4],
             pie.inner.radius = 40, pie.border.color = "#FFFFFF")
@@ -169,8 +175,11 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
 
     res <- CChart("Histogram", list(x=1:10, y=rnorm(20)), density.color = "#FF0000", append.data = T,
+            title = "Histogram Chart", footer = "This chart is for testing",
             background.fill.color = "#0000FF", background.fill.opacity = 0.2)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor,
                  "#FF0000")
     expect_equal(attr(res, "ChartSettings")$BackgroundColor, "#0000FF33")
+    expect_equal(attr(attr(res, "ChartData"), "title"), "Histogram Chart")
+    expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
 })
