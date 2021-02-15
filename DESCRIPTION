@@ -26,7 +26,7 @@ Imports:
     flipStatistics,
     flipTables (>= 2.7.0),
     flipTime,
-    flipTransformations (>= 1.6.3),
+    flipTransformations (>= 1.10.0),
     flipU,
     verbs
 Remotes:
