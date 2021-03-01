@@ -286,6 +286,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    result <- addWarning(result, chart.type, small.multiples,
+                    !is.null(user.args$annotation.list) ||
+                    !is.null(user.args$overlay.annotation.list))
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
@@ -298,6 +301,32 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     attr(result,  "ChartSettings") <- chart.settings
     result
 }
+
+addWarning <- function(x, chart.type, small.multiples, has.annotations)
+{
+    export.type <- attr(x, "ChartType")
+    msg <- ""
+
+    if (small.multiples)
+        msg <- "This visualization is a small multiple which is not supported by Microsoft."
+    else if (has.annotations)
+        msg <- "This visualization contains annotations which is not supported by Microsoft."
+    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
+            "BarPictograph", "StackedColumnWithStatisticalSignificance"))
+        msg <- "This visualization type is not supported by Microsoft."
+    else if (export.type %in% c("Sunburst", "Histogram", "Filled Map",
+            "Box & Whisker"))
+        msg <- "This visualization type cannot be exported to PowerPoint."
+
+    if (nzchar(msg))
+        attr(x, "ChartWarning") <- paste(msg,
+            "It will be exported to PowerPoint as an image.",
+            "Use 'PowerPoint Export Type' to change this to a",
+            "Microsoft-supported chart type or set to 'Image' to",
+            "suppress this warning.")
+    return(x)
+}
+
 
 getPPTSettings <- function(chart.type, args, data)
 {
