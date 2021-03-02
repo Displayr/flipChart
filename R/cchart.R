@@ -317,6 +317,8 @@ addWarning <- function(x, chart.type, small.multiples, has.annotations)
     else if (export.type %in% c("Sunburst", "Histogram", "Filled Map",
             "Box & Whisker"))
         msg <- "This visualization type cannot be exported to PowerPoint."
+    # The charts in the last condition have chart types supported by powerpoint 2016,
+    # however they are not supported by the API used by Displayr
 
     if (nzchar(msg))
         attr(x, "ChartWarning") <- paste(msg,
