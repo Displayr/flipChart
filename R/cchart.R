@@ -324,7 +324,7 @@ addWarning <- function(x, chart.type, small.multiples, has.annotations)
         attr(x, "ChartWarning") <- paste(msg,
             "It will be exported to PowerPoint as an image.",
             "Use 'PowerPoint Export Type' to change this to a",
-            "Microsoft-supported chart type or set to 'Image' to",
+            "supported chart type or set to 'Image' to",
             "suppress this warning.")
     return(x)
 }
