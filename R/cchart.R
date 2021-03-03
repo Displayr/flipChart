@@ -310,7 +310,7 @@ addWarning <- function(x, chart.type, small.multiples, has.annotations)
     if (small.multiples)
         msg <- "This visualization is a small multiple which is not supported by PowerPoint."
     else if (has.annotations)
-        msg <- "This visualization contain annotations which are not supported by PowerPoint."
+        msg <- "This visualization contains annotations which are not supported by PowerPoint."
     else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
             "BarPictograph", "StackedColumnWithStatisticalSignificance"))
         msg <- paste0("This visualization is of type '", chart.type,
