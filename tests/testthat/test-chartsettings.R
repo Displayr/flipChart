@@ -148,11 +148,11 @@ test_that("Chart settings",
 
     res <- CChart("Pie", abs(dat.2d), append.data = TRUE)
     expect_equal(attr(res, "ChartType"), "Sunburst")
-    expect_true(grepl("This visualization type cannot be exported to PowerPoint.",
+    expect_true(grepl("This visualization is a 2-dimensional Pie chart which cannot be exported to PowerPoint.",
                       attr(res, "ChartWarning")))
 
     res <- CChart("Bar", dat.2d, small.multiples = TRUE, append.data = TRUE)
-    expect_true(grepl("This visualization is a small multiple which is not supported by Microsoft",
+    expect_true(grepl("This visualization is a small multiple which is not supported by PowerPoint",
                       attr(res, "ChartWarning")))
 
 
@@ -185,7 +185,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$GapWidth, 60)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
-    expect_true(grepl("This visualization type is not supported by Microsoft.",
+    expect_true(grepl("This visualization is of type 'Pyramid' which is not supported by PowerPoint.",
                       attr(res, "ChartWarning")))
 
 
@@ -199,5 +199,5 @@ test_that("Chart settings",
     expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
-    expect_true(grepl("This visualization type cannot be exported to PowerPoint", attr(res, "ChartWarning")))
+    expect_true(grepl("This visualization is a Histogram chart which cannot be exported to PowerPoint", attr(res, "ChartWarning")))
 })

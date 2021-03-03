@@ -308,17 +308,23 @@ addWarning <- function(x, chart.type, small.multiples, has.annotations)
     msg <- ""
 
     if (small.multiples)
-        msg <- "This visualization is a small multiple which is not supported by Microsoft."
+        msg <- "This visualization is a small multiple which is not supported by PowerPoint."
     else if (has.annotations)
-        msg <- "This visualization contains annotations which is not supported by Microsoft."
+        msg <- "This visualization contain annotations which are not supported by PowerPoint."
     else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
             "BarPictograph", "StackedColumnWithStatisticalSignificance"))
-        msg <- "This visualization type is not supported by Microsoft."
-    else if (export.type %in% c("Sunburst", "Histogram", "Filled Map",
-            "Box & Whisker"))
-        msg <- "This visualization type cannot be exported to PowerPoint."
-    # The charts in the last condition have chart types supported by powerpoint 2016,
-    # however they are not supported by the API used by Displayr
+        msg <- paste0("This visualization is of type '", chart.type,
+                      "' which is not supported by PowerPoint.")
+    else if (export.type %in% c("Sunburst", "Histogram", "Filled Map", "Box & Whisker"))
+    {
+        tmp.type <- chart.type
+        if (tmp.type == "Pie")
+            tmp.type <- "2-dimensional Pie"
+        msg <- paste0("This visualization is a ", tmp.type,
+                    " chart which cannot be exported to PowerPoint.")
+        # The charts in the last condition have chart types supported by powerpoint 2016,
+        # however they cannot be handled by the API for exporting used by Displayr
+    }
 
     if (nzchar(msg))
         attr(x, "ChartWarning") <- paste(msg,
