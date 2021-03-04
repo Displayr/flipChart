@@ -17,6 +17,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowDataLabels, FALSE)
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
+    expect_true(is.null(attr(res, "ChartWarning")))
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
@@ -145,6 +146,16 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$DataLabelsPosition, "OutsideEnd")
     expect_equal(attr(res, "ChartSettings")$FirstSliceAngle, 270)
 
+    res <- CChart("Pie", abs(dat.2d), append.data = TRUE)
+    expect_equal(attr(res, "ChartType"), "Sunburst")
+    expect_true(grepl("This visualization is a 2-dimensional Pie chart which cannot be exported to PowerPoint.",
+                      attr(res, "ChartWarning")))
+
+    res <- CChart("Bar", dat.2d, small.multiples = TRUE, append.data = TRUE)
+    expect_true(grepl("This visualization is a small multiple which is not supported by PowerPoint",
+                      attr(res, "ChartWarning")))
+
+
     res <- CChart("ColumnMultiColor", dat.1d, append.data = TRUE, bar.gap = 0.4,
             colors = col.1d.multicolor, opacity = 0.7, marker.border.opacity = 1,
             marker.border.width = 1, marker.border.color = "#FF0000")
@@ -174,6 +185,9 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$GapWidth, 60)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
+    expect_true(grepl("This visualization is of type 'Pyramid' which is not supported by PowerPoint.",
+                      attr(res, "ChartWarning")))
+
 
     res <- CChart("Histogram", list(x=1:10, y=rnorm(20)), density.color = "#FF0000", append.data = T,
             title = "Histogram Chart", footer = "This chart is for testing",
@@ -185,4 +199,5 @@ test_that("Chart settings",
     expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
+    expect_true(grepl("This visualization is a Histogram chart which cannot be exported to PowerPoint", attr(res, "ChartWarning")))
 })

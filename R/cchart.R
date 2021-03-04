@@ -286,6 +286,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    result <- addWarning(result, chart.type, small.multiples,
+                    !is.null(user.args$annotation.list) ||
+                    !is.null(user.args$overlay.annotation.list))
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
@@ -298,6 +301,40 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     attr(result,  "ChartSettings") <- chart.settings
     result
 }
+
+addWarning <- function(x, chart.type, small.multiples, has.annotations)
+{
+    export.type <- attr(x, "ChartType")
+    msg <- ""
+
+    if (small.multiples)
+        msg <- "This visualization is a small multiple which is not supported by PowerPoint."
+    else if (has.annotations)
+        msg <- "This visualization contains annotations which are not supported by PowerPoint."
+    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
+            "BarPictograph", "StackedColumnWithStatisticalSignificance"))
+        msg <- paste0("This visualization is of type '", chart.type,
+                      "' which is not supported by PowerPoint.")
+    else if (export.type %in% c("Sunburst", "Histogram", "Filled Map", "Box & Whisker"))
+    {
+        tmp.type <- chart.type
+        if (tmp.type == "Pie")
+            tmp.type <- "2-dimensional Pie"
+        msg <- paste0("This visualization is a ", tmp.type,
+                    " chart which cannot be exported to PowerPoint.")
+        # The charts in the last condition have chart types supported by powerpoint 2016,
+        # however they cannot be handled by the API for exporting used by Displayr
+    }
+
+    if (nzchar(msg))
+        attr(x, "ChartWarning") <- paste(msg,
+            "It will be exported to PowerPoint as an image.",
+            "Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a",
+            "supported chart type or set the export format to 'Image' to",
+            "suppress this warning.")
+    return(x)
+}
+
 
 getPPTSettings <- function(chart.type, args, data)
 {
