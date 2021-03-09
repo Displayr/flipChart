@@ -30,7 +30,11 @@ CChart(
 
 \item{warn.if.no.match}{Logical; If TRUE, a warning is shown if any arugments are not matched.}
 
-\item{append.data}{Logical; If TRUE, appends the chart data as an attribute called "ChartData".}
+\item{append.data}{Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
+\describe{\item{ChartData}{This is the data passed to the charting functions after tidying by \code{PrepareData}. It is used for both Excel and Powerpoint exporting.}
+\item{ChartSettings}{This a named list so that powerpoint chart can use the same visualization settings. Information about the structure of this list is \href{https://wiki.q-researchsoftware.com/wiki/PptChartSettings}{here}.}
+\item{ChartWarning}{This attribute is set if the chart cannot be properly exported to Excel. It is set to a string which is shown as a warning message on export in Displayr.}
+\item{ChartType}{This attribute is actually always set, even if \code{append.data} if not true. It is the name of the chart type as used in PowerPoint and can vary depending on the visualization settings used.}}}
 }
 \value{
 A chart object that can be printed. Most often, a plotly object.
@@ -39,7 +43,7 @@ A chart object that can be printed. Most often, a plotly object.
 Creates charts
 }
 \details{
-Paramaeters passed to \code{chart.type} are listed below:
+Parameters passed to the charting functions are listed below:
 \describe{
     \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{"Stacked"} to show cumulative values.}
     \itemize{\code{grid.show} }{ Logical; whether to show grid lines.}
