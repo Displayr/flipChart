@@ -281,6 +281,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (append.data)
     {
         chart.settings <- getPPTSettings(chart.type, user.args, x)
+        categories.title <- user.args$categories.title
+        values.title <- user.args$values.title
     }
 
     user.args <- substituteAxisNames(chart.function, user.args)
@@ -290,31 +292,42 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    result <- addWarning(result, chart.type, small.multiples,
-                    !is.null(user.args$annotation.list) ||
-                    !is.null(user.args$overlay.annotation.list))
+    result <- addWarning(result, chart.type, small.multiples)
+    result <- addLabels(result, user.args$title, categories.title, values.title)
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
         x <- convertChartDataToNumeric(x)
-    attr(x, "title") <- user.args$title
-    attr(x, "footer") <- user.args$footer
-    attr(x, "values.title") <- user.args$values.title
-    attr(x, "categories.title") <- user.args$categories.title
-    attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    if (is.null(attr(result, "ChartData")))
+        attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
 }
 
-addWarning <- function(x, chart.type, small.multiples, has.annotations)
+addLabels <- function(x, chart.title, categories.title, values.title)
+{
+    chart.labels <- attr(x, "ChartLabels") # for plotly standard charts this will be a list
+    if (is.null(chart.labels))
+        chart.labels <- list()
+    if (any(nzchar(chart.title)))
+        chart.labels$ChartTitle <- chart.title
+    if (any(nzchar(chart.title)))
+        chart.labels$PrimaryAxisTitle <- categories.title
+    if (any(nzchar(values.title)))
+        chart.labels$ValueAxisTitle <- values.title
+    if (length(chart.labels) == 0)
+        chart.labels <- NULL
+    attr(x, "ChartLabels") <- chart.labels
+    return(x)
+}
+
+addWarning <- function(x, chart.type, small.multiples)
 {
     export.type <- attr(x, "ChartType")
     msg <- ""
 
     if (small.multiples)
         msg <- "This visualization is a small multiple which is not supported by PowerPoint."
-    else if (has.annotations)
-        msg <- "This visualization contains annotations which are not supported by PowerPoint."
     else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
             "BarPictograph", "StackedColumnWithStatisticalSignificance"))
         msg <- paste0("This visualization is of type '", chart.type,
@@ -486,8 +499,16 @@ getPPTSettings <- function(chart.type, args, data)
         res$TemplateSeries = series.settings
     if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
         res$ShowLegend <- FALSE
+    legend.position <- "TopRight"
+    if (isTRUE(args$legend.orientation == "Horizontal"))
+        legend.position <- "Bottom"
+    if (isTRUE(args$legend.x.positon < 0.1))
+        legend.position <- "Left"
+    if (isTRUE(args$legend.y.position < 0.1))
+        legend.position <- "Bottom"
     res$Legend = list(Font = list(color = args$legend.font.color,
-            family = args$legend.font.family, size = px2pt(args$legend.font.size)))
+            family = args$legend.font.family, size = px2pt(args$legend.font.size)),
+            Position = legend.position)
     if (isTRUE(nchar(args$background.fill.color) > 0) &&
         args$background.fill.color != "transparent")
         res$BackgroundColor <- sprintf("%s%X", args$background.fill.color,
@@ -526,6 +547,10 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+        if (!is.null(args$values.bounds.maximum))
+            res$ValueAxis$Maximum <- args$values.bounds.maximum
+        if (!is.null(args$values.bounds.minimum))
+            res$ValueAxis$Maximum <- args$values.bounds.minimum
 
         # We don't want to manually set axis label position
         # if they are shown

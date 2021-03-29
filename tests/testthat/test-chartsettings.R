@@ -10,13 +10,16 @@ col.2d.gradient <- PrepareColors(dat.2d, "Column", palette = "Greens")[[1]]
 
 test_that("Chart settings",
 {
-    res <- CChart("Area", dat.2d, append.data = TRUE, colors = col.2d)
+    res <- CChart("Area", dat.2d, append.data = TRUE, colors = col.2d,
+                  title = "Meaningless area chart", categories.title = "Letters")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#5C9AD366")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$BackgroundColor, "#ED7D3166")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$BackgroundColor, "#A5A5A566")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowDataLabels, FALSE)
-    expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
+    expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
+    expect_equal(attr(res, "ChartLabels")$ChartTitle, "Meaningless area chart")
+    expect_equal(attr(res, "ChartLabels")$PrimaryAxisTitle, "Letters")
     expect_true(is.null(attr(res, "ChartWarning")))
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
@@ -33,6 +36,7 @@ test_that("Chart settings",
             list(family = "Arial", size = 9.7502437560939, color = "#2C2C2C"))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color,"#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color,"#2C2C2C")
+    expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
 
     res <- CChart("Bar", dat.1d, append.data = TRUE, colors = "#FF0000",
             values.grid.width = 1, categories.grid.width = 0,
@@ -195,8 +199,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor,
                  "#FF0000")
     expect_equal(attr(res, "ChartSettings")$BackgroundColor, "#0000FF33")
-    expect_equal(attr(attr(res, "ChartData"), "title"), "Histogram Chart")
-    expect_equal(attr(attr(res, "ChartData"), "footer"), "This chart is for testing")
+    expect_equal(attr(res, "ChartLabels")$ChartTitle, "Histogram Chart")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
     expect_true(grepl("This visualization is a Histogram chart which cannot be exported to PowerPoint", attr(res, "ChartWarning")))
