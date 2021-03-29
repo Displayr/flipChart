@@ -547,10 +547,10 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
-        if (!is.null(args$values.bounds.maximum))
+        if (any(nzchar(args$values.bounds.maximum)))
             res$ValueAxis$Maximum <- args$values.bounds.maximum
-        if (!is.null(args$values.bounds.minimum))
-            res$ValueAxis$Maximum <- args$values.bounds.minimum
+        if (any(nzchar(args$values.bounds.minimum)))
+            res$ValueAxis$Minimum <- args$values.bounds.minimum
 
         # We don't want to manually set axis label position
         # if they are shown
