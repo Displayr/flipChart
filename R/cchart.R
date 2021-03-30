@@ -573,6 +573,7 @@ getPPTSettings <- function(chart.type, args, data)
     {
         # PPT doesn't have a concept of the zero line so use a workaround
         res$ValueAxis$Crosses <- "AutoZero"
+        res$PrimaryAxis$AxisLine$Style <- "Solid"
         res$PrimaryAxis$AxisLine$Width <- px2pt(args$values.zero.line.width)
         res$PrimaryAxis$AxisLine$Color <- args$values.zero.line.color
     }
