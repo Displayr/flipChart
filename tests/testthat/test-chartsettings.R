@@ -89,7 +89,7 @@ test_that("Chart settings",
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             AxisLine = list(Color = "#222222", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#BBBBBB",
-            Width = 0, Style = "None"), RotateLabels = TRUE))
+            Width = 0, Style = "None"), RotateLabels = TRUE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
@@ -97,7 +97,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
-            Width = 0.750018750468762, Style = "Solid")))
+            Width = 0.750018750468762, Style = "Solid"), Crosses = "AutoZero"))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 30)
 
     res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,

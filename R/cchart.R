@@ -555,7 +555,7 @@ getPPTSettings <- function(chart.type, args, data)
             res$ValueAxis$Minimum <- args$values.bounds.minimum
 
         # We don't want to manually set axis label position
-        # if they are shown
+        # if they are not shown
         if (!is.null(args$values.axis.show) && args$values.axis.show == FALSE)
             res$ValueAxis$LabelPosition <- "None"
         if (!is.null(args$categories.axis.show) && args$categories.axis.show == FALSE)
@@ -563,6 +563,20 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     # Chart-specfic parameters
+    if (grepl("Column|Line|Area", chart.type))
+    {
+        res$PrimaryAxis$LabelPosition <- "Low"
+        res$ValueAxis$Crosses <- "AutoZero"
+    }
+
+    if (grepl("StackedColumn", chart.type) && isTRUE(args$values.zero))
+    {
+        # PPT doesn't have a concept of the zero line so use a workaround
+        res$ValueAxis$Crosses <- "AutoZero"
+        res$PrimaryAxis$AxisLine$Width <- px2pt(args$values.zero.line.width)
+        res$PrimaryAxis$AxisLine$Color <- args$values.zero.line.color
+    }
+
     if (chart.type %in% "Donut")
         res$HoleSize = args$pie.inner.radius
     if (chart.type %in% c("Donut", "Pie"))
