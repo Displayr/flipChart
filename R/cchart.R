@@ -516,7 +516,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
-    res$ShowChartTitle = isTRUE(nchar(args$title) > 0)
+    res$ShowChartTitle = any(nzchar(args$title))
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = px2pt(args$title.font.size))
 
@@ -525,6 +525,7 @@ getPPTSettings <- function(chart.type, args, data)
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
             size = px2pt(args$categories.tick.font.size)),
+            ShowTitle = any(nzchar(args$categories.title)),
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
@@ -537,6 +538,7 @@ getPPTSettings <- function(chart.type, args, data)
             RotateLabels = isTRUE(args$categories.tick.angle == 90))
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
+            ShowTitle = any(nzchar(args$values.title)),
             TitleFont = list(color = args$values.title.font.color,
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),

@@ -21,11 +21,12 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, NULL)
     expect_equal(attr(res, "ChartLabels")$ChartTitle, "Meaningless area chart")
     expect_equal(attr(res, "ChartLabels")$PrimaryAxisTitle, "Letters")
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$ShowTitle, TRUE)
     expect_true(is.null(attr(res, "ChartWarning")))
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
-            values.bounds.maximum = 4, values.bounds.minimum = -3,
+            values.bounds.maximum = 6, values.bounds.minimum = -3,
             data.label.font.family = "Arial", data.label.font.size = 10,
             data.label.show = TRUE, data.label.font.autocolor = TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#BAE4B3FF")
@@ -39,7 +40,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color,"#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color,"#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
-    expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, 4)
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, 6)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Minimum, -3)
 
     res <- CChart("Bar", dat.1d, append.data = TRUE, colors = "#FF0000",
@@ -52,12 +53,14 @@ test_that("Chart settings",
     expect_equal(length(attr(res, "ChartSettings")$TemplateSeries), 1)
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
+            ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             AxisLine = list(Color = "#222222", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = FALSE))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
+            ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
@@ -82,12 +85,14 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color, "#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
+            ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             AxisLine = list(Color = "#222222", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = TRUE))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
+            ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
