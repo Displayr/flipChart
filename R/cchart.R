@@ -548,8 +548,7 @@ getPPTSettings <- function(chart.type, args, data)
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
-            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"),
-            Crosses = "AutoZero")
+            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
         if (any(nzchar(args$values.bounds.maximum)))
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))

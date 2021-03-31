@@ -65,7 +65,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
-            Width = 0.750018750468762, Style = "Solid"), Crosses = "AutoZero"))
+            Width = 0.750018750468762, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 0)
 
     res <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
@@ -97,7 +97,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
-            Width = 0.750018750468762, Style = "Solid"), Crosses = "AutoZero"))
+            Width = 0.750018750468762, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 30)
 
     res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
