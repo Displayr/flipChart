@@ -494,9 +494,9 @@ getPPTSettings <- function(chart.type, args, data)
 
     # Initialise return output
     res <- list()
-    if (length(series.settings) > 0)
+    if (tmp.n > 0)
         res$TemplateSeries = series.settings
-    if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
+    if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide") || tmp.n == 1)
         res$ShowLegend <- FALSE
     legend.position <- "TopRight"
     if (isTRUE(args$legend.orientation == "Horizontal"))
@@ -534,7 +534,8 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
-            RotateLabels = isTRUE(args$categories.tick.angle == 90))
+            RotateLabels = isTRUE(args$categories.tick.angle == 90),
+            LabelPosition = "Low")
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
             ShowTitle = any(nzchar(args$values.title)),
@@ -547,7 +548,8 @@ getPPTSettings <- function(chart.type, args, data)
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
-            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"),
+            Crosses = "AutoZero")
         if (any(nzchar(args$values.bounds.maximum)))
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))
@@ -562,12 +564,6 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     # Chart-specfic parameters
-    if (grepl("Column|Line|Area", chart.type))
-    {
-        res$PrimaryAxis$LabelPosition <- "Low"
-        res$ValueAxis$Crosses <- "AutoZero"
-    }
-
     if (grepl("StackedColumn", chart.type) && isTRUE(args$values.zero))
     {
         # PPT doesn't have a concept of the zero line so use a workaround
