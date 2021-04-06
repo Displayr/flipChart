@@ -311,7 +311,7 @@ addLabels <- function(x, chart.title, categories.title, values.title)
         chart.labels <- list()
     if (any(nzchar(chart.title)))
         chart.labels$ChartTitle <- chart.title
-    if (any(nzchar(chart.title)))
+    if (any(nzchar(categories.title)))
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title

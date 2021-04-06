@@ -26,6 +26,7 @@ test_that("Chart settings",
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
+            categories.title = "Letters",
             values.bounds.maximum = 6, values.bounds.minimum = -3,
             data.label.font.family = "Arial", data.label.font.size = 10,
             data.label.show = TRUE, data.label.font.autocolor = TRUE)
@@ -40,6 +41,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color,"#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color,"#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
+    expect_equal(attr(res, "ChartLabels")$PrimaryAxisTitle, "Letters")
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, 6)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Minimum, -3)
 
