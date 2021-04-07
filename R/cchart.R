@@ -281,6 +281,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (append.data)
     {
         chart.settings <- getPPTSettings(chart.type, user.args, x)
+        categories.title <- user.args$categories.title
+        values.title <- user.args$values.title
     }
 
     user.args <- substituteAxisNames(chart.function, user.args)
@@ -290,33 +292,43 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    result <- addWarning(result, chart.type, small.multiples,
-                    !is.null(user.args$annotation.list) ||
-                    !is.null(user.args$overlay.annotation.list))
+    result <- addWarning(result, chart.type, small.multiples)
+    result <- addLabels(result, user.args$title, categories.title, values.title)
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
         x <- convertChartDataToNumeric(x)
-    attr(x, "title") <- user.args$title
-    attr(x, "footer") <- user.args$footer
-    attr(x, "values.title") <- user.args$values.title
-    attr(x, "categories.title") <- user.args$categories.title
-    attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    if (is.null(attr(result, "ChartData")))
+        attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     attr(result,  "ChartSettings") <- chart.settings
     result
 }
 
-addWarning <- function(x, chart.type, small.multiples, has.annotations)
+addLabels <- function(x, chart.title, categories.title, values.title)
+{
+    chart.labels <- attr(x, "ChartLabels") # for plotly standard charts this will be a list
+    if (is.null(chart.labels))
+        chart.labels <- list()
+    if (any(nzchar(chart.title)))
+        chart.labels$ChartTitle <- chart.title
+    if (any(nzchar(categories.title)))
+        chart.labels$PrimaryAxisTitle <- categories.title
+    if (any(nzchar(values.title)))
+        chart.labels$ValueAxisTitle <- values.title
+    if (length(chart.labels) == 0)
+        chart.labels <- NULL
+    attr(x, "ChartLabels") <- chart.labels
+    return(x)
+}
+
+addWarning <- function(x, chart.type, small.multiples)
 {
     export.type <- attr(x, "ChartType")
     msg <- ""
 
     if (small.multiples)
         msg <- "This visualization is a small multiple which is not supported by PowerPoint."
-    else if (has.annotations)
-        msg <- "This visualization contains annotations which are not supported by PowerPoint."
-    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid",
-            "BarPictograph", "StackedColumnWithStatisticalSignificance"))
+    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid", "BarPictograph"))
         msg <- paste0("This visualization is of type '", chart.type,
                       "' which is not supported by PowerPoint.")
     else if (export.type %in% c("Sunburst", "Histogram", "Filled Map", "Box & Whisker"))
@@ -482,12 +494,20 @@ getPPTSettings <- function(chart.type, args, data)
 
     # Initialise return output
     res <- list()
-    if (length(series.settings) > 0)
+    if (tmp.n > 0)
         res$TemplateSeries = series.settings
-    if (isTRUE(args$legend.show == FALSE) || isTRUE(args$legend.show == "Hide"))
+    if (isFALSE(args$legend.show) || isTRUE(args$legend.show == "Hide") || tmp.n == 1)
         res$ShowLegend <- FALSE
+    legend.position <- "TopRight"
+    if (isTRUE(args$legend.orientation == "Horizontal"))
+        legend.position <- "Bottom"
+    if (isTRUE(args$legend.x.positon < 0.1))
+        legend.position <- "Left"
+    if (isTRUE(args$legend.y.position < 0.1))
+        legend.position <- "Bottom"
     res$Legend = list(Font = list(color = args$legend.font.color,
-            family = args$legend.font.family, size = px2pt(args$legend.font.size)))
+            family = args$legend.font.family, size = px2pt(args$legend.font.size)),
+            Position = legend.position)
     if (isTRUE(nchar(args$background.fill.color) > 0) &&
         args$background.fill.color != "transparent")
         res$BackgroundColor <- sprintf("%s%X", args$background.fill.color,
@@ -495,7 +515,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
-    res$ShowChartTitle = isTRUE(nchar(args$title) > 0)
+    res$ShowChartTitle = any(nzchar(args$title))
     res$ChartTitleFont = list(color = args$title.font.color, family = args$title.font.family,
             size = px2pt(args$title.font.size))
 
@@ -504,6 +524,7 @@ getPPTSettings <- function(chart.type, args, data)
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
             size = px2pt(args$categories.tick.font.size)),
+            ShowTitle = any(nzchar(args$categories.title)),
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
@@ -513,9 +534,11 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
-            RotateLabels = isTRUE(args$categories.tick.angle == 90))
+            RotateLabels = isTRUE(args$categories.tick.angle == 90),
+            LabelPosition = "Low")
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
+            ShowTitle = any(nzchar(args$values.title)),
             TitleFont = list(color = args$values.title.font.color,
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
@@ -526,9 +549,13 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+        if (any(nzchar(args$values.bounds.maximum)))
+            res$ValueAxis$Maximum <- args$values.bounds.maximum
+        if (any(nzchar(args$values.bounds.minimum)))
+            res$ValueAxis$Minimum <- args$values.bounds.minimum
 
         # We don't want to manually set axis label position
-        # if they are shown
+        # if they are not shown
         if (!is.null(args$values.axis.show) && args$values.axis.show == FALSE)
             res$ValueAxis$LabelPosition <- "None"
         if (!is.null(args$categories.axis.show) && args$categories.axis.show == FALSE)
@@ -536,6 +563,15 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     # Chart-specfic parameters
+    if (grepl("StackedColumn", chart.type) && isTRUE(args$values.zero))
+    {
+        # PPT doesn't have a concept of the zero line so use a workaround
+        res$ValueAxis$Crosses <- "AutoZero"
+        res$PrimaryAxis$AxisLine$Style <- "Solid"
+        res$PrimaryAxis$AxisLine$Width <- px2pt(args$values.zero.line.width)
+        res$PrimaryAxis$AxisLine$Color <- args$values.zero.line.color
+    }
+
     if (chart.type %in% "Donut")
         res$HoleSize = args$pie.inner.radius
     if (chart.type %in% c("Donut", "Pie"))
