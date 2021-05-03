@@ -1096,14 +1096,18 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
             return(NA)
         nms <- names(data)
 
-        # Match based on label/variable name to avoid problems with duplicates
-        nm <- if (show.labels) Labels(lst) else Names(lst)
-        if (is.null(nm) || length(nm) != 1)
-            return(ind)
-        pos <- match(nm, nms)
-        if (is.na(pos))
-            return(ind)
-        return(pos)
+        # If inputs are variables, match on label/variable name to avoid problems with duplicates
+        # This should not be applied on tables which do not necessarily have unique names
+        if (!is.null(attr(lst, "label")))
+        {
+            nm <- if (show.labels) Labels(lst) else Names(lst)
+            if (is.null(nm) || length(nm) != 1)
+                return(ind)
+            pos <- match(nm, nms)
+            if (!is.na(pos))
+                return(pos)
+        }
+        return(ind)
     }
 
 
