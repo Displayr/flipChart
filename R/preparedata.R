@@ -751,7 +751,8 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # Remove duplicates before rownames are messed up
     if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]))
     {
-        names(x[[2]]) <- NULL
+        if (length(x[[2]]) > 1 || NCOL(x[[2]][[1]]) > 1)
+            names(x[[2]]) <- NULL
         for (i in 1:length(x[[2]]))
         {
             y.rnames <- rownames(x[[2]][[i]])

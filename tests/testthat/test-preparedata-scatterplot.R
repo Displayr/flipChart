@@ -598,7 +598,7 @@ test_that("Check that a table can be used twice for the span and values",
     res <- PrepareData("Scatter", input.data.raw = tmp.input)
     expect_equal(res$data, structure(list(` ` = c("Income", "Income", "Income",
         "Income", "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"),
-        `  ` = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
+        table.BANNER = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
         18.2461103253182, 22.3479490806223, 14.5685997171146, 8.34512022630834,
         6.22347949080622, 5.7991513437058, 49.375, 50.625)), row.names = c("Less than $15,000",
         "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
@@ -763,5 +763,50 @@ test_that("Tables supplied as raw input data",
 {
     res <- PrepareData("Scatter", input.data.raw = tables.related.raw)
     expect_equal(res$scatter.variable.indices, c(x = 1, y = 2, sizes = 3, colors = NA, groups = NA))
+})
+
+dat.qtable.yvar <- list(X = structure(c(99, 94, 83, 91, 93, 63, 95, 126, 56, 800
+), .Dim = c(10L, 1L), .Dimnames = list(c("18 to 24", "25 to 29",
+"30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+"65 or more", "NET"), "table.Age.2"), statistic = "Count", basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickOne", span = list(
+    rows = structure(list(c("18 to 24", "25 to 29", "30 to 34",
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+    "65 or more", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+    10L))), name = "table.Age.2", questions = c("Age", "SUMMARY"
+)), Y = list(table.Age = structure(c(`18 to 24` = 12.375, `25 to 29` = 11.75,
+`30 to 34` = 10.375, `35 to 39` = 11.375, `40 to 44` = 11.625,
+`45 to 49` = 7.875, `50 to 54` = 11.875, `55 to 64` = 15.75,
+`65 or more` = 7, NET = 100), statistic = "%", .Dim = 10L, .Dimnames = list(
+    c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+    "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET")), basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickOne", span = list(
+    rows = structure(list(c("18 to 24", "25 to 29", "30 to 34",
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+    "65 or more", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+    10L))), name = "table.Age", questions = c("Age", "SUMMARY"
+))), Z1 = structure(c(12.375, 11.75, 10.375, 11.375, 11.625,
+7.875, 11.875, 15.75, 7, 100), .Dim = c(10L, 1L), .Dimnames = list(
+    c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+    "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"),
+    "table.Age"), statistic = "%", basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), questiontypes = "PickOne", span = list(
+    rows = structure(list(c("18 to 24", "25 to 29", "30 to 34",
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+    "65 or more", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+    10L))), name = "table.Age", questions = c("Age", "SUMMARY"
+)), Z2 = NULL, groups = NULL, labels = NULL)
+
+test_that("Scatter with Qtables keeps table labels",
+{
+    res <- PrepareData("Scatter", input.data.raw = dat.qtable.yvar)
+    expect_equal(colnames(res$data), c("table.Age.2", "table.Age", "table.Age "))
+
 })
 
