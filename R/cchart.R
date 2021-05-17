@@ -300,6 +300,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         x <- convertChartDataToNumeric(x)
     if (is.null(attr(result, "ChartData")))
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
     result
 }
