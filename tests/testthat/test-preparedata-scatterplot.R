@@ -496,7 +496,7 @@ test_that("Handle y-values in multiple columns + multiple statistics",
 })
 
 
-
+fake.filter <- rep(c(TRUE, FALSE), length = 800)
 test_that("Using tables with banners",
 {
     tables.with.banners[[7]] <- PrepareForCbind(tables.with.banners[[7]])
@@ -525,6 +525,10 @@ test_that("Using tables with banners",
         "Male", "Female"), c("table.BANNER", "%", "z-Statistic", "p",
         "table.BANNER.3")))
     expect_equal(pd4$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
+
+    expect_error(PrepareData("Scatter", input.data.raw = banner.1d.with.multstats,
+        subset = fake.filter), NA)
+
 
     pd5 <- PrepareData("Scatter", input.data.raw = banner.2d.with.multstats,
         hide.empty.columns = FALSE)

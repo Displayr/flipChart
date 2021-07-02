@@ -315,6 +315,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
+    if (isScatter(chart.type) && !is.null(input.data.raw) && containsQTable(input.data.raw))
+        subset <- TRUE
     filt <- length(subset) > 1 && NROW(subset) == NROW(data)
     if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
     {
@@ -1994,4 +1996,13 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     data <- newdata
     attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
     return(data)
+}
+
+containsQTable <- function(x)
+{
+    if (!is.list(x))
+        return(!is.null(attr(x, "questions")) && !is.null(attr(x, "name")))
+    else
+        return(any(sapply(x, containsQTable)))
+
 }
