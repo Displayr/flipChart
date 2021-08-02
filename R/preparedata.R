@@ -123,6 +123,8 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
+#' @param hide.percent.symbol Percentage data is shown without percentage symbols and the symbol 
+#'  is also removed from the statistic attribute.
 #' @param categorical.as.binary If data is aggregated and this is true, then categorical variables will be converted into indicator variables for each level in the factor.
 #' @param date.format One of \code{"Automatic", "US", "International" or "No date formatting"}.
 #' This is used to determine whether strings which are interpreted as dates
@@ -208,6 +210,7 @@ PrepareData <- function(chart.type,
                         hide.empty.rows.and.columns = TRUE,
                         hide.empty.rows = hide.empty.rows.and.columns,
                         hide.empty.columns = hide.empty.rows.and.columns,
+                        hide.percent.symbol = TRUE,
                         as.percentages = FALSE,
                         categorical.as.binary = NULL,
                         date.format = "Automatic",
@@ -431,7 +434,7 @@ PrepareData <- function(chart.type,
 
 
     # Calculate percentages after all the select/hide operations are completed
-    data <- convertPercentages(data, as.percentages, chart.type, multiple.tables)
+    data <- convertPercentages(data, as.percentages, hide.percent.symbol, chart.type, multiple.tables)
 
     ###########################################################################
     # Finalizing the result.
@@ -1351,7 +1354,8 @@ transformTable <- function(data,
     return(data)
 }
 
-convertPercentages <- function(data, as.percentages, chart.type, multiple.tables, table.counter = 1)
+convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type, 
+                               multiple.tables, table.counter = 1)
 {
     if (multiple.tables)
     {
@@ -1384,6 +1388,20 @@ convertPercentages <- function(data, as.percentages, chart.type, multiple.tables
             data <- data
         else
             data <- asPercentages(data) # converts character QTables to numeric
+    }
+
+    if (hide.percent.symbol)
+    {
+        if (isTRUE(grepl("%", attr(data, "statistic"))))
+            attr(data, "statistic") <- " "
+        else if (!is.null(attr(data, "questions")) && !is.null(attr(data, "name")) && 
+                  is.null(attr(data, "statistic")))
+        {
+            dlen <- length(dim(data))
+            primary.stat <- dimnames(data)[[dlen]][1]
+            if (grepl("%", primary.stat))
+                dimnames(data)[[dlen]][1] <- gsub("%", "Percent", primary.stat)
+        }
     }
     return(data)
 }
