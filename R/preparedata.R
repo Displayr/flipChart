@@ -1393,7 +1393,7 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
     if (hide.percent.symbol)
     {
         if (isTRUE(grepl("%", attr(data, "statistic"))))
-            attr(data, "statistic") <- " "
+            attr(data, "statistic") <- "Percent"
         else if (!is.null(attr(data, "questions")) && !is.null(attr(data, "name")) && 
                   is.null(attr(data, "statistic")))
         {
