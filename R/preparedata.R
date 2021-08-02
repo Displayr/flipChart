@@ -123,7 +123,7 @@
 #' @param as.percentages Logical; If \code{TRUE}, aggregate values in the
 #' output table are given as percentages summing to 100. If \code{FALSE},
 #' column sums are given.
-#' @param hide.percent.symbol Percentage data is shown without percentage symbols and the symbol 
+#' @param hide.percent.symbol Percentage data is shown without percentage symbols and the symbol
 #'  is also removed from the statistic attribute.
 #' @param categorical.as.binary If data is aggregated and this is true, then categorical variables will be converted into indicator variables for each level in the factor.
 #' @param date.format One of \code{"Automatic", "US", "International" or "No date formatting"}.
@@ -210,7 +210,7 @@ PrepareData <- function(chart.type,
                         hide.empty.rows.and.columns = TRUE,
                         hide.empty.rows = hide.empty.rows.and.columns,
                         hide.empty.columns = hide.empty.rows.and.columns,
-                        hide.percent.symbol = TRUE,
+                        hide.percent.symbol = FALSE,
                         as.percentages = FALSE,
                         categorical.as.binary = NULL,
                         date.format = "Automatic",
@@ -1354,7 +1354,7 @@ transformTable <- function(data,
     return(data)
 }
 
-convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type, 
+convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type,
                                multiple.tables, table.counter = 1)
 {
     if (multiple.tables)
@@ -1382,7 +1382,7 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
             warning(percentages.warning)
         else if (chart.type %in% c("Pie", "Donut"))
         {
-            data <- data / Sum(data) * 100 
+            data <- data / Sum(data) * 100
             attr(data, "statistic") <- "%"
         }
         else if (chart.type == "Heat" && isTRUE(grepl("%$", attr(data, "statistic"))))
@@ -1395,7 +1395,7 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
     {
         if (isTRUE(grepl("%", attr(data, "statistic"))))
             attr(data, "statistic") <- "Percent"
-        else if (!is.null(attr(data, "questions")) && !is.null(attr(data, "name")) && 
+        else if (!is.null(attr(data, "questions")) && !is.null(attr(data, "name")) &&
                   is.null(attr(data, "statistic")))
         {
             dlen <- length(dim(data))
