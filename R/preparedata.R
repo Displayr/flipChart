@@ -1360,7 +1360,8 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
     if (multiple.tables)
     {
         for(i in seq_along(data))
-            data[[i]] = convertPercentages(data[[i]], as.percentages, chart.type, FALSE, i)
+            data[[i]] = convertPercentages(data[[i]], as.percentages, hide.percent.symbol,
+                            chart.type, FALSE, i)
         return(data)
     }
 
