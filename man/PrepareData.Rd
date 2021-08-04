@@ -49,7 +49,7 @@ PrepareData(
   hide.empty.rows.and.columns = TRUE,
   hide.empty.rows = hide.empty.rows.and.columns,
   hide.empty.columns = hide.empty.rows.and.columns,
-  hide.percent.symbol = TRUE,
+  hide.percent.symbol = FALSE,
   as.percentages = FALSE,
   categorical.as.binary = NULL,
   date.format = "Automatic",
@@ -221,7 +221,7 @@ in the case of percentages, that a row or column contains only
 
 \item{hide.empty.columns}{Logical; hide columns with only NAs or 0's (percentages).}
 
-\item{hide.percent.symbol}{Percentage data is shown without percentage symbols and the symbol 
+\item{hide.percent.symbol}{Percentage data is shown without percentage symbols and the symbol
 is also removed from the statistic attribute.}
 
 \item{as.percentages}{Logical; If \code{TRUE}, aggregate values in the

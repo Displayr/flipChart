@@ -1656,6 +1656,8 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             attr(x, "categories.title") <- attr(x, "questions")[1]
         if (!is.null(attr(x, "statistic")) && grepl("%$", attr(x, "statistic")))
             attr(x, "values.title") <- "%"
+        else if (!is.null(attr(x, "statistic")) && grepl("Percent", attr(x, "statistic")))
+            attr(x, "values.title") <- ""
         else if (any(nchar(attr(x, "statistic"))))
             attr(x, "values.title") <- attr(x, "statistic")
     }

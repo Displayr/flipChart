@@ -72,6 +72,10 @@ test_that("PrepareData: single table, single stat",
 
     out2 <- PrepareData("Column", input.data.table = input.data.table, transpose = TRUE)
     expect_equal(out2$categories.title, "Age")
+
+    out3 <- PrepareData("Column", input.data.table = input.data.table, hide.percent.symbol = TRUE)
+    expect_equal(out3$categories.title, "Gender")
+    expect_equal(out3$values.title, "")
 })
 
 test_that("PrepareData: single table, single stat",
@@ -761,6 +765,11 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(res2$values.title, "%")
     expect_equal(res2$categories.title, "VarA")
     expect_equal(names(dimnames(res2$data)), c("VarA", "VarB"))
+    res2b <- PrepareData("Column", input.data.raw = list(X = xf, Y = yy), first.aggregate = TRUE,
+                hide.percent.symbol = TRUE, as.percentages = TRUE)
+    expect_equal(res2b$values.title, "")
+    expect_equal(res2b$categories.title, "VarA")
+    expect_equal(names(dimnames(res2b$data)), c("VarA", "VarB"))
 
     res3 <- PrepareData("Column", input.data.raw = list(X = xx, Y = yy), first.aggregate = TRUE,
                         group.by.last = TRUE,
