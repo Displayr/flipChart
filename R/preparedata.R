@@ -571,7 +571,7 @@ crosstabOneVariable <- function(x, group, weights = NULL,
         out <- Table(w~x+y, data = data, FUN = sum)
         if (as.percentages)
         {
-            out <- out / Sum(data$w * !is.na(data$x), remove.missing = FALSE)
+            out <- out / Sum(data$w * !is.na(data$x), remove.missing = FALSE) * 100
             attr(out, "statistic") <- "%"
 
         } else

@@ -2334,6 +2334,11 @@ test_that("Heatmap axis titles",
     expect_equal(res$categories.title, "Q2. Gender")
     expect_equal(res$values.title, "Q3. Age")
 
+    res <- PrepareData("Heat", input.data.raw = vdat, as.percentages = TRUE)
+    expect_equal(sum(res$data), 100)
+    expect_equal(res$categories.title, "Q2. Gender")
+    expect_equal(res$values.title, "Q3. Age")
+
     res <- PrepareData("Heat", input.data.table = summary.table)
     expect_equal(dim(res$data), c(6, 9))
     expect_equal(res$categories.title, "")
