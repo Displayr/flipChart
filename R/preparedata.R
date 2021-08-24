@@ -839,6 +839,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 
     # Check for row names to match on
     x.all.rownames <- NULL
+    removed.rownames <- NULL
     if (isScatter(chart.type) && length(x) > 1)
     {
         # Check for row names to match on
