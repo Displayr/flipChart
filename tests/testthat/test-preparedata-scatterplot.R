@@ -814,3 +814,29 @@ test_that("Scatter with Qtables keeps table labels",
 
 })
 
+raw.with.tb <- list(X = structure(c(3L, 3L, 3L, 2L, 5L, 3L, 5L, 2L, 5L, 5L,
+    5L, 3L, 1L, 5L, 3L, 5L, 2L, 1L, 5L, 3L), .Label = c("Living with your parents/guardian",
+    "Living alone", "Living with partner only", "Living with children only",
+    "Living with partner and children", "Sharing accommodation",
+    "Other (Please type into the box.)"), class = "factor"), Y = list(
+        table.Age = structure(c(`18 to 24` = 12.375, `25 to 29` = 11.75,
+        `30 to 34` = 10.375, `35 to 39` = 11.375, `40 to 44` = 11.625,
+        `45 to 49` = 7.875, `50 to 54` = 11.875, `55 to 64` = 15.75,
+        `65 or more` = 7, NET = 100), .Dim = 10L, .Dimnames = list(
+            c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+            "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"
+            )), statistic = "%", basedescriptiontext = "sample size = 800", basedescription = list(
+            Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+            Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+            FilteredProportion = 0), questiontypes = "PickOne", span = list(
+            rows = structure(list(c("18 to 24", "25 to 29", "30 to 34",
+            "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+            "65 or more", "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+            10L))), name = "table.Age", questions = c("Age", "SUMMARY"
+        ))), Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+
+test_that("Scatter with variable and table input",
+{
+    expect_warning(PrepareData("Scatter", input.data.raw = raw.with.tb ),
+            "Values (20) were truncated", fixed = TRUE)
+})
