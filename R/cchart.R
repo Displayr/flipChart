@@ -266,6 +266,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 {
     if (chart.type %in% c("Venn"))
         ErrorIfNotEnoughData(x, require.tidy = FALSE)
+    if (chart.type == "Funnel")
+        chart.type <- "Pyramid"
     if (multi.color.series && chart.type %in% c("Bar", "Column"))
         chart.type <- paste0(chart.type, "MultiColor")
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)

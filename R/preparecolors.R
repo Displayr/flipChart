@@ -48,6 +48,8 @@ PrepareColors <- function(dat, chart.type, small.multiples = FALSE, multi.color.
 {
     if (multi.color.series && chart.type %in% c("Bar", "Column"))
         chart.type <- "Pyramid"
+    if (chart.type == "Funnel")
+        chart.type <- "Pyramid"
 
     num.colors <- GetNumColors(dat, chart.type, scatter.colors.column)
 
