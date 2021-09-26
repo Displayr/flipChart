@@ -904,6 +904,6 @@ convertChartDataToNumeric <- function(data)
     if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
         new.data[,ind.color] <- data[,ind.color]
     else if (.isValidIndex(ind.color) && is.character(data[,ind.color]))
-        new.data[,ind.color] <- as.factor(data[,ind.color])
+        new.data[,ind.color] <- factor(data[,ind.color], levels = unique(data[,ind.color]))
     return(CopyAttributes(new.data, data))
 }
