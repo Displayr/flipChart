@@ -539,6 +539,11 @@ getPPTSettings <- function(chart.type, args, data)
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
             RotateLabels = isTRUE(args$categories.tick.angle == 90),
             LabelPosition = "Low")
+        if (any(nzchar(args$categories.bounds.maximum)))
+            res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
+        if (any(nzchar(args$categories.bounds.minimum)))
+            res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
+
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
             ShowTitle = any(nzchar(args$values.title)),
@@ -593,7 +598,6 @@ getPPTSettings <- function(chart.type, args, data)
             Color = "#E1E1E1")
         res$ValueAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
             Color = "#E1E1E1")
-
     }
 
 
@@ -601,6 +605,7 @@ getPPTSettings <- function(chart.type, args, data)
     # See RS-7154 - try master.displayr.com
     if (chart.type %in% c("Scatter"))
     {
+        res$ValueAxis$Crosses <- "Minimum"
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size * 10
     }
