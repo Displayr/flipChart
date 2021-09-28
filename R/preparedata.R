@@ -1001,7 +1001,7 @@ processInputData <- function(x, subset, weights)
             new.names <- (dimnames(x0))
             new.names[[length(new.names) + 1]] <- stat.names
             new.x <- array(x, dim = c(dim(x0), length(stat.names)), dimnames = new.names) 
-            x <- new.x
+            x <- CopyAttributes(new.x, x)
         } else
             x <- FlattenTableAndDropStatisticsIfNecessary(x)
     }
