@@ -991,18 +991,12 @@ processInputData <- function(x, subset, weights)
 
     # Flatten tables with spans or grid questions
     has.mult.stats <- is.null(attr(x, "statistic")) && !is.null(attr(x, "questiontypes"))
-    ndim <- length(dim(x)) - has.mult.stats
+    ndim <- length(dim(x)) - has.mult.stats 
     if (ndim >= 2)
     {
         if (has.mult.stats)
-        {
-            x0 <- suppressWarnings(FlattenTableAndDropStatisticsIfNecessary(x))
-            stat.names <- dimnames(x)[[ndim + 1]]
-            new.names <- (dimnames(x0))
-            new.names[[length(new.names) + 1]] <- stat.names
-            new.x <- array(x, dim = c(dim(x0), length(stat.names)), dimnames = new.names) 
-            x <- CopyAttributes(new.x, x)
-        } else
+            x <- flattenMultiStatTable(x)
+        else
             x <- FlattenTableAndDropStatisticsIfNecessary(x)
     }
 
@@ -1010,6 +1004,40 @@ processInputData <- function(x, subset, weights)
         attr(x, "assigned.rownames") <- TRUE
 
     return(x)
+}
+
+# Function is only called when we know it is a QTable with questiontype attributes and multiple stats
+flattenMultiStatTable <- function(x)
+{
+    # Set dimnames of flattened table using function in verbs package
+    # This will handle row/column spans from banners
+    x0 <- suppressWarnings(FlattenTableAndDropStatisticsIfNecessary(x))
+    n.dims <- length(dim(x))
+    if (n.dims < 4)
+    {
+        rownames(x) <- rownames(x0)
+        colnames(x) <- colnames(x0)
+        return(x)
+    }   
+
+    stat.names <- dimnames(x)[[n.dims]]
+    new.dnames <- dimnames(x0)
+    new.dnames[[length(new.dnames) + 1]] <- stat.names
+    new.x <- array(NA, dim = c(dim(x0), length(stat.names)), dimnames = new.dnames)
+
+    qtypes <- attr(x, "questiontypes")
+    for (i in 1:length(stat.names))
+    {
+        if (n.dims == 4){
+            ## Multi is in rows, combine 2nd and 3rd dimensions of table
+            if (qtypes[1] %in% c("PickOneMulti", "PickAnyGrid", "NumberGrid"))
+                new.x[,,i] <- ftable(x[,,,i], row.vars = 1, col.vars = 2:3)
+            else
+                new.x[,,i] <- ftable(x[,,,i], row.vars = 2:1, col.vars = 3)
+        } else if (n.dims == 5)  # e.g. Nominal - Multi by Binary - Grid
+            new.x[,,i] <- ftable(x[,,,,i], row.vars = c(1, 3), col.vars = c(2, 4))
+    }
+    return(CopyAttributes(new.x, x))
 }
 
 processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
