@@ -2697,65 +2697,12 @@ NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA), .Dim = c(3L,
 
 test_that("Higher dimension tables",
 {
-    res <- PrepareData("Bar", input.data.table = tb.with.gridq, tidy = F)$data
-    expect_equal(dimnames(res), list(c("Coca-Cola - Male", "Coca-Cola - Female",
-        "Coca-Cola - NET", "Diet Coke - Male", "Diet Coke - Female", "Diet Coke - NET",
-        "Coke Zero - Male", "Coke Zero - Female", "Coke Zero - NET",
-        "Pepsi - Male", "Pepsi - Female", "Pepsi - NET", "Diet Pepsi - Male",
-        "Diet Pepsi - Female", "Diet Pepsi - NET", "Pepsi Max - Male",
-        "Pepsi Max - Female", "Pepsi Max - NET"), c("Hate", "Dislike",
-        "Neither like nor dislike", "Love", "Like"), c("Column %", "z-Statistic"
-        )))
+    res <- PrepareData("Bar", input.data.table = tb.with.gridq, tidy = FALSE)$data
+    expect_equal(dimnames(res)[[3]], c("Column %", "z-Statistic"))
+    expect_equal(as.numeric(suppressWarnings(verbs::FlattenTableAndDropStatisticsIfNecessary(tb.with.gridq))[,-6]),
+        as.numeric(res[,,1]))
 
-    res <- PrepareData("Bar", input.data.table = tb.with.rowspan, tidy = F)$data
-    expect_equal(dimnames(res), list(c("Income - Less than $15,000 - Age - 18 to 24",
-        "Income - Less than $15,000 - Age - 35 to 39", "Income - Less than $15,000 - Age - 55 to 64",
-        "Income - Less than $15,000 - Age - 65 or more",
-        "Income - Less than $15,000 - Age - NET", "Income - $15,001 to $30,000 - Age - 18 to 24",
-        "Income - $15,001 to $30,000 - Age - 25 to 29", "Income - $15,001 to $30,000 - Age - 35 to 39",
-        "Income - $15,001 to $30,000 - Age - 40 to 44", "Income - $15,001 to $30,000 - Age - 45 to 49",
-        "Income - $15,001 to $30,000 - Age - 50 to 54", "Income - $15,001 to $30,000 - Age - 55 to 64",
-        "Income - $15,001 to $30,000 - Age - 65 or more", "Income - $15,001 to $30,000 - Age - NET",
-        "Income - $30,001 to $45,000 - Age - 18 to 24", "Income - $30,001 to $45,000 - Age - 25 to 29",
-        "Income - $30,001 to $45,000 - Age - 30 to 34", "Income - $30,001 to $45,000 - Age - 35 to 39",
-        "Income - $30,001 to $45,000 - Age - 40 to 44", "Income - $30,001 to $45,000 - Age - 45 to 49",
-        "Income - $30,001 to $45,000 - Age - 50 to 54", "Income - $30,001 to $45,000 - Age - 55 to 64",
-        "Income - $30,001 to $45,000 - Age - 65 or more", "Income - $30,001 to $45,000 - Age - NET",
-        "Income - $45,001 to $60,000 - Age - 18 to 24", "Income - $45,001 to $60,000 - Age - 25 to 29",
-        "Income - $45,001 to $60,000 - Age - 30 to 34", "Income - $45,001 to $60,000 - Age - 35 to 39",
-        "Income - $45,001 to $60,000 - Age - 40 to 44", "Income - $45,001 to $60,000 - Age - 45 to 49",
-        "Income - $45,001 to $60,000 - Age - 50 to 54", "Income - $45,001 to $60,000 - Age - 55 to 64",
-        "Income - $45,001 to $60,000 - Age - 65 or more", "Income - $45,001 to $60,000 - Age - NET",
-        "Income - $60,001 to $90,000 - Age - 18 to 24", "Income - $60,001 to $90,000 - Age - 25 to 29",
-        "Income - $60,001 to $90,000 - Age - 30 to 34", "Income - $60,001 to $90,000 - Age - 35 to 39",
-        "Income - $60,001 to $90,000 - Age - 40 to 44", "Income - $60,001 to $90,000 - Age - 45 to 49",
-        "Income - $60,001 to $90,000 - Age - 50 to 54", "Income - $60,001 to $90,000 - Age - 55 to 64",
-        "Income - $60,001 to $90,000 - Age - 65 or more", "Income - $60,001 to $90,000 - Age - NET",
-        "Income - $90,001 to $120,000 - Age - 18 to 24", "Income - $90,001 to $120,000 - Age - 25 to 29",
-        "Income - $90,001 to $120,000 - Age - 30 to 34", "Income - $90,001 to $120,000 - Age - 35 to 39",
-        "Income - $90,001 to $120,000 - Age - 40 to 44", "Income - $90,001 to $120,000 - Age - 45 to 49",
-        "Income - $90,001 to $120,000 - Age - 50 to 54", "Income - $90,001 to $120,000 - Age - 55 to 64",
-        "Income - $90,001 to $120,000 - Age - NET", "Income - $120,001 to $150,000 - Age - 18 to 24",
-        "Income - $120,001 to $150,000 - Age - 25 to 29", "Income - $120,001 to $150,000 - Age - 30 to 34",
-        "Income - $120,001 to $150,000 - Age - 35 to 39", "Income - $120,001 to $150,000 - Age - 40 to 44",
-        "Income - $120,001 to $150,000 - Age - 45 to 49", "Income - $120,001 to $150,000 - Age - 50 to 54",
-        "Income - $120,001 to $150,000 - Age - 55 to 64", "Income - $120,001 to $150,000 - Age - NET",
-        "Income - $150,001 to $200,000 - Age - 18 to 24", "Income - $150,001 to $200,000 - Age - 25 to 29",
-        "Income - $150,001 to $200,000 - Age - 30 to 34", "Income - $150,001 to $200,000 - Age - 35 to 39",
-        "Income - $150,001 to $200,000 - Age - 40 to 44", "Income - $150,001 to $200,000 - Age - 45 to 49",
-        "Income - $150,001 to $200,000 - Age - 50 to 54", "Income - $150,001 to $200,000 - Age - 55 to 64",
-        "Income - $150,001 to $200,000 - Age - NET", "Income - $200,001 or more - Age - 18 to 24",
-        "Income - $200,001 or more - Age - 25 to 29", "Income - $200,001 or more - Age - 30 to 34",
-        "Income - $200,001 or more - Age - 35 to 39", "Income - $200,001 or more - Age - 40 to 44",
-        "Income - $200,001 or more - Age - 50 to 54", "Income - $200,001 or more - Age - 55 to 64",
-        "Income - $200,001 or more - Age - NET", "Income - NET - Age - 18 to 24",
-        "Income - NET - Age - 25 to 29", "Income - NET - Age - 30 to 34",
-        "Income - NET - Age - 35 to 39", "Income - NET - Age - 40 to 44",
-        "Income - NET - Age - 45 to 49", "Income - NET - Age - 50 to 54",
-        "Income - NET - Age - 55 to 64", "Income - NET - Age - 65 or more",
-        "Income - NET - Age - NET"), c("I am on a diet, so I tend to watch what I eat and drink",
-        "I tend watch what I eat and drink, but don’t consider myself",
-        "I typically eat and drink whatever I feel like"), c("Column %",
-        "z-Statistic")))
-
+    res <- PrepareData("Bar", input.data.table = tb.with.rowspan, tidy = FALSE,
+                       row.names.to.remove = NULL, column.names.to.remove = NULL)$data
+    expect_equal(dimnames(res)[[3]], c("Column %", "z-Statistic"))
 })
