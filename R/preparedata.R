@@ -968,6 +968,7 @@ isDistribution <- function(chart.type)
 }
 
 #' @importFrom flipStatistics ExtractChartData
+#' @importFrom verbs FlattenTableAndDropStatisticsIfNecessary
 processInputData <- function(x, subset, weights)
 {
     if (is.null(x))
@@ -987,6 +988,23 @@ processInputData <- function(x, subset, weights)
 
     # Try to use S3 method to extract data
     x <- ExtractChartData(x)
+
+    # Flatten tables with spans or grid questions
+    has.mult.stats <- is.null(attr(x, "statistic")) && !is.null(attr(x, "questiontypes"))
+    ndim <- length(dim(x)) - has.mult.stats
+    if (ndim >= 2)
+    {
+        if (has.mult.stats)
+        {
+            x0 <- suppressWarnings(FlattenTableAndDropStatisticsIfNecessary(x))
+            stat.names <- dimnames(x)[[ndim + 1]]
+            new.names <- (dimnames(x0))
+            new.names[[length(new.names) + 1]] <- stat.names
+            new.x <- array(x, dim = c(dim(x0), length(stat.names)), dimnames = new.names) 
+            x <- CopyAttributes(new.x, x)
+        } else
+            x <- FlattenTableAndDropStatisticsIfNecessary(x)
+    }
 
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
