@@ -653,13 +653,13 @@ setScatterAxesBounds <- function(settings, data)
     {
         yrange <- range(data[,ind.y], na.rm = TRUE)
         offset <- 0.1 * (yrange[2] - yrange[1])
-        settings$ValueAxis$Minimum <- yrange[1] - offset
+        settings$ValueAxis$Minimum <- floor(yrange[1] - offset)
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
     {
         xrange <- range(data[,ind.x], na.rm = TRUE)
         offset <- 0.1 * (xrange[2] - xrange[1])
-        settings$ValueAxis$Minimum <- xrange[1] - offset
+        settings$PrimaryAxis$Minimum <- floorxrange[1] - offset
     }
     return(settings)
 }
