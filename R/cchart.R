@@ -369,9 +369,9 @@ addScatterAxisWarning <- function(result, data)
     v.ind <- attr(data, "scatter.variable.indices")
     ind.x <- v.ind["x"]
     ind.y <- v.ind["y"]
-    if (.isValid(v.ind["x"]) && !is.numeric(data[,ind.x]))
+    if (.isValidIndex(ind.x) && !is.numeric(data[,ind.x]))
         msg <- "Powerpoint only supports numeric axes in scatterplots"
-    else if (.isValid(v.ind["y"]) && !is.numeric(data[,ind.y]))
+    else if (.isValidIndex(ind.y) && !is.numeric(data[,ind.y]))
         msg <- "Powerpoint only supports numeric axes in scatterplots"
 
     if (nzchar(msg))
