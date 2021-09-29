@@ -975,9 +975,24 @@ processInputData <- function(x, subset, weights)
         return(x)
 
     if (length(subset) > 1)
-        warning("Filters have not been used. They can only be applied to variables and questions")
+    {
+        tb.desc <- attr(x, "basedescription")
+        if (is.null(tb.desc))
+            warning("Filters cannot be applied to this type of data source. Use a QTable or select variables instead.")
+        else if (tb.desc$FilteredProportion == 0)
+            warning("Filters have been ignored. They should be applied to the underlying table instead.")
+        else if (length(subset) != tb.desc$Total || mean(subset) != tb.desc$FilteredProportion)
+            warning("Filter ", attr(subset, "label"), " has been ignored. Only the filter applied to the underlying table was used.")
+    }
     if (length(weights) > 0)
-        warning("Weights have not been used. They can only be applied to variables and questions")
+    {
+        if (is.null(attr(x, "basedescription")))
+            warning("Weights cannot be applied to this type of data source. Use a QTable or select variables instead.")
+        else if (is.null(attr(x, "weight.name")))
+            warning("Weights have been ignored. They should be applied to the underlying table instead.")
+        else if (!isTRUE(attr(weights, "name") != attr(x, "weight.name")))
+            warning("Only the weight applied to the underlying table (", attr(x, weight.label), ") was used")
+    }
 
     # Simplify input if only a single table has been specified
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
