@@ -981,8 +981,7 @@ processInputData <- function(x, subset, weights)
             warning("Filters cannot be applied to this type of data source. Use a QTable or select variables instead.")
         else if (tb.desc$FilteredProportion == 0)
             warning("Filters have been ignored. They should be applied to the underlying table instead.")
-        else if (length(subset) != tb.desc$Total || 
-            abs(mean(subset)*100 + tb.desc$FilteredProportion - 100) > .Machine$double.eps) 
+        else if ((mean(subset)*100) + tb.desc$FilteredProportion != 100)
             warning("Filter ", attr(subset, "label"), " has been ignored. Only the filter applied to the underlying table was used.")
     }
     if (length(weights) > 0)
