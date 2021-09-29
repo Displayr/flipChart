@@ -659,7 +659,7 @@ setScatterAxesBounds <- function(settings, data)
     {
         xrange <- range(data[,ind.x], na.rm = TRUE)
         offset <- 0.1 * (xrange[2] - xrange[1])
-        settings$PrimaryAxis$Minimum <- floorxrange[1] - offset
+        settings$PrimaryAxis$Minimum <- floor(xrange[1] - offset)
     }
     return(settings)
 }
