@@ -991,7 +991,7 @@ processInputData <- function(x, subset, weights)
         else if (is.null(attr(x, "weight.name")))
             warning("Weights have been ignored. They should be applied to the underlying table instead.")
         else if (!isTRUE(attr(weights, "name") != attr(x, "weight.name")))
-            warning("Only the weight applied to the underlying table (", attr(x, weight.label), ") was used")
+            warning("Only the weight applied to the underlying table (", attr(x, "weight.label"), ") was used")
     }
 
     # Simplify input if only a single table has been specified
