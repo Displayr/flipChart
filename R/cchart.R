@@ -641,6 +641,10 @@ getPPTSettings <- function(chart.type, args, data)
     return(res)
 }
 
+
+# Fix minimum axes bounds if they are not already set
+# This is performed only because PPT will set the minimum to 0 if not specified
+# The default values for the maximum is usually quite reasonable
 setScatterAxesBounds <- function(settings, data)
 {
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
