@@ -981,7 +981,8 @@ processInputData <- function(x, subset, weights)
             warning("Filters cannot be applied to this type of data source. Use a QTable or select variables instead.")
         else if (tb.desc$FilteredProportion == 0)
             warning("Filters have been ignored. They should be applied to the underlying table instead.")
-        else if (length(subset) != tb.desc$Total || mean(subset) != tb.desc$FilteredProportion)
+        else if (length(subset) != tb.desc$Total || 
+            abs((1 - mean(subset)) - tb.desc$FilteredProportion) > .Machine$double.eps) 
             warning("Filter ", attr(subset, "label"), " has been ignored. Only the filter applied to the underlying table was used.")
     }
     if (length(weights) > 0)
@@ -989,9 +990,10 @@ processInputData <- function(x, subset, weights)
         if (is.null(attr(x, "basedescription")))
             warning("Weights cannot be applied to this type of data source. Use a QTable or select variables instead.")
         else if (is.null(attr(x, "weight.name")))
-            warning("Weights have been ignored. They should be applied to the underlying table instead.")
-        else if (!isTRUE(attr(weights, "name") != attr(x, "weight.name")))
-            warning("Only the weight applied to the underlying table (", attr(x, "weight.label"), ") was used")
+            warning("Weights have been ignored. It should be applied to the underlying table.")
+        else if (!isTRUE(attr(weights, "name") == attr(x, "weight.name")))
+            warning("Weight ", attr(weights, "label"), " has been ignored. ",
+                "Only the weight applied to the underlying table (", attr(x, "weight.label"), ") was used")
     }
 
     # Simplify input if only a single table has been specified
