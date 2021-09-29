@@ -982,7 +982,7 @@ processInputData <- function(x, subset, weights)
         else if (tb.desc$FilteredProportion == 0)
             warning("Filters have been ignored. They should be applied to the underlying table instead.")
         else if (length(subset) != tb.desc$Total || 
-            abs((1 - mean(subset)) - tb.desc$FilteredProportion) > .Machine$double.eps) 
+            abs(mean(subset)*100 + tb.desc$FilteredProportion - 100) > .Machine$double.eps) 
             warning("Filter ", attr(subset, "label"), " has been ignored. Only the filter applied to the underlying table was used.")
     }
     if (length(weights) > 0)
