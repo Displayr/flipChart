@@ -300,7 +300,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
     {
-        result <- addScatterAxisWarning(result, x) # set warning before data conversion
+        #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
     }
@@ -655,15 +655,23 @@ setScatterAxesBounds <- function(settings, data)
 
     if (is.null(settings$ValueAxis$Minimum) && .isValidIndex(ind.y))
     {
-        yrange <- range(data[,ind.y], na.rm = TRUE)
-        offset <- 0.1 * (yrange[2] - yrange[1])
-        settings$ValueAxis$Minimum <- floor(yrange[1] - offset)
+        rg <- range(data[,ind.y], na.rm = TRUE)
+        if (all(is.finite(rg)) && rg[1] != rg[2])
+        {
+            offset <- 0.1 * (rg[2] - rg[1])
+            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            settings$ValueAxis$Minimum <- floor((rg[1] - offset)/sc) * sc
+        }
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
     {
-        xrange <- range(data[,ind.x], na.rm = TRUE)
-        offset <- 0.1 * (xrange[2] - xrange[1])
-        settings$PrimaryAxis$Minimum <- floor(xrange[1] - offset)
+        rg <- range(data[,ind.x], na.rm = TRUE)
+        if (all(is.finite(rg)) && rg[1] != rg[2])
+        {
+            offset <- 0.1 * (rg[2] - rg[1])
+            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            settings$PrimaryAxis$Minimum <- floor((rg[1] - offset)/sc) * sc
+        }
     }
     return(settings)
 }
