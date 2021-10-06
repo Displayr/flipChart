@@ -179,3 +179,19 @@ test_that("Scatterplot ChartData conversion",
     expect_equal(attr(res, "scatter.variable.indices"),
             attr(dat.factor.coords, "scatter.variable.indices"))
 })
+
+dat <- structure(list(multi1 = structure(c(6L, 5L, 3L, 3L, 3L, 2L, 4L,
+2L, 9L, 2L, 6L, 4L, 7L, 6L, 10L, 7L, 6L, 2L, 3L, 5L), .Dim = c(10L,
+2L), .Dimnames = list(c("A", "B", "C", "D", "E", "F", "G", "H",
+"I", "J"), c("Col 1", "Col 2"))), multi2 = structure(c(7, 6,
+4, 4, 4, 3, 5, 3, 10, 3, 6, 4, 7, 6, 10, 7, 6, 2, 3, 5), .Dim = c(10L,
+2L), .Dimnames = list(c("A", "B", "C", "D", "E", "F", "G", "H",
+"I", "J"), c("Col 1", "Col 2"))), multi3 = structure(c(7, 6,
+4, 4, 4, 3, 5, 3, 10, 3, 7, 5, 8, 7, 11, 8, 7, 3, 4, 6), .Dim = c(10L,
+2L), .Dimnames = list(c("A", "B", "C", "D", "E", "F", "G", "H",
+"I", "J"), c("Col 1", "Col 2")))), scatter.variable.indices = c(x = 1,
+y = 2, sizes = 3, colors = 4))
+test_that("Scatter with multiple tables",
+{
+    expect_warning(CChart("Scatter", dat, append.data = TRUE))
+})

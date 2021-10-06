@@ -647,6 +647,10 @@ getPPTSettings <- function(chart.type, args, data)
 # The default values for the maximum is usually quite reasonable
 setScatterAxesBounds <- function(settings, data)
 {
+    # Skip setting if data is multiple tables
+    if (is.list(data) && !is.data.frame(data))
+        return(settings)
+
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
                         i <= NCOL(data))}
     v.ind <- attr(data, "scatter.variable.indices")
