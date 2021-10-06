@@ -976,23 +976,22 @@ processInputData <- function(x, subset, weights)
 
     if (length(subset) > 1)
     {
+        msg <- paste("Filters have been applied to this visualation. They have been ignored.",
+                "To apply filters you need to instead filter the source data that is being visualized.")
         tb.desc <- attr(x, "basedescription")
-        if (is.null(tb.desc))
-            warning("Filters cannot be applied to this type of data source. Use a QTable or select variables instead.")
-        else if (tb.desc$FilteredProportion == 0)
-            warning("Filters have been ignored. They should be applied to the underlying table instead.")
+        if (is.null(tb.desc) || tb.desc$FilteredProportion == 0)
+            warning(msg)
         else if ((mean(subset)*100) + tb.desc$FilteredProportion != 100)
-            warning("Filter ", attr(subset, "label"), " has been ignored. Only the filter applied to the underlying table was used.")
+            warning(msg)
     }
     if (length(weights) > 0)
     {
-        if (is.null(attr(x, "basedescription")))
-            warning("Weights cannot be applied to this type of data source. Use a QTable or select variables instead.")
-        else if (is.null(attr(x, "weight.name")))
-            warning("Weights have been ignored. It should be applied to the underlying table.")
+        msg <- paste("Weights have been applied to this visualation. They have been ignored.",
+                "To apply weights you need to instead weight the source data that is being visualized.")
+        if (is.null(attr(x, "basedescription")) || is.null(attr(x, "weight.name")))
+            warning(msg)
         else if (!isTRUE(attr(weights, "name") == attr(x, "weight.name")))
-            warning("Weight ", attr(weights, "label"), " has been ignored. ",
-                "Only the weight applied to the underlying table (", attr(x, "weight.label"), ") was used")
+            warning(msg)
     }
 
     # Simplify input if only a single table has been specified
@@ -1023,6 +1022,7 @@ processInputData <- function(x, subset, weights)
 }
 
 # Function is only called when we know it is a QTable with questiontype attributes and multiple stats
+#' @importFrom stats ftable
 flattenMultiStatTable <- function(x)
 {
     # Set dimnames of flattened table using function in verbs package
@@ -1059,9 +1059,11 @@ flattenMultiStatTable <- function(x)
 processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
 {
     if (length(subset) > 1)
-        warning("Filters have not been used. They can only be applied to variables and questions")
+        warning("Filters have been applied to this visualation. They have been ignored. ",
+            "To apply filters you need to instead filter the source data that is being visualized.")
     if (length(weights) > 0)
-        warning("Weights have not been used. They can only be applied to variables and questions")
+        warning("Weights have been applied to this visualation. They have been ignored. ",
+            "To apply weights you need to instead weight the source data that is being visualized.")
 
     us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
