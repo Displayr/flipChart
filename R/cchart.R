@@ -294,12 +294,16 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    result <- addWarning(result, chart.type, small.multiples)
+    result <- addChartTypeWarning(result, chart.type, small.multiples)
     result <- addLabels(result, user.args$title, categories.title, values.title)
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
+    {
+        #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
+        chart.settings <- setScatterAxesBounds(chart.settings, x)
+    }
     if (is.null(attr(result, "ChartData")))
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     class(result) <- c(class(result), "visualization-selector")
@@ -324,9 +328,10 @@ addLabels <- function(x, chart.title, categories.title, values.title)
     return(x)
 }
 
-addWarning <- function(x, chart.type, small.multiples)
+addChartTypeWarning <- function(x, chart.type, small.multiples)
 {
     export.type <- attr(x, "ChartType")
+    warnings <- attr(x, "ChartWarning")
     msg <- ""
 
     if (small.multiples)
@@ -340,18 +345,42 @@ addWarning <- function(x, chart.type, small.multiples)
         if (tmp.type == "Pie")
             tmp.type <- "2-dimensional Pie"
         msg <- paste0("This visualization is a ", tmp.type,
-                    " chart which cannot be exported to PowerPoint.")
+                    " chart which cannot be exported to PowerPoint. ")
         # The charts in the last condition have chart types supported by powerpoint 2016,
         # however they cannot be handled by the API for exporting used by Displayr
     }
 
     if (nzchar(msg))
-        attr(x, "ChartWarning") <- paste(msg,
+        attr(x, "ChartWarning") <- paste(warnings, msg,
             "It will be exported to PowerPoint as an image.",
             "Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a",
             "supported chart type or set the export format to 'Image' to",
-            "suppress this warning.")
+            "suppress this warning.", collapse = "")
     return(x)
+}
+
+addScatterAxisWarning <- function(result, data)
+{
+    warnings <- attr(result, "ChartWarning")
+    msg <- ""
+
+    .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
+                        i <= NCOL(data))}
+    v.ind <- attr(data, "scatter.variable.indices")
+    ind.x <- v.ind["x"]
+    ind.y <- v.ind["y"]
+    if (.isValidIndex(ind.x) && !is.numeric(data[,ind.x]))
+        msg <- "Powerpoint only supports numeric axes in scatterplots"
+    else if (.isValidIndex(ind.y) && !is.numeric(data[,ind.y]))
+        msg <- "Powerpoint only supports numeric axes in scatterplots"
+
+    if (nzchar(msg))
+        attr(result, "ChartWarning") <- paste(warnings, msg,
+            "It will be exported to PowerPoint as an image.",
+            "Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a",
+            "supported chart type or set the export format to 'Image' to",
+            "suppress this warning.", collapse = "")
+    return(result)
 }
 
 
@@ -539,6 +568,11 @@ getPPTSettings <- function(chart.type, args, data)
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
             RotateLabels = isTRUE(args$categories.tick.angle == 90),
             LabelPosition = "Low")
+        if (any(nzchar(args$categories.bounds.maximum)))
+            res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
+        if (any(nzchar(args$categories.bounds.minimum)))
+            res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
+
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
             ShowTitle = any(nzchar(args$values.title)),
@@ -593,7 +627,6 @@ getPPTSettings <- function(chart.type, args, data)
             Color = "#E1E1E1")
         res$ValueAxis$MajorGridLine <- list(Style = "Solid", Width = 1,
             Color = "#E1E1E1")
-
     }
 
 
@@ -601,10 +634,50 @@ getPPTSettings <- function(chart.type, args, data)
     # See RS-7154 - try master.displayr.com
     if (chart.type %in% c("Scatter"))
     {
+        res$ValueAxis$Crosses <- "Minimum"
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size * 10
     }
     return(res)
+}
+
+
+# Fix minimum axes bounds if they are not already set
+# This is performed only because PPT will set the minimum to 0 if not specified
+# The default values for the maximum is usually quite reasonable
+setScatterAxesBounds <- function(settings, data)
+{
+    # Skip setting if data is multiple tables
+    if (is.list(data) && !is.data.frame(data))
+        return(settings)
+
+    .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
+                        i <= NCOL(data))}
+    v.ind <- attr(data, "scatter.variable.indices")
+    ind.x <- v.ind["x"]
+    ind.y <- v.ind["y"]
+
+    if (is.null(settings$ValueAxis$Minimum) && .isValidIndex(ind.y))
+    {
+        rg <- range(data[,ind.y], na.rm = TRUE)
+        if (all(is.finite(rg)) && rg[1] != rg[2])
+        {
+            offset <- 0.1 * (rg[2] - rg[1])
+            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            settings$ValueAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+        }
+    }
+    if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
+    {
+        rg <- range(data[,ind.x], na.rm = TRUE)
+        if (all(is.finite(rg)) && rg[1] != rg[2])
+        {
+            offset <- 0.1 * (rg[2] - rg[1])
+            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            settings$PrimaryAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+        }
+    }
+    return(settings)
 }
 
 # converts sizes from pixels (which is used by plotly)
@@ -904,6 +977,6 @@ convertChartDataToNumeric <- function(data)
     if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
         new.data[,ind.color] <- data[,ind.color]
     else if (.isValidIndex(ind.color) && is.character(data[,ind.color]))
-        new.data[,ind.color] <- as.factor(data[,ind.color])
+        new.data[,ind.color] <- factor(data[,ind.color], levels = unique(data[,ind.color]))
     return(CopyAttributes(new.data, data))
 }
