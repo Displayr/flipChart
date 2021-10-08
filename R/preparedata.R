@@ -621,7 +621,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
         data <- as.data.frame(data)
         tmp.names <- names(data)
         k <- NCOL(data)
-        group.var <- data[,k]
+        group.var <- data[, k]
 
         if (k <= 2)
         {
@@ -1007,7 +1007,7 @@ processInputData <- function(x, subset, weights)
 
     # Flatten tables with spans or grid questions
     has.mult.stats <- is.null(attr(x, "statistic")) && !is.null(attr(x, "questiontypes"))
-    ndim <- length(dim(x)) - has.mult.stats 
+    ndim <- length(dim(x)) - has.mult.stats
     if (ndim >= 2)
     {
         if (has.mult.stats)
@@ -1034,7 +1034,7 @@ flattenMultiStatTable <- function(x)
         rownames(x) <- rownames(x0)
         colnames(x) <- colnames(x0)
         return(x)
-    }   
+    }
 
     stat.names <- dimnames(x)[[n.dims]]
     new.dnames <- dimnames(x0)
@@ -1085,7 +1085,7 @@ processPastedData <- function(input.data.pasted, warn, date.format, subset, weig
 #' @importFrom verbs Sum
 checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, pasted, other)
 {
-    data.provided <- !sapply(list(table, tables, raw, pasted, other), is.null)
+    data.provided <- !vapply(list(table, tables, raw, pasted, other), is.null, logical(1L))
     n.data <- Sum(data.provided, remove.missing = TRUE)
     if (n.data == 0)
         stop("No data has been provided.")
@@ -1336,17 +1336,6 @@ transformTable <- function(data,
             old.names <- colnames(data)
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyColumns)
                 else HideEmptyColumns(data)
-        if (FALSE && isScatter(chart.type))
-        {
-            ind.rm <- which(!old.names %in% colnames(data))
-            if (length(ind.rm) > 0)
-            {
-                new.indices <- attr(data, "scatter.variable.indices")
-                for (i in 1:length(new.indices))
-                    new.indices[i] <- new.indices[i] - Sum(ind.rm <= new.indices[i], remove.missing = TRUE)
-                attr(data, "scatter.variable.indices") <- new.indices
-            }
-        }
     }
 
     # Switching rows and columns
@@ -1560,6 +1549,9 @@ prepareForSpecificCharts <- function(data,
     # Charts that plot the distribution of raw data (e.g., histograms)
     else if (isDistribution(chart.type))
     {
+        # input.data.raw could be NULL and the result below be a logical of zero length.
+        if (is.null(input.data.raw))
+            input.data.raw <- list(NULL)
         len <- Sum(!vapply(input.data.raw, is.null, FALSE))
         if (len > 1L)  # variables from multiple GUI controls
         {
@@ -1836,7 +1828,9 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
 {
     if (is.null(input.data.raw))
         return(FALSE)
-    not.nulls <- !sapply(input.data.raw, is.null)
+    if (is.null(input.data.raw))
+        return(FALSE)
+    not.nulls <- !vapply(input.data.raw, is.null, logical(1L))
     if (length(not.nulls) == 1)
         return(FALSE)
     if (!not.nulls[1] || !not.nulls[2])
@@ -1848,7 +1842,7 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
         input.data.raw <- input.data.raw[1:2]
     }
     nms <- names(input.data.raw)
-    ncols <- sapply(input.data.raw, NCOL)
+    ncols <- vapply(input.data.raw, NCOL, integer(1L))
     if (any(ncols != 1))
         return(FALSE)
     #if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
