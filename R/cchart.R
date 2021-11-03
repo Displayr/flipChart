@@ -475,6 +475,7 @@ getPPTSettings <- function(chart.type, args, data)
             CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
+            DataLabelsPosition = "Center",
             DataLabelsFont = list(family = args$data.label.font.family,
                 size = px2pt(args$data.label.font.size),
                 color = tmp.data.label.font.color[1]),
@@ -662,8 +663,7 @@ setScatterAxesBounds <- function(settings, data)
         rg <- range(data[,ind.y], na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
-            offset <- 0.1 * (rg[2] - rg[1])
-            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            sc <- 10^(floor(log10(rg[2] - rg[1])))
             settings$ValueAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
         }
     }
@@ -672,8 +672,7 @@ setScatterAxesBounds <- function(settings, data)
         rg <- range(data[,ind.x], na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
-            offset <- 0.1 * (rg[2] - rg[1])
-            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
+            sc <- 10^(floor(log10(rg[2] - rg[1])))
             settings$PrimaryAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
         }
     }
