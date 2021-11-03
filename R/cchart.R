@@ -440,8 +440,10 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.data.label.position <- "BestFit"
     if (chart.type == "Column" && tmp.is.stacked && !isTRUE(args$data.label.centered))
         tmp.data.label.position <- "InsideEnd"
-    if (chart.type %in% c("Donut", "Pie"))
+    else if (chart.type %in% c("Donut", "Pie"))
         tmp.data.label.position <- "OutsideEnd"
+    else if (chart.type == "Scatter")
+        tmp.data.label.position <- "Center"
 
     # Behaviour of 'Automatically' set data label font colors
     # change depending on the chart type
@@ -664,7 +666,7 @@ setScatterAxesBounds <- function(settings, data)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
             sc <- 10^(floor(log10(rg[2] - rg[1])))
-            settings$ValueAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+            settings$ValueAxis$Minimum <- floor(rg[1]*sc) * sc
         }
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
@@ -673,7 +675,7 @@ setScatterAxesBounds <- function(settings, data)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
             sc <- 10^(floor(log10(rg[2] - rg[1])))
-            settings$PrimaryAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+            settings$PrimaryAxis$Minimum <- floor(rg[1]*sc) * sc
         }
     }
     return(settings)
