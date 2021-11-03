@@ -440,8 +440,10 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.data.label.position <- "BestFit"
     if (chart.type == "Column" && tmp.is.stacked && !isTRUE(args$data.label.centered))
         tmp.data.label.position <- "InsideEnd"
-    if (chart.type %in% c("Donut", "Pie"))
+    else if (chart.type %in% c("Donut", "Pie"))
         tmp.data.label.position <- "OutsideEnd"
+    else if (chart.type == "Scatter")
+        tmp.data.label.position <- "Center"
 
     # Behaviour of 'Automatically' set data label font colors
     # change depending on the chart type
@@ -475,6 +477,7 @@ getPPTSettings <- function(chart.type, args, data)
             CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
+            DataLabelsPosition = "Center",
             DataLabelsFont = list(family = args$data.label.font.family,
                 size = px2pt(args$data.label.font.size),
                 color = tmp.data.label.font.color[1]),
@@ -662,9 +665,9 @@ setScatterAxesBounds <- function(settings, data)
         rg <- range(data[,ind.y], na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
-            offset <- 0.1 * (rg[2] - rg[1])
-            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
-            settings$ValueAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+            offset <- (rg[2] - rg[1]) * 0.1
+            sc <- 10^(floor(log10(rg[2] - rg[1])))
+            settings$ValueAxis$Minimum <- floor((rg[1] - offset)*sc) * sc
         }
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
@@ -672,9 +675,9 @@ setScatterAxesBounds <- function(settings, data)
         rg <- range(data[,ind.x], na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
-            offset <- 0.1 * (rg[2] - rg[1])
-            sc <- 10^(round(log10(rg[2] - rg[1])) - 1)
-            settings$PrimaryAxis$Minimum <- floor(rg[1]*0.8/sc) * sc
+            offset <- (rg[2] - rg[1]) * 0.1
+            sc <- 10^(floor(log10(rg[2] - rg[1])))
+            settings$PrimaryAxis$Minimum <- floor((rg[1] - offset)*sc) * sc
         }
     }
     return(settings)
