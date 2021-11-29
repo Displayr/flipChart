@@ -1789,9 +1789,10 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
     } else if (use.span && !is.null(attr(x, "span")))
     {
         # Q tables can always be converted to a matrix
-        new.dat <- as.matrix(attr(x, "span")$rows[,1])
+        tmp.rows <- attr(x, "span")$rows
+        new.dat <- as.matrix(tmp.rows[,1])
         if (!is.null(rownames(x)))
-            rownames(new.dat) <- rownames(x)
+            rownames(new.dat) <- paste0(tmp.rows[,1], ":", tmp.rows[2])
         else
             rownames(new.dat) <- names(x)
 
