@@ -1792,7 +1792,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         tmp.rows <- attr(x, "span")$rows
         new.dat <- as.matrix(tmp.rows[,1])
         if (!is.null(rownames(x)))
-            rownames(new.dat) <- paste0(tmp.rows[,1], ":", tmp.rows[2])
+            rownames(new.dat) <- paste0(tmp.rows[,1], ":", tmp.rows[,2])
         else
             rownames(new.dat) <- names(x)
 
