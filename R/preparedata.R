@@ -875,7 +875,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         if (length(x.all.rownames) > 0)
         {
             for (i in 1:k)
-                x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames,
+                    x[[i]] <- MatchTable(x[[i]], ref.names = x.all.rownames,
                                 as.matrix = FALSE, trim.whitespace = FALSE,
                                 silent.remove.duplicates = TRUE)
 
@@ -1780,6 +1780,9 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
 
     new.dat <- NULL
     cname.prefix <- ""
+    if (!is.null(attr(x, "span")))
+        span.labels <- apply(attr(x, "span")$rows, 1, paste, collapse = " - ")
+
     if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
     {
         # For variables, this function is not really required
@@ -1791,11 +1794,8 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         # Q tables can always be converted to a matrix
         tmp.rows <- attr(x, "span")$rows
         new.dat <- as.matrix(tmp.rows[,1])
-        if (!is.null(rownames(x)))
-            rownames(new.dat) <- paste0(tmp.rows[,1], ":", tmp.rows[,2])
-        else
-            rownames(new.dat) <- names(x)
-
+        rownames(new.dat) <- span.labels
+ 
         # Assign a blank name, so this column is not
         # accidentally used for another variable
         # The space is needed to avoid ugly R defaults
@@ -1821,6 +1821,8 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         else
             colnames(new.dat) <- " "
     }
+    if (!is.null(attr(x, "span")))
+        rownames(new.dat) <- span.labels
     new.dat <- CopyAttributes(new.dat, x)
     return(new.dat)
 }
