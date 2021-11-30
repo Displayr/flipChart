@@ -490,11 +490,9 @@ getPPTSettings <- function(chart.type, args, data)
         # Multi-color series is implemented as a single series
         # with many CustomPoints
         user.colors <- args$colors
-        tmp.n <- NROW(data)
-        cat("tmp.n:", tmp.n, "\n")
-        print(dput(data))
         if (length(user.colors) == 0)
-            user.color <- ChartColors(tmp.n)
+            user.colors <- ChartColors(NROW(data))
+
         tmp.colors <- list()
         for (i in seq_along(user.colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
