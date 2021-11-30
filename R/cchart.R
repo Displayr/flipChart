@@ -434,7 +434,8 @@ getPPTSettings <- function(chart.type, args, data)
     }
     if (chart.type == "Radar" && tmp.data.label.show)
         tmp.data.label.show.category.labels <- TRUE
-
+    if (chart.type == "Bar Pictograph" && isTRUE(args$data.label.position != "No")) 
+        tmp.data.label.show <- TRUE
 
     # DataLabelsPosition not supported for Area Chart
     tmp.data.label.position <- "BestFit"
@@ -488,12 +489,14 @@ getPPTSettings <- function(chart.type, args, data)
     {
         # Multi-color series is implemented as a single series
         # with many CustomPoints
+        user.colors <- args$colors
+        if (length(user.colors) == 0)
+            user.colors <- ChartColors(NROW(data))
+
         tmp.colors <- list()
-        for (i in seq_along(args$colors))
+        for (i in seq_along(user.colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
-                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
-        if (length(tmp.colors) == 0)
-            tmp.colors <- NULL
+                user.colors[i], round(tmp.opacity*255)), Index = i - 1)
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
