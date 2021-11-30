@@ -489,11 +489,15 @@ getPPTSettings <- function(chart.type, args, data)
     {
         # Multi-color series is implemented as a single series
         # with many CustomPoints
+        user.colors <- args$colors
+        if (length(user.colors) == 0)
+            user.color <- ChartColors(NROW(data))
         tmp.colors <- list()
-        for (i in seq_along(args$colors))
+        for (i in seq_along(user.colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
-                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
+                user.colors[i], round(tmp.opacity*255)), Index = i - 1)
         series.settings <- list(list(
+            CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
             DataLabelsFont = list(family = args$data.label.font.family,
                 size = px2pt(args$data.label.font.size),
@@ -502,8 +506,6 @@ getPPTSettings <- function(chart.type, args, data)
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
             OutlineWidth = tmp.line.thickness[1],
             OutlineStyle = tmp.line.style))
-        if (length(tmp.colors) > 0) # only add if not null
-            series.settings[[1]]$CustomPoints <- tmp.colors
 
     } else
         series.settings <- lapply(1:length(args$colors),
