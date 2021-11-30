@@ -1774,6 +1774,8 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         return(x)
     if (is.list(x) && length(x))    # y variable has different format because of multi
         x <- x[[1]]
+    if (!any(grepl("array|data.frame|list|integer|numeric|factor", class(x)))) # e.g. regression output
+        return(x)
     if (is.scatter.annot.data && NCOL(x) > 1)
         stop("Annotation data for Scatterplots should be a single-column table or variable with the same number of values as the number of points in the chart")
 
@@ -1797,7 +1799,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         tmp.rows <- attr(x, "span")$rows
         new.dat <- as.matrix(tmp.rows[,1])
         rownames(new.dat) <- span.labels
- 
+
         # Assign a blank name, so this column is not
         # accidentally used for another variable
         # The space is needed to avoid ugly R defaults
