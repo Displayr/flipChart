@@ -1772,6 +1772,8 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
 {
     if (is.null(x))
         return(x)
+    if (is.list(x) && length(x))    # y variable has different format because of multi
+        x <- x[[1]]
     if (is.scatter.annot.data && NCOL(x) > 1)
         stop("Annotation data for Scatterplots should be a single-column table or variable with the same number of values as the number of points in the chart")
 
