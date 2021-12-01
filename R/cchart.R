@@ -336,7 +336,7 @@ addChartTypeWarning <- function(x, chart.type, small.multiples)
 
     if (small.multiples)
         msg <- "This visualization is a small multiple which is not supported by PowerPoint."
-    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid", "BarPictograph"))
+    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid", "Bar Pictograph"))
         msg <- paste0("This visualization is of type '", chart.type,
                       "' which is not supported by PowerPoint.")
     else if (export.type %in% c("Sunburst", "Histogram", "Filled Map", "Box & Whisker"))
