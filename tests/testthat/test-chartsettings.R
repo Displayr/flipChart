@@ -214,4 +214,12 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, TRUE)
     expect_true(grepl("This visualization is a Histogram chart which cannot be exported to PowerPoint", attr(res, "ChartWarning")))
+
+    res <- CChart("Bar Pictograph", dat.1d, append.data = TRUE)
+    expect_equal(length(attr(res, "ChartSettings")$TemplateSeries), 1)
+    expect_equal(length(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints), 10)
+    expect_true(!is.null(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor))
+    expect_true(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth < 1)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
+    expect_true(!is.null(attr(res, "ChartWarning")))
 })

@@ -399,6 +399,13 @@ getPPTSettings <- function(chart.type, args, data)
             tmp.opacity <- 1.0
     }
 
+    tmp.n <- length(args$colors)
+    if (tmp.n == 0)
+    {
+        tmp.n <- NROW(data)
+        args$colors <- ChartColors(tmp.n)
+    }
+
     tmp.line.style <- "None"
     if (chart.type %in% c("Donut", "Pie", "Palm"))
         tmp.line.style <- "Solid"
@@ -414,14 +421,16 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.line.thickness <- 1
     else if (!is.null(args$marker.border.opacity))
         tmp.line.thickness <- args$marker.border.width
-    tmp.line.thickness <- rep(px2pt(tmp.line.thickness), length = length(args$colors))
+    tmp.line.thickness <- rep(px2pt(tmp.line.thickness), length = tmp.n)
 
     tmp.line.color <- args$colors
     if (chart.type %in% c("Pie", "Donut"))
         tmp.line.color <- args$pie.border.color
     else if (!is.null(args$marker.border.opacity))
         tmp.line.color <- args$marker.border.color
-    tmp.line.color <- rep(tmp.line.color, length = length(args$colors))
+    if (is.null(tmp.line.color) || is.na(tmp.line.color))
+        tmp.line.color <- "#FFFFFF"
+    tmp.line.color <- rep(tmp.line.color, length = tmp.n)
 
     tmp.data.label.show <- isTRUE(args$data.label.show)
     tmp.data.label.show.category.labels <- FALSE
@@ -459,8 +468,7 @@ getPPTSettings <- function(chart.type, args, data)
             tmp.data.label.font.color <- autoFontColor(args$colors)
     }
     if (length(tmp.data.label.font.color) < length(args$colors))
-        tmp.data.label.font.color <- rep(tmp.data.label.font.color,
-               length = length(args$colors))
+        tmp.data.label.font.color <- rep(tmp.data.label.font.color, length = tmp.n)
 
 
     # Initialise series-specific parameters
@@ -489,14 +497,10 @@ getPPTSettings <- function(chart.type, args, data)
     {
         # Multi-color series is implemented as a single series
         # with many CustomPoints
-        user.colors <- args$colors
-        if (length(user.colors) == 0)
-            user.colors <- ChartColors(NROW(data))
-
         tmp.colors <- list()
-        for (i in seq_along(user.colors))
+        for (i in seq_along(args$colors))
             tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
-                user.colors[i], round(tmp.opacity*255)), Index = i - 1)
+                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
