@@ -441,6 +441,10 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
+    if (isScatter(chart.type)) # to remove span NETS
+        data <- RemoveRowsAndOrColumns(data,
+                row.names.to.remove = row.names.to.remove,
+                column.names.to.remove = column.names.to.remove, split = split)
     if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
@@ -716,14 +720,19 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
     if (is.null(x))
         return(x)
-    else if (is.data.frame(x))
+    if (is.data.frame(x))
         return(x)
-
     if (is.list(x) && length(x) == 1 && is.matrix(x[[1]])) # List only contains a matrix
-        return(as.data.frame(x[[1]]))
-    else if (is.character(x))
+    {
+        tmp.names <- getFullRowNames(x[[1]])
+        x <- as.data.frame(x[[1]])
+        rownames(x) <- tmp.names
+        return(x)
+    } 
+    if (is.character(x))
     {
         x <- TidyTabularData(x)
+        rownames(x) <- getFullRowNames(x)
         return(as.data.frame(x))
     }
 
@@ -751,7 +760,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # Dealing with situation where x$X is a list containing only one thing.
     if (is.list(x[[1]]) && length(x[[1]]) == 1)
         x[[1]] <- x[[1]][[1]]
-
+    
     # For Scatterplot, y-coordinates are entered by a multi comboBox
     # Remove duplicates before rownames are messed up
     if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]))
@@ -760,17 +769,17 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             names(x[[2]]) <- NULL
         for (i in 1:length(x[[2]]))
         {
-            y.rnames <- rownames(x[[2]][[i]])
-            is.dup <- duplicated(y.rnames)
-
-            # No warnings required because you may want points with the same label
-            if (any(is.dup))
+            # Replace rownames to preserve rowspans and duplicated labels
+            y.rnames <- getFullRowNames(x[[2]][[i]])
+            if (!is.null(nrow(x[[2]][[i]])))
                 rownames(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
+            else
+                names(x[[2]][[i]]) <- MakeUniqueNames(y.rnames)
         }
         # Remap all Y elements to common array and keep attributes
         if (!is.null(unlist(lapply(x[[2]], rownames))) && length(x[[2]]) >= 2 && any(reg.outputs))
         {
-            y.all.rownames <- unique(unlist(lapply(x[[2]], rownames)))
+            y.all.rownames <- unique(unlist(lapply(x[[2]], getFullRowNames)))
             base.values <- rep(NA, length(y.all.rownames))
             x[[2]] <- lapply(seq_along(x[[2]]), function(i) {
                 vals <- base.values
@@ -790,7 +799,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         }
     }
 
-    if (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]])))
+    if (!isScatter(chart.type) && (length(x) == 1 && is.list(x) && (is.matrix(x[[1]]) || !is.atomic(x[[1]]))))
     {
         x = x[[1]]
         if (is.null(rlabels) && !is.atomic(x))
@@ -820,12 +829,15 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         }
         for (i in 1:k)
         {
-            if (names(x)[i] != "Y" && NCOL(x[[i]]) > 1)
+            tmp.names <- getFullRowNames(x[[i]])
+            if (!is.null(names(x)) && names(x)[i] != "Y" && NCOL(x[[i]]) > 1)
             {
                 warning("Only the first column of '", scatterDefaultNames(i),
                         "' variables is used")
                 x[[i]] <- x[[i]][,1,drop = FALSE]
             }
+            if (!is.null(nrow(x[[i]])))
+                rownames(x[[i]]) <- tmp.names
         }
     }
 
@@ -843,23 +855,14 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     if (isScatter(chart.type) && length(x) > 1)
     {
         # Check for row names to match on
-        .getRowNames <- function(x)
-        {
-            if (is.null(nrow(x)) && !is.list(x))
-                return(names(x))
-            else if (hasUserSuppliedRownames(x))
-                return(rownames(x))
-            else
-                return(NULL)
-        }
-        x.all.rownames <- .getRowNames(x[[1]])
+        x.all.rownames <- getFullRowNames(x[[1]])
         for (i in 2:k)
         {
             if (length(x.all.rownames) == 0)
-                x.all.rownames <- .getRowNames(x[[i]])
+                x.all.rownames <- getFullRowNames(x[[i]])
             else
             {
-                tmp.names <- .getRowNames(x[[i]])
+                tmp.names <- getFullRowNames(x[[i]])
                 if (length(tmp.names) > 0)
                 {
                     removed.rownames <- unique(c(setdiff(x.all.rownames, tmp.names),
@@ -1741,6 +1744,21 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
     x
 }
 
+getFullRowNames <- function(x)
+{
+    if (!is.null(attr(x, "span")))
+        return(apply(attr(x, "span")$rows, 1, paste, collapse = " - "))
+    else if (!is.null(nrow(x)) && hasUserSuppliedRownames(x))
+        return(rownames(x))
+    else if (!is.list(x) && is.null(nrow(x)))
+        return(names(x))
+    else if (is.list(x) && length(x) == 1)
+        return(getFullRowNames(x[[1]]))
+    else
+        return(NULL)
+}
+
+
 #' Helps tidy Q variables and tables
 #' @description Inputs supplied via input.data.raw can be in a range of
 #'  formats. This function does a minimal job of checking for attribute
@@ -1799,6 +1817,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         # accidentally used for another variable
         # The space is needed to avoid ugly R defaults
         colnames(new.dat) <- " "
+        new.dat <- CopyAttributes(new.dat, x)
         return(new.dat)
     }
     else if (!is.list(x))
@@ -1911,6 +1930,13 @@ tidyLabels <- function(data, chart.type)
                     attr(data, "categories.title") <- tmp$common.prefix
             }
         }
+    }
+
+    # Remove span labels
+    if (isScatter(chart.type) && all(grepl(" - ", rownames(data), fixed = TRUE)))
+    {
+        rownames(data) <- MakeUniqueNames(sapply(rownames(data), 
+            function(x) tail(strsplit(x, " - ")[[1]], n = 1)))
     }
     data
 }

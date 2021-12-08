@@ -180,7 +180,13 @@ banner.1d.with.multstats <- list(X = structure(c("Income", "Income", "Income", "
 
 banner.1d.with.stats.and.Z1.Z2 <- list(X = structure(c("Income", "Income", "Income", "Income",
     "Income", "Income", "Income", "Income", "Income", "Income", "Gender",
-    "Gender", "Gender"), .Dim = c(13L, 1L), .Dimnames = list(c("Less than $15,000",
+    "Gender", "Gender"), .Dim = c(13L, 1L), span = list(rows = structure(list(c("Income",
+    "Income", "Income", "Income", "Income", "Income", "Income", "Income", "Income",
+    "Income", "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame",
+    .Names = c("",""), row.names = c(NA, 13L))), .Dimnames = list(c("Less than $15,000",
     "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
     "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
     "$150,001 to $200,000", "$200,001 or more", "NET", "Male", "Female",
@@ -515,23 +521,23 @@ test_that("Using tables with banners",
     pd3 <- PrepareData("Scatter", input.data.raw = tb3)
     expect_equal(dim(pd3$data), dim(pd$data))
     expect_equal(rownames(pd3$data), rownames(pd$data))
-    expect_equal(pd3$data[,1], c("Income", "Income", "Income", "Income",
-        "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"))
+    expect_equal(pd3$data[,1], rep(c("Income", "Gender"), c(10, 3)))
 
     pd4 <- PrepareData("Scatter", input.data.raw = banner.1d.with.multstats)
-    expect_equal(dimnames(pd4$data), list(c("Less than $15,000", "$15,001 to $30,000",
-        "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
-        "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
-        "Male", "Female"), c("table.BANNER", "%", "z-Statistic", "p",
-        "table.BANNER.3")))
+    expect_equal(dimnames(pd4$data), list(c("Income - Less than $15,000",
+        "Income - $15,001 to $30,000", "Income - $30,001 to $45,000",
+        "Income - $45,001 to $60,000", "Income - $60,001 to $90,000",
+        "Income - $90,001 to $120,000", "Income - $120,001 to $150,000",
+        "Income - $150,001 to $200,000", "Income - $200,001 or more",
+        "Income - NET", "Gender - Male", "Gender - Female", "Gender - NET"),
+        c("table.BANNER", "%", "z-Statistic", "p", "table.BANNER.3")))
     expect_equal(pd4$scatter.variable.indices, c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
 
     expect_error(PrepareData("Scatter", input.data.raw = banner.1d.with.multstats,
         subset = fake.filter), NA)
 
-
     pd5 <- PrepareData("Scatter", input.data.raw = banner.2d.with.multstats,
-        hide.empty.columns = FALSE)
+        hide.empty.columns = FALSE, tidy.labels = TRUE)
     expect_equal(dimnames(pd5$data), list(c("Less than $15,000",
         "$15,001 to $30,000", "$30,001 to $45,000",
         "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
@@ -543,7 +549,7 @@ test_that("Using tables with banners",
         "$15,001 to $30,000  ", "$30,001 to $45,000  ", "$45,001 to $60,000  ",
         "$60,001 to $90,000  ", "$90,001 to $120,000  ", "$120,001 to $150,000  ",
         "$150,001 to $200,000  ", "$200,001 or more  ", "Male  ", "Female  "
-        ), c("table.BANNER", "Y", "Groups", "z-Statistic")))
+    ), c("table.BANNER", "Y", "Groups", "z-Statistic")))
     expect_equal(levels(pd5$data$Groups), c("Young", "Middle-aged", "Old"))
 })
 
@@ -599,7 +605,7 @@ test_that("Check that a table can be used twice for the span and values",
     tmp.input[[1]] <- PrepareForCbind(tmp.input[[1]], use.span = TRUE)
     tmp.input[[2]] <- PrepareForCbind(tmp.input[[2]])
 
-    res <- PrepareData("Scatter", input.data.raw = tmp.input)
+    res <- PrepareData("Scatter", input.data.raw = tmp.input, tidy.labels = TRUE)
     expect_equal(res$data, structure(list(` ` = c("Income", "Income", "Income",
         "Income", "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"),
         table.BANNER = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
@@ -616,7 +622,8 @@ test_that("Check that a table can be used twice for the span and values",
 
 test_that("Keeping extra data input.data.raw$Y for annotations",
 {
-    expect_warning(res <- PrepareData("Scatter", input.data.raw = banner.1d.with.stats.and.Z1.Z2),
+    expect_warning(res <- PrepareData("Scatter", tidy.labels = TRUE,
+        input.data.raw = banner.1d.with.stats.and.Z1.Z2),
         "Only the first column")
     expect_equal(dimnames(res$data), list(c("Less than $15,000", "$15,001 to $30,000",
         "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
