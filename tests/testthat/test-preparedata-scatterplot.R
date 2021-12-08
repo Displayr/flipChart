@@ -180,7 +180,13 @@ banner.1d.with.multstats <- list(X = structure(c("Income", "Income", "Income", "
 
 banner.1d.with.stats.and.Z1.Z2 <- list(X = structure(c("Income", "Income", "Income", "Income",
     "Income", "Income", "Income", "Income", "Income", "Income", "Gender",
-    "Gender", "Gender"), .Dim = c(13L, 1L), .Dimnames = list(c("Less than $15,000",
+    "Gender", "Gender"), .Dim = c(13L, 1L), span = list(rows = structure(list(c("Income",
+    "Income", "Income", "Income", "Income", "Income", "Income", "Income", "Income",
+    "Income", "Gender", "Gender", "Gender"), c("Less than $15,000", "$15,001 to $30,000",
+    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000",
+    "$90,001 to $120,000", "$120,001 to $150,000", "$150,001 to $200,000",
+    "$200,001 or more", "NET", "Male", "Female", "NET")), class = "data.frame",
+    .Names = c("",""), row.names = c(NA, 13L))), .Dimnames = list(c("Less than $15,000",
     "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
     "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
     "$150,001 to $200,000", "$200,001 or more", "NET", "Male", "Female",
@@ -531,19 +537,19 @@ test_that("Using tables with banners",
         subset = fake.filter), NA)
 
     pd5 <- PrepareData("Scatter", input.data.raw = banner.2d.with.multstats,
-        hide.empty.columns = FALSE)
-    #expect_equal(dimnames(pd5$data), list(c("Less than $15,000",
-    #    "$15,001 to $30,000", "$30,001 to $45,000",
-    #    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
-    #    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
-    #    "Male", "Female", "Less than $15,000 ", "$15,001 to $30,000 ",
-    #    "$30,001 to $45,000 ", "$45,001 to $60,000 ", "$60,001 to $90,000 ",
-    #    "$90,001 to $120,000 ", "$120,001 to $150,000 ", "$150,001 to $200,000 ",
-    #    "$200,001 or more ", "Male ", "Female ", "Less than $15,000  ",
-    #    "$15,001 to $30,000  ", "$30,001 to $45,000  ", "$45,001 to $60,000  ",
-    #    "$60,001 to $90,000  ", "$90,001 to $120,000  ", "$120,001 to $150,000  ",
-    #    "$150,001 to $200,000  ", "$200,001 or more  ", "Male  ", "Female  "
-    #), c("table.BANNER", "Y", "Groups", "z-Statistic")))
+        hide.empty.columns = FALSE, tidy.labels = TRUE)
+    expect_equal(dimnames(pd5$data), list(c("Less than $15,000",
+        "$15,001 to $30,000", "$30,001 to $45,000",
+        "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+        "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+        "Male", "Female", "Less than $15,000 ", "$15,001 to $30,000 ",
+        "$30,001 to $45,000 ", "$45,001 to $60,000 ", "$60,001 to $90,000 ",
+        "$90,001 to $120,000 ", "$120,001 to $150,000 ", "$150,001 to $200,000 ",
+        "$200,001 or more ", "Male ", "Female ", "Less than $15,000  ",
+        "$15,001 to $30,000  ", "$30,001 to $45,000  ", "$45,001 to $60,000  ",
+        "$60,001 to $90,000  ", "$90,001 to $120,000  ", "$120,001 to $150,000  ",
+        "$150,001 to $200,000  ", "$200,001 or more  ", "Male  ", "Female  "
+    ), c("table.BANNER", "Y", "Groups", "z-Statistic")))
     expect_equal(levels(pd5$data$Groups), c("Young", "Middle-aged", "Old"))
 })
 
@@ -599,30 +605,31 @@ test_that("Check that a table can be used twice for the span and values",
     tmp.input[[1]] <- PrepareForCbind(tmp.input[[1]], use.span = TRUE)
     tmp.input[[2]] <- PrepareForCbind(tmp.input[[2]])
 
-    res <- PrepareData("Scatter", input.data.raw = tmp.input)
-    #expect_equal(res$data, structure(list(` ` = c("Income", "Income", "Income",
-    #    "Income", "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"),
-    #    table.BANNER = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
-    #    18.2461103253182, 22.3479490806223, 14.5685997171146, 8.34512022630834,
-    #    6.22347949080622, 5.7991513437058, 49.375, 50.625)), row.names = c("Less than $15,000",
-    #    "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
-    #    "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
-    #    "$150,001 to $200,000", "$200,001 or more", "Male", "Female"),
-    #    scatter.variable.indices = c(x = 1,
-    #    y = 2, sizes = NA, colors = NA, groups = NA), class = "data.frame"))
+    res <- PrepareData("Scatter", input.data.raw = tmp.input, tidy.labels = TRUE)
+    expect_equal(res$data, structure(list(` ` = c("Income", "Income", "Income",
+        "Income", "Income", "Income", "Income", "Income", "Income", "Gender", "Gender"),
+        table.BANNER = c(3.25318246110325, 10.8910891089109, 10.3253182461103,
+        18.2461103253182, 22.3479490806223, 14.5685997171146, 8.34512022630834,
+        6.22347949080622, 5.7991513437058, 49.375, 50.625)), row.names = c("Less than $15,000",
+        "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+        "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+        "$150,001 to $200,000", "$200,001 or more", "Male", "Female"),
+        scatter.variable.indices = c(x = 1,
+        y = 2, sizes = NA, colors = NA, groups = NA), class = "data.frame"))
     expect_equal(res$scatter.variable.indices,
         c(x = 1, y = 2, sizes = NA, colors = NA, groups = NA))
 })
 
 test_that("Keeping extra data input.data.raw$Y for annotations",
 {
-    expect_warning(res <- PrepareData("Scatter", input.data.raw = banner.1d.with.stats.and.Z1.Z2),
+    expect_warning(res <- PrepareData("Scatter", tidy.labels = TRUE,
+        input.data.raw = banner.1d.with.stats.and.Z1.Z2),
         "Only the first column")
-    #expect_equal(dimnames(res$data), list(c("Less than $15,000", "$15,001 to $30,000",
-    #    "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
-    #    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
-    #    "Male", "Female"), c(" ", "%", "table.BANNER", "  ", "z-Statistic",
-    #    "p")))
+    expect_equal(dimnames(res$data), list(c("Less than $15,000", "$15,001 to $30,000",
+        "$30,001 to $45,000", "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+        "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+        "Male", "Female"), c(" ", "%", "table.BANNER", "  ", "z-Statistic",
+        "p")))
     expect_equal(res$scatter.variable.indices, c(x = 1, y = 2, sizes = 3, colors = 4, groups = NA))
 })
 

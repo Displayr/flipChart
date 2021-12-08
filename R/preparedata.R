@@ -441,6 +441,10 @@ PrepareData <- function(chart.type,
     ###########################################################################
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
+    if (isScatter(chart.type)) # to remove span NETS
+        data <- RemoveRowsAndOrColumns(data,
+                row.names.to.remove = row.names.to.remove,
+                column.names.to.remove = column.names.to.remove, split = split)
     if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
@@ -1926,6 +1930,13 @@ tidyLabels <- function(data, chart.type)
                     attr(data, "categories.title") <- tmp$common.prefix
             }
         }
+    }
+
+    # Remove span labels
+    if (isScatter(chart.type) && all(grepl(" - ", rownames(data), fixed = TRUE)))
+    {
+        rownames(data) <- MakeUniqueNames(sapply(rownames(data), 
+            function(x) tail(strsplit(x, " - ")[[1]], n = 1)))
     }
     data
 }
