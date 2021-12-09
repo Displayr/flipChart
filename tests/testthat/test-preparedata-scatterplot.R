@@ -847,3 +847,18 @@ test_that("Scatter with variable and table input",
     expect_warning(PrepareData("Scatter", input.data.raw = raw.with.tb ),
             "Values (20) were truncated", fixed = TRUE)
 })
+
+test_that("Scatter with multiple tables",
+{
+    mult.tbs <- list(multi1 = structure(c(6L, 5L, 3L, 3L, 3L, 2L, 4L, 2L, 9L,
+        2L, 6L, 4L, 7L, 6L, 10L, 7L, 6L, 2L, 3L, 5L), .Dim = c(10L, 2L
+        ), .Dimnames = list(c("A", "B", "C", "D", "E", "F", "G", "H",
+        "I", "J"), NULL)), multi2 = structure(c(7, 6, 4, 4, 4, 3, 5,
+        3, 10, 3, 6, 4, 7, 6, 10, 7, 6, 2, 3, 5), .Dim = c(10L, 2L), .Dimnames = list(
+        c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"), NULL)),
+        multi3 = structure(c(7, 6, 4, 4, 4, 3, 5, 3, 10, 3, 7, 5,
+        8, 7, 11, 8, 7, 3, 4, 6), .Dim = c(10L, 2L), .Dimnames = list(
+        c("A", "B", "C", "D", "E", "F", "G", "H", "I", "J"),
+        NULL)))
+    expect_error(pd <- PrepareData("Scatter", input.data.table = mult.tbs, tidy.labels = TRUE), NA)
+})

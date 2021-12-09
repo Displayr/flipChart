@@ -1933,7 +1933,8 @@ tidyLabels <- function(data, chart.type)
     }
 
     # Remove span labels
-    if (isScatter(chart.type) && all(grepl(" - ", rownames(data), fixed = TRUE)))
+    if (isScatter(chart.type) &&  !is.null(rownames(data)) && 
+        all(grepl(" - ", rownames(data), fixed = TRUE)))
     {
         rownames(data) <- MakeUniqueNames(sapply(rownames(data), 
             function(x) tail(strsplit(x, " - ")[[1]], n = 1)))
