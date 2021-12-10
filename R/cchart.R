@@ -674,7 +674,7 @@ setScatterAxesBounds <- function(settings, data)
         {
             offset <- (rg[2] - rg[1]) * 0.1
             sc <- 10^(floor(log10(rg[2] - rg[1])))
-            settings$ValueAxis$Minimum <- floor((rg[1] - offset)*sc) * sc
+            settings$ValueAxis$Minimum <- floor((rg[1] - offset)/sc) * sc
         }
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
@@ -684,7 +684,7 @@ setScatterAxesBounds <- function(settings, data)
         {
             offset <- (rg[2] - rg[1]) * 0.1
             sc <- 10^(floor(log10(rg[2] - rg[1])))
-            settings$PrimaryAxis$Minimum <- floor((rg[1] - offset)*sc) * sc
+            settings$PrimaryAxis$Minimum <- floor((rg[1] - offset)/sc) * sc
         }
     }
     return(settings)
