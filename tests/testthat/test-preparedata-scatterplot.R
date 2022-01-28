@@ -862,3 +862,31 @@ test_that("Scatter with multiple tables",
         NULL)))
     expect_error(pd <- PrepareData("Scatter", input.data.table = mult.tbs, tidy.labels = TRUE), NA)
 })
+
+segment.output <- list(X = structure(c("Segmentation 1", "Segmentation 1", "Segmentation 1",
+"Segmentation 1", "Segmentation 1", "Segmentation 2", "Segmentation 2",
+"Segmentation 2", "Segmentation 2", "Segmentation 2", "Segmentation 3",
+"Segmentation 3", "Segmentation 3", "Segmentation 3", "Segmentation 3"
+), .Dim = c(15L, 1L), .Dimnames = list(NULL, " ")), Y = list(
+    x = c(`Segment 1` = 3.03447610349394, `Segment 2` = 17.9297449416481,
+    `Segment 3` = 20.3150989371352, `Segment 4` = 5.85423642187379,
+    `Segment 5` = 20.8765697898343, `Segment 1` = 9.59218586212955,
+    `Segment 2` = 16.4974928367883, `Segment 3` = 15.1885238999967,
+    `Segment 4` = 12.4531600333285, `Segment 5` = 0.740167195908725,
+    `Segment 1` = 0.811733829323202, `Segment 2` = 11.218017723877,
+    `Segment 3` = 18.043359159492, `Segment 4` = 9.01095469598658,
+    `Segment 5` = 4.04856760869734)), Z1 = structure(c(16.3899975188542,
+12.3178273090161, 2.09314567619003, 21.9561353849713, 8.0735654453747,
+6.11704107141122, 20.5944275658112, 6.57775207655504, 18.8299025583547,
+1.52073362842202, 0.539231050061062, 24.4671732943971, 3.34392643999308,
+15.4069399344735, 24.083477264503), .Dim = c(15L, 1L), .Dimnames = list(
+    c("Segment 1", "Segment 2", "Segment 3", "Segment 4", "Segment 5",
+    "Segment 1", "Segment 2", "Segment 3", "Segment 4", "Segment 5",
+    "Segment 1", "Segment 2", "Segment 3", "Segment 4", "Segment 5"
+    ), " ")), Z2 = NULL, groups = NULL, labels = NULL)
+
+test_that("Duplicate rownames retained",
+{
+    expect_error(pd <- PrepareData("Scatter", input.data.raw = segment.output), NA)
+    expect_equal(dim(pd$data), c(15, 3))
+})
