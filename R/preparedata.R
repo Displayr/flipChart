@@ -728,7 +728,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         x <- as.data.frame(x[[1]])
         rownames(x) <- tmp.names
         return(x)
-    } 
+    }
     if (is.character(x))
     {
         x <- TidyTabularData(x)
@@ -760,7 +760,7 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     # Dealing with situation where x$X is a list containing only one thing.
     if (is.list(x[[1]]) && length(x[[1]]) == 1)
         x[[1]] <- x[[1]][[1]]
-    
+
     # For Scatterplot, y-coordinates are entered by a multi comboBox
     # Remove duplicates before rownames are messed up
     if (isScatter(chart.type) && length(x) >= 2 && is.list(x[[2]]))
@@ -979,7 +979,7 @@ processInputData <- function(x, subset, weights)
 
     if (length(subset) > 1)
     {
-        msg <- paste("Filters have been applied to this visualation. They have been ignored.",
+        msg <- paste("Filters have been applied to this visualization. They have been ignored.",
                 "To apply filters you need to instead filter the source data that is being visualized.")
         tb.desc <- attr(x, "basedescription")
         if (is.null(tb.desc) || tb.desc$FilteredProportion == 0)
@@ -989,7 +989,7 @@ processInputData <- function(x, subset, weights)
     }
     if (length(weights) > 0)
     {
-        msg <- paste("Weights have been applied to this visualation. They have been ignored.",
+        msg <- paste("Weights have been applied to this visualization. They have been ignored.",
                 "To apply weights you need to instead weight the source data that is being visualized.")
         if (is.null(attr(x, "basedescription")) || is.null(attr(x, "weight.name")))
             warning(msg)
@@ -1062,10 +1062,10 @@ flattenMultiStatTable <- function(x)
 processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
 {
     if (length(subset) > 1)
-        warning("Filters have been applied to this visualation. They have been ignored. ",
+        warning("Filters have been applied to this visualization. They have been ignored. ",
             "To apply filters you need to instead filter the source data that is being visualized.")
     if (length(weights) > 0)
-        warning("Weights have been applied to this visualation. They have been ignored. ",
+        warning("Weights have been applied to this visualization. They have been ignored. ",
             "To apply weights you need to instead weight the source data that is being visualized.")
 
     us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
@@ -1933,10 +1933,10 @@ tidyLabels <- function(data, chart.type)
     }
 
     # Remove span labels
-    if (isScatter(chart.type) &&  !is.null(rownames(data)) && 
+    if (isScatter(chart.type) &&  !is.null(rownames(data)) &&
         all(grepl(" - ", rownames(data), fixed = TRUE)))
     {
-        rownames(data) <- MakeUniqueNames(sapply(rownames(data), 
+        rownames(data) <- MakeUniqueNames(sapply(rownames(data),
             function(x) tail(strsplit(x, " - ")[[1]], n = 1)))
     }
     data
