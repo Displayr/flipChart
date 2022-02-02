@@ -295,7 +295,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     result <- addChartTypeWarning(result, chart.type, small.multiples)
-    result <- addLabels(result, user.args$title, categories.title, values.title)
+    result <- addLabels(result, user.args$title, categories.title, values.title, user.args$data.label.format)
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
@@ -311,7 +311,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result
 }
 
-addLabels <- function(x, chart.title, categories.title, values.title)
+addLabels <- function(x, chart.title, categories.title, values.title, data.label.format)
 {
     chart.labels <- attr(x, "ChartLabels") # for plotly standard charts this will be a list
     if (is.null(chart.labels))
@@ -322,6 +322,17 @@ addLabels <- function(x, chart.title, categories.title, values.title)
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title
+    if (any(nzchar(data.label.format)))
+    {
+        numformat <- convertToPPTNumFormat(data.label.format)
+        if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
+        {
+            for (i in 1:length(chart.labels$SeriesLabels))
+                chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
+        } else if (!is.null(numformat))
+            chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
+    }
+
     if (length(chart.labels) == 0)
         chart.labels <- NULL
     attr(x, "ChartLabels") <- chart.labels
@@ -990,3 +1001,32 @@ convertChartDataToNumeric <- function(data)
         new.data[,ind.color] <- factor(data[,ind.color], levels = unique(data[,ind.color]))
     return(CopyAttributes(new.data, data))
 }
+
+# Currently only the data labels formats are converted
+# So we only look for floating point or percentage formats
+# (In particular we don't handle dates, especially not weekly ranges)
+# If format is unknown we return NULL to allow PPT to use default settings
+convertToPPTNumFormat <- function(d3format)
+{
+    res <- ""
+    if (substr(d3format, 1, 1) == ",")
+        res <- "#,##"
+
+    mm <- regexpr("\\.(\\d+)", d3format, perl = TRUE)
+    if (mm > 0)
+    {
+        m.start <- attr(mm, "capture.start")[1]
+        m.len <- attr(mm, "capture.length")[1]
+        num.decimals <- as.numeric(substr(d3format, m.start, m.start + m.len - 1))
+        if (num.decimals > 0)
+            res <- paste0(res, ".", paste(rep("0", num.decimals), collapse = ""))
+    }
+    if (grepl("%", d3format, fixed = TRUE))
+        res <- paste0(res, "%")
+
+    if (any(nzchar(res)))
+        return(res)
+    else
+        return(NULL)
+}
+
