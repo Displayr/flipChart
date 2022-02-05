@@ -322,16 +322,16 @@ addLabels <- function(x, chart.title, categories.title, values.title, data.label
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title
-    if (any(nzchar(data.label.format)))
-    {
-        numformat <- convertToPPTNumFormat(data.label.format)
-        if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
-        {
-            for (i in 1:length(chart.labels$SeriesLabels))
-                chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
-        } else if (!is.null(numformat))
-            chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
-    }
+    #if (any(nzchar(data.label.format)))
+    #{
+    #    numformat <- convertToPPTNumFormat(data.label.format)
+    #    if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
+    #    {
+    #        for (i in 1:length(chart.labels$SeriesLabels))
+    #            chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
+    #    } else if (!is.null(numformat))
+    #        chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
+    #}
 
     if (length(chart.labels) == 0)
         chart.labels <- NULL
@@ -454,7 +454,7 @@ getPPTSettings <- function(chart.type, args, data)
     }
     if (chart.type == "Radar" && tmp.data.label.show)
         tmp.data.label.show.category.labels <- TRUE
-    if (chart.type == "Bar Pictograph" && isTRUE(args$data.label.position != "No")) 
+    if (chart.type == "Bar Pictograph" && isTRUE(args$data.label.position != "No"))
         tmp.data.label.show <- TRUE
 
     # DataLabelsPosition not supported for Area Chart
