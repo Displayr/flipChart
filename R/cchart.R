@@ -1018,8 +1018,8 @@ convertToPPTNumFormat <- function(d3format)
         m.start <- attr(mm, "capture.start")[1]
         m.len <- attr(mm, "capture.length")[1]
         num.decimals <- as.numeric(substr(d3format, m.start, m.start + m.len - 1))
-        if (num.decimals == 0)
-  			res <- 0
+        if (d3format == '.0%')
+    		return('0%')
         if (num.decimals > 0)
             res <- paste0(res, ".", paste(rep("0", num.decimals), collapse = ""))
     }
