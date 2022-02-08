@@ -306,6 +306,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     }
     if (is.null(attr(result, "ChartData")))
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+    attr(result, "Footer") <- "Hello im alex and i love 2 things:\ncaptions and R attributes"
     class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
     result
