@@ -551,6 +551,8 @@ getPPTSettings <- function(chart.type, args, data)
         res$TemplateSeries = series.settings
     if (isFALSE(args$legend.show) || isTRUE(args$legend.show == "Hide") || tmp.n == 1)
         res$ShowLegend <- FALSE
+    if (isTRUE(args$legend.show == "Show"))
+        res$ShowLegened <- TRUE
     legend.position <- "TopRight"
     if (isTRUE(args$legend.orientation == "Horizontal"))
         legend.position <- "Bottom"
