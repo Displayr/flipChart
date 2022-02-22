@@ -680,6 +680,10 @@ setScatterAxesBounds <- function(settings, data)
     ind.x <- v.ind["x"]
     ind.y <- v.ind["y"]
 
+    if (is.numeric(data) && !is.null(attr(data, "statistic")) &&
+        grepl(attr(data, "statistic"), "%"))
+        data <- data/100
+
     if (is.null(settings$ValueAxis$Minimum) && .isValidIndex(ind.y))
     {
         rg <- range(data[,ind.y], na.rm = TRUE)
