@@ -322,16 +322,16 @@ addLabels <- function(x, chart.title, categories.title, values.title, data.label
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title
-    #if (any(nzchar(data.label.format)))
-    #{
-    #    numformat <- convertToPPTNumFormat(data.label.format)
-    #    if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
-    #    {
-    #        for (i in 1:length(chart.labels$SeriesLabels))
-    #            chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
-    #    } else if (!is.null(numformat))
-    #        chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
-    #}
+    if (any(nzchar(data.label.format)))
+    {
+        numformat <- convertToPPTNumFormat(data.label.format)
+        if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
+        {
+            for (i in 1:length(chart.labels$SeriesLabels))
+                chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
+        } else if (!is.null(numformat))
+            chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
+    }
 
     if (length(chart.labels) == 0)
         chart.labels <- NULL
@@ -1010,29 +1010,38 @@ convertChartDataToNumeric <- function(data)
 
 # Currently only the data labels formats are converted
 # So we only look for floating point or percentage formats
+# Note that d3 and PPT handle formats differently when
+# the number of decimals is unspecified but make a best guess
 # (In particular we don't handle dates, especially not weekly ranges)
 # If format is unknown we return NULL to allow PPT to use default settings
 convertToPPTNumFormat <- function(d3format)
 {
-    res <- ""
-    if (substr(d3format, 1, 1) == ",")
-        res <- "#,##"
-
+    num.decimals <- NULL
     mm <- regexpr("\\.(\\d+)", d3format, perl = TRUE)
     if (mm > 0)
     {
         m.start <- attr(mm, "capture.start")[1]
         m.len <- attr(mm, "capture.length")[1]
         num.decimals <- as.numeric(substr(d3format, m.start, m.start + m.len - 1))
-        if (num.decimals > 0)
-            res <- paste0(res, ".", paste(rep("0", num.decimals), collapse = ""))
     }
     if (grepl("%", d3format, fixed = TRUE))
-        res <- paste0(res, "%")
+    {
+        if (is.null(num.decimals))
+            return("0.#%")
+        else if (num.decimals <= 0)
+            return("0%")
+        else
+            return(paste0("0.", paste(rep(0, num.decimals), collapse = ""), "%"))
+    } else if (grepl("f", d3format, fixed = TRUE))
+    {
+        if (is.null(num.decimals))
+            return(NULL)
+        else if (num.decimals <= 0)
+            return("0")
+        else
+            return(paste0("0.", paste(rep(0, num.decimals), collapse = "")))
 
-    if (any(nzchar(res)))
-        return(res)
-    else
+    } else
         return(NULL)
 }
 
