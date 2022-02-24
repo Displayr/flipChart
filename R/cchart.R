@@ -1032,11 +1032,9 @@ convertToPPTNumFormat <- function(d3format)
             return("0%")
         else
             return(paste0("0.", paste(rep(0, num.decimals), collapse = ""), "%"))
-    } else if (grepl("f", d3format, fixed = TRUE))
+    } else if (!is.null(num.decimals)) # assume other formats are floating points
     {
-        if (is.null(num.decimals))
-            return(NULL)
-        else if (num.decimals <= 0)
+        if (num.decimals <= 0)
             return("0")
         else
             return(paste0("0.", paste(rep(0, num.decimals), collapse = "")))
