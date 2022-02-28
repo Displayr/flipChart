@@ -223,3 +223,63 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_true(!is.null(attr(res, "ChartWarning")))
 })
+
+test_that("Scatter axes bounds",
+{
+    dat1 <- structure(list(` ` = c(16.5292618516667, 0.479370604963302, 19.8251578509455,
+        2.52774200787021, 12.691554218326, 7.10203021588027, 5.52494604558057,
+        10.535784457086, 3.24015111335468, 10.9507195992616, 2.69311285214555,
+        4.19706622209025, 2.64466606664772, 1.05843689418161), table.Dimensions.2 = c(79,
+        76, 69, 82, 77, 74, 83, 75, 85, 80, 74, 78, 83, 76)), row.names = c("Hearing Aids",
+        "Apps &amp; Digital Solutions", "Pricing", "Training", "Business Support",
+        "Marketing", "Sales Representative", "Complaints Response", "Support",
+        "Accessibility", "Repairs/Remakes", "Orders", "Invoices", "Shipping Packaging"
+        ), scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA,
+        groups = NA), class = "data.frame")
+    expect_error(res1 <- CChart("Scatter", dat1, append.data = TRUE), NA)
+    expect_equal(attr(res1, "ChartSettings")$ValueAxis$Minimum, 60)
+    expect_equal(attr(res1, "ChartSettings")$PrimaryAxis$Minimum, -10)
+
+    dat2 <- structure(c(11.6216773130023, 38.9655882958994, 6.75870595507933,
+        30.0638780135998, 13.1052956933855, 42.5509993818257, 64.9907273851226,
+        23.9027405728415, 42.8394807335669, 11.456830826293, 5.17205852050278,
+        40.9849577580878, 52.3593653410262, 9.56109622913662, 0.88604986606223,
+        49.9484854729034, 88.7492272820935, 22.5221512466516, 81.6814341644344,
+        69.0912837420152, 89.4498248506079, 94.5600659385947, 83.9892849783639,
+        91.0570780960231, 62.930146301257, 19.7403667834329, 81.104471460952,
+        89.0171028229961, 34.3292808572017, NA, 26.3548320626417, 43.6018957345972,
+        13.434988666804, 36.8637955903565, 29.157222336699, 48.4648670925201,
+        53.8429837214094, 32.4953636925613, 59.9629095404904, 22.9548732742633,
+        12.239851638162, 58.2320214300433, 54.9969091283742, 12.6725736657737,
+        0.638780135998352), .Dim = c(15L, 3L), .Dimnames = list(c("Burger Shack",
+        "Burger Chef", "Nuovo Burger", "Lucky's Pizza", "Pizza Heaven",
+        "Southern Fried Chicken", "Arnold's", "Nero's Pizza", "Pret'a'pane",
+        "Ma's burgers", "Bread Basket", "Asian", "Mexican", "Other fast food",
+        "None of these"), c("table.Q2.Eaten.bought.last.month", "table.Q3.Ever.Eaten.3",
+        "table.Q4.Consider.3")), assigned.rownames = TRUE,
+        scatter.variable.indices = c(x = 1, y = 2, sizes = 3, colors = NA, groups = 3))
+    expect_warning(res2 <- CChart("Scatter", dat2, append.data = TRUE), "missing values")
+    expect_equal(attr(res2, "ChartSettings")$ValueAxis$Minimum, 10)
+    expect_equal(attr(res2, "ChartSettings")$PrimaryAxis$Minimum, -10)
+
+    dat3 <- structure(c(6.33333333333333, 56, 21.8333333333333, 9.16666666666667,
+        60.5, 9.16666666666667, 9.66666666666667, 1.83333333333333, 58.3333333333333,
+        53.6666666666667, 2.5, 57.5, 31.3333333333333, 17.8333333333333
+        ), .Dim = c(7L, 2L), .Dimnames = list(c("Coke", "Diet Coke",
+        "Coke Zero", "Pepsi", "Diet Pepsi", "Pepsi Max", "None of these"
+        ), c("Feminine", "Health-conscious")), statistic = "%", basedescriptiontext = "sample size = 600", basedescription = list(
+            Minimum = 600L, Maximum = 600L, Range = FALSE, Total = 600L,
+            Missing = 0L, EffectiveSampleSize = 600L, EffectiveSampleSizeProportion = 100,
+            FilteredProportion = 0), questiontypes = "PickAnyGrid", span = list(
+            rows = structure(list(c("Coke", "Diet Coke", "Coke Zero",
+            "Pepsi", "Diet Pepsi", "Pepsi Max", "None of these", "NET"
+            )), class = "data.frame", .Names = "", row.names = c(NA,
+            8L)), columns = structure(list(c("Feminine", "Health-conscious",
+            "NET")), class = "data.frame", .Names = "", row.names = c(NA,
+            3L))), name = "table.q5.2", questions = c("q5 2", "SUMMARY"
+        ), assigned.rownames = TRUE, scatter.variable.indices = c(x = 1,
+        y = 2, sizes = 3, colors = NA, groups = 3))
+    expect_error(res3 <- CChart("Scatter", dat3, append.data = TRUE), NA)
+    expect_equal(attr(res3, "ChartSettings")$ValueAxis$Minimum, -0.1)
+    expect_equal(attr(res3, "ChartSettings")$PrimaryAxis$Minimum, 0)
+})
