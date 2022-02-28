@@ -296,6 +296,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     result <- addChartTypeWarning(result, chart.type, small.multiples)
     result <- addLabels(result, user.args$title, categories.title, values.title, user.args$data.label.format)
+    chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
 
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
@@ -337,6 +338,19 @@ addLabels <- function(x, chart.title, categories.title, values.title, data.label
         chart.labels <- NULL
     attr(x, "ChartLabels") <- chart.labels
     return(x)
+}
+
+updateLabels <- function(chart.settings, chart.labels)
+{
+    if (!is.null(chart.labels))
+    {
+        if (!is.null(chart.labels$PrimaryAxisTitle))
+            chart.settings$PrimaryAxis$ShowTitle <- TRUE
+
+        if (!is.null(chart.labels$ValueAxisTitle))
+            chart.settings$ValueAxis$ShowTitle <- TRUE
+    }
+    return(chart.settings)
 }
 
 addChartTypeWarning <- function(x, chart.type, small.multiples)

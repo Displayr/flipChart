@@ -23,7 +23,9 @@ test_that("ChartSettings - Scatter",
             list(Style = "Solid", Width = 1, Color = "#E1E1E1"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis$MajorGridLine,
             list(Style = "Solid", Width = 1, Color = "#E1E1E1"))
-
+    expect_equal(attr(res, "ChartLabels"), list(PrimaryAxisTitle = "sr", ValueAxisTitle = "pop15"))
+    expect_true(attr(res, "ChartSettings")$PrimaryAxis$ShowTitle)
+    expect_true(attr(res, "ChartSettings")$ValueAxis$ShowTitle)
 
     v.ind <-  c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
     attr(dat, "scatter.variable.indices") <- v.ind
