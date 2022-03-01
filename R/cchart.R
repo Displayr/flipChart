@@ -308,7 +308,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
-    attr(result, "footer.html") <- attr(x, "footer.html")
+    attr(result, "footerhtml") <- attr(x, "footerhtml")
     result
 }
 
