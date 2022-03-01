@@ -510,7 +510,7 @@ PrepareData <- function(chart.type,
          values.title = values.title,
          categories.title = categories.title,
          chart.title = chart.title,
-         chart.footer = attr(data, "footer"),
+         chart.footer = attr(data, "footer", exact = TRUE),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
@@ -644,11 +644,11 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
             out <- do.call("rbind", res)
 
             if (chart.type == "Heat")
-                names(dimnames(out)) <- c("", attr(group.var, "question"))
+                names(dimnames(out)) <- c("", attr(group.var, "question", exact = TRUE))
             else
                 names(dimnames(out)) <- c("", tmp.names[2])
 
-            attr.list <- sapply(res, function(x) attr(x, "statistic"))
+            attr.list <- sapply(res, function(x) attr(x, "statistic", exact = TRUE))
             if (all(attr.list == attr.list[1]))
                 attr(out, "statistic") <- attr.list[1]
         }
