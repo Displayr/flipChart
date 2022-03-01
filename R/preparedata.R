@@ -510,7 +510,7 @@ PrepareData <- function(chart.type,
          values.title = values.title,
          categories.title = categories.title,
          chart.title = chart.title,
-         chart.footer = attr(data, "footer"),
+         chart.footer = attr(data, "footertext"),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
 }
 
