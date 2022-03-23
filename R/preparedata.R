@@ -402,6 +402,13 @@ PrepareData <- function(chart.type,
         transpose <- FALSE
     }
 
+    # Add info about significance arrows - this needs to occur here
+    # so that the stat testing info makes use of RearrangeRowsColumn
+    if (!is.null(attr(input.data.table, "statisticstestinginformation", exact = TRUE)))
+    {
+        data <- addStatTestingArrows(data, attr(data, "statisticstestinginformation")$significancedirection)
+    }
+
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
             !any(nchar(select.columns), na.rm = TRUE) &&
@@ -1892,6 +1899,7 @@ hasUserSuppliedRownames <- function(data)
 }
 
 
+#' @importFrom utils tail
 tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
@@ -2113,3 +2121,30 @@ containsQTable <- function(x)
         return(any(sapply(x, containsQTable)))
 
 }
+
+#' @importFrom abind abind
+addStatTestingArrows <- function(x, arrow.dir)
+{
+    dn <- dim(x)
+    tmp.sign1 <- ifelse(arrow.dir == "Up", 1, 0)
+    arrow.sign <- ifelse(arrow.dir == "Down", -1, tmp.sign1)
+
+    if (is.null(dn)) # vector
+    {
+        n <- NROW(x)
+        new.dat <- array(c(x, arrow.sign), dim = c(n, 1, 2), 
+            dimnames = list(names(x), NULL, c(attr(x, "statistic", exact = TRUE), "significancedirection")))
+        new.dat <- CopyAttributes(new.dat, x)
+    } else
+    {
+        new.dat <- abind(x, matrix(arrow.sign, dn[1], dn[2], byrow = TRUE), along = 3)
+        if (length(dn) == 3)
+            dimnames(new.dat)[[3]] <- c(dimnames(x)[[3]], "significancedirection")
+        else
+            dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), "significancedirection")
+        new.dat <- CopyAttributes(new.dat, x)
+        attr(new.dat, "statistic") <- NULL
+    }
+    return(new.dat)
+}
+

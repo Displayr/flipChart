@@ -5,6 +5,8 @@
 #' @param small.multiples Logical; Whether each series should be shown in its own panel. When this is true, parameters from \code{\link[flipStandardCharts]{SmallMultiples}} can be used (e.g. \code{nrows}, \code{x.order}, \code{share.axes}, \code{average.show}, \code{average.color}, \code{panel.title.show}).
 #' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param font.units One of "px" or "pt"
+#' @param annotation.list a list of annotations to add to the chart, based on statistics in the input data.
+#' @param hide.stat.testing Logical; whether to show significance tests.
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
@@ -262,6 +264,7 @@
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
 CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
+                   annotation.list = NULL, hide.stat.testing = TRUE,
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -272,6 +275,28 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         chart.type <- paste0(chart.type, "MultiColor")
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
+
+    if (!hide.stat.testing)
+    {
+        if (isFALSE(user.args$data.label.show))
+        {
+            # If data label show is false, then other annotations are not shown
+            user.args$data.label.show <- TRUE
+            annotation.list <- list(list(
+                    type = "Hide",
+                    data = "significancedirection",
+                    threstype = "Above threshold",
+                    threshold = "Inf"))
+        }
+        annotation.list <- c(annotation.list, 
+            list(type = "Arrow - down", data = "significancedirection",
+                 threstype = "Below threshold", threshold = 0,
+                 color = "red", size = 12),
+            list(type = "Arrow - up", data = "significancedirection", 
+                 threstype = "Above threshold", threshold = 0,
+                 color = "blue", size = 12))
+    }
+    user.args$annotation.list <- annotation.list
 
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
@@ -290,7 +315,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
-
+    
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))

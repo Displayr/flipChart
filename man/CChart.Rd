@@ -10,6 +10,8 @@ CChart(
   small.multiples = FALSE,
   multi.color.series = FALSE,
   font.units = "px",
+  annotation.list = NULL,
+  hide.stat.testing = TRUE,
   ...,
   warn.if.no.match = TRUE,
   append.data = FALSE
@@ -25,6 +27,10 @@ CChart(
 \item{multi.color.series}{Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.}
 
 \item{font.units}{One of "px" or "pt"}
+
+\item{annotation.list}{a list of annotations to add to the chart, based on statistics in the input data.}
+
+\item{hide.stat.testing}{Logical; whether to show significance tests.}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
