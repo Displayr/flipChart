@@ -2137,6 +2137,8 @@ addStatTestingArrows <- function(x, arrow.dir)
         new.dat <- CopyAttributes(new.dat, x)
     } else
     {
+        if (lengthg(dn) == 1)
+            dn <- c(dn, 1)
         new.dat <- abind(x, matrix(arrow.sign, dn[1], dn[2], byrow = TRUE), along = 3)
         if (length(dn) == 3)
             dimnames(new.dat)[[3]] <- c(dimnames(x)[[3]], "significancedirection")
