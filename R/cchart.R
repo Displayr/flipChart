@@ -285,16 +285,15 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             annotation.list <- list(list(
                     type = "Hide",
                     data = "significancedirection",
-                    threstype = "Above threshold",
-                    threshold = "Inf"))
+                    threstype = "above threshold",
+                    threshold = "-Inf"))
         }
-        annotation.list <- c(annotation.list, 
-            list(type = "Arrow - down", data = "significancedirection",
-                 threstype = "Below threshold", threshold = 0,
-                 color = "red", size = 12),
-            list(type = "Arrow - up", data = "significancedirection", 
-                 threstype = "Above threshold", threshold = 0,
-                 color = "blue", size = 12))
+        annot.len <- length(annotation.list)
+        annotation.list[[annot.len + 1]] <- list(type = "Arrow - down", data = "significancedirection",
+                 threstype = "below threshold", threshold = 0, color = "red", size = 12)
+        annotation.list[[annot.len + 2]] <- list(type = "Arrow - up", data = "significancedirection", 
+                 threstype = "above threshold", threshold = 0,
+                 color = "blue", size = 12)
     }
     user.args$annotation.list <- annotation.list
 
@@ -315,7 +314,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
-    
+   
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
