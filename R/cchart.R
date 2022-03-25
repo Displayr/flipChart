@@ -253,6 +253,7 @@
 #' }
 #' @importFrom methods formalArgs
 #' @importFrom flipStandardCharts ErrorIfNotEnoughData
+#' @importFrom flipChartBasics StripAlphaChannel
 #' @return A chart object that can be printed. Most often, a plotly object.
 #' @export
 #' @examples
@@ -295,7 +296,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     result <- addChartTypeWarning(result, chart.type, small.multiples)
-    result <- addLabels(result, user.args$title, categories.title, values.title, user.args$data.label.format)
+    result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
     chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
 
     # Convert data after the charting function has been applied
@@ -304,6 +305,19 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
+
+        # Specify data label font color for labeledscatter + numeric scale colors 
+        if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
+            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) && 
+            !isFALSE(user.args$data.label.font.autocolor))
+        {
+            tmp.pts <- chart.settings$TemplateSeries[[1]]$CustomPoints
+            tmp.lbs <- vector(mode = "list", length = length(tmp.pts))
+            for (ii in 1:length(tmp.pts))
+                tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
+                                      Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$BackgroundColor)))
+            attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
+        } 
     }
     if (is.null(attr(result, "ChartData")))
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
@@ -313,7 +327,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result
 }
 
-addLabels <- function(x, chart.title, categories.title, values.title, data.label.format)
+addLabels <- function(x, chart.type, chart.title, categories.title, values.title, data.label.format)
 {
     chart.labels <- attr(x, "ChartLabels") # for plotly standard charts this will be a list
     if (is.null(chart.labels))
@@ -324,7 +338,7 @@ addLabels <- function(x, chart.title, categories.title, values.title, data.label
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title
-    if (any(nzchar(data.label.format)))
+    if (!chart.type %in% c("Scatter", "Bubble") && any(nzchar(data.label.format)))
     {
         numformat <- convertToPPTNumFormat(data.label.format)
         if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
