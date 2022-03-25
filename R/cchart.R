@@ -308,7 +308,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
         # Specify data label font color for labeledscatter + numeric scale colors 
         if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
-            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints))
+            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) && 
+            !isFALSE(user.args$data.label.font.autocolor))
         {
             tmp.pts <- chart.settings$TemplateSeries[[1]]$CustomPoints
             tmp.lbs <- vector(mode = "list", length = length(tmp.pts))
