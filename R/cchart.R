@@ -299,7 +299,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                  size = stat.tests.size)
         annotation.list[[annot.len + 2]] <- list(type = "Arrow - up", data = "significancedirection", 
                  threstype = "above threshold", threshold = 0, color = stat.tests.color.pos, 
-                 size = stat.test.size)
+                 size = stat.tests.size)
     }
     user.args$annotation.list <- annotation.list
 
