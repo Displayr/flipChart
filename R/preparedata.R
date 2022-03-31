@@ -404,9 +404,9 @@ PrepareData <- function(chart.type,
 
     # Add info about significance arrows - this needs to occur here
     # so that the stat testing info makes use of RearrangeRowsColumn
-    if (!is.null(attr(input.data.table, "statisticstestinginformation", exact = TRUE)))
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)))
     {
-        data <- addStatTestingArrows(data, attr(data, "statisticstestinginformation")$significancedirection)
+        data <- addStatTestingArrows(data, attr(data, "QStatisticsTestingInfo")$significancedirection)
     }
 
     # Do not drop 1-column table to keep name for legend
@@ -2141,12 +2141,16 @@ addStatTestingArrows <- function(x, arrow.dir)
         {
             dn <- c(dn, 1)
             tmp.x <- matrix(x, ncol = 1, dimnames = list(rownames(x), NULL))
+        } else if (is.null(attr(x, "statistic", exact = TRUE)) && length(dn) == 2)
+        {
+            tmp.x <- array(x, c(dn[1], 1, dn[2]))
+            dimnames(tmp.x) <- list(dimnames(x)[[1]], NULL, dimnames(x)[[2]])
         } else
             tmp.x <- x
 
-        new.dat <- abind(tmp.x, matrix(arrow.sign, nrow = dn[1], ncol = dn[2], byrow = TRUE), along = 3)
-        if (length(dn) == 3)
-            dimnames(new.dat)[[3]] <- c(dimnames(x)[[3]], "significancedirection")
+        new.dat <- abind(tmp.x, matrix(arrow.sign, nrow = dn[1], ncol = NCOL(tmp.x), byrow = TRUE), along = 3)
+        if (length(dim(tmp.x)) == 3)
+            dimnames(new.dat)[[3]][dim(new.dat)[3]] <- "significancedirection"
         else
             dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), "significancedirection")
         new.dat <- CopyAttributes(new.dat, x)
