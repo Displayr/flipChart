@@ -11,7 +11,10 @@ CChart(
   multi.color.series = FALSE,
   font.units = "px",
   annotation.list = NULL,
-  hide.stat.testing = TRUE,
+  stat.tests.show = FALSE,
+  stat.tests.size = 12,
+  stat.tests.color.pos = "#0000FF",
+  stat.tests.color.neg = "#FF0000",
   ...,
   warn.if.no.match = TRUE,
   append.data = FALSE
@@ -30,7 +33,13 @@ CChart(
 
 \item{annotation.list}{a list of annotations to add to the chart, based on statistics in the input data.}
 
-\item{hide.stat.testing}{Logical; whether to show significance tests.}
+\item{stat.tests.show}{Logical; whether to show significance tests.}
+
+\item{stat.tests.size}{Numeric; size of stat testing arrows in pixels.}
+
+\item{stat.tests.color.pos}{Character; color hex code of the upward pointing arrows in signficance tests.}
+
+\item{stat.tests.color.neg}{Character; color hex code of the downward pointing arrows in signficance tests.}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
