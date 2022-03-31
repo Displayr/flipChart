@@ -402,6 +402,11 @@ PrepareData <- function(chart.type,
         transpose <- FALSE
     }
 
+    # Add info about significance arrows - this needs to occur here
+    # so that the stat testing info makes use of RearrangeRowsColumn
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && chart.type != "Table")
+        data <- addStatTestingArrows(data, attr(data, "QStatisticsTestingInfo")$significancedirection)
+
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
             !any(nchar(select.columns), na.rm = TRUE) &&
@@ -1892,6 +1897,7 @@ hasUserSuppliedRownames <- function(data)
 }
 
 
+#' @importFrom utils tail
 tidyLabels <- function(data, chart.type)
 {
     tmp <- NULL
@@ -2113,3 +2119,41 @@ containsQTable <- function(x)
         return(any(sapply(x, containsQTable)))
 
 }
+
+#' @importFrom abind abind
+addStatTestingArrows <- function(x, arrow.dir)
+{
+    dn <- dim(x)
+    tmp.sign1 <- ifelse(arrow.dir == "Up", 1, 0)
+    arrow.sign <- ifelse(arrow.dir == "Down", -1, tmp.sign1)
+
+    if (is.null(dn)) # vector
+    {
+        n <- NROW(x)
+        new.dat <- array(c(x, arrow.sign), dim = c(n, 1, 2), 
+            dimnames = list(names(x), NULL, c(attr(x, "statistic", exact = TRUE), "significancedirection")))
+        new.dat <- CopyAttributes(new.dat, x)
+    } else
+    {
+        if (length(dn) == 1)
+        {
+            dn <- c(dn, 1)
+            tmp.x <- matrix(x, ncol = 1, dimnames = list(rownames(x), NULL))
+        } else if (is.null(attr(x, "statistic", exact = TRUE)) && length(dn) == 2)
+        {
+            tmp.x <- array(x, c(dn[1], 1, dn[2]))
+            dimnames(tmp.x) <- list(dimnames(x)[[1]], NULL, dimnames(x)[[2]])
+        } else
+            tmp.x <- x
+
+        new.dat <- abind(tmp.x, matrix(arrow.sign, nrow = dn[1], ncol = NCOL(tmp.x), byrow = TRUE), along = 3)
+        if (length(dim(tmp.x)) == 3)
+            dimnames(new.dat)[[3]][dim(new.dat)[3]] <- "significancedirection"
+        else
+            dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), "significancedirection")
+        new.dat <- CopyAttributes(new.dat, x)
+        attr(new.dat, "statistic") <- NULL
+    }
+    return(new.dat)
+}
+
