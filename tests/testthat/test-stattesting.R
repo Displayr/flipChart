@@ -256,6 +256,7 @@ test_that("stats testing added to data matrix",
         c("Coca Cola", "Coke Zero", "Diet Coke", "Pepsi", "Pepsi Light", "Pepsi Max"),
         c("%", "significancedirection")))
 
-    expect_warning(res <- PrepareData("Bar", input.data.table = tb.1d, as.percentages = TRUE,
-        tidy = FALSE))
+    expect_error(res <- PrepareData("Bar", input.data.table = tb.1d, as.percentages = TRUE,
+        tidy = FALSE), NA)
+    expect_equal(res$values.title, "%")
 })
