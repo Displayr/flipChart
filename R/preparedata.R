@@ -1200,35 +1200,48 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     indices
 }
 
-asPercentages <- function(data)
+checkForNegPercent <- function(x)
 {
-    ind.negative <- which(data < 0)
+    ind.negative <- which(x < 0)
     if (length(ind.negative) > 0)
     {
         warning("Percentages calculated ignoring negative values.")
-        data[ind.negative] <- 0
+        x[ind.negative] <- 0
     }
+    return(x)
+}
 
+
+asPercentages <- function(data)
+{
     if (length(dim(data)) == 2 && is.null(attr(data, "statistic")) &&
         length(attr(data, "questions")) == 2 && attr(data, "questions")[2] == "SUMMARY")
     {
         # 1-dimensional table with multiple statistics
+        data[,1] <- checkForNegPercent(data[,1])
         data[,1] <- prop.table(data[,1]) * 100
     }
     else if (length(dim(data)) > 2)
     {
         # 2-dimensional table with statistics
-        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
+        data[,,1] <- checkForNegPercent(data[,,1])
+        if (NCOL(data) == 1)
+            data[,,1] <- suppressWarnings(prop.table(data[,,1])) * 100
+        else
+            data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
+        dimnames(data)[[3]][1] <- "%"
     }
     else if (NCOL(data) > 1)
     {
         # 2-dimensional table without statistics
+        data <- checkForNegPercent(data)
         data <- prop.table(data, 1) * 100
         attr(data, "statistic") <- "Row %"
     }
     else
     {
         # 1-dimensional table without statistics
+        data <- checkForNegPercent(data)
         data <- prop.table(data) * 100
         attr(data, "statistic") <- "%"
     }
@@ -1384,7 +1397,7 @@ transformTable <- function(data,
 
     # Convert to matrix to avoid state names from being turned into numeric values
     # when TidyTabularData is called
-    if (gsub(" ", "", chart.type) == "GeographicMap")
+    if (gsub(" ", "", chart.type) == "GeographicMap" && is.data.frame(data))
         data <- CopyAttributes(as.matrix(data), data)
 
     # This must happen after sample sizes have been used
@@ -1451,6 +1464,9 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
             data <- data
         else
             data <- asPercentages(data) # converts character QTables to numeric
+
+        if (isTRUE(attr(data, "values.title") == "n"))
+            attr(data, "values.title") <- "%"
     }
 
     if (hide.percent.symbol)
@@ -1725,6 +1741,8 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             attr(x, "values.title") <- ""
         else if (any(nchar(attr(x, "statistic"))))
             attr(x, "values.title") <- attr(x, "statistic")
+        if (is.null(attr(x, "values.title")) && length(dimnames(x)) == 3)
+            attr(x, "values.title") <- dimnames(x)[[3]][1]
     }
     if (sum(nchar(values.title)) > 0)
         attr(x, "values.title") <- values.title
