@@ -1222,6 +1222,7 @@ asPercentages <- function(data)
             data[,,1] <- prop.table(data[,,1]) * 100
         else
             data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
+        dimnames(data)[[3]][1] <- "%"
     }
     else if (NCOL(data) > 1)
     {
