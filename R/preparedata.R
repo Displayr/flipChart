@@ -1218,7 +1218,10 @@ asPercentages <- function(data)
     else if (length(dim(data)) > 2)
     {
         # 2-dimensional table with statistics
-        data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
+        if (NCOL(data) == 1)
+            data[,,1] <- prop.table(data[,,1]) * 100
+        else
+            data[,,1] <- prop.table(suppressWarnings(TidyTabularData(data)), 1) * 100
     }
     else if (NCOL(data) > 1)
     {
@@ -1384,7 +1387,7 @@ transformTable <- function(data,
 
     # Convert to matrix to avoid state names from being turned into numeric values
     # when TidyTabularData is called
-    if (gsub(" ", "", chart.type) == "GeographicMap")
+    if (gsub(" ", "", chart.type) == "GeographicMap" && is.data.frame(data))
         data <- CopyAttributes(as.matrix(data), data)
 
     # This must happen after sample sizes have been used
