@@ -255,6 +255,7 @@ test_that("stats testing added to data matrix",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
         c("Coca Cola", "Coke Zero", "Diet Coke", "Pepsi", "Pepsi Light", "Pepsi Max"),
         c("%", "significancedirection")))
+    expect_equal(res$values.title, "%")
 
     expect_error(res <- PrepareData("Bar", input.data.table = tb.1d, as.percentages = TRUE,
         tidy = FALSE), NA)
