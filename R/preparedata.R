@@ -404,7 +404,8 @@ PrepareData <- function(chart.type,
 
     # Add info about significance arrows - this needs to occur here
     # so that the stat testing info makes use of RearrangeRowsColumn
-    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && chart.type != "Table")
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && 
+        chart.type != "Table" && !isDistribution(chart.type))
         data <- addStatTestingArrows(data, attr(data, "QStatisticsTestingInfo")$significancedirection)
 
     # Do not drop 1-column table to keep name for legend
