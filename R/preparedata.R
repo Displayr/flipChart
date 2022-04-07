@@ -2203,7 +2203,7 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
         {
             j <- length(mat.list)
             mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc, 
-                nrow=nrow(tmp.x), ncol=ncol(tmp.x))
+                nrow=nrow(tmp.x), ncol=ncol(tmp.x), byrow = TRUE)
             tmp.signame <- paste0("signif", tmp.dir, cc)
             signames <- c(signames, tmp.signame)
             annot.list[[j]] <- list(type = paste(symbol, "-", tolower(tmp.dir)),

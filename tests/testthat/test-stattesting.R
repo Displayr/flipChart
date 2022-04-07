@@ -249,6 +249,14 @@ test_that("stats testing added to data matrix",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
         c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Light", "Pepsi Max"),
         c("Column %", "signifUp#0000FF", "signifDown#FF0000")))
+    expect_equal(res$data[,,2],
+        structure(c(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0), .Dim = c(9L,
+        6L), .Dimnames = list(c("18 to 24", "25 to 29", "30 to 34", "35 to 39",
+        "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
+        c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Light",
+        "Pepsi Max"))))
 
     expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats,
         tidy = FALSE, signif.append = TRUE), NA)
