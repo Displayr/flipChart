@@ -1210,7 +1210,7 @@ test_that("Prepare data with as.percentages and Pick Any inputs to a Venn Diagra
         "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Max", "NET"), row.names = c(NA,
         327L), questiontype = "PickAny", question = "Q6. Brand preference")
      zz = PrepareData("Venn", input.data.raw = list(X = b1), as.percentages = TRUE)
-     expect_error(Venn(zz$data), NA)
+     expect_warning(Venn(zz$data))
 })
 
 test_that("Invalid joining",

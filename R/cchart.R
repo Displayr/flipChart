@@ -314,7 +314,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
-   
+
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
@@ -329,9 +329,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
 
-        # Specify data label font color for labeledscatter + numeric scale colors 
+        # Specify data label font color for labeledscatter + numeric scale colors
         if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
-            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) && 
+            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) &&
             !isFALSE(user.args$data.label.font.autocolor))
         {
             tmp.pts <- chart.settings$TemplateSeries[[1]]$CustomPoints
@@ -340,7 +340,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
                                       Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$BackgroundColor)))
             attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
-        } 
+        }
     }
     if (is.null(attr(result, "ChartData")))
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
@@ -491,7 +491,7 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.line.color <- args$pie.border.color
     else if (!is.null(args$marker.border.opacity))
         tmp.line.color <- args$marker.border.color
-    if (is.null(tmp.line.color) || is.na(tmp.line.color))
+    if (is.null(tmp.line.color) || all(is.na(tmp.line.color)))
         tmp.line.color <- "#FFFFFF"
     tmp.line.color <- rep(tmp.line.color, length = tmp.n)
 

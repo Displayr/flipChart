@@ -183,7 +183,7 @@ for (input in list(Other.Unnamed.Vector, Other.Named.Vector, Other.Matrix))
 test_that("Venn",
           {
                 pd <- suppressWarnings(PrepareData("Venn", input.data.other = Other.JSON, as.percentages = T))
-                CChart("Venn", pd$data, values.hovertext.format = "%")
+                expect_warning(CChart("Venn", pd$data, values.hovertext.format = "%"))
 
                 pd <- suppressWarnings(PrepareData("Venn", input.data.raw = RawData.XPickAny, as.percentages = T))
                 CChart("Venn", pd$data, values.hovertext.format = "")
