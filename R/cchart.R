@@ -6,12 +6,7 @@
 #' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param font.units One of "px" or "pt"
 #' @param annotation.list a list of annotations to add to the chart, based on statistics in the input data.
-#' @param stat.tests.show Logical; whether to show significance tests.
-#' @param stat.tests.size Numeric; size of stat testing arrows in pixels.
-#' @param stat.tests.weight Character; font-weight of stat testing arrows. Unfortunately this does not seem to work. But we have exposed it in case it does under certain circumstances.
-#' @param stat.tests.font.family Character; font-family. This is set to Impact by default because it tends to produce heavier arrows.
-#' @param stat.tests.color.neg Character; color hex code of the downward pointing arrows in signficance tests.
-#' @param stat.tests.color.pos Character; color hex code of the upward pointing arrows in signficance tests.
+#' @param signif.show Logical; whether to show significance tests.
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
@@ -270,9 +265,7 @@
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
 CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
-                   annotation.list = NULL, stat.tests.show = FALSE, stat.tests.size = 12, 
-                   stat.tests.color.pos = "#0000FF", stat.tests.color.neg = "#FF0000", 
-                   stat.tests.font.family = "Impact", stat.tests.weight = "bold",
+                   annotation.list = NULL, signif.show = FALSE,
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -284,25 +277,23 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
 
-    if (stat.tests.show)
+    if (signif.show && !is.null(attr(x, "signif-annotations")))
     {
-        if (isFALSE(user.args$data.label.show))
+        if (!isTRUE(user.args$data.label.show))
         {
             # If data label show is false, then other annotations are not shown
             user.args$data.label.show <- TRUE
             annotation.list <- list(list(
                     type = "Hide",
-                    data = "significancedirection",
+                    data = "",
                     threstype = "above threshold",
                     threshold = "-Inf"))
         }
         annot.len <- length(annotation.list)
-        annotation.list[[annot.len + 1]] <- list(type = "Arrow - down", data = "significancedirection",
-                 threstype = "below threshold", threshold = 0, color = stat.tests.color.neg, 
-                 size = stat.tests.size, font.family = stat.tests.font.family, weight = stat.tests.weight)
-        annotation.list[[annot.len + 2]] <- list(type = "Arrow - up", data = "significancedirection", 
-                 threstype = "above threshold", threshold = 0, color = stat.tests.color.pos, 
-                 size = stat.tests.size, font.family = stat.tests.font.family, weight = stat.tests.weight)
+        new.len <- length(attr(x, "signif-annotations"))
+        for (j in 1:new.len)
+            annotation.list[[annot.len + j]] <- attr(x, "signif-annotations")[[j]]
+        attr(x, "signif-annotations") <- NULL
     }
     user.args$annotation.list <- annotation.list
 

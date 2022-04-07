@@ -224,40 +224,48 @@ tb.2d.multstats <- structure(c(0, 26, 17, 13, 20, 12, 6, 19, 14, 7, 0, 8, 10, 6,
 6L))), footer.html = "<div data-editable=\"true\" style=\"font-family:Tahoma, sans-serif;font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:#505050;text-align:center;\">Total sample; Unweighted; base n = 327<br />Multiple comparison correction: False Discovery Rate (FDR) (p = 0.1)</div>", name = "Q3. Age by Global frequentCola - Categorical", questions = c("Q3. Age",
 "Global frequentCola - Categorical"))
 
-
 test_that("stats testing added to data matrix",
 {
-    expect_error(res <- PrepareData("Column", input.data.table = tb.1d, tidy = FALSE), NA)
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d,
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
-        NULL, c("%","significancedirection")))
+        NULL, c("%","signifUp#0000FF", "signifDown#FF0000")))
+    expect_equal(attr(res$data, "signif-annotations"),
+        list(list(type = "Arrow - up", data = "signifUp#0000FF", threstype = "above threshold",
+        threshold = 0, color = "#0000FF", size = 12), list(type = "Arrow - down",
+        data = "signifDown#FF0000", threstype = "above threshold",
+        threshold = 0, color = "#FF0000", size = 12)))
 
-    expect_error(res <- PrepareData("Column", input.data.table = tb.1d.multstats, tidy = FALSE), NA)
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d.multstats,
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
-        NULL, c("%", "Count", "significancedirection")))
+        NULL, c("%", "Count", "signifUp#0000FF", "signifDown#FF0000")))
 
-    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, tidy = FALSE), NA)
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
         c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Light", "Pepsi Max"),
-        c("Column %", "significancedirection")))
+        c("Column %", "signifUp#0000FF", "signifDown#FF0000")))
 
-    expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, tidy = FALSE), NA)
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats,
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
         c("Coca Cola", "Coke Zero", "Diet Coke", "Pepsi", "Pepsi Light", "Pepsi Max"),
-        c("n", "significancedirection")))
+        c("n", "signifUp#0000FF")))
 
-    expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, tidy = FALSE,
-        as.percentages = TRUE), NA)
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, as.percentages = TRUE,
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
         c("Coca Cola", "Coke Zero", "Diet Coke", "Pepsi", "Pepsi Light", "Pepsi Max"),
-        c("%", "significancedirection")))
+        c("%", "signifUp#0000FF")))
     expect_equal(res$values.title, "%")
 
     expect_error(res <- PrepareData("Bar", input.data.table = tb.1d, as.percentages = TRUE,
-        tidy = FALSE), NA)
+        tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(res$values.title, "%")
 })
