@@ -14,6 +14,12 @@ PrepareData(
   input.data.pasted = NULL,
   input.data.other = NULL,
   data.source = NULL,
+  signif.append = FALSE,
+  signif.symbol = "Arrow",
+  signif.symbol.size = 12,
+  signif.p.cutoffs = c(0.5, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 1e-04, 1e-05, 1e-06),
+  signif.colors.pos = rep("#0000FF", 10),
+  signif.colors.neg = rep("#FF0000", 10),
   first.aggregate = NULL,
   scatter.input.columns.order = NULL,
   scatter.mult.yvals = FALSE,
@@ -91,6 +97,20 @@ string can be provided to disambiguate. Refer to the source
 code for a precise understanding of how this works (it is not
 obvious and is not likely to be of any use for most cases, so
 should usually be left as a \code{NULL}).}
+
+\item{signif.append}{Append attributes used to show statistical test for significance.}
+
+\item{signif.symbol}{Character; Symbol used on chart to indicate significance. This can "Arrow" or "Caret".}
+
+\item{signif.symbol.size}{Numeric; size of symbol in pixels.}
+
+\item{signif.p.cutoffs}{Numeric; vector of p-values used to determine color of symbols.
+These values should be supplied in decreasing order. The colors used will correspond
+to the smallest cutoff larger than the p-value of that cell.}
+
+\item{signif.colors.pos}{Character; vector of colors, of the same length as \code{signif.p.cutoffs}.}
+
+\item{signif.colors.neg}{Character; vector of colors, of the same length as \code{signif.p.cutoffs}.}
 
 \item{first.aggregate}{Logical; whether or not the input data needs
 to be aggregated in this function. A single variable is

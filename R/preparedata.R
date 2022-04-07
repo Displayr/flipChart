@@ -24,6 +24,14 @@
 #'     code for a precise understanding of how this works (it is not
 #'     obvious and is not likely to be of any use for most cases, so
 #'     should usually be left as a \code{NULL}).
+#' @param signif.append Append attributes used to show statistical test for significance.
+#' @param signif.symbol Character; Symbol used on chart to indicate significance. This can "Arrow" or "Caret".
+#' @param signif.symbol.size Numeric; size of symbol in pixels.
+#' @param signif.p.cutoffs Numeric; vector of p-values used to determine color of symbols.
+#'     These values should be supplied in decreasing order. The colors used will correspond
+#'     to the smallest cutoff larger than the p-value of that cell.
+#' @param signif.colors.pos Character; vector of colors, of the same length as \code{signif.p.cutoffs}.
+#' @param signif.colors.neg Character; vector of colors, of the same length as \code{signif.p.cutoffs}.
 #' @param first.aggregate Logical; whether or not the input data needs
 #'     to be aggregated in this function. A single variable is
 #'     tabulated, 2 variables are crosstabbed if \code{group.by.last} is selected,
@@ -175,6 +183,12 @@ PrepareData <- function(chart.type,
                         input.data.pasted = NULL,
                         input.data.other = NULL,
                         data.source = NULL,
+                        signif.append = FALSE,
+                        signif.symbol = "Arrow",
+                        signif.symbol.size = 12,
+                        signif.p.cutoffs = c(0.5, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 1e-04, 1e-05, 1e-06),
+                        signif.colors.pos = rep("#0000FF", 10),
+                        signif.colors.neg = rep("#FF0000", 10),
                         first.aggregate = NULL,
                         scatter.input.columns.order = NULL,
                         scatter.mult.yvals = FALSE,
@@ -404,9 +418,9 @@ PrepareData <- function(chart.type,
 
     # Add info about significance arrows - this needs to occur here
     # so that the stat testing info makes use of RearrangeRowsColumn
-    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && 
-        chart.type != "Table" && !isDistribution(chart.type))
-        data <- addStatTestingArrows(data, attr(data, "QStatisticsTestingInfo")$significancedirection)
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
+        data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs, 
+                    signif.colors.pos, signif.colors.neg, signif.symbol, signif.symbol.size)
 
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
@@ -2140,39 +2154,71 @@ containsQTable <- function(x)
 }
 
 #' @importFrom abind abind
-addStatTestingArrows <- function(x, arrow.dir)
+addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symbol, symbol.size)
 {
-    dn <- dim(x)
-    tmp.sign1 <- ifelse(arrow.dir == "Up", 1, 0)
-    arrow.sign <- ifelse(arrow.dir == "Down", -1, tmp.sign1)
+    arrow.dir <- x.siginfo$significancedirection
+    if (all(arrow.dir == "None"))
+        return(x)
 
+    arrow.pval <- x.siginfo$pcorrected
+    arrow.colors <- rep("", length(arrow.dir))
+    ind.pos <- which(arrow.dir == "Up")
+    for (ii in ind.pos)
+    {
+        j <- max(which(arrow.pval[ii] < p.cutoffs))
+        arrow.colors[ii] <- colors.pos[j]
+    }
+    ind.neg <- which(arrow.dir == "Down")
+    for (ii in ind.neg)
+    {
+        j <- max(which(arrow.pval[ii] < p.cutoffs))
+        arrow.colors[ii] <- colors.neg[j]
+    }
+
+    dn <- dim(x)
     if (is.null(dn)) # vector
     {
-        n <- NROW(x)
-        new.dat <- array(c(x, arrow.sign), dim = c(n, 1, 2), 
-            dimnames = list(names(x), NULL, c(attr(x, "statistic", exact = TRUE), "significancedirection")))
-        new.dat <- CopyAttributes(new.dat, x)
-    } else
-    {
-        if (length(dn) == 1)
-        {
-            dn <- c(dn, 1)
-            tmp.x <- matrix(x, ncol = 1, dimnames = list(rownames(x), NULL))
-        } else if (is.null(attr(x, "statistic", exact = TRUE)) && length(dn) == 2)
-        {
-            tmp.x <- array(x, c(dn[1], 1, dn[2]))
-            dimnames(tmp.x) <- list(dimnames(x)[[1]], NULL, dimnames(x)[[2]])
-        } else
-            tmp.x <- x
+        tmp.x <- matrix(x, length(x), 1, dimnames = list(names(x), NULL))
 
-        new.dat <- abind(tmp.x, matrix(arrow.sign, nrow = dn[1], ncol = NCOL(tmp.x), byrow = TRUE), along = 3)
-        if (length(dim(tmp.x)) == 3)
-            dimnames(new.dat)[[3]][dim(new.dat)[3]] <- "significancedirection"
-        else
-            dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), "significancedirection")
-        new.dat <- CopyAttributes(new.dat, x)
-        attr(new.dat, "statistic") <- NULL
+    } else if (length(dn) == 1)
+    {
+        dn <- c(dn, 1)
+        tmp.x <- matrix(x, ncol = 1, dimnames = list(rownames(x), NULL))
+    } else if (is.null(attr(x, "statistic", exact = TRUE)) && length(dn) == 2)
+    {
+        tmp.x <- array(x, c(dn[1], 1, dn[2]))
+        dimnames(tmp.x) <- list(dimnames(x)[[1]], NULL, dimnames(x)[[2]])
+    } else
+        tmp.x <- x
+   
+    # Append new cell-statistic and annotation for each differently colored arrow
+    # Usually, this is one color each for each direction but there are theoretically 10 levels each 
+    mat.list <- list(tmp.x)
+    annot.list <- list()
+    signames <- c()
+    for (tmp.dir in c("Up", "Down"))
+    {
+        tmp.col <- unique(arrow.colors[which(arrow.dir == tmp.dir)])
+        for (cc in tmp.col)
+        {
+            j <- length(mat.list)
+            mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc, 
+                nrow=nrow(tmp.x), ncol=ncol(tmp.x))
+            tmp.signame <- paste0("signif", tmp.dir, cc)
+            signames <- c(signames, tmp.signame)
+            annot.list[[j]] <- list(type = paste(symbol, "-", tolower(tmp.dir)),
+                data = tmp.signame, threstype = "above threshold", threshold = 0,
+                color = cc, size = symbol.size)
+        }
     }
+    new.dat <- abind(mat.list, along = 3)
+    if (length(dim(tmp.x)) == 3)
+        dimnames(new.dat)[[3]] <- c(dimnames(tmp.x)[[3]], signames)
+    else
+        dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), signames)
+    new.dat <- CopyAttributes(new.dat, x)
+    attr(new.dat, "statistic") <- NULL
+    attr(new.dat, "signif-annotations") <- annot.list
     return(new.dat)
 }
 

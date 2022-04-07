@@ -11,12 +11,7 @@ CChart(
   multi.color.series = FALSE,
   font.units = "px",
   annotation.list = NULL,
-  stat.tests.show = FALSE,
-  stat.tests.size = 12,
-  stat.tests.color.pos = "#0000FF",
-  stat.tests.color.neg = "#FF0000",
-  stat.tests.font.family = "Impact",
-  stat.tests.weight = "bold",
+  signif.show = FALSE,
   ...,
   warn.if.no.match = TRUE,
   append.data = FALSE
@@ -35,17 +30,7 @@ CChart(
 
 \item{annotation.list}{a list of annotations to add to the chart, based on statistics in the input data.}
 
-\item{stat.tests.show}{Logical; whether to show significance tests.}
-
-\item{stat.tests.size}{Numeric; size of stat testing arrows in pixels.}
-
-\item{stat.tests.color.pos}{Character; color hex code of the upward pointing arrows in signficance tests.}
-
-\item{stat.tests.color.neg}{Character; color hex code of the downward pointing arrows in signficance tests.}
-
-\item{stat.tests.font.family}{Character; font-family. This is set to Impact by default because it tends to produce heavier arrows.}
-
-\item{stat.tests.weight}{Character; font-weight of stat testing arrows. Unfortunately this does not seem to work. But we have exposed it in case it does under certain circumstances.}
+\item{signif.show}{Logical; whether to show significance tests.}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
