@@ -1071,7 +1071,7 @@ convertToPPTNumFormat <- function(d3format)
 {
     num.decimals <- NULL
     if (length(d3format) == 0)
-        return(NULL)
+        return("General")
     
     mm <- regexpr("\\.(\\d+)", d3format, perl = TRUE)
     if (length(mm) == 1 && mm > 0)
@@ -1096,6 +1096,6 @@ convertToPPTNumFormat <- function(d3format)
             return(paste0("0.", paste(rep(0, num.decimals), collapse = "")))
 
     } else
-        return(NULL)
+        return("General")
 }
 
