@@ -635,6 +635,7 @@ getPPTSettings <- function(chart.type, args, data)
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
+            NumberFormat = convertToPPTNumFormat(args$categories.tick.format), 
             AxisLine = list(Color = args$categories.line.color,
             Width = px2pt(args$categories.line.width),
             Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
@@ -654,7 +655,7 @@ getPPTSettings <- function(chart.type, args, data)
             TitleFont = list(color = args$values.title.font.color,
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
-            NumberFormat = if (isTRUE(grepl("%", attr(data, "statistic")))) "0%" else "General",
+            NumberFormat = convertToPPTNumFormat(args$values.tick.format), 
             AxisLine = list(Color = args$values.line.color,
             Width = px2pt(args$values.line.width),
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
@@ -733,7 +734,7 @@ setScatterAxesBounds <- function(settings, data)
     ind.y <- v.ind["y"]
 
     if (is.numeric(data) && !is.null(attr(data, "statistic")) &&
-        grepl(attr(data, "statistic"), "%"))
+        grepl(attr(data, "statistic"), pattern = "%"))
         data <- data/100
 
     if (is.null(settings$ValueAxis$Minimum) && .isValidIndex(ind.y))
@@ -1069,8 +1070,11 @@ convertChartDataToNumeric <- function(data)
 convertToPPTNumFormat <- function(d3format)
 {
     num.decimals <- NULL
+    if (length(d3format) == 0)
+        return("General")
+    
     mm <- regexpr("\\.(\\d+)", d3format, perl = TRUE)
-    if (mm > 0)
+    if (length(mm) == 1 && mm > 0)
     {
         m.start <- attr(mm, "capture.start")[1]
         m.len <- attr(mm, "capture.length")[1]
@@ -1092,6 +1096,6 @@ convertToPPTNumFormat <- function(d3format)
             return(paste0("0.", paste(rep(0, num.decimals), collapse = "")))
 
     } else
-        return(NULL)
+        return("General")
 }
 
