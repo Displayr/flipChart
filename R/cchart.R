@@ -283,6 +283,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         warning("Significance tests cannot be shown as the input data is not a summary table or crosstab")
     else if (signif.show && is.null(attr(x, "QStatisticsTestingInfo", exact = TRUE)))
         warning("Significance tests cannot be shown on this version of Q")
+    
+    if (signif.show && length(dim(x)) == 3 && "Column Comparisons" %in% dimnames(x)[[3]])
+        warning("These tests do not compare columns. Try Stacked Column with Custom Tests ",
+        "or Column with Tests instead.")
 
     if (signif.show && !is.null(attr(x, "signif-annotations")))
     {
