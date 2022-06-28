@@ -528,7 +528,7 @@ PrepareData <- function(chart.type,
 
     # If there is a single unnamed column, enable the statistic
     # to appear in the column name. On by default.
-    if (chart.type == "Table" && length(dim(data)) == 2 && dim(data)[2] == 1 && is.null(dimnames(data)[2]) && statstic.as.column.name.when.single.unnamed.column) {
+    if (chart.type == "Table" && length(dim(data)) == 2 && dim(data)[2] == 1 && is.null(dimnames(data)[[2]]) && statstic.as.column.name.when.single.unnamed.column) {
         colnames(data)[1] <- attr(data, "statistic")
         attr(data, "statistic") <- NULL
     }

@@ -62,7 +62,8 @@ PrepareData(
   show.labels = TRUE,
   column.labels = "",
   row.labels = "",
-  values.title = ""
+  values.title = "",
+  statstic.as.column.name.when.single.unnamed.column = TRUE
 )
 }
 \arguments{
