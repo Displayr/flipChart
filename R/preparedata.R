@@ -231,7 +231,8 @@ PrepareData <- function(chart.type,
                         show.labels = TRUE,
                         column.labels = "",
                         row.labels = "",
-                        values.title = "")
+                        values.title = "",
+                        statstic.as.column.name.when.single.unnamed.column = TRUE)
 {
 
     # Scenarios to address
@@ -523,6 +524,13 @@ PrepareData <- function(chart.type,
         #attr(data, "statistic") <- dimnames(data)[[3]][1]
         #attr(data, "multi-stat") <- TRUE
 
+    }
+
+    # If there is a single unnamed column, enable the statistic
+    # to appear in the column name. On by default.
+    if (chart.type == "Table" && length(dim(data)) == 2 && dim(data)[2] == 1 && is.null(dimnames(data)[2]) && statstic.as.column.name.when.single.unnamed.column) {
+        colnames(data)[1] <- attr(data, "statistic")
+        attr(data, "statistic") <- NULL
     }
 
     list(data = data,
