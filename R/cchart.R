@@ -326,9 +326,11 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
     args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
 
-    if (!append.data)
-        return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    attr(result, "footerhtml") <- attr(x, "footerhtml", TRUE)
+    if (!append.data)
+        return(result)
+
     result <- addChartTypeWarning(result, chart.type, small.multiples)
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
     chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
@@ -357,7 +359,6 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
     class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
-    attr(result, "footerhtml") <- attr(x, "footerhtml", TRUE)
     result
 }
 
