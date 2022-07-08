@@ -2706,3 +2706,36 @@ test_that("Higher dimension tables",
                        row.names.to.remove = NULL, column.names.to.remove = NULL)$data
     expect_equal(dimnames(res)[[3]], c("Column %", "z-Statistic"))
 })
+
+tb.with.footer <- structure(c(42.625, 11.125, 17.875, 9, 2.5, 14.875, 0.75, 1.25,
+100, 341, 89, 143, 72, 20, 119, 6, 10, 800), dim = c(9L, 2L), dimnames = list(
+    c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi",
+    "Pepsi Max", "Dislike all cola", "Don't care", "NET"), c("%",
+    "Count")), dimnets = list(8L, NULL), dimduplicates = list(
+    8L, NULL), span = list(rows = structure(list(c("Coca-Cola",
+"Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+"Dislike all cola", "Don't care", "NET")), class = "data.frame", names = "", row.names = c(NA,
+9L)), columns = structure(list(c("%", "Count")), class = "data.frame", names = "", row.names = 1:2)), basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(1, 0, 0.879177377892031,
+    0.465295629820051, 1, 0.246786632390746, 1, 1, 1), dim = 9L),
+    significancedirection = structure(c("Up", "None", "Up", "Down",
+    "Down", "Up", "Down", "Down", "Up"), dim = 9L), significancefontsizemultiplier = structure(c(4.89,
+    1, 4.42, 0.355871886120996, 0.204498977505112, 1.96, 0.204498977505112,
+    0.204498977505112, 4.89), dim = 9L), significanceissignificant = structure(c(TRUE,
+    FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE), dim = 9L),
+    zstatistic = structure(c(25.7639837203577, -1.17594946441467,
+    4.5968933608937, -2.99332590941915, -8.55235974119758, 2.03118543853442,
+    -10.0490226959072, -9.62140470884728, 74.8331477354788), dim = 9L),
+    pcorrected = structure(c(0, 0.239615070917728, 0.00000428836959875945,
+    0.0027595489353029, 1.20597222859613e-17, 0.0422361869593673,
+    9.27829879438357e-24, 6.49381993537603e-22, 0), dim = 9L)), class = "data.frame", row.names = c(NA,
+9L)), questiontypes = "PickOne", footerhtml = "&lt;div data-editable=\"true\" style=\"font-family:'Open Sans', sans-serif;font-size:8pt;font-weight:normal;font-style:normal;text-decoration:none;color:#505050;text-align:center;\"&gt;Preferred cola SUMMARY&lt;br /&gt;sample size = 800; 95% confidence level&lt;/div&gt;", name = "table.Preferred.cola", questions = c("Preferred cola",
+"SUMMARY"))
+test_that("Footer attribute is retained",
+{
+    res <- PrepareData("Bar", input.data.table = tb.with.footer, tidy = FALSE)
+    expect_equal(attr(res$data, "footerhtml"), attr(tb.with.footer, "footerhtml"))
+})

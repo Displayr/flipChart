@@ -419,7 +419,7 @@ PrepareData <- function(chart.type,
     # Add info about significance arrows - this needs to occur here
     # so that the stat testing info makes use of RearrangeRowsColumn
     if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
-        data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs, 
+        data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs,
                     signif.colors.pos, signif.colors.neg, signif.symbol, signif.symbol.size)
 
     # Do not drop 1-column table to keep name for legend
@@ -522,8 +522,9 @@ PrepareData <- function(chart.type,
         data <- ConvertQTableToArray(data)
         #attr(data, "statistic") <- dimnames(data)[[3]][1]
         #attr(data, "multi-stat") <- TRUE
-
     }
+    if (!is.null(input.data.table))
+        attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
     list(data = data,
          weights = weights,
@@ -2190,9 +2191,9 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
         dimnames(tmp.x) <- list(dimnames(x)[[1]], NULL, dimnames(x)[[2]])
     } else
         tmp.x <- x
-   
+
     # Append new cell-statistic and annotation for each differently colored arrow
-    # Usually, this is one color each for each direction but there are theoretically 10 levels each 
+    # Usually, this is one color each for each direction but there are theoretically 10 levels each
     mat.list <- list(tmp.x)
     annot.list <- list()
     signames <- c()
@@ -2202,7 +2203,7 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
         for (cc in tmp.col)
         {
             j <- length(mat.list)
-            mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc, 
+            mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc,
                 nrow=nrow(tmp.x), ncol=ncol(tmp.x), byrow = TRUE)
             tmp.signame <- paste0("signif", tmp.dir, cc)
             signames <- c(signames, tmp.signame)
