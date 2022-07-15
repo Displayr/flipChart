@@ -2739,3 +2739,50 @@ test_that("Footer attribute is retained",
     res <- PrepareData("Bar", input.data.table = tb.with.footer, tidy = FALSE)
     expect_equal(attr(res$data, "footerhtml"), attr(tb.with.footer, "footerhtml"))
 })
+
+
+test_that("DS-3842 - QTable attribute interferes with structure of data",
+{
+    x <- structure(c(94, 99.5714285714286, 111.142857142857, 135.285714285714,
+                139.285714285714, 115.857142857143), statistic = "Average", dim = c(1L,
+                6L), dimnames = list("circumference", c("3", "1", "5", "2", "4",
+                "NET")), class = c("matrix", "array", "QTable"), dimnets = list(
+                    integer(0), 5L), dimduplicates = list(integer(0), 5L), span = list(
+                    rows = structure(list("circumference"), class = "data.frame", names = "", row.names = 1L),
+                    columns = structure(list(c("3", "1", "5", "2", "4", "NET"
+                    )), class = "data.frame", names = "", row.names = c(NA, 6L
+                    ))), basedescriptiontext = "base n = 35", basedescription = list(
+                    Minimum = 35L, Maximum = 35L, Range = FALSE, Total = 35L,
+                    Missing = 0L, EffectiveSampleSize = 35L, EffectiveSampleSizeProportion = 100,
+                    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+                    significancearrowratio = structure(c(0, 0, 0, 0, 0, 0), dim = 6L),
+                    significancedirection = structure(c("None", "None", "None",
+                    "None", "None", "None"), dim = 6L), significancefontsizemultiplier = structure(c(1,
+                    1, 1, 1, 1, 1), dim = 6L), significanceissignificant = structure(c(FALSE,
+                    FALSE, FALSE, FALSE, FALSE, FALSE), dim = 6L), zstatistic = structure(c(-1.11009576147117,
+                    -0.823621961066177, -0.237278175921897, 0.984767511884234,
+                    1.19161763118602, NaN), dim = 6L), pcorrected = structure(c(1,
+                    1, 1, 1, 1, NaN), dim = 6L)), class = "data.frame", row.names = c(NA,
+                6L)), questiontypes = c("Number", "PickOne"), footerhtml = "Total sample; Unweighted; base n = 35; Multiple comparison correction: False Discovery Rate (FDR) (p = 0.05)", name = "table.circumference.by.Tree", questions = c("circumference", 
+                "Tree [orange]"))
+
+    for (ct in c("Box", "Bar")) {
+        pd <- PrepareData(ct, input.data.table = x, column.names.to.remove = "NET, SUM, Total", row.names.to.remove = "NET, Total, SUM", tidy.labels = TRUE, tidy = TRUE, first.aggregate  
+    = FALSE, hide.empty.rows.and.columns = FALSE, select.rows = "", select.columns = "")
+    expected <- c(94, 99.5714285714286, 111.142857142857, 135.285714285714, 139.285714285714)
+    names(expected) <- c("3", "1", "5", "2", "4")
+    expect_equivalent(pd$data, expected)
+    }
+    
+    tb.with.gridq.QTable <- tb.with.gridq
+    class(tb.with.gridq.QTable) <- c(class(tb.with.gridq.QTable), "QTable")
+    summary.table.QTable <- summary.table
+    class(summary.table.QTable) <- c(class(summary.table.QTable), "QTable")
+    for (ct in c("Box", "Bar", "Scatter")) {
+        expect_equivalent(PrepareData(ct, input.data.table = tb.with.gridq.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
+                        PrepareData(ct, input.data.table = tb.with.gridq, tidy = FALSE, select.rows = "", select.columns = "")$data)        
+        expect_equivalent(PrepareData(ct, input.data.table = summary.table.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
+                        PrepareData(ct, input.data.table = summary.table, tidy = FALSE, select.rows = "", select.columns = "")$data)
+    }
+}
+)
