@@ -422,6 +422,7 @@ PrepareData <- function(chart.type,
         data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs,
                     signif.colors.pos, signif.colors.neg, signif.symbol, signif.symbol.size)
 
+
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
             !any(nchar(select.columns), na.rm = TRUE) &&
@@ -1767,16 +1768,21 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
     if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Heat"))
     {
         # only drop 1 dimension from a 2d matrix
-        if (!is.data.frame(x) && length(dim(x)) == 2 && dim(x)[2] == 1)
-        {
-            tmp.vec <- x[, 1]
-            names(tmp.vec) <- rownames(x)
+        if (length(dim(x)) == 2 && (dim(x)[2] == 1 || dim(x)[1] == 1)) {
+            if (dim(x)[2] == 1) {
+                tmp.vec <- x[, 1]
+                names(tmp.vec) <- rownames(x)
+            } 
+            else if (dim(x)[1] == 1) {
+                tmp.vec <- x[1, ]
+                names(tmp.vec) <- colnames(x)
+            }
             attr(tmp.vec, "statistic") <- attr(x, "statistic")
             attr(tmp.vec, "questions") <- attr(x, "questions")
             attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
             attr(tmp.vec, "values.title") <- attr(x, "values.title")
             x <- tmp.vec
-        }
+        } 
         else
             x <- CopyAttributes(drop(x), x)
     }
