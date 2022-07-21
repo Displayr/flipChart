@@ -279,7 +279,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
     # Try to set up data to show statistical significance
     # Or give warning message if input data does not contain info
-    if (signif.show && is.null(attr(x, "questions", exact = TRUE)))
+    if (signif.show && is.null(attr(x, "questions", exact = TRUE)) && is.null(attr(x, "original.questions", exact = TRUE)))
         warning("Significance tests cannot be shown as the input data is not a summary table or crosstab")
     else if (signif.show && is.null(attr(x, "QStatisticsTestingInfo", exact = TRUE)))
         warning("Significance tests cannot be shown on this version of Q")
