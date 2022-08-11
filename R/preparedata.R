@@ -1038,6 +1038,7 @@ processInputData <- function(x, subset, weights)
             x <- flattenMultiStatTable(x)
         else
             x <- FlattenTableAndDropStatisticsIfNecessary(x)
+        class(x) <- c("matrix", "array")
     }
 
     if (hasUserSuppliedRownames(x))
