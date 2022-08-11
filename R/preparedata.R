@@ -1276,7 +1276,7 @@ RearrangeRowsColumns <- function(data,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 {
-    if (is(data, "ftable")) data <- as.matrix(data)
+    if (inherits(data, "ftable")) data <- as.matrix(data)
     if (multiple.tables)
     {
         for(i in seq_along(data))
