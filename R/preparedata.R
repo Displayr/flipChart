@@ -1276,6 +1276,7 @@ RearrangeRowsColumns <- function(data,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 {
+    if (inherits(data, "ftable")) data <- as.matrix(data)
     if (multiple.tables)
     {
         for(i in seq_along(data))
@@ -1772,7 +1773,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             if (dim(x)[2] == 1) {
                 tmp.vec <- x[, 1]
                 names(tmp.vec) <- rownames(x)
-            } 
+            }
             else if (dim(x)[1] == 1) {
                 tmp.vec <- x[1, ]
                 names(tmp.vec) <- colnames(x)
@@ -1782,7 +1783,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
             attr(tmp.vec, "values.title") <- attr(x, "values.title")
             x <- tmp.vec
-        } 
+        }
         else
             x <- CopyAttributes(drop(x), x)
     }
@@ -2228,4 +2229,3 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
     attr(new.dat, "signif-annotations") <- annot.list
     return(new.dat)
 }
-
