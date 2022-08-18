@@ -2773,16 +2773,14 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
     names(expected) <- c("3", "1", "5", "2", "4")
     expect_equivalent(pd$data, expected)
     }
-
+    
     tb.with.gridq.QTable <- tb.with.gridq
     class(tb.with.gridq.QTable) <- c(class(tb.with.gridq.QTable), "QTable")
     summary.table.QTable <- summary.table
     class(summary.table.QTable) <- c(class(summary.table.QTable), "QTable")
     for (ct in c("Box", "Bar", "Scatter")) {
-        wn <- if (ct == "Scatter") "only the first" else NA
-        expect_warning(pd1 <- PrepareData(ct, input.data.table = tb.with.gridq.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data, wn)
-        expect_warning(pd2 <- PrepareData(ct, input.data.table = tb.with.gridq, tidy = FALSE, select.rows = "", select.columns = "")$data, wn)
-        expect_equivalent(pd1, pd2)
+        expect_equivalent(PrepareData(ct, input.data.table = tb.with.gridq.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
+                        PrepareData(ct, input.data.table = tb.with.gridq, tidy = FALSE, select.rows = "", select.columns = "")$data)        
         expect_equivalent(PrepareData(ct, input.data.table = summary.table.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
                         PrepareData(ct, input.data.table = summary.table, tidy = FALSE, select.rows = "", select.columns = "")$data)
     }
