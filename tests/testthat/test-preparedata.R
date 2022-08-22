@@ -2792,14 +2792,14 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
         expect_equivalent(pd$data, expected)
     }
 
-    tb.with.gridq.qTable <- tb.with.gridq
-    class(tb.with.gridq.qTable) <- c(class(tb.with.gridq.qTable), "qTable")
-    summary.table.QTable <- summary.table
-    class(summary.table.QTable) <- c(class(summary.table.qTable), "qTable")
+    tb.with.gridq.qtable <- tb.with.gridq
+    class(tb.with.gridq.qtable) <- c(class(tb.with.gridq.qtable), "qTable")
+    summary.table.qtable <- summary.table
+    class(summary.table.qtable) <- c(class(summary.table.qtable), "qTable")
     for (ct in c("Box", "Bar", "Scatter")) {
         wn <- if (ct == "Scatter") "only the first" else NA
         expect_warning(pd1 <- PrepareData(ct,
-                                          input.data.table = tb.with.gridq.QTable,
+                                          input.data.table = tb.with.gridq.qtable,
                                           tidy = FALSE,
                                           select.rows = "",
                                           select.columns = "")[["data"]],
@@ -2810,15 +2810,14 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                                           select.rows = "",
                                           select.columns = "")[["data"]],
                        wn)
-        expect_equivalent(pd1, pd2)
+        expect_equivalent(unclass(pd1), pd2)
         expect_equivalent(PrepareData(ct,
-                                      input.data.table = summary.table.QTable,
+                                      input.data.table = summary.table.qtable,
                                       tidy = FALSE,
-                                      select.rows = "", select.columns = "")[["data"]],
+                                      select.rows = "", select.columns = "")[["data"]] |> unclass(),
                           PrepareData(ct,
                                       input.data.table = summary.table,
                                       tidy = FALSE,
                                       select.rows = "", select.columns = "")[["data"]])
     }
-}
-)
+})
