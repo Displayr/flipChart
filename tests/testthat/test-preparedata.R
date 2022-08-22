@@ -2780,9 +2780,11 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
     class(summary.table.QTable) <- c(class(summary.table.QTable), "QTable")
     for (ct in c("Box", "Bar", "Scatter")) {
         expect_equivalent(PrepareData(ct, input.data.table = tb.with.gridq.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
-                        PrepareData(ct, input.data.table = tb.with.gridq, tidy = FALSE, select.rows = "", select.columns = "")$data)        
+        expect_warning(pd1 <- PrepareData(ct, input.data.table = tb.with.gridq.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data, wn)
+        expect_warning(pd2 <- PrepareData(ct, input.data.table = tb.with.gridq, tidy = FALSE, select.rows = "", select.columns = "")$data, wn)
+        expect_equivalent(pd1, pd2)
         expect_equivalent(PrepareData(ct, input.data.table = summary.table.QTable, tidy = FALSE, select.rows = "", select.columns = "")$data,
-                        PrepareData(ct, input.data.table = summary.table, tidy = FALSE, select.rows = "", select.columns = "")$data)
+                          PrepareData(ct, input.data.table = summary.table, tidy = FALSE, select.rows = "", select.columns = "")$data)
     }
 }
 )
