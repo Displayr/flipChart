@@ -2771,7 +2771,8 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                                        "Multiple comparison correction: False Discovery Rate (FDR) (p = 0.05)"),
                    name = "table.circumference.by.Tree",
                    questions = c("circumference", "Tree [orange]"))
-
+    expected.names <- colnames(x)[!colnames(x) %in% "NET"]
+    expected.vals <- vals[!colnames(x) %in% "NET"]
     for (ct in c("Box", "Bar")) {
         pd <- PrepareData(ct,
                           input.data.table = x,
@@ -2783,9 +2784,12 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                           hide.empty.rows.and.columns = FALSE,
                           select.rows = "",
                           select.columns = "")
-    expected <- c(94, 99.5714285714286, 111.142857142857, 135.285714285714, 139.285714285714)
-    names(expected) <- c("3", "1", "5", "2", "4")
-    expect_equivalent(pd$data, expected)
+        if (ct == "Box") {
+            expected <- array(expected.vals, dim = 5L, dimnames = list(expected.names))
+            class(expected) <- c("qTable", class(expected))
+        } else # In PrepareData the attributes are lost for Bar
+            expected <- setNames(expected.vals, expected.names)
+        expect_equivalent(pd$data, expected)
     }
 
     tb.with.gridq.qTable <- tb.with.gridq
