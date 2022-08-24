@@ -32,6 +32,7 @@
 #'     to the smallest cutoff larger than the p-value of that cell.
 #' @param signif.colors.pos Character; vector of colors, of the same length as \code{signif.p.cutoffs}.
 #' @param signif.colors.neg Character; vector of colors, of the same length as \code{signif.p.cutoffs}.
+#' @param signif.colors.on.font Boolean; whether signif colors should also affect data label font colors.
 #' @param first.aggregate Logical; whether or not the input data needs
 #'     to be aggregated in this function. A single variable is
 #'     tabulated, 2 variables are crosstabbed if \code{group.by.last} is selected,
@@ -189,6 +190,7 @@ PrepareData <- function(chart.type,
                         signif.p.cutoffs = c(0.5, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 1e-04, 1e-05, 1e-06),
                         signif.colors.pos = rep("#0000FF", 10),
                         signif.colors.neg = rep("#FF0000", 10),
+                        signif.colors.on.font = FALSE,
                         first.aggregate = NULL,
                         scatter.input.columns.order = NULL,
                         scatter.mult.yvals = FALSE,
@@ -420,7 +422,7 @@ PrepareData <- function(chart.type,
     # so that the stat testing info makes use of RearrangeRowsColumn
     if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
         data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs,
-                    signif.colors.pos, signif.colors.neg, signif.symbol, signif.symbol.size)
+                    signif.colors.pos, signif.colors.neg, signif.colors.on.font, signif.symbol, signif.symbol.size)
 
 
     # Do not drop 1-column table to keep name for legend
@@ -2161,7 +2163,7 @@ containsQTable <- function(x)
 }
 
 #' @importFrom abind abind
-addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symbol, symbol.size)
+addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colors.on.font, symbol, symbol.size)
 {
     arrow.dir <- x.siginfo$significancedirection
     if (all(arrow.dir == "None"))
@@ -2203,6 +2205,7 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
     mat.list <- list(tmp.x)
     annot.list <- list()
     signames <- c()
+    k <- 1
     for (tmp.dir in c("Up", "Down"))
     {
         tmp.col <- unique(arrow.colors[which(arrow.dir == tmp.dir)])
@@ -2213,9 +2216,24 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, symb
                 nrow=nrow(tmp.x), ncol=ncol(tmp.x), byrow = TRUE)
             tmp.signame <- paste0("signif", tmp.dir, cc)
             signames <- c(signames, tmp.signame)
-            annot.list[[j]] <- list(type = paste(symbol, "-", tolower(tmp.dir)),
-                data = tmp.signame, threstype = "above threshold", threshold = 0,
-                color = cc, size = symbol.size)
+
+            # Add annotation for font colors
+            if (colors.on.font)
+            {
+                annot.list[[k]] <- list(type = "Recolor text",
+                    data = tmp.signame, threstype = "above threshold", threshold = 0,
+                    color = cc)
+                k <- k + 1
+            }
+           
+            # Add annotation for symbol (arrow or caret)
+            if (symbol != "None")
+            {
+                annot.list[[k]] <- list(type = paste(symbol, "-", tolower(tmp.dir)),
+                    data = tmp.signame, threstype = "above threshold", threshold = 0,
+                    color = cc, size = symbol.size)
+                k <- k + 1
+            }
         }
     }
     new.dat <- abind(mat.list, along = 3)

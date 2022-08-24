@@ -23,7 +23,7 @@ Imports:
     flipChartBasics,
     flipData (>= 1.2.7),
     flipFormat,
-    flipStandardCharts (>= 1.7.7),
+    flipStandardCharts (>= 1.30.0),
     flipStatistics,
     flipTables (>= 2.7.0),
     flipTime,
