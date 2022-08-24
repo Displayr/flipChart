@@ -20,6 +20,7 @@ PrepareData(
   signif.p.cutoffs = c(0.5, 0.2, 0.1, 0.05, 0.01, 0.005, 0.001, 1e-04, 1e-05, 1e-06),
   signif.colors.pos = rep("#0000FF", 10),
   signif.colors.neg = rep("#FF0000", 10),
+  signif.colors.on.font = FALSE,
   first.aggregate = NULL,
   scatter.input.columns.order = NULL,
   scatter.mult.yvals = FALSE,
@@ -111,6 +112,8 @@ to the smallest cutoff larger than the p-value of that cell.}
 \item{signif.colors.pos}{Character; vector of colors, of the same length as \code{signif.p.cutoffs}.}
 
 \item{signif.colors.neg}{Character; vector of colors, of the same length as \code{signif.p.cutoffs}.}
+
+\item{signif.colors.on.font}{Boolean; whether signif colors should also affect data label font colors.}
 
 \item{first.aggregate}{Logical; whether or not the input data needs
 to be aggregated in this function. A single variable is

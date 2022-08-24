@@ -258,6 +258,10 @@ test_that("stats testing added to data matrix",
         c("Coca-Cola", "Diet Coke", "Coke Zero", "Pepsi", "Pepsi Light",
         "Pepsi Max"))))
 
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d, signif.symbol = "None",
+        tidy = FALSE, signif.append = TRUE, signif.colors.on.font = TRUE), NA)
+    expect_error(CChart("Column", res$data, data.label.show = T, signif.show = TRUE), NA)
+
     expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats,
         tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
