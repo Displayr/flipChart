@@ -273,6 +273,20 @@ PrepareData <- function(chart.type,
     # of making it easy to read (and in recognition that the efficiency gains would be trivial anyway).
 
     ###########################################################################
+    # 0. Check subscripted QTables unclassed and attr removed for legacy outputs.
+    ###########################################################################
+
+    allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
+
+    if (!allow.qtables)
+    {
+        input.data.table <- unclassQTable(input.data.table)
+        input.data.tables <- unclassQTable(input.data.tables)
+        input.data.raw <- unclassQTable(input.data.raw)
+        input.data.other <- unclassQTable(input.data.other)
+    }
+
+    ###########################################################################
     # 1. Converts the data inputs into a single data object called 'data'.
     ###########################################################################
     data.source.index <- if (is.null(data.source)) NULL else
@@ -1774,7 +1788,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             if (dim(x)[2] == 1) {
                 tmp.vec <- x[, 1]
                 names(tmp.vec) <- rownames(x)
-            } 
+            }
             else if (dim(x)[1] == 1) {
                 tmp.vec <- x[1, ]
                 names(tmp.vec) <- colnames(x)
@@ -1784,7 +1798,7 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
             attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
             attr(tmp.vec, "values.title") <- attr(x, "values.title")
             x <- tmp.vec
-        } 
+        }
         else
             x <- CopyAttributes(drop(x), x)
     }
@@ -1840,11 +1854,15 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
     if (is.scatter.annot.data && NCOL(x) > 1)
         stop("Annotation data for Scatterplots should be a single-column table or variable with the same number of values as the number of points in the chart")
 
+    allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
+
+    if (!allow.qtables)
+        x <- unclassQTable(x)
+
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
 
     new.dat <- NULL
-    cname.prefix <- ""
     if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
     {
         # For variables, this function is not really required
@@ -1886,8 +1904,7 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         else
             colnames(new.dat) <- " "
     }
-    new.dat <- CopyAttributes(new.dat, x)
-    return(new.dat)
+    CopyAttributes(new.dat, x)
 }
 
 
@@ -1913,8 +1930,6 @@ rawDataLooksCrosstabbable <- function(input.data.raw, data)
     ncols <- vapply(input.data.raw, NCOL, integer(1L))
     if (any(ncols != 1))
         return(FALSE)
-    #if (is.list(input.data.raw$X) && length(input.data.raw$X) > 1) # Y-variable removed in coerceToDataFrame
-    #    return(FALSE)
     return(all(nms == c("X", "Y")))
 }
 
@@ -2225,7 +2240,7 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
                     color = cc)
                 k <- k + 1
             }
-           
+
             # Add annotation for symbol (arrow or caret)
             if (symbol != "None")
             {
@@ -2247,3 +2262,24 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
     return(new.dat)
 }
 
+unclassQTable <- function(data) {
+    if (is.null(data)) return(data)
+    if (is.list(data)) return(lapply(data, unclassQTable))
+    if ((inherits(data, "QTable") || inherits(data, "qTable"))) {
+        data.attributes <- attributes(data)
+        is.subscripted.table <- !is.null(data.attributes[["original.questiontypes"]])
+        if (!is.subscripted.table) return(data)
+        data.attribute.names <- names(data.attributes)
+        attr.to.remove <- qTableAttributesToRemove(data.attribute.names)
+        attributes(data)[attr.to.remove] <- NULL
+        return(unclass(data))
+    }
+    data
+}
+
+#' @importFrom verbs IsQTableAttribute
+qTableAttributesToRemove <- function(attr.names) {
+    qtable.attr.names <- eval(formals(IsQTableAttribute)[["qtable.attrs"]])
+    qtable.attr.names <- c(qtable.attr.names, paste0("original.", qtable.attr.names))
+    attr.names %in% qtable.attr.names & !attr.names %in% c("dim", "dimnames", "names")
+}
