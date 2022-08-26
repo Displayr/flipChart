@@ -260,6 +260,8 @@ PrepareData <- function(chart.type,
     # - Frequencies of multiple categorical variables (Pick One - Multi)
 
     #### This function does the following things:
+    # 0. Checks if an input contains a subscripted Q Table and removes attributes
+    #    if the Viz output was created before the release of Q Table subscripting.
     # 1. Converts the data inputs into a single data object called 'data'.
     # 2. Filters the data and/or removes missing values
     # 3. Aggregate the data if so required.
@@ -2262,10 +2264,19 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
     return(new.dat)
 }
 
-unclassQTable <- function(data) {
+isQTableClass <- function(x) inherits(x, "QTable") || inherits(x, "qTable")
+
+unclassQTable <- function(data)
+{
     if (is.null(data)) return(data)
-    if (is.list(data)) return(lapply(data, unclassQTable))
-    if ((inherits(data, "QTable") || inherits(data, "qTable"))) {
+    if (is.list(data) && !is.data.frame(data))
+    {
+        qtable.elements <- vapply(data, isQTableClass, logical(1L))
+        data[qtable.elements] <- lapply(data[qtable.elements], unclassQTable)
+        return(data)
+    }
+    if (isQTableClass(data))
+    {
         data.attributes <- attributes(data)
         is.subscripted.table <- !is.null(data.attributes[["original.questiontypes"]])
         if (!is.subscripted.table) return(data)
@@ -2278,7 +2289,8 @@ unclassQTable <- function(data) {
 }
 
 #' @importFrom verbs IsQTableAttribute
-qTableAttributesToRemove <- function(attr.names) {
+qTableAttributesToRemove <- function(attr.names)
+{
     qtable.attr.names <- eval(formals(IsQTableAttribute)[["qtable.attrs"]])
     qtable.attr.names <- c(qtable.attr.names, paste0("original.", qtable.attr.names))
     attr.names %in% qtable.attr.names & !attr.names %in% c("dim", "dimnames", "names")
