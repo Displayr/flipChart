@@ -2786,7 +2786,6 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                           select.columns = "")
         if (ct == "Box") {
             expected <- array(expected.vals, dim = 5L, dimnames = list(expected.names))
-            class(expected) <- c("qTable", class(expected))
         } else # In PrepareData the attributes are lost for Bar
             expected <- setNames(expected.vals, expected.names)
         expect_equivalent(pd$data, expected)
@@ -2820,4 +2819,119 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                                       tidy = FALSE,
                                       select.rows = "", select.columns = "")[["data"]])
     }
+})
+
+test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
+    q.stat.info <- data.frame(significancearrowratio = c(1, 1, 1, 1),
+                              significancedirection = c("Up", "Up", "Down", "Up"),
+                              significancefontsizemultiplier = c(4.89, 4.89, 0.204, 4.89),
+                              significanceissignificant = c(TRUE, TRUE, TRUE, TRUE),
+                              statistic = c(5.044, 5.161, -10.205, 25.573),
+                              pcorrected = c(0.0000004, 0.0000002, 0, 0))
+    values <- c(`Under 40` = 5.044, `40 to 64` = 5.161, `65 or more` = -10.205, NET = 25.573)
+    qtable.names <- c("Under 40", "40 to 64", "65 or more", "NET")
+    qtable <- structure(
+        values,
+        statistic = "z-Statistic",
+        dim = 4L,
+        dimnames = list(qtable.names),
+        span = list(rows = data.frame(qtable.names, fix.empty.names = FALSE)),
+        basedescriptiontext = "sample size = 327",
+        basedescription = list(Minimum = 327L, Maximum = 327L, Range = FALSE, Total = 327L,
+                               Missing = 0L, EffectiveSampleSize = 327L,
+                               EffectiveSampleSizeProportion = 100, FilteredProportion = 0),
+        QStatisticsTestingInfo = q.stat.info,
+        questiontypes = "PickOne",
+        footerhtml = paste0("<div data-editable=\"true\" style=\"font-family:'Open Sans', ",
+                            "sans-serif;font-size:8pt;font-weight:normal;font-style:normal;",
+                            "text-decoration:none;color:#505050;text-align:center;\">",
+                            "Q3. Age in years SUMMARY<br />sample size = 327; ",
+                            "95% confidence level</div>"),
+        custom.attr = "I have been added",
+        name = "table.Q3.Age.in.years.2",
+        questions = c("Q3. Age in years", "SUMMARY"),
+        class = c("qTable", "array"))
+    original.attr <- attributes(qtable)
+    subscripted.qtable <- structure(
+        values[1:2],
+        statistic = "z-Statistic",
+        dim = 2L,
+        dimnames = list(original.attr[["dimnames"]][[1L]][1:2]),
+        original.span = original.attr[["span"]],
+        original.basedescriptiontext = original.attr[["basedescriptiontext"]],
+        original.basedescription = original.attr[["basedescription"]],
+        QStatisticsTestingInfo = q.stat.info[1:2, ],
+        original.questiontypes = "PickOne",
+        questiontypes = "PickOne",
+        custom.attr = "I have been added",
+        original.footerhtml = original.attr[["footerhtml"]],
+        original.name = "table.Q3.Age.in.years.2",
+        name = "table.Q3.Age.in.years.2[1:2]",
+        questions = c("Q3. Age in years", "SUMMARY"),
+        class = c("qTable", "array"))
+
+    basic.table <- array(values, dimnames = list(qtable.names))
+    basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
+                                         custom.attr = "I have been added")
+
+    # Without the global variable
+    ## Table hasn't been subscripted
+    expect_equal(unclassQTable(qtable), unclass(qtable))
+    ## Table has been subscripted.
+    expect_equal(unclassQTable(subscripted.qtable), basic.subscripted.table)
+    ## PrepareForCbind tests
+    basic.prepared.table <- as.matrix(qtable)
+    dimnames(basic.prepared.table) <- list(names(qtable), original.attr[["name"]])
+    prepared.table <- CopyAttributes(basic.prepared.table, qtable)
+    expect_equal(PrepareForCbind(qtable), prepared.table)
+    basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
+    attr(basic.sub.prepared.table, "custom.attr") <- "I have been added"
+    colnames(basic.sub.prepared.table) <- " "
+    expect_equal(PrepareForCbind(subscripted.qtable), basic.sub.prepared.table)
+    ## PrepareData tests
+    expected.scatter.table.data <- list(
+        data = structure(
+            array(values[1:3], dim = c(3L, 1L), dimnames = list(qtable.names[1:3], NULL)),
+            statistic = "z-Statistic",
+            span = original.attr[["span"]],
+            basedescriptiontext = "sample size = 327",
+            basedescription = original.attr[["basedescription"]],
+            QStatisticsTestingInfo = q.stat.info,
+            questiontypes = "PickOne",
+            custom.attr = "I have been added",
+            name = "table.Q3.Age.in.years.2",
+            questions = c("Q3. Age in years", "SUMMARY"),
+            assigned.rownames = TRUE,
+            scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA, groups = 1)),
+        weights = NULL,
+        values.title = "",
+        categories.title = "",
+        chart.title = NULL,
+        chart.footer = NULL,
+        scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA, groups = 1))
+    expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
+                 expected.scatter.table.data)
+    expected.sub.scatter.table.data <- expected.scatter.table.data
+    expected.sub.scatter.table.data[["data"]] <- basic.sub.prepared.table
+    attr(expected.sub.scatter.table.data[["data"]], "assigned.rownames") <- TRUE
+    attr(expected.sub.scatter.table.data[["data"]], "scatter.variable.indices") <-
+        attr(expected.scatter.table.data[["data"]], "scatter.variable.indices")
+        colnames(expected.sub.scatter.table.data[["data"]]) <- NULL
+    expect_equal(PrepareData("Scatter", input.data.table = list(subscripted.qtable)),
+                 expected.sub.scatter.table.data)
+    # With the new global variable
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    ## PrepareForCbind tests
+    basic.prepared.table <- as.matrix(qtable)
+    dimnames(basic.prepared.table) <- list(names(qtable), original.attr[["name"]])
+    prepared.table <- CopyAttributes(basic.prepared.table, qtable)
+    expect_equal(PrepareForCbind(qtable), prepared.table)
+    basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
+    colnames(basic.sub.prepared.table) <- paste0(original.attr[["name"]], "[1:2]")
+    prepared.sub.table <- CopyAttributes(basic.sub.prepared.table, subscripted.qtable)
+    expect_equal(PrepareForCbind(subscripted.qtable), prepared.sub.table)
+    ## PrepareData tests
+    expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
+                 expected.scatter.table.data)
+    remove(ALLOW.QTABLE.CLASS, envir = .GlobalEnv)
 })
