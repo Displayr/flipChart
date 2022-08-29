@@ -2786,7 +2786,6 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                           select.columns = "")
         if (ct == "Box") {
             expected <- array(expected.vals, dim = 5L, dimnames = list(expected.names))
-            class(expected) <- c("qTable", class(expected))
         } else # In PrepareData the attributes are lost for Bar
             expected <- setNames(expected.vals, expected.names)
         expect_equivalent(pd$data, expected)
@@ -2877,7 +2876,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
 
     # Without the global variable
     ## Table hasn't been subscripted
-    expect_equal(unclassQTable(qtable), qtable)
+    expect_equal(unclassQTable(qtable), unclass(qtable))
     ## Table has been subscripted.
     expect_equal(unclassQTable(subscripted.qtable), basic.subscripted.table)
     ## PrepareForCbind tests
@@ -2922,10 +2921,6 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
                  expected.sub.scatter.table.data)
     # With the new global variable
     assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
-    ## Table hasn't been subscripted
-    expect_equal(unclassQTable(qtable), qtable)
-    ## Table has been subscripted.
-    expect_equal(unclassQTable(subscripted.qtable), basic.subscripted.table)
     ## PrepareForCbind tests
     basic.prepared.table <- as.matrix(qtable)
     dimnames(basic.prepared.table) <- list(names(qtable), original.attr[["name"]])

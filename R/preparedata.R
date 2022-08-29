@@ -2277,13 +2277,14 @@ unclassQTable <- function(data)
     }
     if (isQTableClass(data))
     {
+        data <- unclass(data)
         data.attributes <- attributes(data)
         is.subscripted.table <- !is.null(data.attributes[["original.questiontypes"]])
         if (!is.subscripted.table) return(data)
         data.attribute.names <- names(data.attributes)
         attr.to.remove <- qTableAttributesToRemove(data.attribute.names)
         attributes(data)[attr.to.remove] <- NULL
-        return(unclass(data))
+        return(data)
     }
     data
 }
