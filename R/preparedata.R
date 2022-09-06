@@ -322,7 +322,7 @@ PrepareData <- function(chart.type,
     if (all(sapply(input.data.raw, is.null)))
         input.data.raw <- NULL
     # Ignore colors/sizes/labels if x and y are not supplied
-    if (length(input.data.raw) >= 2 && all(sapply(input.data.raw[1:2], is.null)))
+    if (length(input.data.raw) >= 2 && all(vapply(input.data.raw[1:2], is.null, logical(1L))))
         input.data.raw <- NULL
     if (all(sapply(input.data.pasted, is.null)))
         input.data.pasted <- NULL
@@ -2170,13 +2170,12 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     return(data)
 }
 
+#' @importFrom flipU IsQTable
 containsQTable <- function(x)
 {
-    if (!is.list(x))
-        return(!is.null(attr(x, "questions")) && !is.null(attr(x, "name")))
-    else
-        return(any(sapply(x, containsQTable)))
-
+    if (is.data.frame(x)) return(FALSE)
+    if (!is.list(x)) return(IsQTable(x))
+    any(vapply(x, containsQTable, logical(1L)))
 }
 
 #' @importFrom abind abind
