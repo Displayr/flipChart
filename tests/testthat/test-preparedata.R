@@ -720,6 +720,7 @@ test_that("PrepareData: input and output format of raw data",
     expect_equal(rownames(res4), rownames(res1))
     res5 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink), Y = gender),
                 first.aggregate = TRUE, categorical.as.binary = TRUE)$data
+    expect_equal(attr(res5, "statistic"), setNames("Counts", "Favourite Food"))
     expect_equal(rownames(res5), rownames(res2))
     expect_warning(res6 <- PrepareData("Table", input.data.raw = list(X = list(fav.food, fav.drink), Y = gender),
                 first.aggregate = TRUE, categorical.as.binary = FALSE)$data)

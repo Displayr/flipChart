@@ -690,7 +690,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 
             attr.list <- lapply(res, attr, "statistic", exact = TRUE)
             if (all(attr.list == attr.list[[1]]))
-                attr(out, "statistic") <- attr.list[1]
+                attr(out, "statistic") <- setNames(attr.list[[1]], names(attr.list[1]))
         }
     }
     else # first.aggregate
