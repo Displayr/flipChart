@@ -444,9 +444,9 @@ PrepareData <- function(chart.type,
 
 
     # Do not drop 1-column table to keep name for legend
-    drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
-            !any(nchar(select.columns), na.rm = TRUE) &&
-            !any(nchar(column.labels), na.rm = TRUE)))
+    drop <- (tidy &&
+             (chart.type %in% c("Pie", "Donut") || !any(nchar(select.columns), na.rm = TRUE) &&
+              !any(nchar(column.labels), na.rm = TRUE)))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -1346,18 +1346,18 @@ transformTable <- function(data,
     if (multiple.tables)
     {
         for (i in seq_along(data))
-            data[[i]] = transformTable(data[[i]],
-                                       chart.type,
-                                       FALSE,
-                                       FALSE,
-                                       FALSE,
-                                       is.raw.data,
-                                       0, 0, 0, 0, # sample size not used
-                                       transpose,
-                                       first.aggregate,
-                                       hide.empty.rows, hide.empty.columns,
-                                       date.format,
-                                       i)
+            data[[i]] <- transformTable(data[[i]],
+                                        chart.type,
+                                        FALSE,
+                                        FALSE,
+                                        FALSE,
+                                        is.raw.data,
+                                        0, 0, 0, 0, # sample size not used
+                                        transpose,
+                                        first.aggregate,
+                                        hide.empty.rows, hide.empty.columns,
+                                        date.format,
+                                        i)
         return(data)
     }
 
@@ -1792,14 +1792,13 @@ getFullRowNames <- function(x)
 {
     if (!is.null(attr(x, "span")))
         return(apply(attr(x, "span")$rows, 1, paste, collapse = " - "))
-    else if (!is.null(nrow(x)) && hasUserSuppliedRownames(x))
+    if (!is.null(nrow(x)) && hasUserSuppliedRownames(x))
         return(MakeUniqueNames(rownames(x)))
-    else if (!is.list(x) && is.null(nrow(x)))
+    if (!is.list(x) && is.null(nrow(x)))
         return(MakeUniqueNames(names(x)))
-    else if (is.list(x) && length(x) == 1)
+    if (is.list(x) && length(x) == 1)
         return(getFullRowNames(x[[1]]))
-    else
-        return(NULL)
+    NULL
 }
 
 
@@ -1872,7 +1871,6 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         # Avoid trying to convert complex data structures
         # including dataframes which might have different types
         new.dat <- as.matrix(x)
-
     } else
         new.dat <- x
 
@@ -2208,8 +2206,10 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
         for (cc in tmp.col)
         {
             j <- length(mat.list)
-            mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc,
-                nrow=nrow(tmp.x), ncol=ncol(tmp.x), byrow = TRUE)
+            mat.list[[j + 1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc,
+                                        nrow = nrow(tmp.x),
+                                        ncol = ncol(tmp.x),
+                                        byrow = TRUE)
             tmp.signame <- paste0("signif", tmp.dir, cc)
             signames <- c(signames, tmp.signame)
 
