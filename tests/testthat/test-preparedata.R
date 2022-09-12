@@ -2884,6 +2884,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     basic.prepared.table <- as.matrix(qtable)
     dimnames(basic.prepared.table) <- list(names(qtable), original.attr[["name"]])
     prepared.table <- CopyAttributes(basic.prepared.table, qtable)
+    attr(prepared.table, "QStatisticsTestingInfo") <- NULL
     expect_equal(PrepareForCbind(qtable), prepared.table)
     basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
     attr(basic.sub.prepared.table, "custom.attr") <- "I have been added"
@@ -2926,11 +2927,12 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     basic.prepared.table <- as.matrix(qtable)
     dimnames(basic.prepared.table) <- list(names(qtable), original.attr[["name"]])
     prepared.table <- CopyAttributes(basic.prepared.table, qtable)
+    attr(prepared.table, "QStatisticsTestingInfo") <- NULL
     expect_equal(PrepareForCbind(qtable), prepared.table)
     basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
-    colnames(basic.sub.prepared.table) <- paste0(original.attr[["name"]], "[1:2]")
-    prepared.sub.table <- CopyAttributes(basic.sub.prepared.table, subscripted.qtable)
-    expect_equal(PrepareForCbind(subscripted.qtable), prepared.sub.table)
+    colnames(basic.sub.prepared.table) <- " "
+    attr(basic.sub.prepared.table, "custom.attr") <- "I have been added"
+    expect_equal(PrepareForCbind(subscripted.qtable), basic.sub.prepared.table)
     ## PrepareData tests
     expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
                  expected.scatter.table.data)
