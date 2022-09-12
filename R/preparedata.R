@@ -1830,23 +1830,16 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         stop("Annotation data for Scatterplots should be a single-column table ",
              "or variable with the same number of values as the number of ",
              "points in the chart")
-
-    allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
-
-    if (!allow.qtables)
+    # Q Table attributes are not useful when used as a scatterplot dimension input
+    if (IsQTable(x)) {
         x <- unclassQTable(x)
+        attr(x, "QStatisticsTestingInfo") <- NULL
+    }
 
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
 
-    new.dat <- NULL
-    if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
-    {
-        # For variables, this function is not really required
-        # and for non-atomic types it results in info being lost
-        new.dat <- data.frame(x)
-
-    } else if (use.span && !is.null(attr(x, "span")))
+    if (use.span && !is.null(attr(x, "span")))
     {
         # Q tables can always be converted to a matrix
         new.dat <- as.matrix(attr(x, "span")$rows[, 1])
@@ -1859,7 +1852,13 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         new.dat <- CopyAttributes(new.dat, x)
         return(new.dat)
     }
-    else if (!is.list(x))
+    if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
+    {
+        # For variables, this function is not really required
+        # and for non-atomic types it results in info being lost
+        new.dat <- data.frame(x)
+
+    } else if (!is.list(x))
     {
         # Avoid trying to convert complex data structures
         # including dataframes which might have different types
