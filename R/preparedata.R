@@ -1766,24 +1766,17 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
         attr(x, "values.title") <- ""
     if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Heat"))
     {
-        # only drop 1 dimension from a 2d matrix
-        if (length(dim(x)) == 2 && (dim(x)[2] == 1 || dim(x)[1] == 1)) {
-            if (dim(x)[2] == 1) {
-                tmp.vec <- x[, 1]
-                names(tmp.vec) <- rownames(x)
-            }
-            else if (dim(x)[1] == 1) {
-                tmp.vec <- x[1, ]
-                names(tmp.vec) <- colnames(x)
-            }
-            attr(tmp.vec, "statistic") <- attr(x, "statistic")
-            attr(tmp.vec, "questions") <- attr(x, "questions")
-            attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
-            attr(tmp.vec, "values.title") <- attr(x, "values.title")
-            x <- tmp.vec
-        }
-        else
-            x <- CopyAttributes(drop(x), x)
+        x.dim <- dim(x)
+        if (length(x.dim) == 2L && any(x.dim == 1L)) {
+            x.names <- if (NCOL(x) == 1L) rownames(x) else colnames(x)
+            x <- structure(as.vector(x),
+                           names = x.names,
+                           statistic = attr(x, "statistic"),
+                           questions = attr(x, "questions"),
+                           categories.title = attr(x, "categories.title"),
+                           values.title = attr(x, "values.title"))
+        } else
+            x <- drop(x)
     }
     x
 }
