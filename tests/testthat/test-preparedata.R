@@ -2936,3 +2936,13 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
                  expected.scatter.table.data)
     remove(ALLOW.QTABLE.CLASS, envir = .GlobalEnv)
 })
+
+test_that("isTableList identifies pure list vs custom class structures properly", {
+    vals <- matrix(runif(30), nrow = 10, ncol = 3)
+    table.list.test <- structure(
+        list(vals, FALSE),
+        class = c("FixMaxDiff", "FitMaxDiffHB")
+    )
+    expect_false(isTableList(table.list.test))
+    expect_true(isTableList(unclass(table.list.test)))
+})

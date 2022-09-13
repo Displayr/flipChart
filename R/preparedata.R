@@ -585,7 +585,7 @@ unlistTable <- function(x)
 
 isTableList <- function(x)
 {
-    !is.data.frame(x) && is.list(x) && length(x) > 1 &&
+    inherits(x, "list") && !is.data.frame(x) && is.list(x) && length(x) > 1 &&
     (is.matrix(x[[1]]) || is.data.frame(x[[1]]) || is.numeric(x[[1]]))
 }
 
