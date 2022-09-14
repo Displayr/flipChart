@@ -1830,11 +1830,6 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         stop("Annotation data for Scatterplots should be a single-column table ",
              "or variable with the same number of values as the number of ",
              "points in the chart")
-    # Q Table attributes are not useful when used as a scatterplot dimension input
-    if (IsQTable(x)) {
-        x <- unclassQTable(x)
-        attr(x, "QStatisticsTestingInfo") <- NULL
-    }
 
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
@@ -1849,9 +1844,18 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         # accidentally used for another variable
         # The space is needed to avoid ugly R defaults
         colnames(new.dat) <- " "
-        new.dat <- CopyAttributes(new.dat, x)
+        attr.to.not.copy <- c(eval(formals(CopyAttributes)[["attr.to.not.copy"]]),
+                              "QStatisticsTestingInfo")
+        new.dat <- CopyAttributes(new.dat, x, attr.to.not.copy = attr.to.not.copy)
         return(new.dat)
     }
+
+    # Q Table attributes are not useful when used as a scatterplot dimension input
+    if (IsQTable(x)) {
+        x <- unclass(x)
+        attr(x, "QStatisticsTestingInfo") <- NULL
+    }
+
     if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
     {
         # For variables, this function is not really required
@@ -2295,7 +2299,7 @@ unclassQTable <- function(data)
     {
         data <- unclass(data)
         data.attributes <- attributes(data)
-        is.subscripted.table <- !is.null(data.attributes[["original.questiontypes"]])
+        is.subscripted.table <- !is.null(data.attributes[["is.subscripted"]])
         if (!is.subscripted.table) return(data)
         data.attribute.names <- names(data.attributes)
         attr.to.remove <- qTableAttributesToRemove(data.attribute.names)

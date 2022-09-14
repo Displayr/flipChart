@@ -2719,6 +2719,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.footerhtml = original.attr[["footerhtml"]],
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
+        is.subscripted = FALSE,
         questions = c("Q3. Age in years", "SUMMARY"),
         class = c("qTable", "array"))
 
@@ -2738,8 +2739,12 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     attr(prepared.table, "QStatisticsTestingInfo") <- NULL
     expect_equal(PrepareForCbind(qtable), prepared.table)
     basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
-    attr(basic.sub.prepared.table, "custom.attr") <- "I have been added"
     colnames(basic.sub.prepared.table) <- " "
+    required.attr <- attributes(subscripted.qtable)
+    valid.attr <- !names(required.attr) %in% c("QStatisticsTestingInfo", "class", "dim", "dimnames")
+    mostattributes(basic.sub.prepared.table) <- required.attr[valid.attr]
+    dim(basic.sub.prepared.table) <- 2:1
+    dimnames(basic.sub.prepared.table) <- list(rownames(basic.prepared.table)[1:2], attr(subscripted.qtable, "name"))
     expect_equal(PrepareForCbind(subscripted.qtable), basic.sub.prepared.table)
     ## PrepareData tests
     expected.scatter.table.data <- list(
@@ -2765,7 +2770,13 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
                  expected.scatter.table.data)
     expected.sub.scatter.table.data <- expected.scatter.table.data
-    expected.sub.scatter.table.data[["data"]] <- basic.sub.prepared.table
+    unclassed.sub.table <- basic.sub.prepared.table
+    attr.names.allowed <- c("dim", "dimnames", "custom.attr",
+                            "assigned.rownames", "scatter.variable.indices")
+    expected.data.attr <- attributes(unclassed.sub.table)
+    attr.to.keep <- names(expected.data.attr) %in% attr.names.allowed
+    attributes(unclassed.sub.table) <- expected.data.attr[attr.to.keep]
+    expected.sub.scatter.table.data[["data"]] <- unclassed.sub.table
     attr(expected.sub.scatter.table.data[["data"]], "assigned.rownames") <- TRUE
     attr(expected.sub.scatter.table.data[["data"]], "scatter.variable.indices") <-
         attr(expected.scatter.table.data[["data"]], "scatter.variable.indices")
@@ -2780,10 +2791,37 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     prepared.table <- CopyAttributes(basic.prepared.table, qtable)
     attr(prepared.table, "QStatisticsTestingInfo") <- NULL
     expect_equal(PrepareForCbind(qtable), prepared.table)
-    basic.sub.prepared.table <- basic.prepared.table[1:2, , drop = FALSE]
-    colnames(basic.sub.prepared.table) <- " "
+    basic.sub.prepared.table <- qtable[1:2, drop = FALSE]
+    r.names <- names(basic.sub.prepared.table)
     attr(basic.sub.prepared.table, "custom.attr") <- "I have been added"
-    expect_equal(PrepareForCbind(subscripted.qtable), basic.sub.prepared.table)
+    attr(basic.sub.prepared.table, "class") <- c("matrix", "array")
+    dim(basic.sub.prepared.table) <- 2:1
+    dimnames(basic.sub.prepared.table) <- list(r.names,
+                                               attr(basic.sub.prepared.table, "name"))
+
+    attr(basic.sub.prepared.table, "QStatisticsTestingInfo") <- NULL
+    expected.output <- structure(
+        c(5.044, 5.161),
+        dim = 2:1,
+        dimnames = list(c("Under 40", "40 to 64"), "table.Q3.Age.in.years.2[1:2]"),
+        statistic = "z-Statistic",
+        original.basedescriptiontext = "sample size = 327",
+        original.basedescription = list(
+            Minimum = 327L, Maximum = 327L, Range = FALSE, Total = 327L,
+            Missing = 0L, EffectiveSampleSize = 327L,
+            EffectiveSampleSizeProportion = 100, FilteredProportion = 0
+        ),
+        original.questiontypes = "PickOne",
+        questiontypes = "PickOne",
+        custom.attr = "I have been added",
+        original.name = "table.Q3.Age.in.years.2",
+        name = "table.Q3.Age.in.years.2[1:2]",
+        is.subscripted = FALSE,
+        questions = c("Q3. Age in years", "SUMMARY")
+    )
+    attr(expected.output, "original.footerhtml") <- attr(qtable, "footerhtml")
+    attr(expected.output, "original.span") <- attr(qtable, "span")
+    expect_equal(PrepareForCbind(subscripted.qtable), expected.output)
     ## PrepareData tests
     expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
                  expected.scatter.table.data)
