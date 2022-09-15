@@ -2719,13 +2719,14 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.footerhtml = original.attr[["footerhtml"]],
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
-        is.subscripted = FALSE,
+        is.subscripted = TRUE,
         questions = c("Q3. Age in years", "SUMMARY"),
         class = c("qTable", "array"))
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
-                                         custom.attr = "I have been added")
+                                         custom.attr = "I have been added",
+                                         is.subscripted = TRUE)
 
     # Without the global variable
     ## Table hasn't been subscripted
@@ -2769,20 +2770,21 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA, groups = 1))
     expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
                  expected.scatter.table.data)
-    expected.sub.scatter.table.data <- expected.scatter.table.data
+    expected.prep.subscripted <- expected.scatter.table.data
     unclassed.sub.table <- basic.sub.prepared.table
     attr.names.allowed <- c("dim", "dimnames", "custom.attr",
                             "assigned.rownames", "scatter.variable.indices")
     expected.data.attr <- attributes(unclassed.sub.table)
     attr.to.keep <- names(expected.data.attr) %in% attr.names.allowed
     attributes(unclassed.sub.table) <- expected.data.attr[attr.to.keep]
-    expected.sub.scatter.table.data[["data"]] <- unclassed.sub.table
-    attr(expected.sub.scatter.table.data[["data"]], "assigned.rownames") <- TRUE
-    attr(expected.sub.scatter.table.data[["data"]], "scatter.variable.indices") <-
+    expected.prep.subscripted[["data"]] <- unclassed.sub.table
+    attr(expected.prep.subscripted[["data"]], "assigned.rownames") <- TRUE
+    attr(expected.prep.subscripted[["data"]], "scatter.variable.indices") <-
         attr(expected.scatter.table.data[["data"]], "scatter.variable.indices")
-        colnames(expected.sub.scatter.table.data[["data"]]) <- NULL
+    colnames(expected.prep.subscripted[["data"]]) <- NULL
+    attr(expected.prep.subscripted[["data"]], "is.subscripted") <- TRUE
     expect_equal(PrepareData("Scatter", input.data.table = list(subscripted.qtable)),
-                 expected.sub.scatter.table.data)
+                 expected.prep.subscripted)
     # With the new global variable
     assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
     ## PrepareForCbind tests
@@ -2816,7 +2818,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         custom.attr = "I have been added",
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
-        is.subscripted = FALSE,
+        is.subscripted = TRUE,
         questions = c("Q3. Age in years", "SUMMARY")
     )
     attr(expected.output, "original.footerhtml") <- attr(qtable, "footerhtml")
