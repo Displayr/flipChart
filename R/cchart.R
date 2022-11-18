@@ -283,7 +283,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         warning("Significance tests cannot be shown as the input data is not a summary table or crosstab")
     else if (signif.show && is.null(attr(x, "QStatisticsTestingInfo", exact = TRUE)))
         warning("Significance tests cannot be shown on this version of Q")
-    
+
     if (signif.show && length(dim(x)) == 3 && "Column Comparisons" %in% dimnames(x)[[3]])
         warning("These tests do not compare columns. Try Stacked Column with Custom Tests ",
         "or Column with Tests instead.")
@@ -294,11 +294,16 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         {
             # If data label show is false, then other annotations are not shown
             user.args$data.label.show <- TRUE
-            annotation.list <- list(list(
+            annotation.list <- list(
+                list(
                     type = "Hide",
                     data = "",
                     threstype = "above threshold",
-                    threshold = "-Inf"))
+                    threshold = "-Inf"),
+                list(type = "Hide",
+                    data = "",
+                    threstype = "which are missing")
+                )
         }
         annot.len <- length(annotation.list)
         new.len <- length(attr(x, "signif-annotations"))
@@ -646,7 +651,7 @@ getPPTSettings <- function(chart.type, args, data)
             TitleFont = list(color = args$categories.title.font.color,
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
-            NumberFormat = convertToPPTNumFormat(args$categories.tick.format), 
+            NumberFormat = convertToPPTNumFormat(args$categories.tick.format),
             AxisLine = list(Color = args$categories.line.color,
             Width = px2pt(args$categories.line.width),
             Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
@@ -666,7 +671,7 @@ getPPTSettings <- function(chart.type, args, data)
             TitleFont = list(color = args$values.title.font.color,
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
-            NumberFormat = convertToPPTNumFormat(args$values.tick.format), 
+            NumberFormat = convertToPPTNumFormat(args$values.tick.format),
             AxisLine = list(Color = args$values.line.color,
             Width = px2pt(args$values.line.width),
             Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
@@ -1083,7 +1088,7 @@ convertToPPTNumFormat <- function(d3format)
     num.decimals <- NULL
     if (length(d3format) == 0)
         return("General")
-    
+
     mm <- regexpr("\\.(\\d+)", d3format, perl = TRUE)
     if (length(mm) == 1 && mm > 0)
     {
