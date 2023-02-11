@@ -288,6 +288,11 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         warning("These tests do not compare columns. Try Stacked Column with Custom Tests ",
         "or Column with Tests instead.")
 
+    # Extract info about signif data so we can remove it later
+    signif.data.names <- NULL
+    if (!is.null(attr(x, "signif-annotations")))
+        signif.data.names <- sapply(attr(x, "signif-annotations"), function(x) x$data)
+
     if (signif.show && !is.null(attr(x, "signif-annotations")))
     {
         if (!isTRUE(user.args$data.label.show))
@@ -358,12 +363,33 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
+    # Append data used for exporting to PPT/Excel
+    # Exception is for StackedColumnWithAnnot that handles this itself
     if (is.null(attr(result, "ChartData")))
-        attr(result,  "ChartData") <- x # Used by Displayr to permit exporting of the raw data.
+        attr(result,  "ChartData") <- removeSignifData(x, signif.data.names)
     class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
-    attr(result, "footerhtml") <- attr(x, "footerhtml", TRUE)
+    attr(result, "footerhtml") <- attr(x, "footerhtml", exact = TRUE)
     result
+}
+
+removeSignifData <- function(x, rm.names)
+{
+    if (is.null(rm.names))
+        return(x)
+
+    # Because of the way abind is used in PrepareData
+    # we can assume significance data is all in the 3rd dimension
+    all.names <- dimnames(x)[[3]]
+    if (length(all.names) > length(rm.names) + 1) {
+        keep.stats <- setdiff(all.names, rm.names)
+        new.dat <- x[,,keep.stats]
+    } else {
+        primary.stat <- all.names[1]
+        new.dat <- x[,,1, drop = TRUE]
+        attr(new.dat, "statistic") <- primary.stat
+    }
+    return(CopyAttributes(new.dat, x))
 }
 
 addLabels <- function(x, chart.type, chart.title, categories.title, values.title, data.label.format)

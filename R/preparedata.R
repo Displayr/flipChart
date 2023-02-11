@@ -1500,7 +1500,7 @@ convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.
         else
             data <- asPercentages(data) # converts character QTables to numeric
 
-        if (isTRUE(attr(data, "values.title") == "n"))
+        if (isTRUE(attr(data, "values.title") == "n") || isTRUE(attr(data, "values.title") == "Count"))
             attr(data, "values.title") <- "%"
     }
 
