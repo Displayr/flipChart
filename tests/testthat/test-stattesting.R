@@ -342,3 +342,26 @@ test_that("stats testing added to data matrix",
         tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(res$values.title, "%")
 })
+
+test_that("QStatisticsTestingInfo rearranges with data manipulations",
+{
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d,
+        tidy = FALSE, signif.append = TRUE, sort.rows = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+                 attr(tb.1d, "QStatisticsTestingInfo")$pcorrected[order(tb.1d)[-10]])
+
+    orig.pcorr <- structure(attr(tb.2d, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(colnames(tb.2d), nrow(tb.2d)), "-", rep(rownames(tb.2d), each=ncol(tb.2d))))
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.rows = TRUE, signif.append = TRUE), NA)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(colnames(res$data), nrow(res$data)), "-", rep(rownames(res$data), each=ncol(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.columns = TRUE, transpose = TRUE,
+        signif.append = TRUE), NA)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+})

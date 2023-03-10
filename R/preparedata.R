@@ -2270,24 +2270,35 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
 
 updateQStatisticsInfo <- function(x, original.dim.names, transpose)
 {
+    x.siginfo <- attr(x, "QStatisticsTestingInfo")
+    if (is.null(x.siginfo))
+        return(x)
+    if (length(dim(x)) < 2 || NCOL(x) == 1)
+    {
+        curr.names <- if (length(dim(x)) == 0) names(x) else rownames(x)
+        ind <- match(curr.names, original.dim.names[[1]])
+        attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+        return(x)
+    }
     if (transpose)
         original.dim.names <- original.dim.names[2:1]
-    rows.changed <- length(dimnames(x)[[1]]) == length(original.dim.names[[1]]) &&
+    rows.changed <- length(dimnames(x)[[1]]) != length(original.dim.names[[1]]) ||
         any(dimnames(x)[[1]] != original.dim.names[[1]])
-    cols.changed <- length(dimnames(x)[[2]]) == length(original.dim.names[[2]]) &&
+    cols.changed <- length(dimnames(x)[[2]]) != length(original.dim.names[[2]]) ||
         any(dimnames(x)[[2]] != original.dim.names[[2]])
     if (!rows.changed && !cols.changed)
         return(x)
 
     x.siginfo <- attr(x, "QStatisticsTestingInfo")
-    nc <- length(original.dim.names[[2]])
+    cind <- if (transpose) 1 else 2
+    rind <- if (transpose) 2 else 1
+    nc <- length(original.dim.names[[cind]])
     row.ord <- match(dimnames(x)[[1]], original.dim.names[[1]])
     col.ord <- match(dimnames(x)[[2]], original.dim.names[[2]])
     ind2d <- expand.grid(col.ord, row.ord)
     ind <- 1:nrow(ind2d)
     for (ii in 1:length(ind))
-        ind[ii] <- (ind2d[ii,2] - 1) * nc + ind2d[ii,1]
-        
+        ind[ii] <- (ind2d[ii, cind] - 1) * nc + ind2d[ii, rind]
     attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
     return(x)
 }
