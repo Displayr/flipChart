@@ -1672,10 +1672,10 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
-    # Don't use first column as labels if this is a q table
-    # with a numeric statistic.
-    if (is.numeric(x[, 1]) && !is.null(attr(x, "statistic")))
-        return(x)
+    # # Don't use first column as labels if this is a q table
+    # # with a numeric statistic.
+    # if (is.numeric(x[, 1]) && !is.null(attr(x, "statistic")))
+    #     return(x)
 
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
