@@ -158,6 +158,7 @@
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom verbs Sum
+#' @importFrom stats setNames
 #' @return A list with components \itemize{ \item \code{data} - If
 #'     possible, a named vector or matrix, or if that is not posible
 #'     or a data.frame is requested, a data.frame.  \item
@@ -479,7 +480,7 @@ PrepareData <- function(chart.type,
     # This is not used by R-viz or PPT, only for Excel exporting
     if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
         data <- updateQStatisticsInfo(data, original.dim.names, transpose)
-    
+
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
