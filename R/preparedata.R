@@ -1679,6 +1679,15 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
+    # Catch Q Tables which have numeric row names but are
+    # not raw data tables. It is not appropriate to use
+    # the first column as a label in this case because
+    # it contains a statistic.
+    if (allow.numeric.rownames
+        && IsQTable(x)
+        && !isRawDataQTable(x))
+        return(x)
+
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
 
@@ -2335,4 +2344,29 @@ qTableAttributesToRemove <- function(attr.names)
     qtable.attr.names <- eval(formals(IsQTableAttribute)[["qtable.attrs"]])
     qtable.attr.names <- c(qtable.attr.names, paste0("original.", qtable.attr.names))
     attr.names %in% qtable.attr.names & !attr.names %in% c("dim", "dimnames", "names")
+}
+
+#' Check the questions and statistics attribute,
+#' and the dimnames in the last dimension,
+#' to work out if this table is likely to be
+#' a raw data table in Q/Displayr
+#' @noRd
+isRawDataQTable <- function(x) {
+    questions <- attr(x, "questions")
+    if ("RAW DATA" %in% questions)
+        return(TRUE)
+
+    statistic <- attr(x, "statistic")
+    if (statistic %in% c("Values", "Labels"))
+        return(TRUE)
+
+    dn <- dimnames(x)
+    if (is.null(dn))
+        return(FALSE)
+
+    last.dn <- dn[length(dn)]
+    if (last.dn %in% c("Values", "Labels"))
+        return(TRUE)
+
+    return(FALSE)
 }
