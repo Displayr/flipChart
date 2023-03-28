@@ -2946,3 +2946,88 @@ test_that("isTableList identifies pure list vs custom class structures properly"
     expect_false(isTableList(table.list.test))
     expect_true(isTableList(unclass(table.list.test)))
 })
+
+test_that("DS-4177: PickOne Multi with numeric variable names produces bad chart", {
+    pickonemulti.table <- structure(c(13.7614678899083, 4.28134556574923, 15.5963302752294,
+                                      14.0672782874618, 10.3975535168196, 18.960244648318, 18.348623853211,
+                                      6.42201834862385, 29.3577981651376, 18.6544342507645, 13.7614678899083,
+                                      25.9938837920489, 28.7461773700306, 14.3730886850153, 19.8776758409786,
+                                      25.0764525993884, 31.4984709480122, 37.6146788990826, 15.2905198776758,
+                                      33.0275229357798, 12.2324159021407, 17.737003058104, 7.64525993883792,
+                                      5.19877675840979, 23.8532110091743, 41.8960244648318, 22.9357798165138,
+                                      24.4648318042813, 36.697247706422, 12.2324159021407), statistic = "Row %", dim = 6:5,
+                                    dimnames = list(c("1", "2", "3", "4", "5", "6"), c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like")),
+                                    class = c("matrix", "array", "QTable"),
+                                    dimnets = list(integer(0), integer(0)),
+                                    dimduplicates = list(integer(0), integer(0)),
+                                    span = list(rows = structure(list(c("1", "2","3", "4", "5", "6")),
+                                                                 class = "data.frame",
+                                                                 names = "",
+                                                                 row.names = c(NA,6L)),
+                                                columns = structure(list(c("Hate", "Dislike", "Neither like nor dislike","Love", "Like")),
+                                                                    class = "data.frame",
+                                                                    names = "",
+                                                                    row.names = c(NA, 5L))),
+                                    questiontypes = "PickOneMulti",
+                                    name = "table.q4X_2",
+                                    questions = c("q4X_2","SUMMARY"))
+
+    res <- PrepareData("Column", input.data.table = pickonemulti.table)$data
+    expect_equal(dimnames(res),
+                 list(c("1", "2", "3", "4", "5", "6"),
+                      c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like")))
+
+    pickonemulti.table.multi.stat <- structure(c(13.7614678899083, 4.28134556574923, 15.5963302752294,
+                14.0672782874618, 10.3975535168196, 18.960244648318, 18.348623853211,
+                6.42201834862385, 29.3577981651376, 18.6544342507645, 13.7614678899083,
+                25.9938837920489, 28.7461773700306, 14.3730886850153, 19.8776758409786,
+                25.0764525993884, 31.4984709480122, 37.6146788990826, 15.2905198776758,
+                33.0275229357798, 12.2324159021407, 17.737003058104, 7.64525993883792,
+                5.19877675840979, 23.8532110091743, 41.8960244648318, 22.9357798165138,
+                24.4648318042813, 36.697247706422, 12.2324159021407, 45, 14,
+                51, 46, 34, 62, 60, 21, 96, 61, 45, 85, 94, 47, 65, 82, 103,
+                123, 50, 108, 40, 58, 25, 17, 78, 137, 75, 80, 120, 40), dim = c(6L,5L, 2L),
+                dimnames = list(c("1", "2", "3", "4", "5", "6"),
+                                c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like"),
+                                c("Row %", "Count")),
+                class = c("array", "QTable"),
+                dimnets = list(integer(0), integer(0)),
+                dimduplicates = list(integer(0), integer(0)),
+                span = list(rows = structure(list(c("1", "2", "3", "4", "5", "6")),
+                                             class = "data.frame", names = "",
+                                             row.names = c(NA, 6L)),
+                            columns = structure(list(c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like")),
+                                                class = "data.frame", names = "",
+                                                row.names = c(NA, 5L))),
+                questiontypes = "PickOneMulti",
+                name = "table.q4X_2.3", questions = c("q4X_2","SUMMARY"))
+    res <- suppressWarnings(PrepareData("Column", input.data.table = pickonemulti.table)$data)
+    expect_equal(dimnames(res),
+                 list(c("1", "2", "3", "4", "5", "6"),
+                      c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like")))
+
+
+    raw.data <- structure(c(1, 0, -1, 0, 2, -1, 2, 0, 0, 0, 2, -1, -2, -2, -2,
+                            0, 0, 0, 0, 2, 1, 2, 0, 2, 0, 0, 0, 0, 0, -1, -1, 0, -1, 2, 0,
+                            0, 0, 2, 2, -1, -2, -2, 0, 0, 0, 1, 2, 1, 1, 1, 1, 1, 1, 1),
+                          statistic = "Values",
+                          dim = c(9L, 6L),
+                          dimnames = list(c("6", "9", "15", "23", "28", "103", "171", "239", "265"),
+                                          c("1", "2", "3", "4", "5", "6")),
+                          class = c("matrix","array", "QTable"),
+                          dimnets = list(integer(0), integer(0)),
+                          dimduplicates = list(integer(0), integer(0)),
+                          span = list(rows = structure(list(c("6", "9", "15", "23", "28", "103", "171", "239", "265")),
+                                                       class = "data.frame",
+                                                       names = "",
+                                                       row.names = c(NA, 9L)),
+                                      columns = structure(list(c("1", "2", "3", "4", "5", "6")),
+                                                          class = "data.frame",
+                                                          names = "",
+                                                          row.names = c(NA, 6L))),
+                          questiontypes = character(0),
+                          name = "table.q4X_2.2",
+                          questions = c("q4X_2", "RAW DATA"))
+    expect_true(isRawDataQTable(raw.data))
+
+})
