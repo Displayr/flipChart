@@ -158,6 +158,7 @@
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom verbs Sum
+#' @importFrom stats setNames
 #' @return A list with components \itemize{ \item \code{data} - If
 #'     possible, a named vector or matrix, or if that is not posible
 #'     or a data.frame is requested, a data.frame.  \item
@@ -427,6 +428,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
+    original.dim.names <- dimnames(data)
     if (isTRUE(transpose) && isScatter(chart.type))
     {
         warning("Data was not transposed. This option is incompatible with Scatter charts")
@@ -473,6 +475,11 @@ PrepareData <- function(chart.type,
 
     # Calculate percentages after all the select/hide operations are completed
     data <- convertPercentages(data, as.percentages, hide.percent.symbol, chart.type, multiple.tables)
+
+    # Update QStatisticsTestingInfo to match data manipulations
+    # This is not used by R-viz or PPT, only for Excel exporting
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
+        data <- updateQStatisticsInfo(data, original.dim.names, transpose)
 
     ###########################################################################
     # Finalizing the result.
@@ -2269,6 +2276,41 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
     attr(new.dat, "statistic") <- NULL
     attr(new.dat, "signif-annotations") <- annot.list
     return(new.dat)
+}
+
+updateQStatisticsInfo <- function(x, original.dim.names, transpose)
+{
+    x.siginfo <- attr(x, "QStatisticsTestingInfo")
+    if (is.null(x.siginfo))
+        return(x)
+    if (length(dim(x)) < 2 || NCOL(x) == 1)
+    {
+        curr.names <- if (length(dim(x)) == 0) names(x) else rownames(x)
+        ind <- match(curr.names, original.dim.names[[1]])
+        attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+        return(x)
+    }
+    if (transpose)
+        original.dim.names <- original.dim.names[2:1]
+    rows.changed <- length(dimnames(x)[[1]]) != length(original.dim.names[[1]]) ||
+        any(dimnames(x)[[1]] != original.dim.names[[1]])
+    cols.changed <- length(dimnames(x)[[2]]) != length(original.dim.names[[2]]) ||
+        any(dimnames(x)[[2]] != original.dim.names[[2]])
+    if (!rows.changed && !cols.changed)
+        return(x)
+
+    x.siginfo <- attr(x, "QStatisticsTestingInfo")
+    cind <- if (transpose) 1 else 2
+    rind <- if (transpose) 2 else 1
+    nc <- length(original.dim.names[[cind]])
+    row.ord <- match(dimnames(x)[[1]], original.dim.names[[1]])
+    col.ord <- match(dimnames(x)[[2]], original.dim.names[[2]])
+    ind2d <- expand.grid(col.ord, row.ord)
+    ind <- 1:nrow(ind2d)
+    for (ii in 1:length(ind))
+        ind[ii] <- (ind2d[ii, cind] - 1) * nc + ind2d[ii, rind]
+    attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+    return(x)
 }
 
 isQTableClass <- function(x) inherits(x, "QTable") || inherits(x, "qTable")
