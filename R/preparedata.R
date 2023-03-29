@@ -464,13 +464,6 @@ PrepareData <- function(chart.type,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 
-    if (any(nchar(column.labels)))
-        data <- replaceDimNames(data, 2, column.labels)
-    if (any(nchar(row.labels)))
-        data <- replaceDimNames(data, 1, row.labels)
-
-    if (scatter.mult.yvals)
-        data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
 
 
     # Calculate percentages after all the select/hide operations are completed
@@ -481,9 +474,20 @@ PrepareData <- function(chart.type,
     if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
         data <- updateQStatisticsInfo(data, original.dim.names, transpose)
 
+    if (any(nchar(column.labels)))
+        data <- replaceDimNames(data, 2, column.labels)
+    if (any(nchar(row.labels)))
+        data <- replaceDimNames(data, 1, row.labels)
+
+    if (scatter.mult.yvals)
+        data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
+
+
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
+
+
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
     if (isScatter(chart.type)) # to remove span NETS
@@ -2310,6 +2314,11 @@ updateQStatisticsInfo <- function(x, original.dim.names, transpose)
     for (ii in 1:length(ind))
         ind[ii] <- (ind2d[ii, cind] - 1) * nc + ind2d[ii, rind]
     attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+
+    # Remove QStatisticsTestingInfo if any of it is invalid
+    # to avoid an exception getting thrown on export
+    if (any(!is.finite(attr(x, "QStatisticsTestingInfo")$significancearrowratio)))
+        attr(x, "QStatisticsTestingInfo") <- NULL
     return(x)
 }
 

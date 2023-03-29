@@ -534,4 +534,11 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
            0.197198886110578, 0.197198886110578, NaN, 0.00350304469853324,
            0.00350304469853324, NaN, 0.0430920638156442, 0.0430920638156442,
            NaN, 0.541191359109196, 0.541191359109196, NaN, NaN, NaN, NaN), dim = 90L))
+
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.3d, signif.symbol = "Caret",
+        tidy = FALSE, select.columns = "1,4", column.labels = "Hate, Dislike", signif.append = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$significancedirection,
+        structure(c("None", "None", "Up", "Up", "Up", "None", "None", "Down", "None", "None",
+        "Down", "None"), dim = 12L))
 })
