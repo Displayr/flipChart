@@ -2314,6 +2314,11 @@ updateQStatisticsInfo <- function(x, original.dim.names, transpose)
     for (ii in 1:length(ind))
         ind[ii] <- (ind2d[ii, cind] - 1) * nc + ind2d[ii, rind]
     attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+
+    # Remove QStatisticsTestingInfo if any of it is invalid
+    # to avoid an exception getting thrown on export
+    if (any(!is.finite(attr(x, "QStatisticsTestingInfo")$significancearrowratio)))
+        attr(x, "QStatisticsTestingInfo") <- NULL
     return(x)
 }
 
