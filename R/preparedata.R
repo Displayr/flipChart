@@ -552,6 +552,8 @@ PrepareData <- function(chart.type,
         #attr(data, "statistic") <- dimnames(data)[[3]][1]
         #attr(data, "multi-stat") <- TRUE
     }
+    if (sort.rows)
+        attr(data, "sorted.rows") <- TRUE
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
