@@ -273,24 +273,165 @@ tb.2d.multstats <- structure(c(28, 16, 17, 21, 10, 7, 18, 18, 8, 143, 1, 4, 3, 6
     footerhtml = "Age by Preferred cola&lt;br /&gt;sample size = 322; total sample size = 327; 5 missing; 95% confidence level",
     name = "table.Age.by.Preferred.cola", questions = c("Age", "Preferred cola"))
 
+tb.3d <- structure(c(3.54430379746835, 16.4556962025316, 14.9367088607595,
+    6.58227848101266, 16.7088607594937, 9.11392405063291, 5.82278481012658,
+    34.6835443037975, 19.2405063291139, 9.62025316455696, 26.8354430379747,
+    18.7341772151899, 12.9113924050633, 22.0253164556962, 27.5949367088608,
+    33.1645569620253, 42.7848101265823, 35.4430379746835, 47.0886075949367,
+    20, 28.1012658227848, 43.5443037974684, 9.62025316455696, 21.2658227848101,
+    30.6329113924051, 6.83544303797468, 10.126582278481, 7.08860759493671,
+    4.05063291139241, 15.4430379746835, 100, 100, 100, 100, 100,
+    100, 4.93827160493827, 11.6049382716049, 9.87654320987654, 10.3703703703704,
+    16.2962962962963, 14.320987654321, 7.90123456790123, 24.9382716049383,
+    19.5061728395062, 14.320987654321, 23.2098765432099, 15.3086419753086,
+    16.2962962962963, 20.9876543209877, 23.2098765432099, 34.8148148148148,
+    38.2716049382716, 25.9259259259259, 35.8024691358025, 27.1604938271605,
+    23.4567901234568, 31.8518518518519, 16.5432098765432, 27.4074074074074,
+    35.0617283950617, 15.3086419753086, 23.9506172839506, 8.64197530864197,
+    5.67901234567901, 17.037037037037, 100, 100, 100, 100, 100, 100,
+    4.25, 14, 12.375, 8.5, 16.5, 11.75, 6.875, 29.75, 19.375, 12,
+    25, 17, 14.625, 21.5, 25.375, 34, 40.5, 30.625, 41.375, 23.625,
+    25.75, 37.625, 13.125, 24.375, 32.875, 11.125, 17.125, 7.875,
+    4.875, 16.25, 100, 100, 100, 100, 100, 100), statistic = "Column %",
+    dim = c(6L, 6L, 3L), dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi", "Diet Pepsi", "Pepsi Max"), c("Hate", "Dislike", "Neither like nor dislike",
+    "Like", "Love", "NET"), c("Male", "Female", "NET")), class = c("array", "QTable"),
+    dimnets = list(integer(0), 6L, 3L), dimduplicates = list(integer(0), 6L, 3L),
+    span = list(rows = structure(list(c("Coca-Cola", "Diet Coke", "Coke Zero",
+    "Pepsi", "Diet Pepsi", "Pepsi Max")), class = "data.frame", names = "",
+    row.names = c(NA, 6L)), columns = structure(list(c("Hate", "Dislike", "Neither like nor dislike",
+    "Like", "Love", "NET")), class = "data.frame", names = "", row.names = c(NA, 6L))),
+    basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0.465295629820051, 0.465295629820051, 0, 0, 0, 0, 0,
+    0, 0, 0.246786632390746, 0.246786632390746, 0, 0.465295629820051,
+    0.465295629820051, 0, 0, 0, 0, 0.246786632390746, 0.246786632390746,
+    0, 0.588688946015424, 0.588688946015424, 0, 0, 0, 0, 0.246786632390746,
+    0.246786632390746, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0,
+    0, 0, 0, 0, 0, 0, 0.246786632390746, 0.246786632390746, 0,
+    0, 0, 0, 0.588688946015424, 0.588688946015424, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.465295629820051, 0.465295629820051,
+    0, 0, 0, 0, 0, 0, 0, 0.246786632390746, 0.246786632390746,
+    0, 0, 0, 0, 0.465295629820051, 0.465295629820051, 0, 0.246786632390746,
+    0.246786632390746, 0, 0, 0, 0, 0, 0, 0), dim = 108L), significancedirection = structure(c("None",
+    "None", "None", "None", "None", "None", "None", "None", "None",
+    "Up", "Down", "None", "None", "None", "None", "None", "None",
+    "None", "Up", "Down", "None", "Up", "Down", "None", "None",
+    "None", "None", "Down", "Up", "None", "Down", "Up", "None",
+    "None", "None", "None", "Up", "Down", "None", "None", "None",
+    "None", "None", "None", "None", "None", "None", "None", "Down",
+    "Up", "None", "None", "None", "None", "None", "None", "None",
+    "Down", "Up", "None", "None", "None", "None", "Up", "Down",
+    "None", "None", "None", "None", "None", "None", "None", "None",
+    "None", "None", "None", "None", "None", "None", "None", "None",
+    "Down", "Up", "None", "None", "None", "None", "None", "None",
+    "None", "Down", "Up", "None", "None", "None", "None", "Up",
+    "Down", "None", "Down", "Up", "None", "None", "None", "None",
+    "None", "None", "None"), dim = 108L), significancefontsizemultiplier = structure(c(1,
+    1, 1, 1, 1, 1, 1, 1, 1, 2.81, 0.355871886120996, 1, 1, 1,
+    1, 1, 1, 1, 1.96, 0.510204081632653, 1, 2.81, 0.355871886120996,
+    1, 1, 1, 1, 0.510204081632653, 1.96, 1, 0.303951367781155,
+    3.29, 1, 1, 1, 1, 1.96, 0.510204081632653, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 0.204498977505112, 4.89, 1, 1, 1, 1, 1, 1,
+    1, 0.510204081632653, 1.96, 1, 1, 1, 1, 3.29, 0.303951367781155,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0.355871886120996,
+    2.81, 1, 1, 1, 1, 1, 1, 1, 0.510204081632653, 1.96, 1, 1,
+    1, 1, 2.81, 0.355871886120996, 1, 0.510204081632653, 1.96,
+    1, 1, 1, 1, 1, 1, 1), dim = 108L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+    FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
+    FALSE, FALSE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+    FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, FALSE, TRUE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE), dim = 108L),
+    significanceargbcolor = structure(c(0L, 0L, 0L, 0L, 0L, 0L,
+    0L, 0L, 0L, -16776961L, -65536L, 0L, 0L, 0L, 0L, 0L, 0L,
+    0L, -16776961L, -65536L, 0L, -16776961L, -65536L, 0L, 0L,
+    0L, 0L, -65536L, -16776961L, 0L, -65536L, -16776961L, 0L,
+    0L, 0L, 0L, -16776961L, -65536L, 0L, 0L, 0L, 0L, 0L, 0L,
+    0L, 0L, 0L, 0L, -65536L, -16776961L, 0L, 0L, 0L, 0L, 0L,
+    0L, 0L, -65536L, -16776961L, 0L, 0L, 0L, 0L, -16776961L,
+    -65536L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+    0L, 0L, 0L, 0L, -65536L, -16776961L, 0L, 0L, 0L, 0L, 0L,
+    0L, 0L, -65536L, -16776961L, 0L, 0L, 0L, 0L, -16776961L,
+    -65536L, 0L, -65536L, -16776961L, 0L, 0L, 0L, 0L, 0L, 0L,
+    0L), dim = 108L), zstatistic = structure(c(-0.977169614149642,
+    0.977169614149642, NaN, -1.1615852872974, 1.1615852872974,
+    NaN, -1.35460948532479, 1.35460948532479, NaN, 3.24052971793344,
+    -3.24052971793344, NaN, -1.33319529269262, 1.33319529269262,
+    NaN, NaN, NaN, NaN, 1.97686687766082, -1.97686687766082,
+    NaN, 3.0144522782866, -3.0144522782866, NaN, 0.357176581849717,
+    -0.357176581849717, NaN, -2.38375995854075, 2.38375995854075,
+    NaN, -3.81055866641894, 3.81055866641894, NaN, NaN, NaN,
+    NaN, 2.17299727089404, -2.17299727089404, NaN, -0.0950521966256294,
+    0.0950521966256294, NaN, 1.42498871465585, -1.42498871465585,
+    NaN, 1.50203798324233, -1.50203798324233, NaN, -5.18906164437283,
+    5.18906164437283, NaN, NaN, NaN, NaN, -1.92079740961063,
+    1.92079740961063, NaN, -2.04557227405644, 2.04557227405644,
+    NaN, -0.492630671346596, 0.492630671346596, NaN, 3.4130537361886,
+    -3.4130537361886, NaN, -0.815532566820322, 0.815532566820322,
+    NaN, NaN, NaN, NaN, 0.157176521383107, -0.157176521383107,
+    NaN, 1.18401254693903, -1.18401254693903, NaN, 1.30011015397555,
+    -1.30011015397555, NaN, -2.89918291800969, 2.89918291800969,
+    NaN, -1.06930606427569, 1.06930606427569, NaN, NaN, NaN,
+    NaN, -2.2866392726549, 2.2866392726549, NaN, 1.28957319903202,
+    -1.28957319903202, NaN, 2.91975695510422, -2.91975695510422,
+    NaN, -2.02281655880286, 2.02281655880286, NaN, -0.611012418318008,
+    0.611012418318008, NaN, NaN, NaN, NaN), dim = 108L), pcorrected = structure(c(0.328485188425889,
+    0.328485188425889, NaN, 0.24540396119606, 0.24540396119606,
+    NaN, 0.175542009795229, 0.175542009795229, NaN, 0.00119307835398608,
+    0.00119307835398608, NaN, 0.182467723730427, 0.182467723730427,
+    NaN, NaN, NaN, NaN, 0.0480566796881834, 0.0480566796881834,
+    NaN, 0.00257443708241434, 0.00257443708241434, NaN, 0.720959616151671,
+    0.720959616151671, NaN, 0.01713677624523, 0.01713677624523,
+    NaN, 0.000138653102664699, 0.000138653102664699, NaN, NaN,
+    NaN, NaN, 0.0297805226882373, 0.0297805226882373, NaN, 0.924273367650932,
+    0.924273367650932, NaN, 0.154160463327892, 0.154160463327892,
+    NaN, 0.133087299604457, 0.133087299604457, NaN, 0.000000211356425694476,
+    0.000000211356425694476, NaN, NaN, NaN, NaN, 0.0547572531858919,
+    0.0547572531858919, NaN, 0.0407984716486341, 0.0407984716486341,
+    NaN, 0.622273572116004, 0.622273572116004, NaN, 0.000642392740369369,
+    0.000642392740369369, NaN, 0.414767530919097, 0.414767530919097,
+    NaN, NaN, NaN, NaN, 0.875105731519098, 0.875105731519098,
+    NaN, 0.236408096146459, 0.236408096146459, NaN, 0.19356321801095,
+    0.19356321801095, NaN, 0.00374136554760329, 0.00374136554760329,
+    NaN, 0.284931778937184, 0.284931778937184, NaN, NaN, NaN,
+    NaN, 0.0222168869601121, 0.0222168869601121, NaN, 0.197198886110578,
+    0.197198886110578, NaN, 0.00350304469853324, 0.00350304469853324,
+    NaN, 0.0430920638156442, 0.0430920638156442, NaN, 0.541191359109196,
+    0.541191359109196, NaN, NaN, NaN, NaN), dim = 108L)), class = "data.frame",
+    row.names = c(NA, 108L)), questiontypes = c("PickOneMulti", "PickOne"),
+    footerhtml = "Brand attitude by Gender&lt;br /&gt;sample size = 800; 95% confidence level",
+    name = "table.Brand.attitude.by.Gender", questions = c("Brand attitude", "Gender"))
+
+
 test_that("stats testing added to data matrix",
 {
     expect_error(res <- PrepareData("Column", input.data.table = tb.1d,
-        tidy = FALSE, signif.append = TRUE), NA)
+    tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
-        "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
-        NULL, c("%","signifUp#0000FF", "signifDown#FF0000")))
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more"),
+    NULL, c("%","signifUp#0000FF", "signifDown#FF0000")))
     expect_equal(attr(res$data, "signif-annotations"),
-        list(list(type = "Arrow - up", data = "signifUp#0000FF", threstype = "above threshold",
-        threshold = 0, color = "#0000FF", size = 12), list(type = "Arrow - down",
-        data = "signifDown#FF0000", threstype = "above threshold",
-        threshold = 0, color = "#FF0000", size = 12)))
+    list(list(type = "Arrow - up", data = "signifUp#0000FF", threstype = "above threshold",
+    threshold = 0, color = "#0000FF", size = 12), list(type = "Arrow - down",
+    data = "signifDown#FF0000", threstype = "above threshold",
+    threshold = 0, color = "#FF0000", size = 12)))
     expect_error(viz <- CChart("Column", res$data, append.data = TRUE, signif.show = FALSE), NA)
     expect_equal(names(attr(viz, "ChartData")), rownames(tb.1d)[-10])
     expect_equal(attr(attr(viz, "ChartData"), "statistic"), "%")
 
     expect_error(res <- PrepareData("Column", input.data.table = tb.1d.multstats,
-        tidy = FALSE, signif.append = TRUE, row.names.to.remove = NULL), NA)
+    tidy = FALSE, signif.append = TRUE, row.names.to.remove = NULL), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"),
         NULL, c("%", "Count", "signifUp#0000FF", "signifDown#FF0000")))
@@ -341,4 +482,63 @@ test_that("stats testing added to data matrix",
     expect_error(res <- PrepareData("Bar", input.data.table = tb.1d, as.percentages = TRUE,
         tidy = FALSE, signif.append = TRUE), NA)
     expect_equal(res$values.title, "%")
+})
+
+test_that("QStatisticsTestingInfo rearranges with data manipulations",
+{
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d,
+        tidy = FALSE, signif.append = TRUE, sort.rows = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+                 attr(tb.1d, "QStatisticsTestingInfo")$pcorrected[order(tb.1d)[-10]])
+
+    orig.pcorr <- structure(attr(tb.2d, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(colnames(tb.2d), nrow(tb.2d)), "-", rep(rownames(tb.2d), each=ncol(tb.2d))))
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.rows = TRUE, signif.append = TRUE), NA)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(colnames(res$data), nrow(res$data)), "-", rep(rownames(res$data), each=ncol(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.columns = TRUE, transpose = TRUE,
+        signif.append = TRUE), NA)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, signif.symbol = "Caret",
+        tidy = FALSE, sort.rows = TRUE, sort.rows.decreasing = TRUE, transpose = TRUE,
+        signif.append = TRUE), NA)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.3d, signif.symbol = "Caret",
+        tidy = FALSE, row.names.to.remove = "Pepsi", transpose = FALSE, signif.append = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        structure(c(0.328485188425889, 0.328485188425889, NaN, 0.24540396119606,
+           0.24540396119606, NaN, 0.175542009795229, 0.175542009795229,
+           NaN, 0.00119307835398608, 0.00119307835398608, NaN, 0.182467723730427,
+           0.182467723730427, NaN, NaN, NaN, NaN, 0.0480566796881834, 0.0480566796881834,
+           NaN, 0.00257443708241434, 0.00257443708241434, NaN, 0.720959616151671,
+           0.720959616151671, NaN, 0.01713677624523, 0.01713677624523, NaN,
+           0.000138653102664699, 0.000138653102664699, NaN, NaN, NaN, NaN,
+           0.0297805226882373, 0.0297805226882373, NaN, 0.924273367650932,
+           0.924273367650932, NaN, 0.154160463327892, 0.154160463327892,
+           NaN, 0.133087299604457, 0.133087299604457, NaN, 0.000000211356425694476,
+           0.000000211356425694476, NaN, NaN, NaN, NaN, 0.875105731519098,
+           0.875105731519098, NaN, 0.236408096146459, 0.236408096146459,
+           NaN, 0.19356321801095, 0.19356321801095, NaN, 0.00374136554760329,
+           0.00374136554760329, NaN, 0.284931778937184, 0.284931778937184,
+           NaN, NaN, NaN, NaN, 0.0222168869601121, 0.0222168869601121, NaN,
+           0.197198886110578, 0.197198886110578, NaN, 0.00350304469853324,
+           0.00350304469853324, NaN, 0.0430920638156442, 0.0430920638156442,
+           NaN, 0.541191359109196, 0.541191359109196, NaN, NaN, NaN, NaN), dim = 90L))
+
+
+    expect_error(res <- PrepareData("Column", input.data.table = tb.3d, signif.symbol = "Caret",
+        tidy = FALSE, select.columns = "1,4", column.labels = "Hate, Dislike", signif.append = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$significancedirection,
+        structure(c("None", "None", "Up", "Up", "Up", "None", "None", "Down", "None", "None",
+        "Down", "None"), dim = 12L))
 })

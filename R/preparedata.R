@@ -158,6 +158,7 @@
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
 #' @importFrom verbs Sum
+#' @importFrom stats setNames
 #' @return A list with components \itemize{ \item \code{data} - If
 #'     possible, a named vector or matrix, or if that is not posible
 #'     or a data.frame is requested, a data.frame.  \item
@@ -427,6 +428,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
+    original.dim.names <- dimnames(data)
     if (isTRUE(transpose) && isScatter(chart.type))
     {
         warning("Data was not transposed. This option is incompatible with Scatter charts")
@@ -462,6 +464,16 @@ PrepareData <- function(chart.type,
                                  sort.columns, sort.columns.decreasing, sort.columns.row,
                                  sort.columns.exclude, reverse.columns)
 
+
+
+    # Calculate percentages after all the select/hide operations are completed
+    data <- convertPercentages(data, as.percentages, hide.percent.symbol, chart.type, multiple.tables)
+
+    # Update QStatisticsTestingInfo to match data manipulations
+    # This is not used by R-viz or PPT, only for Excel exporting
+    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
+        data <- updateQStatisticsInfo(data, original.dim.names, transpose)
+
     if (any(nchar(column.labels)))
         data <- replaceDimNames(data, 2, column.labels)
     if (any(nchar(row.labels)))
@@ -471,12 +483,11 @@ PrepareData <- function(chart.type,
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
 
 
-    # Calculate percentages after all the select/hide operations are completed
-    data <- convertPercentages(data, as.percentages, hide.percent.symbol, chart.type, multiple.tables)
-
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
+
+
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
     if (isScatter(chart.type)) # to remove span NETS
@@ -541,6 +552,8 @@ PrepareData <- function(chart.type,
         #attr(data, "statistic") <- dimnames(data)[[3]][1]
         #attr(data, "multi-stat") <- TRUE
     }
+    if (sort.rows)
+        attr(data, "sorted.rows") <- TRUE
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
@@ -1672,6 +1685,15 @@ useFirstColumnAsLabel <- function(x, remove.duplicates = TRUE,
     if (!allow.numeric.rownames && is.numeric(x[,1]))
         return(x)
 
+    # Catch Q Tables which have numeric row names but are
+    # not raw data tables. It is not appropriate to use
+    # the first column as a label in this case because
+    # it contains a statistic.
+    if (allow.numeric.rownames
+        && IsQTable(x)
+        && !isRawDataQTable(x))
+        return(x)
+
     # What to do with duplicate rownames?
     ind.dup <- duplicated(x[,1])
 
@@ -2262,6 +2284,46 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
     return(new.dat)
 }
 
+updateQStatisticsInfo <- function(x, original.dim.names, transpose)
+{
+    x.siginfo <- attr(x, "QStatisticsTestingInfo")
+    if (is.null(x.siginfo))
+        return(x)
+    if (length(dim(x)) < 2 || NCOL(x) == 1)
+    {
+        curr.names <- if (length(dim(x)) == 0) names(x) else rownames(x)
+        ind <- match(curr.names, original.dim.names[[1]])
+        attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+        return(x)
+    }
+    if (transpose)
+        original.dim.names <- original.dim.names[2:1]
+    rows.changed <- length(dimnames(x)[[1]]) != length(original.dim.names[[1]]) ||
+        any(dimnames(x)[[1]] != original.dim.names[[1]])
+    cols.changed <- length(dimnames(x)[[2]]) != length(original.dim.names[[2]]) ||
+        any(dimnames(x)[[2]] != original.dim.names[[2]])
+    if (!rows.changed && !cols.changed)
+        return(x)
+
+    x.siginfo <- attr(x, "QStatisticsTestingInfo")
+    cind <- if (transpose) 1 else 2
+    rind <- if (transpose) 2 else 1
+    nc <- length(original.dim.names[[cind]])
+    row.ord <- match(dimnames(x)[[1]], original.dim.names[[1]])
+    col.ord <- match(dimnames(x)[[2]], original.dim.names[[2]])
+    ind2d <- expand.grid(col.ord, row.ord)
+    ind <- 1:nrow(ind2d)
+    for (ii in 1:length(ind))
+        ind[ii] <- (ind2d[ii, cind] - 1) * nc + ind2d[ii, rind]
+    attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
+
+    # Remove QStatisticsTestingInfo if any of it is invalid
+    # to avoid an exception getting thrown on export
+    if (any(!is.finite(attr(x, "QStatisticsTestingInfo")$significancearrowratio)))
+        attr(x, "QStatisticsTestingInfo") <- NULL
+    return(x)
+}
+
 isQTableClass <- function(x) inherits(x, "QTable") || inherits(x, "qTable")
 
 unclassQTable <- function(data)
@@ -2293,4 +2355,29 @@ qTableAttributesToRemove <- function(attr.names)
     qtable.attr.names <- eval(formals(IsQTableAttribute)[["qtable.attrs"]])
     qtable.attr.names <- c(qtable.attr.names, paste0("original.", qtable.attr.names))
     attr.names %in% qtable.attr.names & !attr.names %in% c("dim", "dimnames", "names")
+}
+
+#' Check the questions and statistics attribute,
+#' and the dimnames in the last dimension,
+#' to work out if this table is likely to be
+#' a raw data table in Q/Displayr
+#' @noRd
+isRawDataQTable <- function(x) {
+    questions <- attr(x, "questions")
+    if ("RAW DATA" %in% questions)
+        return(TRUE)
+
+    statistic <- attr(x, "statistic")
+    if (statistic %in% c("Values", "Labels"))
+        return(TRUE)
+
+    dn <- dimnames(x)
+    if (is.null(dn))
+        return(FALSE)
+
+    last.dn <- dn[length(dn)]
+    if (last.dn %in% c("Values", "Labels"))
+        return(TRUE)
+
+    return(FALSE)
 }
