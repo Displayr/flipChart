@@ -1054,7 +1054,7 @@ test_that("as.percentages from pasted data and raw data work by dividing by nrow
  zz = PrepareData("Venn", input.data.raw = list(z), as.percentages = TRUE, first.aggregate = FALSE)
  expect_equal(zz$data[1,1], 1)
  zz = PrepareData("Venn", input.data.pasted = list(z), as.percentages = TRUE, first.aggregate = FALSE)
- expect_equal(zz$data[1,1], c(A = 1))
+ expect_equal(zz$data[1,1], 1)
  z = matrix(c(1,1,1,1,1,0,1,0,0),3, dimnames = list(1:3, LETTERS[1:3]))
  zz = suppressWarnings(PrepareData("Column", input.data.raw = list(z), as.percentages = TRUE,
                                    first.aggregate = FALSE))

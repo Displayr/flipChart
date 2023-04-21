@@ -108,8 +108,8 @@ test_that("Select Rows",
     expect_warning(res <- PrepareData("Column", input.data.table = tabWithN, select.rows = "30 to 34, 35 to 39"), "Multiple statistics detected")
     expect_equal(rownames(res$data), c("30 to 34", "35 to 39"))
 
-    res <- PrepareData("Table", input.data.table = LifeCycleSavings, first.k.rows = 10,
-                       sort.rows = TRUE, reverse.rows = TRUE, reverse.columns = TRUE)
+    expect_warning(res <- PrepareData("Table", input.data.table = LifeCycleSavings, first.k.rows = 10,
+                       sort.rows = TRUE, reverse.rows = TRUE, reverse.columns = TRUE))
     expect_equal(colnames(res$data), rev(colnames(LifeCycleSavings)))
     expect_equal(rownames(res$data), c("Libya", "Jamaica", "Japan", "Malta", "Netherlands",
                                        "Portugal", "China", "Greece", "Korea", "Zambia"))
@@ -121,7 +121,8 @@ test_that("Select Rows",
 
 test_that("Sorting rows",
 {
-    expect_silent(res0 <- PrepareData("Table", input.data.table = tabWithN, tidy = FALSE, sort.rows = TRUE))
+    expect_warning(res0 <- PrepareData("Table", input.data.table = tabWithN, tidy = FALSE,
+            sort.rows = TRUE), "Table has been sorted on column 8")
     expect_equal(dim(res0$data), c(9,8,3))
 
     expect_warning(res1 <- PrepareData("Column", input.data.table = tabWithN, tidy = TRUE, sort.rows = TRUE),

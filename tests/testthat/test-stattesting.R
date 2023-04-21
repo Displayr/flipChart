@@ -493,15 +493,16 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
 
     orig.pcorr <- structure(attr(tb.2d, "QStatisticsTestingInfo")$pcorrected,
         names = paste(rep(colnames(tb.2d), nrow(tb.2d)), "-", rep(rownames(tb.2d), each=ncol(tb.2d))))
-    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
-        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.rows = TRUE, signif.append = TRUE), NA)
+    expect_warning(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+        tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.rows = TRUE, signif.append = TRUE),
+        "Table has been sorted")
     new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
         names = paste(rep(colnames(res$data), nrow(res$data)), "-", rep(rownames(res$data), each=ncol(res$data))))
     expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
 
-    expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
+    expect_warning(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
         tidy = FALSE, hide.empty.rows.and.columns = TRUE, sort.columns = TRUE, transpose = TRUE,
-        signif.append = TRUE), NA)
+        signif.append = TRUE), "Table has been sorted")
     new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
         names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
     expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
