@@ -375,11 +375,12 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
 removeSignifData <- function(x, rm.names)
 {
-    if (is.null(rm.names))
+    if (is.null(rm.names) && is.numeric(x))
         return(x)
 
     # Because of the way abind is used in PrepareData
     # we can assume significance data is all in the 3rd dimension
+    new.dat <- NULL
     all.names <- dimnames(x)[[3]]
     if (length(all.names) > length(rm.names) + 1) {
         keep.stats <- setdiff(all.names, rm.names)
@@ -388,6 +389,13 @@ removeSignifData <- function(x, rm.names)
         primary.stat <- all.names[1]
         new.dat <- x[,,1, drop = TRUE]
         attr(new.dat, "statistic") <- primary.stat
+    }
+    if (is.character(new.dat)) {
+        if (is.null(new.dat))
+            new.dat <- x
+        new.dim <- dim(new.dat)
+        new.dnames <- dimnames(new.dat)
+        new.dat <- array(suppressWarnings(as.numeric(new.dat)), dim = new.dim, dimnames = new.dnames)
     }
     return(CopyAttributes(new.dat, x))
 }
