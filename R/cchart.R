@@ -290,10 +290,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 
     # Extract info about signif data so we can remove it later
     signif.data.names <- NULL
-    if (!is.null(attr(x, "signif-annotations")))
-        signif.data.names <- sapply(attr(x, "signif-annotations"), function(x) x$data)
+    if (!is.null(attr(x, "signif.annotations")))
+        signif.data.names <- unique(sapply(attr(x, "signif.annotations"), function(x) x$data))
 
-    if (signif.show && !is.null(attr(x, "signif-annotations")))
+    if (signif.show && !is.null(attr(x, "signif.annotations")))
     {
         if (!isTRUE(user.args$data.label.show))
         {
@@ -311,10 +311,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 )
         }
         annot.len <- length(annotation.list)
-        new.len <- length(attr(x, "signif-annotations"))
+        new.len <- length(attr(x, "signif.annotations"))
         for (j in 1:new.len)
-            annotation.list[[annot.len + j]] <- attr(x, "signif-annotations")[[j]]
-        attr(x, "signif-annotations") <- NULL
+            annotation.list[[annot.len + j]] <- attr(x, "signif.annotations")[[j]]
+        attr(x, "signif.annotations") <- NULL
     }
     user.args$annotation.list <- annotation.list
 
@@ -366,27 +366,36 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # Append data used for exporting to PPT/Excel
     # Exception is for StackedColumnWithAnnot that handles this itself
     if (is.null(attr(result, "ChartData")))
-        attr(result,  "ChartData") <- removeSignifData(x, signif.data.names)
+        attr(result,  "ChartData") <- removeSignifAndCharData(x, signif.data.names)
     class(result) <- c(class(result), "visualization-selector")
     attr(result,  "ChartSettings") <- chart.settings
     attr(result, "footerhtml") <- attr(x, "footerhtml", exact = TRUE)
     result
 }
 
-removeSignifData <- function(x, rm.names)
+removeSignifAndCharData <- function(x, rm.stats)
 {
-    if (is.null(rm.names) && is.numeric(x))
+    if (length(dim(x)) < 3)
+        return(x)
+
+    # Remove statistics that are of type character
+    all.stats <- dimnames(x)[[3]]
+    char.stats <- c("Column Names", "Columns Compared", "Column Comparisons")
+    if (any(all.stats %in% char.stats))
+        rm.stats <- c(rm.stats, intersect(all.stats, char.stats))
+
+    if (is.null(rm.stats) && is.numeric(x))
         return(x)
 
     # Because of the way abind is used in PrepareData
     # we can assume significance data is all in the 3rd dimension
     new.dat <- NULL
-    all.names <- dimnames(x)[[3]]
-    if (length(all.names) > length(rm.names) + 1) {
-        keep.stats <- setdiff(all.names, rm.names)
+    primary.stat <- NULL
+    if (length(all.stats) > length(rm.stats) + 1) {
+        keep.stats <- setdiff(all.stats, rm.stats)
         new.dat <- x[,,keep.stats]
     } else {
-        primary.stat <- all.names[1]
+        primary.stat <- all.stats[1]
         new.dat <- x[,,1, drop = TRUE]
         attr(new.dat, "statistic") <- primary.stat
     }
@@ -396,6 +405,8 @@ removeSignifData <- function(x, rm.names)
         new.dim <- dim(new.dat)
         new.dnames <- dimnames(new.dat)
         new.dat <- array(suppressWarnings(as.numeric(new.dat)), dim = new.dim, dimnames = new.dnames)
+        if (!is.null(primary.stat))
+            attr(new.dat, "statistic") <- primary.stat
     }
     return(CopyAttributes(new.dat, x))
 }
@@ -655,13 +666,19 @@ getPPTSettings <- function(chart.type, args, data)
         res$ShowLegend <- FALSE
     if (isTRUE(args$legend.show == "Show"))
         res$ShowLegend <- TRUE
-    legend.position <- "Right"
+
+    legend.position <- ""
     if (isTRUE(args$legend.orientation == "Horizontal"))
         legend.position <- "Bottom"
-    if (isTRUE(args$legend.x.positon < 0.1))
-        legend.position <- "Left"
     if (isTRUE(args$legend.y.position < 0.1))
         legend.position <- "Bottom"
+    if (isTRUE(args$legend.y.position > 0.9))
+        legend.position <- "Top"
+    if (isTRUE(args$legend.x.position < 0.1))
+        legend.position <- "Left"
+    if (!nzchar(legend.position))
+        legend.position <- "Right"
+
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = px2pt(args$legend.font.size)),
             Position = legend.position)

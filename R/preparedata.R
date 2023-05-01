@@ -2280,7 +2280,7 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
         dimnames(new.dat)[[3]] <- c(attr(x, "statistic", exact = TRUE), signames)
     new.dat <- CopyAttributes(new.dat, x)
     attr(new.dat, "statistic") <- NULL
-    attr(new.dat, "signif-annotations") <- annot.list
+    attr(new.dat, "signif.annotations") <- annot.list
     return(new.dat)
 }
 
