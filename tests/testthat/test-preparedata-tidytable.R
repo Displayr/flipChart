@@ -283,12 +283,9 @@ data("EuStockMarkets")
 # print(dput(EuStockMarkets))
 test_that("Time series object",
 {
-    expect_error(res <- PrepareData("Table", input.data.table = EuStockMarkets, first.k.rows = 10), NA)
     res <- PrepareData("Column", input.data.table = EuStockMarkets, sort.columns = TRUE,
                 sort.columns.row = 1860, first.k.columns = 1, tidy = FALSE)
-    print(EuStockMarkets[1860,])
-    print(str(res$data))
-    #expect_equal(dimnames(res$data)[[2]], "CAC")
+    expect_equal(dimnames(res$data)[[2]], "CAC")
 })
 
 data("LifeCycleSavings")

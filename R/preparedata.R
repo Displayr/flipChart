@@ -1668,7 +1668,8 @@ setWeight <- function(x, weights)
 #' Check for object of class list or a \emph{ragged} array
 #' @noRd
 isListOrRaggedArray <- function(x)
-    inherits(x, "list") || (inherits(x, "array") && !all(vapply(x, length, 1L) == 1))
+    inherits(x, "list") || (inherits(x, "array") && !inherits(x, "ts") &&
+                            !all(vapply(x, length, 1L) == 1))
 
 
 #' @noRd
