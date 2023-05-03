@@ -676,7 +676,7 @@ getPPTSettings <- function(chart.type, args, data)
         legend.position <- "Top"
     if (isTRUE(args$legend.x.position < 0.1))
         legend.position <- "Left"
-    if (!nzchar(legend.position))
+    if (isTRUE(args$legend.x.position > 0.9))
         legend.position <- "Right"
 
     res$Legend = list(Font = list(color = args$legend.font.color,
