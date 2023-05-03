@@ -285,3 +285,16 @@ test_that("Scatter axes bounds",
     expect_equal(attr(res3, "ChartSettings")$ValueAxis$Minimum, -0.1)
     expect_equal(attr(res3, "ChartSettings")$PrimaryAxis$Minimum, 0)
 })
+
+test_that("Legend position",
+{
+    viz <- CChart("Column", dat.2d, signif.show = FALSE, append.data = TRUE,
+              legend.orientation = "Vertical", legend.x.position = 1.0,
+              legend.y.position = 1.2, data.label.show = FALSE)
+    expect_equal(attr(viz, "ChartSettings")$Legend$Position, "Right")
+
+    viz <- CChart("Column", dat.2d, signif.show = FALSE, append.data = TRUE,
+              legend.orientation = "Horizontal", legend.x.position = 0.5,
+              legend.y.position = -0.2, data.label.show = FALSE)
+    expect_equal(attr(viz, "ChartSettings")$Legend$Position, "Bottom")
+})
