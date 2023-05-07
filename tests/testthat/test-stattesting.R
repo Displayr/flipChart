@@ -413,53 +413,53 @@ tb.3d <- structure(c(3.54430379746835, 16.4556962025316, 14.9367088607595,
     footerhtml = "Brand attitude by Gender&lt;br /&gt;sample size = 800; 95% confidence level",
     name = "table.Brand.attitude.by.Gender", questions = c("Brand attitude", "Gender"))
 
-tb.with.column.comparisons <- structure(c("38.983050847457626", "43.07692307692308", "43.421052631578952",
-"37.333333333333336", "50", "49.230769230769234", "38.961038961038966",
-"54.54545454545454", "33.82352941176471", "15.254237288135593",
-"9.2307692307692317", "9.2105263157894726", "9.3333333333333339",
-"5", "16.923076923076923", "9.0909090909090917", "7.2727272727272725",
-"11.76470588235294", "16.949152542372879", "15.384615384615385",
-"17.105263157894736", "24", "10", "15.384615384615385", "18.181818181818183",
-"18.181818181818183", "19.117647058823529", "5.0847457627118651",
-"6.1538461538461542", "13.157894736842104", "10.666666666666668",
-"15", "4.6153846153846159", "7.7922077922077921", "12.727272727272727",
-"7.3529411764705888", "1.6949152542372881", "3.0769230769230771",
-"1.3157894736842104", "4", "5", "1.5384615384615385", "2.5974025974025974",
-"0", "4.4117647058823533", "22.033898305084744", "21.53846153846154",
-"13.157894736842104", "13.333333333333334", "13.333333333333334",
-"9.2307692307692317", "19.480519480519483", "5.4545454545454541",
-"22.058823529411764", "0", "0", "0", "1.3333333333333335", "0",
-"1.5384615384615385", "1.2987012987012987", "1.8181818181818181",
-"0", "0", "1.5384615384615385", "2.6315789473684208", "0", "1.6666666666666667",
-"1.5384615384615385", "2.5974025974025974", "0", "1.4705882352941175",
-NA, NA, NA, NA, NA, NA, NA, "i", NA, NA, NA, NA, NA, NA, "e",
-NA, NA, NA, NA, NA, NA, "e", NA, NA, NA, NA, NA, NA, NA, NA,
-NA, "f", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,
-"f h", "h", NA, NA, NA, NA, "h", NA, "f h", NA, NA, NA, NA, NA,
-NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "TRUE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
-"FALSE"), dim = c(9L, 8L, 3L), dimnames = list(c("January 2019",
-"February 2019", "March 2019", "April 2019", "May 2019", "June 2019",
-"July 2019", "August 2019", "September 2019"), c("Coca-Cola",
-"Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
-"Dislike all cola", "Don't care"), c("Column %", "Column Comparisons",
-"signifDown#FF0000")), dimnets = list(9L, integer(0)), dimduplicates = list(
+tb.2d.colcmp <- structure(c("38.983050847457626", "43.07692307692308", "43.421052631578952",
+    "37.333333333333336", "50", "49.230769230769234", "38.961038961038966",
+    "54.54545454545454", "33.82352941176471", "15.254237288135593",
+    "9.2307692307692317", "9.2105263157894726", "9.3333333333333339",
+    "5", "16.923076923076923", "9.0909090909090917", "7.2727272727272725",
+    "11.76470588235294", "16.949152542372879", "15.384615384615385",
+    "17.105263157894736", "24", "10", "15.384615384615385", "18.181818181818183",
+    "18.181818181818183", "19.117647058823529", "5.0847457627118651",
+    "6.1538461538461542", "13.157894736842104", "10.666666666666668",
+    "15", "4.6153846153846159", "7.7922077922077921", "12.727272727272727",
+    "7.3529411764705888", "1.6949152542372881", "3.0769230769230771",
+    "1.3157894736842104", "4", "5", "1.5384615384615385", "2.5974025974025974",
+    "0", "4.4117647058823533", "22.033898305084744", "21.53846153846154",
+    "13.157894736842104", "13.333333333333334", "13.333333333333334",
+    "9.2307692307692317", "19.480519480519483", "5.4545454545454541",
+    "22.058823529411764", "0", "0", "0", "1.3333333333333335", "0",
+    "1.5384615384615385", "1.2987012987012987", "1.8181818181818181",
+    "0", "0", "1.5384615384615385", "2.6315789473684208", "0", "1.6666666666666667",
+    "1.5384615384615385", "2.5974025974025974", "0", "1.4705882352941175",
+    NA, NA, NA, NA, NA, NA, NA, "i", NA, NA, NA, NA, NA, NA, "e",
+    NA, NA, NA, NA, NA, NA, "e", NA, NA, NA, NA, NA, NA, NA, NA,
+    NA, "f", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,
+    "f h", "h", NA, NA, NA, NA, "h", NA, "f h", NA, NA, NA, NA, NA,
+    NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "TRUE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE", "FALSE",
+    "FALSE"), dim = c(9L, 8L, 3L), dimnames = list(c("January 2019",
+    "February 2019", "March 2019", "April 2019", "May 2019", "June 2019",
+    "July 2019", "August 2019", "September 2019"), c("Coca-Cola",
+    "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+    "Dislike all cola", "Don't care"), c("Column %", "Column Comparisons",
+    "signifDown#FF0000")), dimnets = list(9L, integer(0)), dimduplicates = list(
     9L, integer(0)), span = list(rows = structure(list(c("Coca-Cola",
-"Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
-"Dislike all cola", "Don't care", "NET")), class = "data.frame", names = "", row.names = c(NA,
-9L)), columns = structure(list(c("January 2019", "February 2019",
-"March 2019", "April 2019", "May 2019", "June 2019", "July 2019",
-"August 2019", "September 2019")), class = "data.frame", names = "", row.names = c(NA,
-9L))), basedescriptiontext = "sample size = 600", basedescription = list(
+    "Diet Coke", "Coke Zero", "Pepsi ", "Diet Pepsi", "Pepsi Max",
+    "Dislike all cola", "Don't care", "NET")), class = "data.frame", names = "", row.names = c(NA,
+    9L)), columns = structure(list(c("January 2019", "February 2019",
+    "March 2019", "April 2019", "May 2019", "June 2019", "July 2019",
+    "August 2019", "September 2019")), class = "data.frame", names = "", row.names = c(NA,
+    9L))), basedescriptiontext = "sample size = 600", basedescription = list(
     Minimum = 600L, Maximum = 600L, Range = FALSE, Total = 600L,
     Missing = 0L, EffectiveSampleSize = 600L, EffectiveSampleSizeProportion = 100,
     FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
@@ -542,19 +542,73 @@ NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, "FALSE",
     0.680482633024534, 0.679753474958007, 0.582011109542206,
     0.342828746201702, 0.123549087969988, 0.473107185803738,
     0.916537142875032), dim = 72L)), row.names = c(1L, 10L, 19L,
-28L, 37L, 46L, 55L, 64L, 2L, 11L, 20L, 29L, 38L, 47L, 56L, 65L,
-3L, 12L, 21L, 30L, 39L, 48L, 57L, 66L, 4L, 13L, 22L, 31L, 40L,
-49L, 58L, 67L, 5L, 14L, 23L, 32L, 41L, 50L, 59L, 68L, 6L, 15L,
-24L, 33L, 42L, 51L, 60L, 69L, 7L, 16L, 25L, 34L, 43L, 52L, 61L,
-70L, 8L, 17L, 26L, 35L, 44L, 53L, 62L, 71L, 9L, 18L, 27L, 36L,
-45L, 54L, 63L, 72L), class = "data.frame"), questiontypes = c("PickOne",
-"Date"), footerhtml = "Preferred cola by Interview Date&lt;br /&gt;sample size = 600; 95% confidence level; Significance: Compare to rest of data; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: -; Not significant symbol: ", name = "table.Preferred.cola.by.Interview.Date", questions = c("Interview Date",
-"Preferred cola"), assigned.rownames = TRUE, "signif.annotations" = list(
+    28L, 37L, 46L, 55L, 64L, 2L, 11L, 20L, 29L, 38L, 47L, 56L, 65L,
+    3L, 12L, 21L, 30L, 39L, 48L, 57L, 66L, 4L, 13L, 22L, 31L, 40L,
+    49L, 58L, 67L, 5L, 14L, 23L, 32L, 41L, 50L, 59L, 68L, 6L, 15L,
+    24L, 33L, 42L, 51L, 60L, 69L, 7L, 16L, 25L, 34L, 43L, 52L, 61L,
+    70L, 8L, 17L, 26L, 35L, 44L, 53L, 62L, 71L, 9L, 18L, 27L, 36L,
+    45L, 54L, 63L, 72L), class = "data.frame"),
+    questiontypes = c("PickOne", "Date"),
+    footerhtml = "Preferred cola by Interview Date&lt;br /&gt;sample size = 600; 95% confidence level; Significance: Compare to rest of data; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: -; Not significant symbol: ", name = "table.Preferred.cola.by.Interview.Date", questions = c("Interview Date",
+    "Preferred cola"), assigned.rownames = TRUE, "signif.annotations" = list(
     list(type = "Recolor text", data = "signifDown#FF0000", threstype = "above threshold",
-        threshold = 0, color = "#FF0000"), list(type = "Arrow - down",
-        data = "signifDown#FF0000", threstype = "above threshold",
-        threshold = 0, color = "#FF0000", size = 12)))
+    threshold = 0, color = "#FF0000"), list(type = "Arrow - down",
+    data = "signifDown#FF0000", threstype = "above threshold",
+    threshold = 0, color = "#FF0000", size = 12)))
 
+tb.1row.colcmp <- structure(c("0", "30.890052356020941", "0", "9.0425531914893629",
+    NA, "A C D", NA, "A C"), dim = c(1L, 4L, 2L), dimnames = list(
+    "UAR", c("YouTube Control ", " Geranika Mycia", "TikTok Control ",
+    "Mary Skinner "), c("Column %", "Column Comparisons")), dimnets = list(
+    integer(0), integer(0)), dimduplicates = list(integer(0),
+    integer(0)), span = list(rows = structure(list("UAR"), class = "data.frame",
+    names = "", row.names = 1L), columns = structure(list(c("YouTube Control ",
+    " Geranika Mycia", "TikTok Control ", "Mary Skinner ")), class = "data.frame",
+    names = "", row.names = c(NA, 4L))), basedescriptiontext = "sample size = 759",
+    basedescription = list(Minimum = 759L, Maximum = 759L, Range = FALSE, Total = 759L,
+    Missing = 0L, EffectiveSampleSize = 759L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(1, 1, 1, 0), dim = 4L),
+    significancedirection = structure(c("Down", "Up", "Down",
+    "None"), dim = 4L), significancefontsizemultiplier = structure(c(0.609756097560976,
+    1.64, 0.609756097560976, 1), dim = 4L), significanceissignificant = structure(c(TRUE,
+    TRUE, TRUE, FALSE), dim = 4L), significanceargbcolor = structure(c(-65536L,
+    -16776961L, -65536L, 0L), dim = 4L), zstatistic = structure(c(-5.27509316848126,
+    Inf, -5.23885086230393, -0.510610387789064), dim = 4L),
+    pcorrected = structure(c(0.00000013268865894922, 1.20182631127532e-26,
+    0.000000161579544633028, 0.609623900603867), dim = 4L)), class = "data.frame",
+    row.names = c(NA, 4L)), questiontypes = c("PickOne", "PickOne"),
+    footerhtml = "UAR_Categorized_Filter by CELL_ASSIGN: TikTok and YouTube&lt;br /&gt;sample size = 759; 90% confidence level; Column comparison symbols: A, B, C... (confidence level &amp;gt;= 90%); No test symbol: -; Not significant symbol: ", name = "table.UAR_Categorized_Filter.by.CELL_ASSIGN.TikTok.and.YouTube",
+    questions = c("UAR_Categorized_Filter", "CELL_ASSIGN: TikTok and YouTube"), assigned.rownames = TRUE)
+
+tb.1col.colcmp <- structure(c("46.904345285593905", "54.992498589992721",
+    "30.664886591879426", "36.177557604268088", "97.671758799907821", "17.122237095200035",
+    NA, NA, NA, NA, NA, NA), dim = c(6L, 1L, 2L), dimnames = list(
+    c("Done in the past 2 years", "Done, but longer ago", "Planned for the following 2 years",
+    "Planned for the following 2-5 years", "Not done, not planned",
+    "Energy renovations - Done in the past 2 years"), "Total sample",
+    c("Column %", "Column Comparisons")), dimnets = list(integer(0),
+    integer(0)), dimduplicates = list(integer(0), integer(0)), span = list(
+    rows = structure(list(c("Done in the past 2 years", "Done, but longer ago",
+    "Planned for the following 2 years", "Planned for the following 2-5 years",
+    "Not done, not planned", "Energy renovations - Done in the past 2 years")),
+    class = "data.frame", names = "", row.names = c(NA, 6L)),
+    columns = structure(list(c("Total sample", "NET")), class = "data.frame",
+    names = "", row.names = 1:2)), basedescriptiontext = "sample size = 421; effective sample size = 346 (82%); 62% filtered out", basedescription = list(
+    Minimum = 421L, Maximum = 421L, Range = FALSE, Total = 421L,
+    Missing = 0L, EffectiveSampleSize = 346L, EffectiveSampleSizeProportion = 82,
+    FilteredProportion = 62.0378719567178), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(0, 0, 0, 0, 0, 0), dim = 6L),
+    significancedirection = structure(c("None", "None", "None",
+    "None", "None", "None"), dim = 6L), significancefontsizemultiplier = structure(c(1,
+    1, 1, 1, 1, 1), dim = 6L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE, FALSE, FALSE, FALSE), dim = 6L), significanceargbcolor = structure(c(0L,
+    0L, 0L, 0L, 0L, 0L), dim = 6L), zstatistic = structure(c(NaN, NaN, NaN, NaN, NaN, NaN),
+    dim = 6L), pcorrected = structure(c(NaN, NaN, NaN, NaN, NaN, NaN), dim = 6L)),
+    row.names = c(NA, 6L), class = "data.frame"), questiontypes = c("PickAny", "PickOne"),
+    footerhtml = "Renovations grouped by BreakVariable&lt;br /&gt;Filter: AgeFilter AND GenderFilter AND RegioFilter AND RenovationFilter AND OwnRentFilter AND FamilyFilter AND TypeHouseFilter AND MeterFilter AND TypeRenoFilter AND SocialTariffFilter AND EPCFilter AND AgeHouseFilter AND Reserve1 AND Reserve1 AND Mijn VerbouwPremie   is Ken ik niet ; Weight: Weging; sample size = 421; effective sample size = 346 (82%); 62% filtered out; 95% confidence level; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: ; Not significant symbol: ", name = "table.Renovations.grouped.by.BreakVariable.2",
+    questions = c("Renovations grouped", "BreakVariable"), weight.name = "Weight",
+    weight.label = "Weging", assigned.rownames = TRUE)
 
 test_that("stats testing added to data matrix",
 {
@@ -573,7 +627,7 @@ test_that("stats testing added to data matrix",
     expect_equal(attr(attr(viz, "ChartData"), "statistic"), "%")
 
     expect_error(res <- PrepareData("Column", input.data.table = tb.1d.multstats,
-    tidy = FALSE, signif.append = TRUE, row.names.to.remove = NULL), NA)
+        tidy = FALSE, signif.append = TRUE, row.names.to.remove = NULL), NA)
     expect_equal(dimnames(res$data), list(c("18 to 24", "25 to 29", "30 to 34",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"),
         NULL, c("%", "Count", "signifUp#0000FF", "signifDown#FF0000")))
@@ -688,7 +742,7 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
 
 test_that("Handle Column Comparisons correctly",
 {
-    expect_warning(viz <- CChart("Line", tb.with.column.comparisons,
+    expect_warning(viz <- CChart("Line", tb.2d.colcmp,
               legend.orientation = "Horizontal", legend.x.position = 0.5,
               legend.y.position = 1.2, data.label.show = FALSE,
               signif.show = TRUE, append.data = TRUE),
@@ -707,5 +761,17 @@ test_that("Handle Column Comparisons correctly",
     expect_equal(chart.labels$SeriesLabels[[6]]$CustomPoints,
         list(list(Index = 7, Segments = list(list(Font = list(color = "#FF0000",
         size = 9.00225056264066), Text = "↓")), Font = list(color = "#FF0000"))))
+
+    expect_error(viz <- CChart("Column", tb.1row.colcmp, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_true(is.numeric(chart.data))
+    expect_equal(colnames(chart.data), colnames(tb.1row.colcmp))
+    expect_equal(attr(chart.data, "statistic"), "Column %")
+
+    expect_error(viz <- CChart("Column", tb.1col.colcmp, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_true(is.numeric(chart.data))
+    expect_equal(names(chart.data), rownames(tb.1col.colcmp))
+    expect_equal(attr(chart.data, "statistic"), "Column %")
 })
 
