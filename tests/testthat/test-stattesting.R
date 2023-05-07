@@ -556,59 +556,84 @@ tb.2d.colcmp <- structure(c("38.983050847457626", "43.07692307692308", "43.42105
     data = "signifDown#FF0000", threstype = "above threshold",
     threshold = 0, color = "#FF0000", size = 12)))
 
-tb.1row.colcmp <- structure(c("0", "30.890052356020941", "0", "9.0425531914893629",
-    NA, "A C D", NA, "A C"), dim = c(1L, 4L, 2L), dimnames = list(
-    "UAR", c("YouTube Control ", " Geranika Mycia", "TikTok Control ",
-    "Mary Skinner "), c("Column %", "Column Comparisons")), dimnets = list(
-    integer(0), integer(0)), dimduplicates = list(integer(0),
-    integer(0)), span = list(rows = structure(list("UAR"), class = "data.frame",
-    names = "", row.names = 1L), columns = structure(list(c("YouTube Control ",
-    " Geranika Mycia", "TikTok Control ", "Mary Skinner ")), class = "data.frame",
-    names = "", row.names = c(NA, 4L))), basedescriptiontext = "sample size = 759",
-    basedescription = list(Minimum = 759L, Maximum = 759L, Range = FALSE, Total = 759L,
-    Missing = 0L, EffectiveSampleSize = 759L, EffectiveSampleSizeProportion = 100,
+tb.1row.colcmp <- structure(c("1750.060606060606", "1545.490243902439",
+    "1639.6450617283951", NA, NA, NA), dim = c(1L, 3L, 2L),
+    dimnames = list("Unique Identifier", c("I am on a diet, so I tend to watch what I eat and drink",
+    "I tend watch what I eat and drink, but don’t consider myself",
+    "I typically eat and drink whatever I feel like"), c("Average",
+    "Column Comparisons")), dimnets = list(integer(0), 4L), dimduplicates = list(
+    integer(0), 4L), span = list(rows = structure(list("Unique Identifier"),
+    class = "data.frame", names = "", row.names = 1L), columns = structure(list(c("I am on a diet, so I tend to watch what I eat and drink",
+    "I tend watch what I eat and drink, but don’t consider myself",
+    "I typically eat and drink whatever I feel like", "NET")), class = "data.frame",
+    names = "", row.names = c(NA, 4L))), basedescriptiontext = "sample size = 800",
+    basedescription = list(Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
     FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
-    significancearrowratio = structure(c(1, 1, 1, 0), dim = 4L),
-    significancedirection = structure(c("Down", "Up", "Down",
-    "None"), dim = 4L), significancefontsizemultiplier = structure(c(0.609756097560976,
-    1.64, 0.609756097560976, 1), dim = 4L), significanceissignificant = structure(c(TRUE,
-    TRUE, TRUE, FALSE), dim = 4L), significanceargbcolor = structure(c(-65536L,
-    -16776961L, -65536L, 0L), dim = 4L), zstatistic = structure(c(-5.27509316848126,
-    Inf, -5.23885086230393, -0.510610387789064), dim = 4L),
-    pcorrected = structure(c(0.00000013268865894922, 1.20182631127532e-26,
-    0.000000161579544633028, 0.609623900603867), dim = 4L)), class = "data.frame",
-    row.names = c(NA, 4L)), questiontypes = c("PickOne", "PickOne"),
-    footerhtml = "UAR_Categorized_Filter by CELL_ASSIGN: TikTok and YouTube&lt;br /&gt;sample size = 759; 90% confidence level; Column comparison symbols: A, B, C... (confidence level &amp;gt;= 90%); No test symbol: -; Not significant symbol: ", name = "table.UAR_Categorized_Filter.by.CELL_ASSIGN.TikTok.and.YouTube",
-    questions = c("UAR_Categorized_Filter", "CELL_ASSIGN: TikTok and YouTube"), assigned.rownames = TRUE)
+    significancearrowratio = structure(c(0, 0, 0), dim = 3L),
+    significancedirection = structure(c("None", "None", "None"
+    ), dim = 3L), significancefontsizemultiplier = structure(c(1,
+    1, 1), dim = 3L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE), dim = 3L), significanceargbcolor = structure(c(0L,
+    0L, 0L), dim = 3L), zstatistic = structure(c(1.08712466405658,
+    -1.42361851395793, 0.816659293062822), dim = 3L),
+    pcorrected = structure(c(0.276981719101832, 0.154556933510948, 0.414123160385983),
+    dim = 3L)), row.names = c(NA, 3L), class = "data.frame"), questiontypes = c("Number", "PickOne"),
+    footerhtml = "Unique Identifier by Weight-consciousness&lt;br /&gt;sample size = 800; 95% confidence level; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: -; Not significant symbol: ",
+    name = "table.Unique.Identifier.by.Weight.consciousness.4",
+    questions = c("Unique Identifier", "Weight-consciousness [Cola Tracking - January to December.sav]"),
+    assigned.rownames = TRUE)
 
-tb.1col.colcmp <- structure(c("46.904345285593905", "54.992498589992721",
-    "30.664886591879426", "36.177557604268088", "97.671758799907821", "17.122237095200035",
-    NA, NA, NA, NA, NA, NA), dim = c(6L, 1L, 2L), dimnames = list(
-    c("Done in the past 2 years", "Done, but longer ago", "Planned for the following 2 years",
-    "Planned for the following 2-5 years", "Not done, not planned",
-    "Energy renovations - Done in the past 2 years"), "Total sample",
-    c("Column %", "Column Comparisons")), dimnets = list(integer(0),
-    integer(0)), dimduplicates = list(integer(0), integer(0)), span = list(
-    rows = structure(list(c("Done in the past 2 years", "Done, but longer ago",
-    "Planned for the following 2 years", "Planned for the following 2-5 years",
-    "Not done, not planned", "Energy renovations - Done in the past 2 years")),
-    class = "data.frame", names = "", row.names = c(NA, 6L)),
-    columns = structure(list(c("Total sample", "NET")), class = "data.frame",
-    names = "", row.names = 1:2)), basedescriptiontext = "sample size = 421; effective sample size = 346 (82%); 62% filtered out", basedescription = list(
-    Minimum = 421L, Maximum = 421L, Range = FALSE, Total = 421L,
-    Missing = 0L, EffectiveSampleSize = 346L, EffectiveSampleSizeProportion = 82,
-    FilteredProportion = 62.0378719567178), QStatisticsTestingInfo = structure(list(
-    significancearrowratio = structure(c(0, 0, 0, 0, 0, 0), dim = 6L),
-    significancedirection = structure(c("None", "None", "None",
-    "None", "None", "None"), dim = 6L), significancefontsizemultiplier = structure(c(1,
-    1, 1, 1, 1, 1), dim = 6L), significanceissignificant = structure(c(FALSE,
-    FALSE, FALSE, FALSE, FALSE, FALSE), dim = 6L), significanceargbcolor = structure(c(0L,
-    0L, 0L, 0L, 0L, 0L), dim = 6L), zstatistic = structure(c(NaN, NaN, NaN, NaN, NaN, NaN),
-    dim = 6L), pcorrected = structure(c(NaN, NaN, NaN, NaN, NaN, NaN), dim = 6L)),
-    row.names = c(NA, 6L), class = "data.frame"), questiontypes = c("PickAny", "PickOne"),
-    footerhtml = "Renovations grouped by BreakVariable&lt;br /&gt;Filter: AgeFilter AND GenderFilter AND RegioFilter AND RenovationFilter AND OwnRentFilter AND FamilyFilter AND TypeHouseFilter AND MeterFilter AND TypeRenoFilter AND SocialTariffFilter AND EPCFilter AND AgeHouseFilter AND Reserve1 AND Reserve1 AND Mijn VerbouwPremie   is Ken ik niet ; Weight: Weging; sample size = 421; effective sample size = 346 (82%); 62% filtered out; 95% confidence level; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: ; Not significant symbol: ", name = "table.Renovations.grouped.by.BreakVariable.2",
-    questions = c("Renovations grouped", "BreakVariable"), weight.name = "Weight",
-    weight.label = "Weging", assigned.rownames = TRUE)
+
+tb.1col.colcmp <- structure(c("2.7548209366391188", "6.0606060606060606",
+    "12.672176308539946", "18.457300275482094", "24.793388429752067",
+    "15.977961432506888", "6.0606060606060606", "8.2644628099173563", "4.9586776859504136",
+    NA, NA, "b", NA, NA, NA, NA, "b", NA, "FALSE", "FALSE", "TRUE",
+    "FALSE", "FALSE", "FALSE", "FALSE", "TRUE", "FALSE", "FALSE",
+    "TRUE", "FALSE", "FALSE", "FALSE", "FALSE", "TRUE", "FALSE",
+    "FALSE"), dim = c(9L, 1L, 4L), dimnames = list(c("Less than $15,000",
+    "$15,001 to $30,000", "$30,001 to $45,000", "$45,001 to $60,000",
+    "$60,001 to $90,000", "$90,001 to $120,000", "$120,001 to $150,000",
+    "$150,001 to $200,000", "$200,001 or more"), "Male", c("Column %",
+    "Column Comparisons", "signifUp#0000FF", "signifDown#FF0000")), dimnets = list(
+    10L, 3L), dimduplicates = list(10L, 3L), span = list(rows = structure(list(
+    c("Less than $15,000", "$15,001 to $30,000", "$30,001 to $45,000",
+    "$45,001 to $60,000", "$60,001 to $90,000", "$90,001 to $120,000",
+    "$120,001 to $150,000", "$150,001 to $200,000", "$200,001 or more",
+    "NET")), class = "data.frame", names = "", row.names = c(NA, 10L)),
+    columns = structure(list(c("Male", "Female", "NET")), class = "data.frame",
+    names = "", row.names = c(NA, 3L))),
+    basedescriptiontext = "sample size = 707; total sample size = 800; 93 missing",
+    basedescription = list(Minimum = 707L, Maximum = 707L, Range = FALSE, Total = 800L,
+    Missing = 93L, EffectiveSampleSize = 707L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(0, 0, 0, 0.74293059125964,
+    0.74293059125964, 0, 0.246786632390746, 0.246786632390746,
+    0), dim = 9L), significancedirection = structure(c("None",
+    "None", "None", "Down", "Up", "None", "Up", "Down", "None"
+    ), dim = 9L), significancefontsizemultiplier = structure(c(1,
+    1, 1, 0.25706940874036, 3.89, 1, 1.96, 0.510204081632653,
+    1), dim = 9L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE, TRUE, TRUE, FALSE, TRUE, TRUE, FALSE), dim = 9L),
+    significanceargbcolor = structure(c(0L, 0L, 0L, -65536L,
+    -16776961L, 0L, -16776961L, -65536L, 0L), dim = 9L),
+    zstatistic = structure(c(-0.767283305061572,
+    0.767283305061572, NaN, -4.23524108526787, 4.23524108526787,
+    NaN, 2.10660920367076, -2.10660920367076, NaN), dim = 9L),
+    pcorrected = structure(c(0.442913092343004, 0.442913092343004,
+    NaN, 0.0000228306627828578, 0.0000228306627828578, NaN, 0.0351514682974756,
+    0.0351514682974756, NaN), dim = 9L)), row.names = c(NA, 9L), class = "data.frame"),
+    questiontypes = c("PickOne", "PickOne"),
+    footerhtml = "Income by Gender&lt;br /&gt;sample size = 707; total sample size = 800; 93 missing; 95% confidence level; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: -; Not significant symbol: ", name = "table.Income.by.Gender.3",
+    questions = c("Income", "Gender [Cola Tracking - January to December.sav]"), assigned.rownames = TRUE, signif.annotations = list(
+    list(type = "Recolor text", data = "signifUp#0000FF", threstype = "above threshold",
+    threshold = 0, color = "#0000FF"), list(type = "Arrow - up",
+    data = "signifUp#0000FF", threstype = "above threshold",
+    threshold = 0, color = "#0000FF", size = 12), list(type = "Recolor text",
+    data = "signifDown#FF0000", threstype = "above threshold",
+    threshold = 0, color = "#FF0000"), list(type = "Arrow - down",
+    data = "signifDown#FF0000", threstype = "above threshold",
+    threshold = 0, color = "#FF0000", size = 12)))
 
 tb.multstats.colcmp <- structure(c("1750.060606060606", "1545.490243902439",
     "1639.6450617283951", "1.0871246640565793", "-1.4236185139579283",
@@ -772,6 +797,12 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
     expect_equal(attr(res$data, "QStatisticsTestingInfo")$significancedirection,
         structure(c("None", "None", "Up", "Up", "Up", "None", "None", "Down", "None", "None",
         "Down", "None"), dim = 12L))
+
+    res <- PrepareData("Column", input.data.table = tb.2d, select.columns = "2",
+        tidy = FALSE, signif.symbol = "Caret", signif.append = TRUE)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$significancedirection,
+        structure(c("Down", "None", "None", "None", "Up", "None", "None",
+        "None", "None"), dim = 9L))
 })
 
 test_that("Handle Column Comparisons correctly",
@@ -800,7 +831,7 @@ test_that("Handle Column Comparisons correctly",
     chart.data <- attr(viz, "ChartData")
     expect_true(is.numeric(chart.data))
     expect_equal(colnames(chart.data), colnames(tb.1row.colcmp))
-    expect_equal(attr(chart.data, "statistic"), "Column %")
+    expect_equal(attr(chart.data, "statistic"), "Average")
 
     expect_error(viz <- CChart("Column", tb.1col.colcmp, append.data = TRUE), NA)
     chart.data <- attr(viz, "ChartData")

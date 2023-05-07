@@ -429,6 +429,7 @@ PrepareData <- function(chart.type,
     # 5. Transformations of the tidied data (e.g., sorting, transposing, removing rows).
     ###########################################################################
     original.dim.names <- dimnames(data)
+    original.is.multistat <- isQTableWithMultStatistic(data)
     if (isTRUE(transpose) && isScatter(chart.type))
     {
         warning("Data was not transposed. This option is incompatible with Scatter charts")
@@ -472,7 +473,7 @@ PrepareData <- function(chart.type,
     # Update QStatisticsTestingInfo to match data manipulations
     # This is not used by R-viz or PPT, only for Excel exporting
     if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
-        data <- updateQStatisticsInfo(data, original.dim.names, transpose)
+        data <- updateQStatisticsInfo(data, original.dim.names, original.is.multistat, transpose)
 
     if (any(nchar(column.labels)))
         data <- replaceDimNames(data, 2, column.labels)
@@ -1077,6 +1078,14 @@ processInputData <- function(x, subset, weights)
     return(x)
 }
 
+
+isQTableWithMultStatistic <- function(x)
+{
+    !is.null(attr(x, "questions")) && !is.null(attr(x, "name")) && is.null(attr(x, "statistic"))
+}
+
+
+
 # Function is only called when we know it is a QTable with questiontype attributes and multiple stats
 #' @importFrom stats ftable
 flattenMultiStatTable <- function(x)
@@ -1578,12 +1587,6 @@ prepareForSpecificCharts <- function(data,
     # Scatterplots
     else if (isScatter(chart.type))
     {
-        .isQTableWithMultStatistic <- function(x)
-        {
-            !is.null(attr(x, "questions")) && !is.null(attr(x, "name")) && is.null(attr(x, "statistic"))
-        }
-
-
         if (isTRUE(scatter.mult.yvals) ||
             (is.list(input.data.raw$Y) && length(input.data.raw$Y) > 1))
         {
@@ -1594,11 +1597,11 @@ prepareForSpecificCharts <- function(data,
         } else if (NCOL(input.data.raw$Y[[1]]) > 1 && is.null(input.data.raw$Z1) &&
             is.null(input.data.raw$Z2) && is.null(input.data.raw$groups))
         {
-            if (!(.isQTableWithMultStatistic(input.data.raw$Y[[1]]) &&
+            if (!(isQTableWithMultStatistic(input.data.raw$Y[[1]]) &&
                   length(dim(input.data.raw$Y[[1]])) < 3))
                 attr(data, "scatter.mult.yvals") <- TRUE
 
-            if (.isQTableWithMultStatistic(input.data.raw$Y[[1]]))
+            if (isQTableWithMultStatistic(input.data.raw$Y[[1]]))
             {
                 if (length(dim(input.data.raw$Y[[1]])) < 3)
                     attr(data, "ycol") <- 1
@@ -2285,12 +2288,17 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
     return(new.dat)
 }
 
-updateQStatisticsInfo <- function(x, original.dim.names, transpose)
+updateQStatisticsInfo <- function(x, original.dim.names, original.is.multistat, transpose)
 {
     x.siginfo <- attr(x, "QStatisticsTestingInfo")
     if (is.null(x.siginfo))
         return(x)
-    if (length(dim(x)) < 2 || NCOL(x) == 1)
+    original.ndim <- length(original.dim.names)
+    if (original.ndim < 2 || (original.ndim == 2 && original.is.multistat))
+        original.ncol <- 1
+    else
+        original.ncol <- length(original.dim.names[[2]])
+    if ((length(dim(x)) < 2 || NCOL(x) == 1) && original.ncol == 1)
     {
         curr.names <- if (length(dim(x)) == 0) names(x) else rownames(x)
         ind <- match(curr.names, original.dim.names[[1]])
