@@ -297,4 +297,9 @@ test_that("Legend position",
               legend.orientation = "Horizontal", legend.x.position = 0.5,
               legend.y.position = -0.2, data.label.show = FALSE)
     expect_equal(attr(viz, "ChartSettings")$Legend$Position, "Bottom")
+
+    viz <- CChart("Column", dat.2d, legend.show = FALSE, append.data = TRUE)
+    expect_false(attr(viz, "ChartSettings")$ShowLegend)
+    expect_equal(attr(viz, "ChartSettings")$Legend$Position, "Right")
 })
+
