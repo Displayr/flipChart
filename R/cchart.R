@@ -393,12 +393,12 @@ removeSignifAndCharData <- function(x, rm.stats)
     primary.stat <- NULL
     if (length(all.stats) > length(rm.stats) + 1) {
         keep.stats <- setdiff(all.stats, rm.stats)
-        new.dat <- x[,,keep.stats, drop = TRUE]
+        new.dat <- x[,,keep.stats, drop = FALSE]
     } else {
         primary.stat <- all.stats[1]
         new.dat <- x[,,1, drop = TRUE]
         if (NCOL(x) > 1 && NCOL(new.dat) == 1)
-            new.dat <- t(new.dat) 
+            new.dat <- t(new.dat)
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {

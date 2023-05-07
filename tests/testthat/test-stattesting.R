@@ -610,6 +610,39 @@ tb.1col.colcmp <- structure(c("46.904345285593905", "54.992498589992721",
     questions = c("Renovations grouped", "BreakVariable"), weight.name = "Weight",
     weight.label = "Weging", assigned.rownames = TRUE)
 
+tb.multstats.colcmp <- structure(c("1750.060606060606", "1545.490243902439",
+    "1639.6450617283951", "1.0871246640565793", "-1.4236185139579283",
+    "0.81665929306282226", "143.05669060448602", "55.25686177497137",
+    "61.796511355528594", NA, NA, NA), dim = c(1L, 3L, 4L),
+    dimnames = list("Unique Identifier",
+    c("I am on a diet, so I tend to watch what I eat and drink",
+    "I tend watch what I eat and drink, but don’t consider myself",
+    "I typically eat and drink whatever I feel like"), c("Average",
+    "z-Statistic", "Standard Error", "Column Comparisons")), dimnets = list(
+    integer(0), 4L), dimduplicates = list(integer(0), 4L), span = list(
+    rows = structure(list("Unique Identifier"), class = "data.frame", names = "",
+    row.names = 1L), columns = structure(list(c("I am on a diet, so I tend to watch what I eat and drink",
+    "I tend watch what I eat and drink, but don’t consider myself",
+    "I typically eat and drink whatever I feel like", "NET")), class = "data.frame",
+    names = "", row.names = c(NA, 4L))), basedescriptiontext = "sample size = 800",
+    basedescription = list(Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(0, 0, 0), dim = 3L),
+    significancedirection = structure(c("None", "None", "None"
+    ), dim = 3L), significancefontsizemultiplier = structure(c(1,
+    1, 1), dim = 3L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE), dim = 3L), significanceargbcolor = structure(c(0L,
+    0L, 0L), dim = 3L), zstatistic = structure(c(1.08712466405658,
+    -1.42361851395793, 0.816659293062822), dim = 3L),
+    pcorrected = structure(c(0.276981719101832, 0.154556933510948, 0.414123160385983),
+    dim = 3L)), row.names = c(NA, 3L), class = "data.frame"),
+    questiontypes = c("Number", "PickOne"),
+    footerhtml = "Unique Identifier by Weight-consciousness&lt;br /&gt;sample size = 800; 95% confidence level; Column comparison symbols: a, b, c... (confidence level &amp;gt;= 95%), A, B, C... (confidence level &amp;gt;= 99.9%); No test symbol: -; Not significant symbol: ", name = "table.Unique.Identifier.by.Weight.consciousness",
+    questions = c("Unique Identifier", "Weight-consciousness [Cola Tracking - January to December.sav]"),
+    assigned.rownames = TRUE)
+
+
 test_that("stats testing added to data matrix",
 {
     expect_error(res <- PrepareData("Column", input.data.table = tb.1d,
@@ -632,7 +665,8 @@ test_that("stats testing added to data matrix",
         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"),
         NULL, c("%", "Count", "signifUp#0000FF", "signifDown#FF0000")))
     expect_error(viz <- CChart("Bar", res$data, append.data = TRUE, signif.show = TRUE), NA)
-    expect_equal(dimnames(attr(viz, "ChartData")), dimnames(tb.1d.multstats))
+    expect_equal(dimnames(attr(viz, "ChartData"))[[1]], dimnames(tb.1d.multstats)[[1]])
+    expect_equal(dimnames(attr(viz, "ChartData"))[[3]], dimnames(tb.1d.multstats)[[2]])
 
     expect_error(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
         tidy = FALSE, hide.empty.rows.and.columns = TRUE, signif.append = TRUE), NA)
@@ -773,5 +807,11 @@ test_that("Handle Column Comparisons correctly",
     expect_true(is.numeric(chart.data))
     expect_equal(names(chart.data), rownames(tb.1col.colcmp))
     expect_equal(attr(chart.data, "statistic"), "Column %")
+
+    expect_error(viz <- CChart("Column", tb.multstats.colcmp, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_true(is.numeric(chart.data))
+    expect_equal(dimnames(chart.data)[1:2], dimnames(tb.multstats.colcmp)[1:2])
+    expect_equal(dimnames(chart.data)[[3]], dimnames(tb.multstats.colcmp)[[3]][-4])
 })
 
