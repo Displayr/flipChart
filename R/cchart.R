@@ -393,10 +393,12 @@ removeSignifAndCharData <- function(x, rm.stats)
     primary.stat <- NULL
     if (length(all.stats) > length(rm.stats) + 1) {
         keep.stats <- setdiff(all.stats, rm.stats)
-        new.dat <- x[,,keep.stats]
+        new.dat <- x[,,keep.stats, drop = TRUE]
     } else {
         primary.stat <- all.stats[1]
         new.dat <- x[,,1, drop = TRUE]
+        if (NCOL(x) > 1 && NCOL(new.dat) == 1)
+            new.dat <- t(new.dat) 
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {
@@ -404,7 +406,15 @@ removeSignifAndCharData <- function(x, rm.stats)
             new.dat <- x
         new.dim <- dim(new.dat)
         new.dnames <- dimnames(new.dat)
-        new.dat <- array(suppressWarnings(as.numeric(new.dat)), dim = new.dim, dimnames = new.dnames)
+        if (is.null(new.dim)) {
+            # handle 1-d vector case
+            new.names <- names(new.dat)
+            new.dat <- AsNumeric(new.dat)
+            names(new.dat) <- new.names
+        }
+        else
+            new.dat <- array(suppressWarnings(as.numeric(new.dat)),
+                             dim = new.dim, dimnames = new.dnames)
         if (!is.null(primary.stat))
             attr(new.dat, "statistic") <- primary.stat
     }
