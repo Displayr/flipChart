@@ -585,7 +585,7 @@ tb.1row.colcmp <- structure(c("1750.060606060606", "1545.490243902439",
     assigned.rownames = TRUE)
 
 
-tb.1col.colcmp <- structure(c("2.7548209366391188", "6.0606060606060606",
+tb.1col.colcmp <- structure(c("2.7548209366391188", NA,
     "12.672176308539946", "18.457300275482094", "24.793388429752067",
     "15.977961432506888", "6.0606060606060606", "8.2644628099173563", "4.9586776859504136",
     NA, NA, "b", NA, NA, NA, NA, "b", NA, "FALSE", "FALSE", "TRUE",
@@ -833,7 +833,8 @@ test_that("Handle Column Comparisons correctly",
     expect_equal(colnames(chart.data), colnames(tb.1row.colcmp))
     expect_equal(attr(chart.data, "statistic"), "Average")
 
-    expect_error(viz <- CChart("Column", tb.1col.colcmp, append.data = TRUE), NA)
+    expect_warning(viz <- CChart("Column", tb.1col.colcmp, append.data = TRUE),
+        "Missing values have been set to zero")
     chart.data <- attr(viz, "ChartData")
     expect_true(is.numeric(chart.data))
     expect_equal(names(chart.data), rownames(tb.1col.colcmp))
@@ -845,4 +846,3 @@ test_that("Handle Column Comparisons correctly",
     expect_equal(dimnames(chart.data)[1:2], dimnames(tb.multstats.colcmp)[1:2])
     expect_equal(dimnames(chart.data)[[3]], dimnames(tb.multstats.colcmp)[[3]][-4])
 })
-

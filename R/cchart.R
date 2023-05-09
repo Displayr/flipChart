@@ -409,7 +409,7 @@ removeSignifAndCharData <- function(x, rm.stats)
         if (is.null(new.dim)) {
             # handle 1-d vector case
             new.names <- names(new.dat)
-            new.dat <- AsNumeric(new.dat)
+            new.dat <- as.numeric(new.dat)
             names(new.dat) <- new.names
         }
         else
