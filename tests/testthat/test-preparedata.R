@@ -2810,7 +2810,7 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                                           select.rows = "",
                                           select.columns = "")[["data"]],
                        wn)
-        expect_equivalent(unclass(pd1), pd2)
+        expect_equivalent(pd1, pd2)
         expect_equivalent(PrepareData(ct,
                                       input.data.table = summary.table.qtable,
                                       tidy = FALSE,
