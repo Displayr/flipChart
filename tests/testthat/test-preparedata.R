@@ -2700,7 +2700,7 @@ test_that("Higher dimension tables",
 {
     res <- PrepareData("Bar", input.data.table = tb.with.gridq, tidy = FALSE)$data
     expect_equal(dimnames(res)[[3]], c("Column %", "z-Statistic"))
-    expect_equal(as.numeric(suppressWarnings(verbs::FlattenTableAndDropStatisticsIfNecessary(tb.with.gridq))[,-6]),
+    expect_equal(as.numeric(suppressWarnings(verbs::FlattenQTable(tb.with.gridq))[,-6]),
         as.numeric(res[,,1]))
 
     res <- PrepareData("Bar", input.data.table = tb.with.rowspan, tidy = FALSE,
