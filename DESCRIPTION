@@ -29,7 +29,7 @@ Imports:
     flipTime,
     flipTransformations (>= 1.10.0),
     flipU (>= 1.5.5),
-    verbs (>= 0.14.14)
+    verbs (>= 0.14.18)
 Remotes:
     Displayr/plotly,
     Displayr/flipChartBasics,
