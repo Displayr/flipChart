@@ -129,7 +129,7 @@ test_that("PrepareData: single table, single stat",
     n.dim <- length(dims)
     expect_equal(attr(out$data, "statistic"), dimnames(input.data.table)[[n.dim]][1])
     expect_is(out$data, "matrix")
-    expect_equal(dim(out$data), c(dims[1]*dims[3], dims[2]))
+    expect_equal(dim(out$data), c(2L, 20L)) # NET is removed with default arg in PrepareData
 
     tab.with.stat <- structure(c(1, 3, 5, 7, 2, 4, 6, 8), .Dim = c(4L, 2L), statistic = "Counts",
                                .Dimnames = list(c("A", "B", "C", "D"), c("Column 1", "Column 2")))
