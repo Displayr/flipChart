@@ -444,9 +444,9 @@ PrepareData <- function(chart.type,
 
 
     # Do not drop 1-column table to keep name for legend
-    drop <- (tidy &&
-             (chart.type %in% c("Pie", "Donut") || !any(nchar(select.columns), na.rm = TRUE) &&
-              !any(nchar(column.labels), na.rm = TRUE)))
+    drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
+            !any(nchar(select.columns), na.rm = TRUE) &&
+            !any(nchar(column.labels), na.rm = TRUE)))
     data <- transformTable(data, chart.type, multiple.tables, tidy, drop,
                    is.raw.data = !is.null(input.data.raw) || !is.null(input.data.pasted) || !is.null(input.data.other),
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
@@ -1025,7 +1025,7 @@ isDistribution <- function(chart.type)
 }
 
 #' @importFrom flipStatistics ExtractChartData
-#' @importFrom verbs FlattenQTable
+#' @importFrom verbs FlattenTableAndDropStatisticsIfNecessary
 processInputData <- function(x, subset, weights)
 {
     if (is.null(x))
@@ -1060,9 +1060,17 @@ processInputData <- function(x, subset, weights)
 
     # Try to use S3 method to extract data
     x <- ExtractChartData(x)
-    n.dim <- length(dim(x)) - isQTableWithMultStatistic(x)
-    if (n.dim >= 2)
-        x <- FlattenQTable(x)
+
+    # Flatten tables with spans or grid questions
+    has.mult.stats <- is.null(attr(x, "statistic")) && !is.null(attr(x, "questiontypes"))
+    ndim <- length(dim(x)) - has.mult.stats
+    if (ndim >= 2)
+    {
+        if (has.mult.stats)
+            x <- flattenMultiStatTable(x)
+        else
+            x <- FlattenTableAndDropStatisticsIfNecessary(x)
+    }
 
     if (hasUserSuppliedRownames(x))
         attr(x, "assigned.rownames") <- TRUE
@@ -1074,6 +1082,43 @@ processInputData <- function(x, subset, weights)
 isQTableWithMultStatistic <- function(x)
 {
     !is.null(attr(x, "questions")) && !is.null(attr(x, "name")) && is.null(attr(x, "statistic"))
+}
+
+
+
+# Function is only called when we know it is a QTable with questiontype attributes and multiple stats
+#' @importFrom stats ftable
+flattenMultiStatTable <- function(x)
+{
+    # Set dimnames of flattened table using function in verbs package
+    # This will handle row/column spans from banners
+    x0 <- suppressWarnings(FlattenTableAndDropStatisticsIfNecessary(x))
+    n.dims <- length(dim(x))
+    if (n.dims < 4)
+    {
+        rownames(x) <- rownames(x0)
+        colnames(x) <- colnames(x0)
+        return(x)
+    }
+
+    stat.names <- dimnames(x)[[n.dims]]
+    new.dnames <- dimnames(x0)
+    new.dnames[[length(new.dnames) + 1]] <- stat.names
+    new.x <- array(NA, dim = c(dim(x0), length(stat.names)), dimnames = new.dnames)
+
+    qtypes <- attr(x, "questiontypes")
+    for (i in 1:length(stat.names))
+    {
+        if (n.dims == 4){
+            ## Multi is in rows, combine 2nd and 3rd dimensions of table
+            if (qtypes[1] %in% c("PickOneMulti", "PickAnyGrid", "NumberGrid"))
+                new.x[,,i] <- ftable(x[,,,i], row.vars = 1, col.vars = 2:3)
+            else
+                new.x[,,i] <- ftable(x[,,,i], row.vars = 2:1, col.vars = 3)
+        } else if (n.dims == 5)  # e.g. Nominal - Multi by Binary - Grid
+            new.x[,,i] <- ftable(x[,,,,i], row.vars = c(1, 3), col.vars = c(2, 4))
+    }
+    return(CopyAttributes(new.x, x))
 }
 
 processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
@@ -1346,18 +1391,18 @@ transformTable <- function(data,
     if (multiple.tables)
     {
         for (i in seq_along(data))
-            data[[i]] <- transformTable(data[[i]],
-                                        chart.type,
-                                        FALSE,
-                                        FALSE,
-                                        FALSE,
-                                        is.raw.data,
-                                        0, 0, 0, 0, # sample size not used
-                                        transpose,
-                                        first.aggregate,
-                                        hide.empty.rows, hide.empty.columns,
-                                        date.format,
-                                        i)
+            data[[i]] = transformTable(data[[i]],
+                                       chart.type,
+                                       FALSE,
+                                       FALSE,
+                                       FALSE,
+                                       is.raw.data,
+                                       0, 0, 0, 0, # sample size not used
+                                       transpose,
+                                       first.aggregate,
+                                       hide.empty.rows, hide.empty.columns,
+                                       date.format,
+                                       i)
         return(data)
     }
 
@@ -1766,17 +1811,24 @@ setAxisTitles <- function(x, chart.type, drop, values.title = "")
         attr(x, "values.title") <- ""
     if (drop && !is.data.frame(x) && !chart.type %in% c("Scatter", "Heat"))
     {
-        x.dim <- dim(x)
-        if (length(x.dim) == 2L && any(x.dim == 1L)) {
-            x.names <- if (NCOL(x) == 1L) rownames(x) else colnames(x)
-            x <- structure(as.vector(x),
-                           names = x.names,
-                           statistic = attr(x, "statistic"),
-                           questions = attr(x, "questions"),
-                           categories.title = attr(x, "categories.title"),
-                           values.title = attr(x, "values.title"))
-        } else
-            x <- drop(x)
+        # only drop 1 dimension from a 2d matrix
+        if (length(dim(x)) == 2 && (dim(x)[2] == 1 || dim(x)[1] == 1)) {
+            if (dim(x)[2] == 1) {
+                tmp.vec <- x[, 1]
+                names(tmp.vec) <- rownames(x)
+            }
+            else if (dim(x)[1] == 1) {
+                tmp.vec <- x[1, ]
+                names(tmp.vec) <- colnames(x)
+            }
+            attr(tmp.vec, "statistic") <- attr(x, "statistic")
+            attr(tmp.vec, "questions") <- attr(x, "questions")
+            attr(tmp.vec, "categories.title") <- attr(x, "categories.title")
+            attr(tmp.vec, "values.title") <- attr(x, "values.title")
+            x <- tmp.vec
+        }
+        else
+            x <- CopyAttributes(drop(x), x)
     }
     x
 }
@@ -1785,13 +1837,14 @@ getFullRowNames <- function(x)
 {
     if (!is.null(attr(x, "span")))
         return(apply(attr(x, "span")$rows, 1, paste, collapse = " - "))
-    if (!is.null(nrow(x)) && hasUserSuppliedRownames(x))
+    else if (!is.null(nrow(x)) && hasUserSuppliedRownames(x))
         return(MakeUniqueNames(rownames(x)))
-    if (!is.list(x) && is.null(nrow(x)))
+    else if (!is.list(x) && is.null(nrow(x)))
         return(MakeUniqueNames(names(x)))
-    if (is.list(x) && length(x) == 1)
+    else if (is.list(x) && length(x) == 1)
         return(getFullRowNames(x[[1]]))
-    NULL
+    else
+        return(NULL)
 }
 
 
@@ -1831,10 +1884,22 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
              "or variable with the same number of values as the number of ",
              "points in the chart")
 
+    allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
+
+    if (!allow.qtables)
+        x <- unclassQTable(x)
+
     if (use.span && is.null(attr(x, "span")))
         warning("Spans were not used as this attribute was not found in the data.")
 
-    if (use.span && !is.null(attr(x, "span")))
+    new.dat <- NULL
+    if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
+    {
+        # For variables, this function is not really required
+        # and for non-atomic types it results in info being lost
+        new.dat <- data.frame(x)
+
+    } else if (use.span && !is.null(attr(x, "span")))
     {
         # Q tables can always be converted to a matrix
         new.dat <- as.matrix(attr(x, "span")$rows[, 1])
@@ -1844,29 +1909,15 @@ PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
         # accidentally used for another variable
         # The space is needed to avoid ugly R defaults
         colnames(new.dat) <- " "
-        attr.to.not.copy <- c(eval(formals(CopyAttributes)[["attr.to.not.copy"]]),
-                              "QStatisticsTestingInfo")
-        new.dat <- CopyAttributes(new.dat, x, attr.to.not.copy = attr.to.not.copy)
+        new.dat <- CopyAttributes(new.dat, x)
         return(new.dat)
     }
-
-    # Q Table attributes are not useful when used as a scatterplot dimension input
-    if (IsQTable(x)) {
-        x <- unclass(x)
-        attr(x, "QStatisticsTestingInfo") <- NULL
-    }
-
-    if (inherits(x, c("POSIXct", "POSIXt", "Date")) || is.factor(x))
-    {
-        # For variables, this function is not really required
-        # and for non-atomic types it results in info being lost
-        new.dat <- data.frame(x)
-
-    } else if (!is.list(x))
+    else if (!is.list(x))
     {
         # Avoid trying to convert complex data structures
         # including dataframes which might have different types
         new.dat <- as.matrix(x)
+
     } else
         new.dat <- x
 
@@ -2202,10 +2253,8 @@ addStatTesting <- function(x, x.siginfo, p.cutoffs, colors.pos, colors.neg, colo
         for (cc in tmp.col)
         {
             j <- length(mat.list)
-            mat.list[[j + 1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc,
-                                        nrow = nrow(tmp.x),
-                                        ncol = ncol(tmp.x),
-                                        byrow = TRUE)
+            mat.list[[j+1]] <- matrix(arrow.dir == tmp.dir & arrow.colors == cc,
+                nrow=nrow(tmp.x), ncol=ncol(tmp.x), byrow = TRUE)
             tmp.signame <- paste0("signif", tmp.dir, cc)
             signames <- c(signames, tmp.signame)
 
@@ -2299,7 +2348,7 @@ unclassQTable <- function(data)
     {
         data <- unclass(data)
         data.attributes <- attributes(data)
-        is.subscripted.table <- !is.null(data.attributes[["is.subscripted"]])
+        is.subscripted.table <- !is.null(data.attributes[["original.questiontypes"]])
         if (!is.subscripted.table) return(data)
         data.attribute.names <- names(data.attributes)
         attr.to.remove <- qTableAttributesToRemove(data.attribute.names)
