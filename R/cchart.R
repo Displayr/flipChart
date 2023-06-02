@@ -346,6 +346,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     # Convert data after the charting function has been applied
     if (chart.type %in% c("Scatter", "Bubble"))
     {
+        #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
 
@@ -1121,7 +1122,8 @@ loadPackage <- function(chart.type)
 #' @importFrom flipU CopyAttributes
 convertChartDataToNumeric <- function(data)
 {
-    .isValidIndex <- function(i) !is.null(i) && !is.na(i) && i > 0 && i <= NCOL(data)
+    .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
+                        i <= NCOL(data))}
 
     v.ind <- attr(data, "scatter.variable.indices")
     new.data <- suppressWarnings(AsNumeric(data, binary = FALSE))
@@ -1129,10 +1131,10 @@ convertChartDataToNumeric <- function(data)
     # Color variable can be returned as a factor to retain
     # label names
     ind.color <- v.ind["colors"]
-    if (.isValidIndex(ind.color) && is.factor(data[, ind.color]))
-        new.data[, ind.color] <- data[, ind.color]
+    if (.isValidIndex(ind.color) && is.factor(data[,ind.color]))
+        new.data[,ind.color] <- data[,ind.color]
     else if (.isValidIndex(ind.color) && is.character(data[,ind.color]))
-        new.data[, ind.color] <- factor(data[, ind.color], levels = unique(data[, ind.color]))
+        new.data[,ind.color] <- factor(data[,ind.color], levels = unique(data[,ind.color]))
     return(CopyAttributes(new.data, data))
 }
 
@@ -1173,3 +1175,4 @@ convertToPPTNumFormat <- function(d3format)
     } else
         return("General")
 }
+

@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  r-packages: displayr/r-packages@dev:a3915ebdf5faa6407bb44246bf268c8ef0baee46
+  r-packages: displayr/r-packages@dev:2d373369af61749d2760abcacbfe7b805006be79
 parameters:
   trigger-message:
     type: string
@@ -17,7 +17,7 @@ parameters:
   executor:
     type: enum
     enum: [nightly, rocker, machine,rocker-geo]
-    default: rocker
+    default: rocker-geo
 
 workflows:
   build-and-check-R-package:
@@ -49,4 +49,3 @@ workflows:
           plugins-branch: << pipeline.parameters.plugins-branch >>
           trigger-message: << pipeline.parameters.trigger-message >>
           triggered-packages: << pipeline.parameters.triggered-packages >>
-
