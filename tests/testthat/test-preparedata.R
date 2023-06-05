@@ -2725,8 +2725,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
-                                         custom.attr = "I have been added",
-                                         is.subscripted = TRUE)
+                                         custom.attr = "I have been added")
 
     # Without the global variable
     ## Table hasn't been subscripted
@@ -2768,6 +2767,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         chart.title = NULL,
         chart.footer = NULL,
         scatter.variable.indices = c(x = 1, y = 2, sizes = NA, colors = NA, groups = 1))
+    if (exists("ALLOW.QTABLE.CLASS")) rm(ALLOW.QTABLE.CLASS)
     expect_equal(PrepareData("Scatter", input.data.table = list(qtable)),
                  expected.scatter.table.data)
     expected.prep.subscripted <- expected.scatter.table.data
@@ -2782,7 +2782,6 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
     attr(expected.prep.subscripted[["data"]], "scatter.variable.indices") <-
         attr(expected.scatter.table.data[["data"]], "scatter.variable.indices")
     colnames(expected.prep.subscripted[["data"]]) <- NULL
-    attr(expected.prep.subscripted[["data"]], "is.subscripted") <- TRUE
     expect_equal(PrepareData("Scatter", input.data.table = list(subscripted.qtable)),
                  expected.prep.subscripted)
     # With the new global variable
