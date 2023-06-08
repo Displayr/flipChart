@@ -279,7 +279,7 @@ PrepareData <- function(chart.type,
     # 0. Check subscripted QTables unclassed and attr removed for legacy outputs.
     ###########################################################################
 
-    allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
+    allow.qtables <- Sys.getenv("ALLOW_QTABLE_CLASS", unset = "false") == "true"
 
     if (!allow.qtables)
     {
