@@ -2288,18 +2288,17 @@ updateQStatisticsInfo <- function(x, original.dim.names, original.is.multistat, 
     return(x)
 }
 
-isQTableClass <- function(x) inherits(x, "QTable") || inherits(x, "qTable")
-
+#' @importFrom flipU IsQTable
 unclassQTable <- function(data)
 {
     if (is.null(data)) return(data)
     if (is.list(data) && !is.data.frame(data))
     {
-        qtable.elements <- vapply(data, isQTableClass, logical(1L))
+        qtable.elements <- vapply(data, IsQTable, logical(1L))
         data[qtable.elements] <- lapply(data[qtable.elements], unclassQTable)
         return(data)
     }
-    if (isQTableClass(data))
+    if (IsQTable(data))
     {
         data <- unclass(data)
         data.attributes <- attributes(data)
