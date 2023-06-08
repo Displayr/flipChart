@@ -2600,7 +2600,7 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                    statistic = "Average",
                    dim = c(1L, 6L),
                    dimnames = list("circumference", c("3", "1", "5", "2", "4", "NET")),
-                   class = c("matrix", "array", "qTable"),
+                   class = c("matrix", "array", "QTable"),
                    dimnets = list(integer(0), 5L),
                    dimduplicates = list(integer(0), 5L),
                    span = list(rows = data.frame("circumference", fix.empty.names = FALSE),
@@ -2644,9 +2644,9 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
     }
 
     tb.with.gridq.qtable <- tb.with.gridq
-    class(tb.with.gridq.qtable) <- c(class(tb.with.gridq.qtable), "qTable")
+    class(tb.with.gridq.qtable) <- c(class(tb.with.gridq.qtable), "QTable")
     summary.table.qtable <- summary.table
-    class(summary.table.qtable) <- c(class(summary.table.qtable), "qTable")
+    class(summary.table.qtable) <- c(class(summary.table.qtable), "QTable")
     for (ct in c("Box", "Bar", "Scatter")) {
         wn <- if (ct == "Scatter") "only the first" else NA
         expect_warning(pd1 <- PrepareData(ct,
@@ -2702,7 +2702,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         custom.attr = "I have been added",
         name = "table.Q3.Age.in.years.2",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("qTable", "array"))
+        class = c("QTable", "array"))
     original.attr <- attributes(qtable)
     subscripted.qtable <- structure(
         values[1:2],
@@ -2720,7 +2720,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("qTable", "array"))
+        class = c("QTable", "array"))
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
