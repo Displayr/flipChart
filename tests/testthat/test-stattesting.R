@@ -187,7 +187,7 @@ tb.2d.multstats <- structure(c(28, 16, 17, 21, 10, 7, 18, 18, 8, 143, 1, 4, 3, 6
     "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
     "65 or more", "NET"), c("Coca-Cola", "Diet Coke", "Coke Zero",
     "Pepsi", "Pepsi Light", "Pepsi Max", "Don't Know", "NET"), c("Count",
-    "Standard Error")), class = c("array", "QTable"), dimnets = list(
+    "Standard Error")), class = c("array", "qTable", "QTable"), dimnets = list(
     10L, 8L), dimduplicates = list(10L, 8L), span = list(rows = structure(list(
     c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
     "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET")), class = "data.frame",
@@ -295,7 +295,7 @@ tb.3d <- structure(c(3.54430379746835, 16.4556962025316, 14.9367088607595,
     4.875, 16.25, 100, 100, 100, 100, 100, 100), statistic = "Column %",
     dim = c(6L, 6L, 3L), dimnames = list(c("Coca-Cola", "Diet Coke", "Coke Zero",
     "Pepsi", "Diet Pepsi", "Pepsi Max"), c("Hate", "Dislike", "Neither like nor dislike",
-    "Like", "Love", "NET"), c("Male", "Female", "NET")), class = c("array", "QTable"),
+    "Like", "Love", "NET"), c("Male", "Female", "NET")), class = c("array", "QTable", "qTable"),
     dimnets = list(integer(0), 6L, 3L), dimduplicates = list(integer(0), 6L, 3L),
     span = list(rows = structure(list(c("Coca-Cola", "Diet Coke", "Coke Zero",
     "Pepsi", "Diet Pepsi", "Pepsi Max")), class = "data.frame", names = "",
