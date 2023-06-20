@@ -2600,7 +2600,7 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
                    statistic = "Average",
                    dim = c(1L, 6L),
                    dimnames = list("circumference", c("3", "1", "5", "2", "4", "NET")),
-                   class = c("matrix", "array", "QTable"),
+                   class = c("matrix", "array", "QTable", "qTable"),
                    dimnets = list(integer(0), 5L),
                    dimduplicates = list(integer(0), 5L),
                    span = list(rows = data.frame("circumference", fix.empty.names = FALSE),
@@ -2644,9 +2644,9 @@ test_that("DS-3842 - QTable attribute interferes with structure of data",
     }
 
     tb.with.gridq.qtable <- tb.with.gridq
-    class(tb.with.gridq.qtable) <- c(class(tb.with.gridq.qtable), "QTable")
+    class(tb.with.gridq.qtable) <- c(class(tb.with.gridq.qtable), "QTable", "qTable")
     summary.table.qtable <- summary.table
-    class(summary.table.qtable) <- c(class(summary.table.qtable), "QTable")
+    class(summary.table.qtable) <- c(class(summary.table.qtable), "QTable", "qTable")
     for (ct in c("Box", "Bar", "Scatter")) {
         wn <- if (ct == "Scatter") "only the first" else NA
         expect_warning(pd1 <- PrepareData(ct,
@@ -2702,7 +2702,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         custom.attr = "I have been added",
         name = "table.Q3.Age.in.years.2",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("QTable", "array"))
+        class = c("QTable", "qTable", "array"))
     original.attr <- attributes(qtable)
     subscripted.qtable <- structure(
         values[1:2],
@@ -2720,7 +2720,7 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("QTable", "array"))
+        class = c("QTable", "qTable", "array"))
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
@@ -2808,7 +2808,7 @@ test_that("DS-4177: PickOne Multi with numeric variable names produces bad chart
                                       5.19877675840979, 23.8532110091743, 41.8960244648318, 22.9357798165138,
                                       24.4648318042813, 36.697247706422, 12.2324159021407), statistic = "Row %", dim = 6:5,
                                     dimnames = list(c("1", "2", "3", "4", "5", "6"), c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like")),
-                                    class = c("matrix", "array", "QTable"),
+                                    class = c("matrix", "array", "QTable", "qTable"),
                                     dimnets = list(integer(0), integer(0)),
                                     dimduplicates = list(integer(0), integer(0)),
                                     span = list(rows = structure(list(c("1", "2","3", "4", "5", "6")),
@@ -2841,7 +2841,7 @@ test_that("DS-4177: PickOne Multi with numeric variable names produces bad chart
                 dimnames = list(c("1", "2", "3", "4", "5", "6"),
                                 c("Hate", "Dislike", "Neither like nor dislike", "Love", "Like"),
                                 c("Row %", "Count")),
-                class = c("array", "QTable"),
+                class = c("array", "QTable", "qTable"),
                 dimnets = list(integer(0), integer(0)),
                 dimduplicates = list(integer(0), integer(0)),
                 span = list(rows = structure(list(c("1", "2", "3", "4", "5", "6")),
@@ -2865,7 +2865,7 @@ test_that("DS-4177: PickOne Multi with numeric variable names produces bad chart
                           dim = c(9L, 6L),
                           dimnames = list(c("6", "9", "15", "23", "28", "103", "171", "239", "265"),
                                           c("1", "2", "3", "4", "5", "6")),
-                          class = c("matrix","array", "QTable"),
+                          class = c("matrix","array", "QTable", "qTable"),
                           dimnets = list(integer(0), integer(0)),
                           dimduplicates = list(integer(0), integer(0)),
                           span = list(rows = structure(list(c("6", "9", "15", "23", "28", "103", "171", "239", "265")),
