@@ -280,7 +280,7 @@ PrepareData <- function(chart.type,
     ###########################################################################
 
     allow.qtable.fun <- get0("allowQTables", ifnotfound = function () { FALSE })
-    allow.qtables <- allow.qtable.fun()
+    allow.qtables <- allow.qtable.fun() || get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
 
     if (!allow.qtables)
     {
