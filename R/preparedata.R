@@ -439,10 +439,12 @@ PrepareData <- function(chart.type,
 
     # Add info about significance arrows - this needs to occur here
     # so that the stat testing info makes use of RearrangeRowsColumn
-    if (!is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE)) && signif.append)
+    has.statistics.testing.info <- !is.null(attr(input.data.table, "QStatisticsTestingInfo", exact = TRUE))
+    if (has.statistics.testing.info && signif.append)
         data <- addStatTesting(data, attr(data, "QStatisticsTestingInfo"), signif.p.cutoffs,
                     signif.colors.pos, signif.colors.neg, signif.colors.on.font, signif.symbol, signif.symbol.size)
-
+    if (has.statistics.testing.info && !signif.append)
+        attr(data, "QStatisticsTestingInfo") <- NULL
 
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||

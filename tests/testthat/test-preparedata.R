@@ -2882,3 +2882,48 @@ test_that("DS-4177: PickOne Multi with numeric variable names produces bad chart
     expect_true(isRawDataQTable(raw.data))
 
 })
+
+test_that("DS-5017 PrepareData can prepare a QTable when no significance is required", {
+    x <- structure(
+        array(1:5, dim = 5L, dimnames = list(LETTERS[1:5])),
+        questiontypes = "PickOne",
+        questions = c("Age", "SUMMARY"),
+        statistic = "%",
+        QStatisticsTestingInfo = data.frame(
+            significancearrowratio = c(1, 0, 0, 0, 0),
+            significancedirection = c("Down", "None", "None", "None", "None"),
+            significancefontsizemultiplier = c(0.2, 1, 1, 1, 1),
+            significanceissignificant = c(TRUE, FALSE, FALSE, FALSE, FALSE),
+            significanceargbcolor = c(-65536L, 0L, 0L, 0L, 0L),
+            zstatistic = c(-6.02, 2.08, 1.16, 0.05, 0.60),
+            pcorrected = c(8.31476083881898e-09, 0.186269140834459, 1, 1, 1)
+        ),
+        class = c("array", "QTable")
+    )
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    expect_error(
+        PrepareData(
+            chart.type = "Table",
+            input.data.table = x,
+            signif.append = FALSE,
+            tidy = FALSE,
+            select.rows = "4"),
+    NA)
+    expect_error(
+        PrepareData(
+            chart.type = "Table",
+            input.data.table = x,
+            signif.append = FALSE,
+            tidy = FALSE,
+            select.rows = 4),
+    NA)
+    expect_error(
+        PrepareData(
+            chart.type = "Table",
+            input.data.table = x,
+            signif.append = FALSE,
+            tidy = FALSE,
+            first.k.rows = 2),
+    NA)
+    remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv)
+})
