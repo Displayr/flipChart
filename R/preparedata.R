@@ -157,6 +157,7 @@
 #' @importFrom flipData TidyRawData
 #' @importFrom flipFormat Labels Names ExtractCommonPrefix
 #' @importFrom flipStatistics Table WeightedTable
+#' @importFrom flipU IsQTable
 #' @importFrom verbs Sum
 #' @importFrom stats setNames
 #' @return A list with components \itemize{ \item \code{data} - If
@@ -343,6 +344,17 @@ PrepareData <- function(chart.type,
         data <- processPastedData(input.data.pasted,
                                   warn = tidy,
                                   date.format, subset, weights)
+
+    # Sanitize a data.frame containing a (likely subscripted) QTable
+    if (is.data.frame(data) && any(qtable.elements <- vapply(data, IsQTable, logical(1L))))
+    { # Prevent subscripting and avoid using table names as legend titles
+        .sanitizeQTable <- function(x) {
+            x <- unclass(x)
+            attr(x, "name") <- NULL
+            x
+        }
+        data[qtable.elements] <- lapply(data[qtable.elements], .sanitizeQTable)
+    }
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
