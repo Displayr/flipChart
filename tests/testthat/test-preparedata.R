@@ -2927,3 +2927,31 @@ test_that("DS-5017 PrepareData can prepare a QTable when no significance is requ
     NA)
     remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv)
 })
+
+test_that("DS-5346 Handle QTables inside data.frames", {
+    table.elements <- array(1:12, dim = 12L, dimnames = list(letters[1:12]))
+    oned.qtable <- structure(
+        table.elements,
+        class = c("numeric", "QTable"),
+        name = "table.1d"
+    )
+    dat <- data.frame(`Informative name` = oned.qtable, check.names = FALSE)
+    pd.labels <- PrepareData("Line", input.data.table = dat, tidy = FALSE, show.labels = TRUE)
+    pd.names <- PrepareData("Line", input.data.table = dat, tidy = FALSE, show.labels = FALSE)
+    expected.pd <- list(
+        data = structure(
+            list(`Informative name` = array(1:12, dim = 12L)),
+            row.names = letters[1:12],
+            assigned.rownames = TRUE,
+            class = "data.frame"
+        ),
+        weights = NULL,
+        values.title = "",
+        categories.title = NULL,
+        chart.title = NULL,
+        chart.footer = NULL,
+        scatter.variable.indices = NULL
+    )
+    expect_equal(pd.labels, expected.pd)
+    expect_equal(pd.names, expected.pd)
+})
