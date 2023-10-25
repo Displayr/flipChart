@@ -608,8 +608,7 @@ unlistTable <- function(x)
         return(x)
     if (is.list(x) && !is.data.frame(x) && length(x) == 1)
         return(x[[1]])
-    else
-        return(x)
+    x
 }
 
 isTableList <- function(x)
@@ -1174,9 +1173,9 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
     # Use ExtractChartData to convert any raw Regression input
     if (any(reg.outputs <- checkRegressionOutput(input.data.raw)))
     {
-        if(reg.outputs[1])
+        if (reg.outputs[1])
             input.data.raw[[1]] <- extractRegressionScatterData(input.data.raw[[1]])
-        if(reg.outputs[2])
+        if (reg.outputs[2])
             input.data.raw[[2]] <- lapply(input.data.raw[[2]], extractRegressionScatterData, y.axis = TRUE)
     }
 
