@@ -2308,8 +2308,7 @@ unclassQTable <- function(data)
     if (is.null(data)) return(data)
     if (is.list(data) && !is.data.frame(data))
     {
-        qtable.elements <- vapply(data, IsQTable, logical(1L))
-        data[qtable.elements] <- lapply(data[qtable.elements], unclassQTable)
+        data <- lapply(data, unclassQTable)
         return(data)
     }
     if (IsQTable(data))
