@@ -350,7 +350,8 @@ PrepareData <- function(chart.type,
     { # Prevent subscripting and avoid using table names as legend titles
         .sanitizeQTable <- function(x) {
             x <- unclass(x)
-            attr(x, "name") <- NULL
+            if (!isScatter(chart.type))
+                attr(x, "name") <- NULL
             x
         }
         data[qtable.elements] <- lapply(data[qtable.elements], .sanitizeQTable)
@@ -2308,8 +2309,7 @@ unclassQTable <- function(data)
     if (is.null(data)) return(data)
     if (is.list(data) && !is.data.frame(data))
     {
-        qtable.elements <- vapply(data, IsQTable, logical(1L))
-        data[qtable.elements] <- lapply(data[qtable.elements], unclassQTable)
+        data <- lapply(data, unclassQTable)
         return(data)
     }
     if (IsQTable(data))
