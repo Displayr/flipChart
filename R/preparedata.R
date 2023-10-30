@@ -2309,7 +2309,10 @@ unclassQTable <- function(data)
     if (is.null(data)) return(data)
     if (is.list(data) && !is.data.frame(data))
     {
+        original.class <- class(data)
         data <- lapply(data, unclassQTable)
+        if (!identical(class(data), original.class))
+            class(data) <- original.class
         return(data)
     }
     if (IsQTable(data))
