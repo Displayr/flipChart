@@ -2310,9 +2310,9 @@ unclassQTable <- function(data)
     if (is.list(data) && !is.data.frame(data))
     {
         original.class <- class(data)
-        data <- lapply(data, unclassQTable)
-        if (!identical(class(data), original.class))
-            class(data) <- original.class
+        # Use TRUE to retain attributes and block them being forgotten in the lapply call
+        data[TRUE] <- lapply(data, unclassQTable)
+        class(data) <- setdiff(original.class, "QTable")
         return(data)
     }
     if (IsQTable(data))

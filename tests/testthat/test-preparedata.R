@@ -2955,3 +2955,66 @@ test_that("DS-5346 Handle QTables inside data.frames", {
     expect_equal(pd.labels, expected.pd)
     expect_equal(pd.names, expected.pd)
 })
+
+test_that("Unclassing QTables works properly", {
+    qtable <- structure(
+        array(1:3, dim = 3, dimnames = list(letters[1:3])),
+        bar = "baz",
+        class = c("array", "QTable")
+    )
+    unclassed.qtable <- unclass(qtable)
+    other.object <- structure(
+        list(
+            1:10,
+            matrix(1:12, nrow = 3),
+            qtable
+        ),
+        class = "Regression",
+        ChartData = 1:3
+    )
+    other.expected <- structure(
+        list(
+            1:10,
+            matrix(1:12, nrow = 3),
+            unclassed.qtable
+        ),
+        class = "Regression",
+        ChartData = 1:3
+
+    )
+    list.with.qtable <- list(
+        1:10,
+        matrix(1:12, nrow = 3),
+        qtable
+    )
+    list.without.qtable <- list(
+        1:10,
+        matrix(1:12, nrow = 3),
+        unclassed.qtable
+    )
+    basic <- structure(
+        1:10,
+        foo = "bar"
+    )
+    input <- structure(
+        list(
+            qtable,
+            basic,
+            list.with.qtable,
+            other.object
+        ),
+        names = paste0("input", 1:4),
+        bar = "baz"
+    )
+    expected.output <- structure(
+        list(
+            unclassed.qtable,
+            basic,
+            list.without.qtable,
+            other.expected
+        ),
+        names = paste0("input", 1:4),
+        bar = "baz"
+    )
+    expect_equal(unclassQTable(input), expected.output)
+})
