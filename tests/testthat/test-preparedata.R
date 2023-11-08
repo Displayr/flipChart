@@ -3027,7 +3027,7 @@ test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
     )
     subscripted <- test.table[2:3, ]
     expect_true(attr(subscripted, "is.subscripted"))
-    subscripted.with.table.select <- SelectFromTable(
+    subscripted.with.table.select <- verbs::SelectFromTable(
         test.table,
         row.selection.mode = "range",
         row.selection = 2:3
