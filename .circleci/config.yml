@@ -7,7 +7,7 @@ parameters:
     default: ""
   remote-deps:
     type: string
-    default: "Displayr/verbs@DS-5360"
+    default: ""
   plugins-branch:
     type: string
     default: ""
