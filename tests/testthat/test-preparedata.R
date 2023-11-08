@@ -2720,7 +2720,8 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("QTable", "qTable", "array"))
+        class = c("QTable", "qTable", "array")
+    )
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
@@ -3023,6 +3024,7 @@ test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
     test.table <- structure(
         array(1:12, dim = 3:4, dimnames = list(letters[1:3], LETTERS[1:4])),
         statistic = "%",
+        questiontypes = c("PickOne", "Numeric"),
         class = c("array", "QTable")
     )
     subscripted <- test.table[2:3, ]
