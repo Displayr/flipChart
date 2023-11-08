@@ -3018,3 +3018,35 @@ test_that("Unclassing QTables works properly", {
     )
     expect_equal(unclassQTable(input), expected.output)
 })
+
+test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
+    test.table <- structure(
+        array(1:12, dim = 3:4, dimnames = list(letters[1:3], LETTERS[1:4])),
+        statistic = "%",
+        class = c("array", "QTable")
+    )
+    subscripted <- test.table[2:3, ]
+    expect_true(attr(subscripted, "is.subscripted"))
+    subscripted.with.table.select <- SelectFromTable(
+        test.table,
+        row.selection.mode = "range",
+        row.selection = 2:3
+    )
+    regular.pd.with.subscripting <- PrepareData(
+        chart.type = "Bar",
+        input.data.table = subscripted
+    )
+    pd.with.table.select.subscripting <- PrepareData(
+        chart.type = "Bar",
+        input.data.table = subscripted.with.table.select
+    )
+    expect_null(attr(regular.pd.with.subscripting[["data"]], "statistic"))
+    expect_equal(attr(pd.with.table.select.subscripting[["data"]], "statistic"), "%")
+    # Check data structure is same except for known difference
+    expect_false(identical(subscripted, subscripted.with.table.select))
+    subscripted.with.table.select.copy <- subscripted.with.table.select
+    attr(subscripted.with.table.select.copy, "table.select.subscripted") <- NULL
+    attr(subscripted.with.table.select.copy, "name") <- attr(subscripted, "name")
+    attr(subscripted.with.table.select.copy, "name.original") <- NULL
+    expect_equal(subscripted, subscripted.with.table.select.copy)
+})
