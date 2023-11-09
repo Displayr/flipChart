@@ -3042,6 +3042,8 @@ test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
         chart.type = "Bar",
         input.data.table = subscripted.with.table.select
     )
+    # By default ALLOW.QTABLE.CLASS is not defined and will take the default of FALSE
+    # Therefore the attributes will be removed for a standard subscripted table
     expect_null(attr(regular.pd.with.subscripting[["data"]], "statistic"))
     expect_equal(attr(pd.with.table.select.subscripting[["data"]], "statistic"), "%")
     # Check data structure is same except for known difference
