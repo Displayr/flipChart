@@ -2315,7 +2315,7 @@ unclassQTable <- function(data)
         class(data) <- setdiff(original.class, "QTable")
         return(data)
     }
-    if (IsQTable(data))
+    if (IsQTable(data) && is.null(attr(data, "table.select.subscripted")))
     {
         data <- unclass(data)
         data.attributes <- attributes(data)

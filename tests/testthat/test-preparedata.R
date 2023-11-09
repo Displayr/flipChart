@@ -2720,7 +2720,8 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         original.name = "table.Q3.Age.in.years.2",
         name = "table.Q3.Age.in.years.2[1:2]",
         questions = c("Q3. Age in years", "SUMMARY"),
-        class = c("QTable", "qTable", "array"))
+        class = c("QTable", "qTable", "array")
+    )
 
     basic.table <- array(values, dimnames = list(qtable.names))
     basic.subscripted.table <- structure(array(values[1:2], dimnames = list(qtable.names[1:2])),
@@ -3017,4 +3018,39 @@ test_that("Unclassing QTables works properly", {
         bar = "baz"
     )
     expect_equal(unclassQTable(input), expected.output)
+})
+
+test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
+    test.table <- structure(
+        array(1:12, dim = 3:4, dimnames = list(letters[1:3], LETTERS[1:4])),
+        statistic = "%",
+        questiontypes = c("PickOne", "Numeric"),
+        class = c("array", "QTable")
+    )
+    subscripted <- test.table[2:3, ]
+    expect_true(attr(subscripted, "is.subscripted"))
+    subscripted.with.table.select <- verbs::SelectFromTable(
+        test.table,
+        row.selection.mode = "range",
+        row.selection = 2:3
+    )
+    regular.pd.with.subscripting <- PrepareData(
+        chart.type = "Bar",
+        input.data.table = subscripted
+    )
+    pd.with.table.select.subscripting <- PrepareData(
+        chart.type = "Bar",
+        input.data.table = subscripted.with.table.select
+    )
+    # By default ALLOW.QTABLE.CLASS is not defined and will take the default of FALSE
+    # Therefore the attributes will be removed for a standard subscripted table
+    expect_null(attr(regular.pd.with.subscripting[["data"]], "statistic"))
+    expect_equal(attr(pd.with.table.select.subscripting[["data"]], "statistic"), "%")
+    # Check data structure is same except for known difference
+    expect_false(identical(subscripted, subscripted.with.table.select))
+    subscripted.with.table.select.copy <- subscripted.with.table.select
+    attr(subscripted.with.table.select.copy, "table.select.subscripted") <- NULL
+    attr(subscripted.with.table.select.copy, "name") <- attr(subscripted, "name")
+    attr(subscripted.with.table.select.copy, "name.original") <- NULL
+    expect_equal(subscripted, subscripted.with.table.select.copy)
 })
