@@ -565,9 +565,9 @@ PrepareData <- function(chart.type,
     if (!tidy && is.array(data) && !is.null(attr(data, "questions")) &&
         is.null(attr(data, "statistic")))
     {
+        qattr <- attr(data, "questions")
         data <- ConvertQTableToArray(data)
-        #attr(data, "statistic") <- dimnames(data)[[3]][1]
-        #attr(data, "multi-stat") <- TRUE
+        attr(data, "questions") <- qattr
     }
     if (sort.rows)
         attr(data, "sorted.rows") <- TRUE
