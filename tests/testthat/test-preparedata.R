@@ -1658,6 +1658,42 @@ test_that("Question attribute is not accidently dropped",
     expect_error(res <- PrepareData("Column", input.data.table = tb), NA)
     expect_equal(attr(res$data, "questions"), c("Facility Type - Coded1", "Pass"))
     expect_equal(res$data[1], c(Pantry = 86.5979381443299))
+
+    tb.mult.stats <- structure(c(12.375, 11.75, 10.375, 11.375, 11.625,
+    7.875, 11.875, 15.75, 7, 100, 99, 94, 83, 91, 93, 63, 95, 126, 56, 800),
+    dim = c(10L, 2L), dimnames = list(c("18 to 24", "25 to 29", "30 to 34",
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
+    "NET"), c("%", "Count")), class = c("matrix", "array", "QTable"),
+    dimnets = list(10L), dimduplicates = list(10L), span = list(
+    rows = structure(list(c("18 to 24", "25 to 29", "30 to 34",
+    "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
+    "65 or more", "NET")), class = "data.frame", names = "", row.names = c(NA,
+    10L)), columns = structure(list(c("%", "Count")), class = "data.frame", names = "", row.names = 1:2)), basedescriptiontext = "sample size = 800", basedescription = list(
+    Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+    Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+    FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+    significancearrowratio = structure(c(0, 0, 0, 0, 0, 0.465295629820051,
+    0, 0.74293059125964, 0.588688946015424, 1), dim = 10L), significancedirection = structure(c("None",
+    "None", "None", "None", "None", "Down", "None", "Up", "Down",
+    "Up"), dim = 10L), significancefontsizemultiplier = structure(c(1,
+    1, 1, 1, 1, 0.355871886120996, 1, 3.89, 0.303951367781155,
+    4.89), dim = 10L), significanceissignificant = structure(c(FALSE,
+    FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, TRUE, TRUE
+    ), dim = 10L), significanceargbcolor = structure(c(-8355712L,
+    -8355712L, -8355712L, -8355712L, -8355712L, -65536L, -8355712L,
+    -16776961L, -65536L, -16776961L), dim = 10L), backgroundargbcolor = structure(c(0L,
+    0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L), dim = 10L), zstatistic = structure(c(1.1375,
+    0.575, -0.6625, 0.237500000000001, 0.462500000000001, -2.9125,
+    0.6875, 4.175, -3.7, 80), dim = 10L), pcorrected = structure(c(0.255329324592568,
+    0.565291296994401, 0.507650834828445, 0.812268919201514,
+    0.643722802327307, 0.00358548200450471, 0.491767700760523,
+    0.0000297986053738875, 0.000215599466954778, 0), dim = 10L)),
+    class = "data.frame", row.names = c(NA, 10L)), questiontypes = "PickOne",
+    footerhtml = "Age SUMMARY&lt;br /&gt;sample size = 800; 95% confidence level",
+    name = "table.Age.2", questions = c("Age","SUMMARY"))
+    pd <- PrepareData("Bar", input.data.table = tb.mult.stats, tidy = FALSE, signif.append = FALSE)
+    expect_equal(attr(pd$data, "questions"), c("Age", "SUMMARY"))
+    expect_equal(dimnames(pd$data)[[3]][1], "%")
 })
 
 test_that("Dimensions are dropped consistently",
