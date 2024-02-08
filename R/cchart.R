@@ -847,9 +847,9 @@ getHexCode <- function(color, opacity)
 {
     if (!(opacity >= 0 && opacity <= 1))
         return(color)
-    if (substr(color, 0, 1) == '#' && nchar(color) == 7)
+    if (startsWith(color, "#") && nchar(color) == 7)
         return(sprintf("%s%02X", color, round(opacity * 255)))
-    
+
     # Returns grey if color is not recognized - matches checkColors
     col.as.rgb <- try(t(col2rgb(color, alpha = TRUE)), silent = TRUE)
     if (inherits(col.as.rgb, "try-error"))
