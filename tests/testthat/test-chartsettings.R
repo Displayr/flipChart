@@ -187,7 +187,7 @@ test_that("Chart settings",
             Index = 7), list(BackgroundColor = "#EC83BAB2", Index = 8),
             list(BackgroundColor = "#999999B2", Index = 9)))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor, "#FF0000")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor, "#FF0000FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.750018750468762)
     expect_equal(attr(res, "ChartSettings")$GapWidth, 40)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
@@ -303,3 +303,14 @@ test_that("Legend position",
     expect_equal(attr(viz, "ChartSettings")$Legend$Position, "Right")
 })
 
+test_that("Color opacity",
+{
+    viz <- CChart("Bar", dat.2d, append.data = TRUE,
+        colors=c("#FF000080", "#00FF00", "blue"), opacity = 0.05,
+        marker.border.width = 2, marker.border.color = "#222222", marker.border.opacity = 0.5)
+    expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#FF000006")
+    expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[2]]$BackgroundColor, "#00FF000D")
+    expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$BackgroundColor, "#0000FF0D")
+    expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineColor, "#22222280")
+    expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 1.500, tol = 1e-3)
+})

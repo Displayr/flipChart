@@ -561,7 +561,7 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type %in% c("Pie", "Donut"))
         tmp.line.color <- args$pie.border.color
     else if (!is.null(args$marker.border.opacity))
-        tmp.line.color <- args$marker.border.color
+        tmp.line.color <- getHexCode(args$marker.border.color, args$marker.border.opacity)
     if (is.null(tmp.line.color) || all(is.na(tmp.line.color)))
         tmp.line.color <- "#FFFFFF"
     tmp.line.color <- rep(tmp.line.color, length = tmp.n)
@@ -633,8 +633,8 @@ getPPTSettings <- function(chart.type, args, data)
         # with many CustomPoints
         tmp.colors <- list()
         for (i in seq_along(args$colors))
-            tmp.colors[[i]] <- list(Index = i - 1,
-                BackgroundColor = getHexCode(args$colors[i], tmp.opacity))
+            tmp.colors[[i]] <- list(BackgroundColor = getHexCode(args$colors[i], tmp.opacity),
+                    Index = i - 1)
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
@@ -845,7 +845,7 @@ px2pt <- function(x)
 
 getHexCode <- function(color, opacity)
 {
-    if (!(opacity >= 0 && opacity < 1))
+    if (!(opacity >= 0 && opacity <= 1))
         return(color)
     if (substr(color, 0, 1) == '#' && nchar(color) == 7)
         return(sprintf("%s%02X", color, round(opacity * 255)))
@@ -855,7 +855,7 @@ getHexCode <- function(color, opacity)
     if (inherits(tmp, "try-error"))
         return ('#CCCCCC')
     # If color is 8-digit hex than multiply opacity - matches plotly::toRGB
-    return(rgb(t(tmp), alpha = opacity * tmp["alpha",], maxColorValue = 255)
+    return(rgb(t(tmp), alpha = round(opacity * tmp["alpha",]), maxColorValue = 255))
 
 }
 
