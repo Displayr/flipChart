@@ -856,7 +856,6 @@ getHexCode <- function(color, opacity)
         return ('#CCCCCC')
     # If color is 8-digit hex than multiply opacity - matches plotly::toRGB
     return(rgb(t(tmp), alpha = round(opacity * tmp["alpha",]), maxColorValue = 255))
-
 }
 
 # This function determines whether the font should be shown in black or white
