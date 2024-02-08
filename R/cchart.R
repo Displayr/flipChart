@@ -633,8 +633,8 @@ getPPTSettings <- function(chart.type, args, data)
         # with many CustomPoints
         tmp.colors <- list()
         for (i in seq_along(args$colors))
-            tmp.colors[[i]] <- list(BackgroundColor = sprintf("%s%X",
-                args$colors[i], round(tmp.opacity*255)), Index = i - 1)
+            tmp.colors[[i]] <- list(Index = i - 1,
+                BackgroundColor = getHexCode(args$colors[i], round(tmp.opacity*255)))
         series.settings <- list(list(
             CustomPoints = tmp.colors,
             ShowDataLabels = tmp.data.label.show,
@@ -649,7 +649,7 @@ getPPTSettings <- function(chart.type, args, data)
     } else
         series.settings <- lapply(1:length(args$colors),
         function(i) {list(
-            BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)),
+            BackgroundColor = getHexCode(args$colors[i], round(tmp.opacity*255)),
             ShowDataLabels = tmp.data.label.show,
             ShowCategoryNames = tmp.data.label.show.category.labels,
             DataLabelsFont = list(family = args$data.label.font.family,
@@ -666,7 +666,7 @@ getPPTSettings <- function(chart.type, args, data)
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
-                BackgroundColor = sprintf("%s%X", args$colors[i], round(tmp.opacity*255)))
+                BackgroundColor = getHexCode(args$colors[i], round(tmp.opacity*255)))
 
     # Initialise return output
     res <- list()
@@ -694,8 +694,7 @@ getPPTSettings <- function(chart.type, args, data)
             Position = legend.position)
     if (isTRUE(nchar(args$background.fill.color) > 0) &&
         args$background.fill.color != "transparent")
-        res$BackgroundColor <- sprintf("%s%X", args$background.fill.color,
-                                       round(args$background.fill.opacity * 255))
+        res$BackgroundColor <- getHexCode(args$background.fill.color, round(args$background.fill.opacity * 255))
 
     # Chart and Axis titles always seem to be ignored
     # Waiting on RS-7208
@@ -844,6 +843,21 @@ px2pt <- function(x)
     return(x/1.3333)
 }
 
+getHexCode <- function(color, opacity)
+{
+    if (substr(color, 0, 1) != '#' || !(opacity >= 0 && opacity <= 1))
+        return(color)
+    if (nchar(color) == 9)
+        return(color)
+    if (nchar(color) == 7)
+        return(sprintf("%s%02X", colors, round(opacity * 255)))
+    if (nchar(color) == 4)
+    {
+        hex <- strsplit(color, "")[[1]]
+        return(sprintf("#%s%s%s%s%s%s%02X", hex[2], hex[2], hex[3], hex[3], 
+            hex[4], hex[4], round(opacity * 255)))
+    }
+}
 
 # This function determines whether the font should be shown in black or white
 # on the brightness of background. The coefficients are the same as in
