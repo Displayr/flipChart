@@ -361,6 +361,8 @@ PrepareData <- function(chart.type,
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
     chart.title <- attr(data, "title")
+    cat("line 364\n")
+    print(attr(data, "span"))
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -403,6 +405,8 @@ PrepareData <- function(chart.type,
     }
     if (filt)
         attr(data, "assigned.rownames") <- FALSE
+    cat("line 408\n")
+    print(attr(data, "span"))
 
     ###########################################################################
     # 3. Aggregate the data if so required.
@@ -428,6 +432,8 @@ PrepareData <- function(chart.type,
         if (crosstab)
             group.by.last <- TRUE
     }
+    cat("line 435\n")
+    print(attr(data, "span"))
 
     ###########################################################################
     # 4. Tailoring the data for the chart type.
@@ -467,6 +473,8 @@ PrepareData <- function(chart.type,
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
                    transpose, group.by.last || first.aggregate,
                    hide.empty.rows, hide.empty.columns, date.format)
+    cat("line 476\n")
+    print(attr(data, "span"))
 
     # Sort must happen AFTER tidying
     data <- RearrangeRowsColumns(data,
@@ -497,6 +505,8 @@ PrepareData <- function(chart.type,
 
     if (scatter.mult.yvals)
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
+    cat("line 508\n")
+    print(attr(data, "span"))
 
     ###########################################################################
     # Finalizing the result.
@@ -572,6 +582,8 @@ PrepareData <- function(chart.type,
         attr(data, "sorted.rows") <- TRUE
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
+    cat("line 585\n")
+    print(attr(data, "span"))
 
     list(data = data,
          weights = weights,
