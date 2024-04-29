@@ -574,17 +574,15 @@ PrepareData <- function(chart.type,
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
-    res <- list(data = data,
+    cat("line 577: span:")
+    print(attr(data, "span"))
+    list(data = data,
          weights = weights,
          values.title = values.title,
          categories.title = categories.title,
          chart.title = chart.title,
          chart.footer = attr(data, "footer", exact = TRUE),
          scatter.variable.indices = attr(data, "scatter.variable.indices"))
-    span <- attr(data, "span", exact = TRUE)
-    if (!is.null(span))
-        attr(res, "span") <- span
-    return (res)
 }
 
 replaceDimNames <- function(x, dim, labels)
