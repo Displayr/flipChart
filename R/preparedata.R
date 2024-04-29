@@ -404,7 +404,6 @@ PrepareData <- function(chart.type,
     if (filt)
         attr(data, "assigned.rownames") <- FALSE
 
-
     ###########################################################################
     # 3. Aggregate the data if so required.
     ###########################################################################
@@ -499,7 +498,6 @@ PrepareData <- function(chart.type,
     if (scatter.mult.yvals)
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
 
-
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
@@ -553,9 +551,10 @@ PrepareData <- function(chart.type,
     if (chart.type == "Table" && !is.null(attr(data, "statistic")) &&
         (is.null(dim(data)) || length(dim(data)) == 1))
     {
-        tmp <- attr(data, "statistic")
-        data <- as.matrix(data)
-        attr(data, "statistic") <- tmp
+        data <- CopyAttributes(as.matrix(data), data)
+        #tmp <- attr(data, "statistic")
+        #data <- as.matrix(data)
+        #attr(data, "statistic") <- tmp
     }
 
     # Modify multi-stat QTables so they are 3 dimensional arrays
@@ -574,8 +573,6 @@ PrepareData <- function(chart.type,
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
-    cat("line 577: span:")
-    print(attr(data, "span"))
     list(data = data,
          weights = weights,
          values.title = values.title,
