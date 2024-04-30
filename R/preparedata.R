@@ -567,12 +567,7 @@ PrepareData <- function(chart.type,
     # by converting to a matrix if necessary
     if (chart.type == "Table" && !is.null(attr(data, "statistic")) &&
         (is.null(dim(data)) || length(dim(data)) == 1))
-    {
         data <- CopyAttributes(as.matrix(data), data)
-        #tmp <- attr(data, "statistic")
-        #data <- as.matrix(data)
-        #attr(data, "statistic") <- tmp
-    }
 
     # Modify multi-stat QTables so they are 3 dimensional arrays
     # and statistic attribute from the primary statistic
@@ -1456,7 +1451,6 @@ transformTable <- function(data,
     # when TidyTabularData is called
     if (gsub(" ", "", chart.type) == "GeographicMap" && is.data.frame(data))
         data <- CopyAttributes(as.matrix(data), data)
-    is.qtable <- inherits(data, "QTable")
     cat("line 1461\n")
     print(class(data))
 
@@ -1465,8 +1459,6 @@ transformTable <- function(data,
     if (tidy && !chart.type %in% c("Venn", "Sankey", "Heat") &&
         !isScatter(chart.type) && !isDistribution(chart.type))
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
-    if (is.qtable && !inherits(data, "QTable"))
-        class(data) <- c(class(data), "QTable")
     cat("line 1466\n")
     print(class(data))
 
