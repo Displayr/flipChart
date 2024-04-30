@@ -334,8 +334,6 @@ PrepareData <- function(chart.type,
                             input.data.raw, input.data.pasted, input.data.other)
     # Assign the data to 'data'
     data <- processInputData(input.data.table, subset, weights)
-    cat("line 336\n")
-    print(class(data))
     if (is.null(data))
         data <- input.data.tables
     if (is.null(data))
@@ -363,9 +361,6 @@ PrepareData <- function(chart.type,
     if (is.data.frame(data))
         names(data) <- if (show.labels) Labels(data) else Names(data)
     chart.title <- attr(data, "title")
-    cat("line 364\n")
-    print(class(data))
-    print(attr(data, "span"))
 
     ###########################################################################
     # 2. Filters the data and/or removes missing values
@@ -408,9 +403,7 @@ PrepareData <- function(chart.type,
     }
     if (filt)
         attr(data, "assigned.rownames") <- FALSE
-    cat("line 408\n")
-    print(class(data))
-    print(attr(data, "span"))
+
 
     ###########################################################################
     # 3. Aggregate the data if so required.
@@ -436,9 +429,6 @@ PrepareData <- function(chart.type,
         if (crosstab)
             group.by.last <- TRUE
     }
-    cat("line 435\n")
-    print(class(data))
-    print(attr(data, "span"))
 
     ###########################################################################
     # 4. Tailoring the data for the chart type.
@@ -478,9 +468,6 @@ PrepareData <- function(chart.type,
                    hide.output.threshold, hide.values.threshold, hide.rows.threshold, hide.columns.threshold,
                    transpose, group.by.last || first.aggregate,
                    hide.empty.rows, hide.empty.columns, date.format)
-    cat("line 476\n")
-    print(class(data))
-    print(attr(data, "span"))
 
     # Sort must happen AFTER tidying
     data <- RearrangeRowsColumns(data,
@@ -511,9 +498,7 @@ PrepareData <- function(chart.type,
 
     if (scatter.mult.yvals)
         data <- convertScatterMultYvalsToDataFrame(data, input.data.raw, show.labels, date.format)
-    cat("line 508\n")
-    print(class(data))
-    print(attr(data, "span"))
+
 
     ###########################################################################
     # Finalizing the result.
@@ -584,8 +569,6 @@ PrepareData <- function(chart.type,
         attr(data, "sorted.rows") <- TRUE
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
-    cat("line 585\n")
-    print(attr(data, "span"))
 
     list(data = data,
          weights = weights,
@@ -1345,9 +1328,6 @@ RearrangeRowsColumns <- function(data,
     data <- RemoveRowsAndOrColumns(data,
                 row.names.to.remove = row.names.to.remove,
                 column.names.to.remove = column.names.to.remove, split = split)
-    cat("after RemoveRowsAndColumns\n")
-    print(class(data))
-    print(attr(data, "span"))
 
     # Keep last to retain order from sorting
     data <- SelectRows(data, first.k = first.k.rows, last.k = last.k.rows)
@@ -1403,8 +1383,6 @@ transformTable <- function(data,
         data <- if (isListOrRaggedArray(data)) lapply(data, HideEmptyColumns)
                 else HideEmptyColumns(data)
     }
-    cat("line 1413\n")
-    print(class(data))
 
     # Switching rows and columns
     # This is the first operation performed to ensure that both
@@ -1421,8 +1399,6 @@ transformTable <- function(data,
         if (!is.null(old.span))
             attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
     }
-    cat("line 1431\n")
-    print(class(data))
 
     # Checking sample sizes (if available)
     # This needs to happen after row/columns have been (de)selected
@@ -1444,23 +1420,18 @@ transformTable <- function(data,
         if (!is.null(tmp.names))
             rownames(data) <- tmp.names
     }
-    cat("line 1454\n")
-    print(class(data))
 
     # Convert to matrix to avoid state names from being turned into numeric values
     # when TidyTabularData is called
     if (gsub(" ", "", chart.type) == "GeographicMap" && is.data.frame(data))
         data <- CopyAttributes(as.matrix(data), data)
-    cat("line 1461\n")
-    print(class(data))
 
     # This must happen after sample sizes have been used
     # (only first statistic is retained after tidying)
     if (tidy && !chart.type %in% c("Venn", "Sankey", "Heat") &&
         !isScatter(chart.type) && !isDistribution(chart.type))
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
-    cat("line 1466\n")
-    print(class(data))
+
 
     if (!grepl("^No date", date.format) && date.format != "Automatic")
     {
