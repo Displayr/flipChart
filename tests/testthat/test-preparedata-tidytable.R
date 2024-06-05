@@ -577,7 +577,16 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
 
         res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
                     transpose = TRUE)
-        # Currently losing column spans
+        expect_equal(colnames(res$data), c("Male", "Female", "18 to 24",
+                "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+                "50 to 54", "55 to 64", "65 or more"))
+        expect_equal(attr(res$data, "span"), list(rows = NULL,
+                columns = structure(list(c("Gender", "Gender",
+                "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"),
+                c("Male", "Female", "18 to 24", "25 to 29", "30 to 34", "35 to 39",
+                "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more")),
+                names = c("", ""), row.names = c(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L,
+                10L, 11L, 12L), class = "data.frame")))
 
         res <- PrepareData("Table", input.data.table = tb2d.with.rowspan, tidy = FALSE)
         expect_equal(attr(res$data, "span"),
