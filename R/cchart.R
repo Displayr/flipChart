@@ -274,7 +274,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         chart.type <- "Pyramid"
     if (multi.color.series && chart.type %in% c("Bar", "Column"))
         chart.type <- paste0(chart.type, "MultiColor")
-    user.args <- if (small.multiples) list(chart.type = chart.type, ...)
+    if (chart.type == "Scatter") # This is only for testing; for release, Area.R in Plugins should set chart.type to "CombinedScatter"
+        chart.type <- "CombinedScatter"
+    user.args <- if (small.multiples && chart.type == "CombinedScatter") list(chart.type = chart.type, ...)
                  else list(...)
 
     # Try to set up data to show statistical significance
@@ -344,7 +346,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
 
     # Convert data after the charting function has been applied
-    if (chart.type %in% c("Scatter", "Bubble"))
+    if (chart.type %in% c("Scatter", "Bubble", "CombinedScatter"))
     {
         #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
