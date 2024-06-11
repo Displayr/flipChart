@@ -568,7 +568,8 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
                     transpose = TRUE, row.names.to.remove = NULL,
                     column.names.to.remove = NULL)
         expect_equal(attr(res$data, "span"),
-            list(rows = NULL, columns = structure(list(c("Gender", "Gender",
+            list(rows = structure(list(), names = character(0), row.names = integer(0), class = "data.frame"),
+                columns = structure(list(c("Gender", "Gender",
                 "Gender", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age",
                 "Age", "Age"), c("Male", "Female", "NET", "18 to 24", "25 to 29",
                 "30 to 34", "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64",
@@ -580,7 +581,9 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
         expect_equal(colnames(res$data), c("Male", "Female", "18 to 24",
                 "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
                 "50 to 54", "55 to 64", "65 or more"))
-        expect_equal(attr(res$data, "span"), list(rows = NULL,
+        expect_equal(attr(res$data, "span"), list(
+                rows = structure(list(), names = character(0),
+                row.names = integer(0), class = "data.frame"),
                 columns = structure(list(c("Gender", "Gender",
                 "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"),
                 c("Male", "Female", "18 to 24", "25 to 29", "30 to 34", "35 to 39",

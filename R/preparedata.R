@@ -1389,15 +1389,19 @@ transformTable <- function(data,
     # hide.rows.threshold and row.names.to.remove refer to rows AFTER tranposing
     if (isTRUE(transpose))
     {
-        old.span <- attr(data, "span", exact = TRUE)
         if (length(dim(data)) > 2)
+        {
+            # Need to manually handle attributes for 3-dimensional array
+            # Otherwise for handled by verbs (for QTables)
+            old.span <- attr(data, "span", exact = TRUE)
             new.data <- aperm(data, c(2, 1, 3))
+            data <- CopyAttributes(new.data, data)
+            attr(data, "questions") <- rev(attr(data, "questions"))
+            if (!is.null(old.span))
+                attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
+        }
         else
-            new.data <- t(data)
-        data <- CopyAttributes(new.data, data)
-        attr(data, "questions") <- rev(attr(data, "questions"))
-        if (!is.null(old.span))
-            attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
+            data <- t(data)
     }
 
     # Checking sample sizes (if available)
