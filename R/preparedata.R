@@ -552,7 +552,11 @@ PrepareData <- function(chart.type,
     # by converting to a matrix if necessary
     if (chart.type == "Table" && !is.null(attr(data, "statistic")) &&
         (is.null(dim(data)) || length(dim(data)) == 1))
-        data <- CopyAttributes(as.matrix(data), data)
+    {
+        tmp <- attr(data, "statistic")
+        data <- as.matrix(data)
+        attr(data, "statistic") <- tmp
+    }
 
     # Modify multi-stat QTables so they are 3 dimensional arrays
     # and statistic attribute from the primary statistic
@@ -1072,7 +1076,7 @@ processInputData <- function(x, subset, weights)
     # Try to use S3 method to extract data
     x <- ExtractChartData(x)
     n.dim <- length(dim(x)) - isQTableWithMultStatistic(x)
-    if (n.dim > 2)
+    if (n.dim >= 2)
         x <- FlattenQTable(x)
 
     if (hasUserSuppliedRownames(x))
@@ -1390,18 +1394,11 @@ transformTable <- function(data,
     if (isTRUE(transpose))
     {
         if (length(dim(data)) > 2)
-        {
-            # Need to manually handle attributes for 3-dimensional array
-            # Otherwise for handled by verbs (for QTables)
-            old.span <- attr(data, "span", exact = TRUE)
             new.data <- aperm(data, c(2, 1, 3))
-            data <- CopyAttributes(new.data, data)
-            attr(data, "questions") <- rev(attr(data, "questions"))
-            if (!is.null(old.span))
-                attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
-        }
         else
-            data <- t(data)
+            new.data <- t(data)
+        data <- CopyAttributes(new.data, data)
+        attr(data, "questions") <- rev(attr(data, "questions"))
     }
 
     # Checking sample sizes (if available)
