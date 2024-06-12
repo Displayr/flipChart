@@ -25,11 +25,11 @@ Imports:
     flipFormat,
     flipStandardCharts (>= 1.30.0),
     flipStatistics,
-    flipTables (>= 2.8.8),
+    flipTables (>= 2.8.7),
     flipTime,
     flipTransformations (>= 1.10.0),
     flipU (>= 1.5.5),
-    verbs (>= 0.15.10)
+    verbs (>= 0.15.9)
 Remotes:
     Displayr/plotly,
     Displayr/flipChartBasics,
