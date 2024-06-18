@@ -276,9 +276,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         chart.type <- paste0(chart.type, "MultiColor")
     if (chart.type == "Scatter") # This is only for testing; for release, Area.R in Plugins should set chart.type to "CombinedScatter"
         chart.type <- "CombinedScatter"
-    if (small.multiples && chart.type == "CombinedScatter") small.multiples <- FALSE
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
+    if (chart.type == "CombinedScatter" && !small.multiples)
+        user.args$scatter.groups.column <- NULL
 
     # Try to set up data to show statistical significance
     # Or give warning message if input data does not contain info
@@ -977,8 +978,7 @@ getFunctionAndParameters <- function(chart.function.name, small.multiples)
     parameters <- formalArgs(chart.function)
     p.1 <- parameters[1]
     p.o <- parameters[-1]
-
-    if (small.multiples)
+    if (small.multiples && chart.function.name != "CombinedScatter")
     {
         chart.function <- get0("SmallMultiples", mode = "function")
         tmp.param <- formalArgs(chart.function)
