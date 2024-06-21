@@ -3090,3 +3090,75 @@ test_that("DS-5360 Subscripted Table Select outputs don't get nerfed", {
     attr(subscripted.with.table.select.copy, "name.original") <- NULL
     expect_equal(subscripted, subscripted.with.table.select.copy)
 })
+
+test_that("1d tables survive PrepareData", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, env = .GlobalEnv)
+    on.exit(rm(ALLOW.QTABLE.CLASS, envir = .GlobalEnv))
+    qtable <- structure(
+        c(A = 10, B = NA, C = 70, NET = NA),
+        statistic = "%",
+        dim = 4L,
+        dimnames = list( c("A", "B", "C", "NET")),
+        class = c("array", "QTable"),
+        dimnets = list(4L),
+        dimduplicates = list(4L),
+        span = list(
+            rows = data.frame(c("A", "B", "C", "NET"), fix.empty.names = FALSE)
+        ),
+        basedescriptiontext = "sample size = from 0 to 10; total sample size = 10; 10 missing",
+        basedescription = list(
+            Minimum = 0L, Maximum = 10L, Range = TRUE, Total = 10L, Missing = 10L,
+            EffectiveSampleSize = 10L, EffectiveSampleSizeProportion = 100, FilteredProportion = 0
+        ),
+        QStatisticsTestingInfo = data.frame(
+            significancearrowratio = structure(c(0, 0, 0, 0), dim = 4L),
+            significancedirection = structure(c("None", "None", "None", "None"), dim = 4L),
+            significancefontsizemultiplier = structure(c(1, 1, 1, 1), dim = 4L),
+            significanceissignificant = structure(c(FALSE, FALSE, FALSE, FALSE), dim = 4L),
+            significanceargbcolor = structure(c(-8355712L, -8355712L, -8355712L, -8355712L), dim = 4L),
+            backgroundargbcolor = structure(c(0L, 0L, 0L, 0L), dim = 4L),
+            zstatistic = structure(c(-1.93649167310371, NaN, 1.93649167310371, NaN), dim = 4L),
+            pcorrected = structure(c(0.0528075114161136, NaN, 0.0528075114161137, NaN), dim = 4L)
+        ),
+        questiontypes = "PickAny",
+        footerhtml = paste0(
+            "Variables A, B, C, D 2 SUMMARYsample size = from 0 to 10; total sample size = 10; ",
+            "10 missing; 95% confidence level"
+        ),
+        name = "Variables A, B, C, D 2",
+        questions = c("Variables A, B, C, D 2", "SUMMARY")
+    )
+    pd <- PrepareData(chart.type = "Bar", input.data.table = qtable)
+    pd |> expect_equal(
+        list(
+            data = structure(
+                c(A = 10, C = 70),
+                statistic = "%",
+                dimnets = list(4L),
+                dimduplicates = list(4L),
+                span = list(
+                    rows = data.frame(c("A", "B", "C", "NET"), fix.empty.names = FALSE)
+                ),
+                basedescriptiontext = "sample size = from 0 to 10; total sample size = 10; 10 missing",
+                basedescription = list(
+                    Minimum = 0L, Maximum = 10L, Range = TRUE, Total = 10L, Missing = 10L,
+                    EffectiveSampleSize = 10L, EffectiveSampleSizeProportion = 100, FilteredProportion = 0
+                ),
+                questiontypes = "PickAny",
+                footerhtml = paste0(
+                    "Variables A, B, C, D 2 SUMMARYsample size = from 0 to 10; total sample size = 10; ",
+                    "10 missing; 95% confidence level"
+                ),
+                name = "Variables A, B, C, D 2",
+                questions = c("Variables A, B, C, D 2", "SUMMARY"),
+                assigned.rownames = TRUE
+            ),
+            weights = NULL,
+            values.title = "%",
+            categories.title = "Variables A, B, C, D 2",
+            chart.title = NULL,
+            chart.footer = NULL,
+            scatter.variable.indices = NULL
+        )
+    )
+})
