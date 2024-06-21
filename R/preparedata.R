@@ -459,6 +459,7 @@ PrepareData <- function(chart.type,
     if (has.statistics.testing.info && !signif.append)
         attr(data, "QStatisticsTestingInfo") <- NULL
 
+    data <- unclassQTable(data)
     # Do not drop 1-column table to keep name for legend
     drop <- (tidy && (chart.type %in% c("Pie", "Donut") ||
             !any(nchar(select.columns), na.rm = TRUE) &&
