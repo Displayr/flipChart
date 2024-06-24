@@ -348,7 +348,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
 
     # Convert data after the charting function has been applied
-    if (chart.type %in% c("Scatter", "Bubble", "CombinedScatter"))
+    if (isScatter(chart.type))
     {
         #result <- addScatterAxisWarning(result, x) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
@@ -436,7 +436,7 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
         chart.labels$PrimaryAxisTitle <- categories.title
     if (any(nzchar(values.title)))
         chart.labels$ValueAxisTitle <- values.title
-    if (!chart.type %in% c("Scatter", "Bubble") && any(nzchar(data.label.format)))
+    if (!isScatter(chart.type) && any(nzchar(data.label.format)))
     {
         numformat <- convertToPPTNumFormat(data.label.format)
         if (!is.null(numformat) && length(chart.labels$SeriesLabels) > 0)
@@ -531,7 +531,7 @@ getPPTSettings <- function(chart.type, args, data)
     {
         if (chart.type %in% c("Area", "Radar", "Palm") && !tmp.is.stacked)
             tmp.opacity <- 0.4
-        else if (chart.type == "Scatter" && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
+        else if (isScatter(chart.type) && isTRUE(attr(data, "scatter.variable.indices")["sizes"] <= NCOL(data)))
             tmp.opacity <- 0.4
         else
             tmp.opacity <- 1.0
@@ -572,7 +572,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     tmp.data.label.show <- isTRUE(args$data.label.show)
     tmp.data.label.show.category.labels <- FALSE
-    if (chart.type == "Scatter" && !isTRUE(args$scatter.labels.as.hovertext))
+    if (isScatter(chart.type) && !isTRUE(args$scatter.labels.as.hovertext))
         tmp.data.label.show <- TRUE
     if (chart.type %in% c("Donut", "Pie"))
     {
@@ -590,13 +590,14 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.data.label.position <- "InsideEnd"
     else if (chart.type %in% c("Donut", "Pie"))
         tmp.data.label.position <- "OutsideEnd"
-    else if (chart.type == "Scatter")
+    else if (isScatter(chart.type))
         tmp.data.label.position <- "Center"
 
     # Behaviour of 'Automatically' set data label font colors
     # change depending on the chart type
     tmp.data.label.font.color <- ConvertCommaSeparatedStringToVector(args$data.label.font.color)
-    if (chart.type %in% c("Line", "Scatter") && isTRUE(args$data.label.font.autocolor))
+    if (chart.type %in% c("Line", "Scatter", "Bubble", "CombinedScatter") &&
+        isTRUE(args$data.label.font.autocolor))
         tmp.data.label.font.color <- args$colors
     else if (tmp.is.stacked && isTRUE(args$data.label.font.autocolor))
     {
@@ -616,7 +617,7 @@ getPPTSettings <- function(chart.type, args, data)
             ShowDataLabels = FALSE,
             BackgroundColor = args$density.color))
 
-    } else if (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical))
+    } else if (isScatter(chart.type) && !isTRUE(args$scatter.colors.as.categorical))
     {
         # When scatterplots use colors as a numerical scale
         # we can assume a single template series
@@ -666,7 +667,7 @@ getPPTSettings <- function(chart.type, args, data)
     tmp.n <- length(series.settings)
 
 
-    if ((chart.type == "Scatter" && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
+    if ((isScatter(chart.type) && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
         for (i in 1:tmp.n)
             series.settings[[i]]$Marker = list(Size = args$marker.size,
                 OutlineStyle = "None",
@@ -774,7 +775,7 @@ getPPTSettings <- function(chart.type, args, data)
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
     if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
-        (chart.type == "Scatter" && !isTRUE(args$scatter.colors.as.categorical)))
+        (isScatter(chart.type) && !isTRUE(args$scatter.colors.as.categorical)))
         res$ShowLegend <- FALSE
     if (chart.type == "Scatter" && tmp.data.label.show && isTRUE(args$grid.show))
     {
@@ -788,7 +789,7 @@ getPPTSettings <- function(chart.type, args, data)
 
     # There are some issues with Scatterplot exporting
     # See RS-7154 - try master.displayr.com
-    if (chart.type %in% c("Scatter"))
+    if (isScatter(chart.type))
     {
         res$ValueAxis$Crosses <- "Minimum"
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
