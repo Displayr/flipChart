@@ -274,6 +274,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         chart.type <- "Pyramid"
     if (multi.color.series && chart.type %in% c("Bar", "Column"))
         chart.type <- paste0(chart.type, "MultiColor")
+    if (chart.type == "Scatter") # This is only for testing; for release, Area.R in Plugins should set chart.type to "CombinedScatter"
+        chart.type <- "CombinedScatter"
     user.args <- if (small.multiples) list(chart.type = chart.type, ...)
                  else list(...)
     if (chart.type == "CombinedScatter" && !small.multiples)
