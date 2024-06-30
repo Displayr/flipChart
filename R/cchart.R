@@ -897,8 +897,8 @@ getColorsAsNumericScale <- function(data, colors, opacity)
     color.vec <- rgb(color.func(dat.scaled), alpha = 255 * opacity,
         maxColorValue = 255)
     data.points <- lapply(not.na, function(i) {list(Index = i - 1,
-        BackgroundColor = color.vec[i],
-        Marker = list(BackgroundColor = color.vec[i]))})
+        Marker = list(BackgroundColor = color.vec[i],
+                      Style = "Circle"))})
     return(data.points)
 }
 
