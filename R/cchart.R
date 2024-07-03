@@ -770,7 +770,7 @@ getPPTSettings <- function(chart.type, args, data)
         res$FirstSliceAngle <- 270
     if (chart.type %in% c("Bar", "Column", "Pyramid", "BarMultiColor", "ColumnMultiColor"))
     {
-        if (!tmp.is.stacked && NCOL(data) > 1 && !is.null(args$bar.group.gap)
+        if (!tmp.is.stacked && NCOL(data) > 1 && !is.null(args$bar.group.gap))
         {
             res$SeriesOverlap = min(1.0, args$bar.group.gap / (1 - args$bar.group.gap)) * -100
             res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
