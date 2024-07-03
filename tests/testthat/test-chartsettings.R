@@ -102,7 +102,7 @@ test_that("Chart settings",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
-    expect_equal(attr(res, "ChartSettings")$GapWidth, 30)
+    expect_equal(attr(res, "ChartSettings")$GapWidth, 42.85714, tolerance = 1e-3)
 
     res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
             shape = "Curved", line.type = "Dot", line.thickness = "1,2,3",
@@ -189,7 +189,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor, "#FF0000FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.750018750468762)
-    expect_equal(attr(res, "ChartSettings")$GapWidth, 40)
+    expect_equal(attr(res, "ChartSettings")$GapWidth, 66.66667, tolerance = 1e-3)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
 
     res <- CChart("Pyramid", dat.1d[1:4], append.data = TRUE, bar.gap = 0.6,
@@ -200,7 +200,7 @@ test_that("Chart settings",
             list(BackgroundColor = "#4A72A64C", Index = 1), list(BackgroundColor = "#48A4624C",
             Index = 2), list(BackgroundColor = "#7E6E854C", Index = 3)))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
-    expect_equal(attr(res, "ChartSettings")$GapWidth, 60)
+    expect_equal(attr(res, "ChartSettings")$GapWidth, 150)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
     expect_true(grepl("This visualization is of type 'Pyramid' which is not supported by PowerPoint.",
                       attr(res, "ChartWarning")))
