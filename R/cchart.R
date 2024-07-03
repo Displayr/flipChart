@@ -773,8 +773,7 @@ getPPTSettings <- function(chart.type, args, data)
         if (!tmp.is.stacked && NCOL(data) > 1 && !is.null(args$bar.group.gap))
         {
             res$Overlap = min(1.0, args$bar.group.gap / (1 - args$bar.group.gap)) * -100
-            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
-    
+            res$GapWidth = (min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100) + 100
         } else
             res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
     }
