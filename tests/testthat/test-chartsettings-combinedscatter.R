@@ -59,7 +59,7 @@ test_that("ChartSettings - CombinedScatter",
     v.ind <-  c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
     attr(dat, "scatter.variable.indices") <- v.ind
     res <- CChart("CombinedScatter", dat, scatter.colors.as.categorical = FALSE,
-          colors = c("red", "white", "blue"), append.data = TRUE)
+            colors = c("red", "white", "blue"), append.data = TRUE)
     expect_equal(attr(res, "ChartType"), "Bubble")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints, list(
@@ -113,6 +113,27 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 47, Marker = list(BackgroundColor = "#FF585866", Style = "Circle")),
         list(Index = 48, Marker = list(BackgroundColor = "#FF040466", Style = "Circle")),
         list(Index = 49, Marker = list(BackgroundColor = "#FF141466", Style = "Circle"))))
+
+    v.ind <-  c(x = 1, y = 2, sizes = 3, colors = 4, groups = 5)
+    attr(dat, "scatter.variable.indices") <- v.ind
+    res <- CChart("CombinedScatter", dat, scatter.colors.as.categorical = FALSE,
+            scatter.labels.as.hovertext = FALSE, data.label.font.autocolor = TRUE,
+            annotation.list = list(list(type = "Arrow - up",
+            data = "sr", threstype = "above threshold", threshold = "15",
+            color = "red", size = 15, width = 1, font.family = "Arial",
+            font.weight = "normal", font.style = "normal", format = ".2f", prefix = "$"),
+            list(type = "Marker border", data = "sr", threstype = "below threshold",
+            threshold = "3", width = 2, color = "red")),
+            colors = terrain.colors(5), append.data = TRUE)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]],
+        list(Index = 0, Marker = list(BackgroundColor = "#EBB66566", Style = "Circle")))
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[7]],
+        list(Index = 6, Marker = list(BackgroundColor = "#86CB0066",
+        Style = "Circle", OutlineColor = "red", OutlineWidth = 2)))
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[46]],
+        list(Index = 45, Font = list(color = "#0BA900"), Segments = list(
+        list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
+        family = "Arial", bold = FALSE, italic = FALSE), Text = "↑"))))
 
     pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
             "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",

@@ -343,7 +343,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     result <- addChartTypeWarning(result, chart.type, small.multiples)
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
-    chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"))
+    chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
 
     # Convert data after the charting function has been applied
     if (isScatter(chart.type))
@@ -357,11 +357,22 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) &&
             !isFALSE(user.args$data.label.font.autocolor))
         {
+            annot.pts <- attr(result, "ChartLabels")$SeriesLabels[[1]]
+            if (!is.null(annot.pts))
+                annot.pts <- annot.pts$CustomPoints
             tmp.pts <- chart.settings$TemplateSeries[[1]]$CustomPoints
             tmp.lbs <- vector(mode = "list", length = length(tmp.pts))
+            k <- 1
             for (ii in 1:length(tmp.pts))
+            {
                 tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
-                                      Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$BackgroundColor)))
+                    Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$Marker$BackgroundColor)))
+                if (k <= length(annot.pts) && annot.pts[[k]]$Index == tmp.lbs[[ii]]$Index)
+                {
+                    tmp.lbs[[ii]]$Segments <- annot.pts[[k]]$Segments
+                    k <- k + 1
+                }
+            }
             attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
@@ -451,7 +462,7 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
     return(x)
 }
 
-updateLabels <- function(chart.settings, chart.labels)
+updateLabels <- function(chart.settings, chart.labels, custom.points)
 {
     if (!is.null(chart.labels))
     {
@@ -460,6 +471,24 @@ updateLabels <- function(chart.settings, chart.labels)
 
         if (!is.null(chart.labels$ValueAxisTitle))
             chart.settings$ValueAxis$ShowTitle <- TRUE
+    }
+    if (!is.null(custom.points))
+    {
+        n.series <- min(length(chart.settings$TemplateSeries), length(custom.points))
+        for (i in 1:n.series)
+        {
+            if (length(custom.points[[i]]) == 0)
+                next
+            for (j in 1:length(custom.points[[i]]))
+            {
+                if (is.null(custom.points[[i]][[j]]))
+                    next
+                # Append everything except Index
+                # Currently this is only used to add annotation marker borders
+                chart.settings$TemplateSeries[[i]]$CustomPoints[[j]]$Marker <- c(
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[j]]$Marker, custom.points[[i]][[j]][-1])
+            }
+        }
     }
     return(chart.settings)
 }
@@ -777,7 +806,7 @@ getPPTSettings <- function(chart.type, args, data)
             res$Overlap = tmp.gap * -100
             res$GapWidth = min(5.0, (NCOL(data) - 1) * (args$bar.gap / (1 - args$bar.gap) + tmp.gap)) * 100
         } else
-            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
+            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100
     }
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
