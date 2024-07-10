@@ -129,7 +129,7 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 0, Marker = list(BackgroundColor = "#EBB66566", Style = "Circle")))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[7]],
         list(Index = 6, Marker = list(BackgroundColor = "#86CB0066",
-        Style = "Circle", OutlineColor = "red", OutlineWidth = 2)))
+        Style = "Circle", OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")))
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[46]],
         list(Index = 45, Font = list(color = "#0BA900"), Segments = list(
         list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
@@ -142,10 +142,10 @@ test_that("ChartSettings - CombinedScatter",
         type = "Marker border", data = "sr", threstype = "below threshold",
         threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints, list(
-        list(Index = 6, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
-        list(Index = 18, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
-        list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
-        list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2))))
+        list(Index = 6, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
+        list(Index = 18, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
+        list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
+        list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid"))))
 
     pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
             "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",
