@@ -806,7 +806,7 @@ getPPTSettings <- function(chart.type, args, data)
             res$Overlap = tmp.gap * -100
             res$GapWidth = min(5.0, (NCOL(data) - 1) * (args$bar.gap / (1 - args$bar.gap) + tmp.gap)) * 100
         } else
-            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100
+            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
     }
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
