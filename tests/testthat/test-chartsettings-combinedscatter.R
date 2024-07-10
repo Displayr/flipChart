@@ -135,6 +135,18 @@ test_that("ChartSettings - CombinedScatter",
         list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
         family = "Arial", bold = FALSE, italic = FALSE), Text = "↑"))))
 
+    v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
+    attr(dat, "scatter.variable.indices") <- v.ind
+    expect_error(res <- CChart("CombinedScatter", dat, scatter.labels.as.hovertext = TRUE,
+        scatter.colors.column = NULL, annotation.list = list(list(
+        type = "Marker border", data = "sr", threstype = "below threshold",
+        threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints, list(
+        list(Index = 6, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
+        list(Index = 18, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
+        list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2)),
+        list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2))))
+
     pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
             "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",
             "8", "9", "z", "1", "2", "3", "4", "5", "6", "7"), .Dim = c(8L,

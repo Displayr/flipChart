@@ -472,6 +472,10 @@ updateLabels <- function(chart.settings, chart.labels, custom.points)
         if (!is.null(chart.labels$ValueAxisTitle))
             chart.settings$ValueAxis$ShowTitle <- TRUE
     }
+    
+    # Update ChartSettings to incorporate annotation info from flipStandardCharts
+    # that is stored in the CustomPoints attribute
+    # Currently this is only used to add annotation marker borders in CombinedScatter
     if (!is.null(custom.points))
     {
         n.series <- min(length(chart.settings$TemplateSeries), length(custom.points))
@@ -479,14 +483,31 @@ updateLabels <- function(chart.settings, chart.labels, custom.points)
         {
             if (length(custom.points[[i]]) == 0)
                 next
+            
+            k <- 1
             for (j in 1:length(custom.points[[i]]))
             {
                 if (is.null(custom.points[[i]][[j]]))
                     next
-                # Append everything except Index
-                # Currently this is only used to add annotation marker borders
-                chart.settings$TemplateSeries[[i]]$CustomPoints[[j]]$Marker <- c(
-                    chart.settings$TemplateSeries[[i]]$CustomPoints[[j]]$Marker, custom.points[[i]][[j]][-1])
+                
+                tmp.index <- custom.points[[i]][[j]]$Index
+                while (k <= length(chart.settings$TemplateSeries[[i]]$CustomPoints) &&
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Index != tmp.index)
+                    k <- k + 1
+                if (k <= length(chart.settings$TemplateSeries[[i]]$CustomPoints) &&
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Index == tmp.index)
+                {
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- c(
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker, custom.points[[i]][[j]][-1])
+                    k <- k + 1
+                    next
+                }
+                
+                # If no match then append to end
+                k <- length(chart.settings$TemplateSeries[[i]]$CustomPoints) + 1
+                chart.settings$TemplateSeries[[i]]$CustomPoints[[k]] <- list(
+                    Index = tmp.index, Marker = custom.points[[i]][[j]][-1])
+                k <- k + 1
             }
         }
     }
