@@ -147,6 +147,15 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
         list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid"))))
 
+   v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
+    attr(dat, "scatter.variable.indices") <- v.ind
+    expect_error(res <- CChart("CombinedScatter", dat,
+        data.label.font.autocolor = TRUE, scatter.labels.as.hovertext = FALSE,
+        scatter.colors.column = NULL, annotation.list = list(list(
+        type = "Marker border", data = "sr", threstype = "below threshold",
+        threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]], list(ShowValue = TRUE))
+
     pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
             "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",
             "8", "9", "z", "1", "2", "3", "4", "5", "6", "7"), .Dim = c(8L,

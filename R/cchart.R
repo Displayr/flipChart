@@ -365,7 +365,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             k <- 1
             for (ii in 1:length(tmp.pts))
             {
-                tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
+                if (!is.null(tmp.pts[[ii]]$Marker$BackgroundColor))
+                    tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
                     Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$Marker$BackgroundColor)))
                 if (k <= length(annot.pts) && annot.pts[[k]]$Index == tmp.lbs[[ii]]$Index)
                 {
@@ -373,7 +374,8 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                     k <- k + 1
                 }
             }
-            attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
+            if (any(sapply(tmp.lbs, Negate(is.null))))
+                attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
     # Append data used for exporting to PPT/Excel
