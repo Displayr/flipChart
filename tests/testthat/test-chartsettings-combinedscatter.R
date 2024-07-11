@@ -130,8 +130,8 @@ test_that("ChartSettings - CombinedScatter",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[7]],
         list(Index = 6, Marker = list(BackgroundColor = "#86CB0066",
         Style = "Circle", OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")))
-    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[46]],
-        list(Index = 45, Font = list(color = "#0BA900"), Segments = list(
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[4]],
+        list(Index = 45, Segments = list(
         list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
         family = "Arial", bold = FALSE, italic = FALSE), Text = "↑"))))
 
@@ -147,7 +147,7 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
         list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid"))))
 
-   v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
+    v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
     attr(dat, "scatter.variable.indices") <- v.ind
     expect_error(res <- CChart("CombinedScatter", dat,
         data.label.font.autocolor = TRUE, scatter.labels.as.hovertext = FALSE,
@@ -155,6 +155,23 @@ test_that("ChartSettings - CombinedScatter",
         type = "Marker border", data = "sr", threstype = "below threshold",
         threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]], list(ShowValue = TRUE))
+
+    v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
+    attr(dat, "scatter.variable.indices") <- v.ind
+    expect_error(res <- CChart("CombinedScatter", dat,
+        data.label.font.autocolor = TRUE, scatter.labels.as.hovertext = FALSE,
+        scatter.colors.column = NULL, annotation.list = list(list(type = "Arrow - up",
+            data = "sr", threstype = "above threshold", threshold = "15",
+            color = "red", size = 15, width = 1, font.family = "Arial",
+            font.weight = "normal", font.style = "normal", format = ".2f", prefix = "$"),list(
+        type = "Marker border", data = "sr", threstype = "below threshold",
+        threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$ShowValue, TRUE)
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[4]],
+        list(Index = 45, Segments = list(list(Field = "Value"), list(
+        Font = list(color = "red", size = 11.2528132033008, family = "Arial",
+        bold = FALSE, italic = FALSE), Text = "↑"))))
+
 
     pasted <- list(structure(c("", "a", "b", "c", "d", "e", "f", "g", "x",
             "1", "2", "4", "2", "4", "6", "3", "y", "6", "7", "5", "5", "2",

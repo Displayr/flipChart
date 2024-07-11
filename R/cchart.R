@@ -352,10 +352,13 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
 
-        # Specify data label font color for labeledscatter + numeric scale colors
+        # Specify data label font color for labeledscatter + numeric scale colors + default font color
+        # In all other cases, ChartLabels from flipStandardCharts does not need modification
+        custom.points <- chart.settings$TemplateSeries[[1]]$CustomPoints
         if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
-            !is.null(chart.settings$TemplateSeries[[1]]$CustomPoints) &&
-            !isFALSE(user.args$data.label.font.autocolor))
+            !isFALSE(user.args$data.label.font.autocolor) &&
+            !isTRUE(user.args$scatter.colors.as.categorical) && 
+            !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundCOlor))
         {
             annot.pts <- attr(result, "ChartLabels")$SeriesLabels[[1]]
             if (!is.null(annot.pts))
@@ -365,8 +368,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             k <- 1
             for (ii in 1:length(tmp.pts))
             {
-                if (!is.null(tmp.pts[[ii]]$Marker$BackgroundColor))
-                    tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
+                tmp.lbs[[ii]] <- list(Index = tmp.pts[[ii]]$Index,
                     Font = list(color = StripAlphaChannel(tmp.pts[[ii]]$Marker$BackgroundColor)))
                 if (k <= length(annot.pts) && annot.pts[[k]]$Index == tmp.lbs[[ii]]$Index)
                 {
