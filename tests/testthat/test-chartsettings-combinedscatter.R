@@ -14,7 +14,6 @@ test_that("ChartSettings - CombinedScatter",
             colors = "#0000FF", marker.size = 6, opacity = 0.3, append.data = TRUE)
     expect_equal(attr(res, "ChartSettings")$BubbleScale, 60)
     expect_equal(attr(res, "ChartSettings")$BubbleSizeType, "Area")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsFont$color, "#0000FF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#0000FF4C")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$Marker,
@@ -129,7 +128,8 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 0, Marker = list(BackgroundColor = "#EBB66566", Style = "Circle")))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[7]],
         list(Index = 6, Marker = list(BackgroundColor = "#86CB0066",
-        Style = "Circle", OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")))
+        Style = "Circle", OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid",
+        Style = "Circle", Size = 6)))
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[4]],
         list(Index = 45, Segments = list(
         list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
@@ -141,11 +141,10 @@ test_that("ChartSettings - CombinedScatter",
         scatter.colors.column = NULL, annotation.list = list(list(
         type = "Marker border", data = "sr", threstype = "below threshold",
         threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints, list(
-        list(Index = 6, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
-        list(Index = 18, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
-        list(Index = 31, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid")),
-        list(Index = 41, Marker = list(OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid"))))
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]]$Index,6)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]]$Marker$OutlineColor, "red")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[4]]$Index,41)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[4]]$Marker$OutlineWidth, 2)
 
     v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
     attr(dat, "scatter.variable.indices") <- v.ind

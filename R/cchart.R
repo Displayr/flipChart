@@ -343,7 +343,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     result <- addChartTypeWarning(result, chart.type, small.multiples)
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
-    chart.settings <- updateLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
+    chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
 
     # Convert data after the charting function has been applied
     if (isScatter(chart.type))
@@ -358,7 +358,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
             !isFALSE(user.args$data.label.font.autocolor) &&
             !isTRUE(user.args$scatter.colors.as.categorical) && 
-            !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundCOlor))
+            !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundColor))
         {
             annot.pts <- attr(result, "ChartLabels")$SeriesLabels[[1]]
             if (!is.null(annot.pts))
@@ -466,7 +466,7 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
     return(x)
 }
 
-updateLabels <- function(chart.settings, chart.labels, custom.points)
+updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.points)
 {
     if (!is.null(chart.labels))
     {
@@ -475,6 +475,14 @@ updateLabels <- function(chart.settings, chart.labels, custom.points)
 
         if (!is.null(chart.labels$ValueAxisTitle))
             chart.settings$ValueAxis$ShowTitle <- TRUE
+    }
+
+    # Set ShowDataLabels to false so that ChartLabels will be used
+    if (!is.null(chart.labels) && !is.null(chart.labels$SeriesLabels))
+    {
+        n <- length(chart.settings$TemplateSeries)
+        for (i in 1:n)
+            chart.settings$TemplateSeries[[i]]$ShowDataLabels <- FALSE
     }
     
     # Update ChartSettings to incorporate annotation info from flipStandardCharts
