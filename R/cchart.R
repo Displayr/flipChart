@@ -511,6 +511,9 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                 {
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- c(
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker, custom.points[[i]][[j]][-1])
+                    has.dup <- duplicated(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker)
+                    if (any(has.dup))
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker[-which(has.dup)]
                     k <- k + 1
                     next
                 }

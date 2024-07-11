@@ -128,8 +128,8 @@ test_that("ChartSettings - CombinedScatter",
         list(Index = 0, Marker = list(BackgroundColor = "#EBB66566", Style = "Circle")))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[7]],
         list(Index = 6, Marker = list(BackgroundColor = "#86CB0066",
-        Style = "Circle", OutlineColor = "red", OutlineWidth = 2, OutlineStyle = "Solid",
-        Style = "Circle", Size = 6)))
+        Style = "Circle", OutlineColor = "red", OutlineWidth = 2,
+        OutlineStyle = "Solid", Size = 6)))
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[4]],
         list(Index = 45, Segments = list(
         list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
