@@ -355,7 +355,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         # Specify data label font color for labeledscatter + numeric scale colors + default font color
         # In all other cases, ChartLabels from flipStandardCharts does not need modification
         custom.points <- chart.settings$TemplateSeries[[1]]$CustomPoints
-        if (isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
+        if (#isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
             !isFALSE(user.args$data.label.font.autocolor) &&
             !isTRUE(user.args$scatter.colors.as.categorical) && 
             !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundColor))
@@ -685,7 +685,7 @@ getPPTSettings <- function(chart.type, args, data)
         # When scatterplots use colors as a numerical scale
         # we can assume a single template series
         series.settings <- list(list(
-            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity),
+            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity, args$marker.size),
             Marker = list(Size = args$marker.size, OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsPosition = "Center",
@@ -950,7 +950,7 @@ autoFontColor <- function (colors)
 
 
 #' @importFrom grDevices colorRamp rgb
-getColorsAsNumericScale <- function(data, colors, opacity)
+getColorsAsNumericScale <- function(data, colors, opacity, size)
 {
     color.index <- attr(data, "scatter.variable.indices")["colors"]
     if (is.na(color.index) || NCOL(data) < color.index)
@@ -972,7 +972,7 @@ getColorsAsNumericScale <- function(data, colors, opacity)
         maxColorValue = 255)
     data.points <- lapply(not.na, function(i) {list(Index = i - 1,
         Marker = list(BackgroundColor = color.vec[i],
-                      Style = "Circle"))})
+                      Style = "Circle", Size = size))})
     return(data.points)
 }
 
