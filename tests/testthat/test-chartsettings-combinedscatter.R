@@ -96,11 +96,13 @@ test_that("ChartSettings - CombinedScatter",
     v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
     attr(dat, "scatter.variable.indices") <- v.ind
     expect_error(res <- CChart("CombinedScatter", dat, scatter.labels.as.hovertext = TRUE,
-        scatter.colors.column = NULL, annotation.list = list(list(
+        scatter.colors.column = NULL, scatter.colors.as.categorical = TRUE,
+        colors = "#3E7DCC99", annotation.list = list(list(
         type = "Marker border", data = "sr", threstype = "below threshold",
         threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]]$Index,6)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]]$Marker$OutlineColor, "red")
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[1]],
+        list(Index = 6, Marker = list(OutlineColor = "red", OutlineWidth = 2,
+        OutlineStyle = "Solid", Style = "Circle", Size = 6, BackgroundColor = "#3E7DCC99")))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[4]]$Index,41)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$CustomPoints[[4]]$Marker$OutlineWidth, 2)
 

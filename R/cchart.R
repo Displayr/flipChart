@@ -484,7 +484,7 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
         for (i in 1:n)
             chart.settings$TemplateSeries[[i]]$ShowDataLabels <- FALSE
     }
-    
+
     # Update ChartSettings to incorporate annotation info from flipStandardCharts
     # that is stored in the CustomPoints attribute
     # Currently this is only used to add annotation marker borders in CombinedScatter
@@ -513,7 +513,14 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker, custom.points[[i]][[j]][-1])
                     has.dup <- duplicated(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker)
                     if (any(has.dup))
-                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker[-which(has.dup)]
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- 
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker[-which(has.dup)]
+                    # Make sure marker color is defined otherwise opacity tends to be lost
+                    if (is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor))
+                    {
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
+                        chart.settings$TemplateSeries[[i]]$BackgroundColor
+                    }
                     k <- k + 1
                     next
                 }
@@ -522,6 +529,12 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                 k <- length(chart.settings$TemplateSeries[[i]]$CustomPoints) + 1
                 chart.settings$TemplateSeries[[i]]$CustomPoints[[k]] <- list(
                     Index = tmp.index, Marker = custom.points[[i]][[j]][-1])
+                # Make sure marker color is defined otherwise opacity tends to be lost
+                if (is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor))
+                {
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
+                    chart.settings$TemplateSeries[[i]]$Marker$BackgroundColor
+                }
                 k <- k + 1
             }
         }
