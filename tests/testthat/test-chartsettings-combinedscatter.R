@@ -90,7 +90,7 @@ test_that("ChartSettings - CombinedScatter",
         OutlineStyle = "Solid")))
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[46]],
         list(Index = 45, Font = list(color = "#0BA900"), Segments = list(
-        list(Field = "Value"), list(Font = list(color = "red", size = 11.2528132033008,
+        list(Text = "Zambia"), list(Font = list(color = "red", size = 11.2528132033008,
         family = "Arial", bold = FALSE, italic = FALSE), Text = "↑"))))
 
     v.ind <-  c(x = 1, y = 2, sizes = NULL, colors = NULL, groups = NULL)
@@ -127,7 +127,7 @@ test_that("ChartSettings - CombinedScatter",
         threshold = "3", width = 2, color = "red")), append.data = TRUE), NA)
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$ShowValue, FALSE)
     expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[46]],
-        list(Index = 45, Segments = list(list(Field = "Value"), list(
+        list(Index = 45, Segments = list(list(Text = "Zambia"), list(
         Font = list(color = "red", size = 11.2528132033008, family = "Arial",
         bold = FALSE, italic = FALSE), Text = "↑"))))
 
