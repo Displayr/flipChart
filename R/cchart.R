@@ -488,7 +488,7 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
     # Update ChartSettings to incorporate annotation info from flipStandardCharts
     # that is stored in the CustomPoints attribute
     # Currently this is only used to add annotation marker borders in CombinedScatter
-    if (!is.null(custom.points))
+    if (!is.null(custom.points) && any(sapply(custom.points, Negate(is.null))))
     {
         n.series <- min(length(chart.settings$TemplateSeries), length(custom.points))
         for (i in 1:n.series)
