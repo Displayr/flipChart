@@ -349,8 +349,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     {
         # Convert data after the charting function has been applied
         chart.warning <- paste(chart.warning, 
-            addScatterAxisWarning(result, x, user.args), # set warning before data conversion
-            sep = if (any(nzchar(chart.warning))) " " else "")
+            scatterAxisWarning(x, user.args)) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
 
@@ -593,11 +592,9 @@ addChartWarning <- function(x, warnings, chart.type, small.multiples, user.args)
     return(x)
 }
 
-addScatterAxisWarning <- function(result, data, user.args)
+scatterAxisWarning <- function(data, user.args)
 {
-    warnings <- attr(result, "ChartWarning")
-    msg <- ""
-
+    msg <- NULL
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
                         i <= NCOL(data))}
     ind.x <- user.args$scatter.x.column
