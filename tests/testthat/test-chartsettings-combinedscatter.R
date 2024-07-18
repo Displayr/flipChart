@@ -43,7 +43,7 @@ test_that("ChartSettings - CombinedScatter",
                   scatter.groups = round(dat[,5]/5), small.multiples = TRUE,
                   warn.if.no.match = FALSE, append.data = TRUE)
     expect_equal(attr(res, "ChartWarning"),
-                 " This visualization is a small multiple which is not supported by PowerPoint. It will be exported to PowerPoint as an image. Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a supported chart type or set the export format to 'Image' to suppress this warning.")
+                 " Small multiples are not supported by PowerPoint. It will be exported to PowerPoint as an image. Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a supported chart type or set the export format to 'Image' to suppress this warning.")
 
     v.ind <-  c(x = 1, y = 2, sizes = NA, colors = 4, groups = 5)
     attr(dat, "scatter.variable.indices") <- v.ind
