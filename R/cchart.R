@@ -341,14 +341,16 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!append.data)
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
-    result <- addChartTypeWarning(result, chart.type, small.multiples)
+    chart.warning <- attr(result, "ChartWarning")
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
     chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
 
-    # Convert data after the charting function has been applied
     if (isScatter(chart.type))
     {
-        #result <- addScatterAxisWarning(result, x) # set warning before data conversion
+        # Convert data after the charting function has been applied
+        chart.warning <- paste(chart.warning, 
+            addScatterAxisWarning(result, x, user.args), # set warning before data conversion
+            sep = if (any(nzchar(chart.warning))) " " else "")
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
 
@@ -380,6 +382,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
+    result <- addChartWarning(result, chart.warning, chart.type, small.multiples, user.args)
     # Remove null elements that causes PPT errors
     for (i in 1:length(chart.settings$TemplateSeries))
         chart.settings$TemplateSeries[[i]] <- Filter(Negate(is.null), chart.settings$TemplateSeries[[i]])    
@@ -545,30 +548,44 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
     return(chart.settings)
 }
 
-addChartTypeWarning <- function(x, chart.type, small.multiples)
+addChartWarning <- function(x, warnings, chart.type, small.multiples, user.args)
 {
     export.type <- attr(x, "ChartType")
-    warnings <- attr(x, "ChartWarning")
     msg <- ""
 
-    if (small.multiples)
-        msg <- "This visualization is a small multiple which is not supported by PowerPoint."
-    else if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid", "Bar Pictograph"))
+    if (chart.type %in% c("Palm", "Stream", "Venn", "Pyramid", "Bar Pictograph"))
         msg <- paste0("This visualization is of type '", chart.type,
-                      "' which is not supported by PowerPoint.")
+                      "' which is not supported by PowerPoint. ")
     else if (export.type %in% c("Sunburst", "Histogram", "Filled Map", "Box & Whisker"))
     {
         tmp.type <- chart.type
         if (tmp.type == "Pie")
             tmp.type <- "2-dimensional Pie"
         msg <- paste0("This visualization is a ", tmp.type,
-                    " chart which cannot be exported to PowerPoint. ")
+                    " chart which cannot be exported to PowerPoint.")
         # The charts in the last condition have chart types supported by powerpoint 2016,
         # however they cannot be handled by the API for exporting used by Displayr
     }
+    more.unsupported <- c()
+    if (small.multiples)
+        more.unsupported <- c(more.unsupported, "Small multiples")
+    if (!is.null(user.args$fit.type) && user.args$fit.type != "None")
+        more.unsupported <- c(more.unsupported, "Trend lines")
+    if (isTRUE(user.args$trend.lines))
+        more.unsupported <- c(more.unsupported, "Lines with arrows")
+    if (any(nzchar(user.args$logos)))
+        more.unsupported <- c(more.unsupported, "Logos")
+    if (any(nzchar(user.args$subtitle)))
+        more.unsupported <- c(more.unsupported, "Subtitle")
+    if (any(nzchar(user.args$footer)))
+        more.unsupported <- c(more.unsupported, "Footer")
+    if (length(more.unsupported) > 0)
+        warnings <- paste0(warnings, paste(more.unsupported, collapse = ", "),
+        " are not supported by PowerPoint.")
 
-    if (nzchar(msg))
-        attr(x, "ChartWarning") <- paste(warnings, msg,
+    # Only add once 
+    if (nzchar(msg) || any(nzchar(warnings)))
+        attr(x, "ChartWarning") <- paste(msg, warnings,
             "It will be exported to PowerPoint as an image.",
             "Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a",
             "supported chart type or set the export format to 'Image' to",
@@ -576,28 +593,20 @@ addChartTypeWarning <- function(x, chart.type, small.multiples)
     return(x)
 }
 
-addScatterAxisWarning <- function(result, data)
+addScatterAxisWarning <- function(result, data, user.args)
 {
     warnings <- attr(result, "ChartWarning")
     msg <- ""
 
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
                         i <= NCOL(data))}
-    v.ind <- attr(data, "scatter.variable.indices")
-    ind.x <- v.ind["x"]
-    ind.y <- v.ind["y"]
+    ind.x <- user.args$scatter.x.column
+    ind.y <- user.args$scatter.y.column
     if (.isValidIndex(ind.x) && !is.numeric(data[,ind.x]))
-        msg <- "Powerpoint only supports numeric axes in scatterplots"
+        msg <- "Powerpoint only supports numeric axes in scatterplots."
     else if (.isValidIndex(ind.y) && !is.numeric(data[,ind.y]))
-        msg <- "Powerpoint only supports numeric axes in scatterplots"
-
-    if (nzchar(msg))
-        attr(result, "ChartWarning") <- paste(warnings, msg,
-            "It will be exported to PowerPoint as an image.",
-            "Set 'PowerPoint Export > Format' to 'Microsoft Chart' and select a",
-            "supported chart type or set the export format to 'Image' to",
-            "suppress this warning.", collapse = "")
-    return(result)
+        msg <- "Powerpoint only supports numeric axes in scatterplots."
+    return (msg)
 }
 
 
@@ -969,7 +978,7 @@ autoFontColor <- function (colors)
 getColorsAsNumericScale <- function(data, colors, opacity, size)
 {
     color.index <- attr(data, "scatter.variable.indices")["colors"]
-    if (is.na(color.index) || NCOL(data) < color.index)
+    if (is.na(color.index) || is.null(color.index) || NCOL(data) < color.index)
         return(NULL)
     if (length(colors) < 2)
         return(NULL)

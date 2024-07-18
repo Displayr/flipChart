@@ -169,7 +169,7 @@ test_that("Chart settings",
                       attr(res, "ChartWarning")))
 
     res <- CChart("Bar", dat.2d, small.multiples = TRUE, append.data = TRUE)
-    expect_true(grepl("This visualization is a small multiple which is not supported by PowerPoint",
+    expect_true(grepl("Small multiples are not supported by PowerPoint",
                       attr(res, "ChartWarning")))
 
 
