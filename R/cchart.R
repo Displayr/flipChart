@@ -380,6 +380,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
+    # Remove null elements that causes PPT errors
+    for (i in 1:length(chart.settings$TemplateSeries))
+        chart.settings$TemplateSeries[[i]] <- Filter(Negate(is.null), chart.settings$TemplateSeries[[i]])    
     # Append data used for exporting to PPT/Excel
     # Exception is for StackedColumnWithAnnot that handles this itself
     if (is.null(attr(result, "ChartData")))
