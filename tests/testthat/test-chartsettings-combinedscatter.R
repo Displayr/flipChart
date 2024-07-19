@@ -202,5 +202,9 @@ dat <- structure(list(multi1 = structure(c(6L, 5L, 3L, 3L, 3L, 2L, 4L,
 y = 2, sizes = 3, colors = 4))
 test_that("CombinedScatter with multiple tables",
 {
-    expect_warning(CChart("CombinedScatter", dat, append.data = TRUE))
+    expect_warning(CChart("CombinedScatter", dat, append.data = TRUE),
+            "overlapping points")
+    expect_warning(CChart("CombinedScatter", dat, trend.lines = TRUE,
+            scatter.x.column = 1, scatter.y.column = 2, append.data = T),
+            "overlapping points")
 })
