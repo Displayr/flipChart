@@ -595,6 +595,9 @@ addChartWarning <- function(x, warnings, chart.type, small.multiples, user.args)
 scatterAxisWarning <- function(data, user.args)
 {
     msg <- NULL
+    if (!is.matrix(data) || !is.data.frame(data))
+        return (msg)
+    
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
                         i <= NCOL(data))}
     ind.x <- user.args$scatter.x.column
