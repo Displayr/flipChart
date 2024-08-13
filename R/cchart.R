@@ -917,7 +917,7 @@ setScatterAxesBounds <- function(settings, data)
 
     if (is.null(settings$ValueAxis$Minimum) && .isValidIndex(ind.y))
     {
-        rg <- range(data[,ind.y], na.rm = TRUE)
+        rg <- range(AsNumeric(data[,ind.y], binary = FALSE), na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
             offset <- (rg[2] - rg[1]) * 0.1
@@ -927,7 +927,7 @@ setScatterAxesBounds <- function(settings, data)
     }
     if (is.null(settings$PrimaryAxis$Minimum) && .isValidIndex(ind.x))
     {
-        rg <- range(data[,ind.x], na.rm = TRUE)
+        rg <- range(AsNumeric(data[,ind.x], binary = FALSE), na.rm = TRUE)
         if (all(is.finite(rg)) && rg[1] != rg[2])
         {
             offset <- (rg[2] - rg[1]) * 0.1
