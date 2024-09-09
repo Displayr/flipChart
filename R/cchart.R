@@ -6,7 +6,8 @@
 #' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param font.units One of "px" or "pt"
 #' @param annotation.list a list of annotations to add to the chart, based on statistics in the input data.
-#' @param signif.show Logical; whether to show significance tests.
+#' @param signif.show Logical; whether to show significance tests (arrows or column comparisons).
+#' @param signif.column.comparisons; whether to show comparisons (letters) in data labels.
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
@@ -265,7 +266,8 @@
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
 CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
-                   annotation.list = NULL, signif.show = FALSE, signif.column.comparison,
+                   annotation.list = NULL, signif.show = FALSE,
+                   signif.column.comparisons = FALSE,
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -305,20 +307,25 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 )
         }
         annot.len <- length(annotation.list)
-        if (signif.column.comparison && "Column Comparisons" %in% x.data.names)
+        if (signif.column.comparisons)
         {
-            annotation.list[[annot.len + 1]] <- list(
-                    type = "Text - after data label",
-                    data = "Column Comparisons",
-                    threstype = "above threshold",
-                    threshold = "",
-                    format = "Category",
-                    prefix = "&nbsp;",
-                    suffix = "",
-                    color = "red", #user.args$data.label.color,
-                    size = user.args$data.label.color, # what if no data labels??
-                    font.family = user.args$data.label.font.family
-            )
+            if ("Column Comparisons" %in% x.data.names)
+            {
+                # Note that even if data labels are not shown, default font settings
+                # are passed to CChart, i.e. https://github.com/Displayr/Plugins/blob/master/src/Standard%20R/Visualization/Area/Area.R#L400
+                annotation.list[[annot.len + 1]] <- list(
+                        type = "Text - after data label",
+                        data = "Column Comparisons",
+                        threstype = "above threshold",
+                        threshold = "",
+                        format = "",
+                        prefix = "&nbsp;",
+                        suffix = "",
+                        color = user.args$data.label.color,
+                        size = user.args$data.label.color,
+                        font.family = user.args$data.label.font.family
+                )
+            }
         } else if (!is.null(attr(x, "signif.annotations")))
         {
             # Add arrow annotations which have been attached as an
@@ -332,7 +339,6 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         }
     }
     user.args$annotation.list <- annotation.list
-
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
     if (tolower(font.units) %in% c("pt", "points"))
