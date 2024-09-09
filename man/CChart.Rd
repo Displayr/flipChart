@@ -61,7 +61,7 @@ Parameters passed to the charting functions are listed below:
     \itemize{\code{fit.type} }{ Character; type of line of best fit. Can be one of "None", "Linear", "LOESS",
          "Friedman's super smoother" or "Cubic spline". This option is only valid for charts Area, Bar, Column, Line, Scatter, Pyramid.}
     \itemize{\code{fit.ignore.last} }{ Logical; whether to ignore the last data point in the fit.}
-    \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash, "dotdash", or length of dash "2px", "5px".}
+    \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash", "dotdash", or length of dash "2px", "5px".}
     \itemize{\code{fit.line.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
     \itemize{\code{fit.line.width} }{ Numeric; Line width of line of best fit.}
     \itemize{\code{fit.line.name} }{ Character; Name of the line of best fit, which will appear in the hovertext.}
