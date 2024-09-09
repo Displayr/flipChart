@@ -265,7 +265,7 @@
 #' CChart("Area", x, small.multiples = TRUE,  colors = rainbow(3), categories.title = "Categories")
 CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
-                   annotation.list = NULL, signif.show = FALSE,
+                   annotation.list = NULL, signif.show = FALSE, signif.column.comparison,
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -279,17 +279,16 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (chart.type == "CombinedScatter" && !small.multiples)
         user.args$scatter.groups.column <- NULL
 
-    if (signif.show && length(dim(x)) == 3 && "Column Comparisons" %in% dimnames(x)[[3]])
-        warning("These tests do not compare columns. Try Stacked Column with Custom Tests ",
-        "or Column with Tests instead.")
-
     # Extract info about signif data so we can remove it later
     signif.data.names <- NULL
     if (!is.null(attr(x, "signif.annotations")))
         signif.data.names <- unique(sapply(attr(x, "signif.annotations"), function(x) x$data))
 
-    if (signif.show && !is.null(attr(x, "signif.annotations")))
+
+    if (signif.show)
     {
+        x.ndim <- length(dim(x))
+        x.data.names <- dimnames(x)[[x.ndim]]
         if (!isTRUE(user.args$data.label.show))
         {
             # If data label show is false, then other annotations are not shown
@@ -306,10 +305,31 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 )
         }
         annot.len <- length(annotation.list)
-        new.len <- length(attr(x, "signif.annotations"))
-        for (j in 1:new.len)
-            annotation.list[[annot.len + j]] <- attr(x, "signif.annotations")[[j]]
-        attr(x, "signif.annotations") <- NULL
+        if (signif.column.comparison && "Column Comparisons" %in% x.data.names)
+        {
+            annotation.list[[annot.len + 1]] <- list(
+                    type = "Text - after data label",
+                    data = "Column Comparisons",
+                    threstype = "above threshold",
+                    threshold = "",
+                    format = "Category",
+                    prefix = "&nbsp;",
+                    suffix = "",
+                    color = "red", #user.args$data.label.color,
+                    size = user.args$data.label.color, # what if no data labels??
+                    font.family = user.args$data.label.font.family
+            )
+        } else if (!is.null(attr(x, "signif.annotations")))
+        {
+            # Add arrow annotations which have been attached as an
+            # attribute to x in PrepareData
+            # Only show arrows if not showing column comparisons
+            annot.len <- length(annotation.list)
+            new.len <- length(attr(x, "signif.annotations"))
+            for (j in 1:new.len)
+                annotation.list[[annot.len + j]] <- attr(x, "signif.annotations")[[j]]
+            attr(x, "signif.annotations") <- NULL
+        }
     }
     user.args$annotation.list <- annotation.list
 
