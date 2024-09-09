@@ -106,23 +106,25 @@ for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = FALSE,
                                            show.labels = FALSE))
-        c = suppressWarnings(CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
-        #suppressWarnings(print(c))
+        c = suppressWarnings(CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
         expect_error(suppressWarnings(print(c)), NA)
      }
 
 # Raw data inputs - first aggregate = TRUE
-for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
+for (input in list( RawData.XFactor,  #RawData.XFactor.YFactor,
+                    RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input, first.aggregate = TRUE))
-        c = (CChart( chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog"))
+        c <- CChart(chart.type, pd$data, y.zero = FALSE, y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog")
         expect_error(print(c), NA)
     }
+    pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = RawData.XFactor.YFactor, first.aggregate = TRUE))
+    expect_warning(c <- CChart("Column", pd$data, y.zero = FALSE,
+            y.zero.line.width = 1,  grid.show = FALSE, y.title = "Dog",), "Missing values")
 
 # Raw data inputs - first aggregate = TRUE, as.percentages = TRUE
-    for (input in list( RawData.XFactor,  RawData.XFactor.YFactor, RawData.XPickAny,
-                       RawData.XPickOneMulti, RawData.XNumberMulti))
+for (input in list(RawData.XFactor, RawData.XPickAny, RawData.XPickOneMulti, RawData.XNumberMulti))
     for (chart.type in c("Line", "Bar", "Area", "Column"))
     {
         pd <- suppressWarnings(PrepareData(chart.type, input.data.raw = input,

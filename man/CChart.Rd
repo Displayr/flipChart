@@ -12,6 +12,7 @@ CChart(
   font.units = "px",
   annotation.list = NULL,
   signif.show = FALSE,
+  signif.column.comparisons = FALSE,
   ...,
   warn.if.no.match = TRUE,
   append.data = FALSE
@@ -30,7 +31,7 @@ CChart(
 
 \item{annotation.list}{a list of annotations to add to the chart, based on statistics in the input data.}
 
-\item{signif.show}{Logical; whether to show significance tests.}
+\item{signif.show}{Logical; whether to show significance tests (arrows or column comparisons).}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
@@ -41,6 +42,8 @@ CChart(
 \item{ChartSettings}{This a named list so that powerpoint chart can use the same visualization settings. Information about the structure of this list is \href{https://wiki.q-researchsoftware.com/wiki/PptChartSettings}{here}.}
 \item{ChartWarning}{This attribute is set if the chart cannot be properly exported to Excel. It is set to a string which is shown as a warning message on export in Displayr.}
 \item{ChartType}{This attribute is actually always set, even if \code{append.data} if not true. It is the name of the chart type as used in PowerPoint and can vary depending on the visualization settings used.}}}
+
+\item{signif.column.comparisons;}{whether to show comparisons (letters) in data labels.}
 }
 \value{
 A chart object that can be printed. Most often, a plotly object.
