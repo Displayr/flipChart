@@ -7,7 +7,7 @@
 #' @param font.units One of "px" or "pt"
 #' @param annotation.list a list of annotations to add to the chart, based on statistics in the input data.
 #' @param signif.show Logical; whether to show significance tests (arrows or column comparisons).
-#' @param signif.column.comparisons; whether to show comparisons (letters) in data labels.
+#' @param signif.column.comparisons Logical; whether to show comparisons (letters) in data labels.
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
@@ -17,7 +17,7 @@
 #' \item{ChartType}{This attribute is actually always set, even if \code{append.data} if not true. It is the name of the chart type as used in PowerPoint and can vary depending on the visualization settings used.}}
 #' @details Parameters passed to the charting functions are listed below:
 #' \describe{
-#'     \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{"Stacked"} to show cumulative values.}
+#'     \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{Stacked} to show cumulative values.}
 #'     \itemize{\code{grid.show} }{ Logical; whether to show grid lines.}
 #'     \itemize{\code{opacity} }{ Opacity of bars as an alpha value (0 to 1).}
 #'     \itemize{\code{colors} }{ Character; a vector containing one or more colors specified as hex codes.}
