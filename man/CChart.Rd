@@ -12,6 +12,7 @@ CChart(
   font.units = "px",
   annotation.list = NULL,
   signif.show = FALSE,
+  signif.column.comparisons = FALSE,
   ...,
   warn.if.no.match = TRUE,
   append.data = FALSE
@@ -30,7 +31,9 @@ CChart(
 
 \item{annotation.list}{a list of annotations to add to the chart, based on statistics in the input data.}
 
-\item{signif.show}{Logical; whether to show significance tests.}
+\item{signif.show}{Logical; whether to show significance tests (arrows or column comparisons).}
+
+\item{signif.column.comparisons}{Logical; whether to show comparisons (letters) in data labels.}
 
 \item{...}{Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.}
 
@@ -51,14 +54,14 @@ Creates charts
 \details{
 Parameters passed to the charting functions are listed below:
 \describe{
-    \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{"Stacked"} to show cumulative values.}
+    \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{Stacked} to show cumulative values.}
     \itemize{\code{grid.show} }{ Logical; whether to show grid lines.}
     \itemize{\code{opacity} }{ Opacity of bars as an alpha value (0 to 1).}
     \itemize{\code{colors} }{ Character; a vector containing one or more colors specified as hex codes.}
     \itemize{\code{fit.type} }{ Character; type of line of best fit. Can be one of "None", "Linear", "LOESS",
          "Friedman's super smoother" or "Cubic spline". This option is only valid for charts Area, Bar, Column, Line, Scatter, Pyramid.}
     \itemize{\code{fit.ignore.last} }{ Logical; whether to ignore the last data point in the fit.}
-    \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash, "dotdash", or length of dash "2px", "5px".}
+    \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash", "dotdash", or length of dash "2px", "5px".}
     \itemize{\code{fit.line.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
     \itemize{\code{fit.line.width} }{ Numeric; Line width of line of best fit.}
     \itemize{\code{fit.line.name} }{ Character; Name of the line of best fit, which will appear in the hovertext.}

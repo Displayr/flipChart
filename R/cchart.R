@@ -6,7 +6,8 @@
 #' @param multi.color.series Logical; Indicates whether multiple colors will be shown in a Bar or Column chart with a single series. By default this is off and different colors are used to distinguish between different series. However, when chart.type is "Pyramid", then \code{multi.color.series} is always \code{true}.
 #' @param font.units One of "px" or "pt"
 #' @param annotation.list a list of annotations to add to the chart, based on statistics in the input data.
-#' @param signif.show Logical; whether to show significance tests.
+#' @param signif.show Logical; whether to show significance tests (arrows or column comparisons).
+#' @param signif.column.comparisons Logical; whether to show comparisons (letters) in data labels.
 #' @param ... Arguments to the function \code{chart.type}. See documentation for specific chart types or see details below.
 #' @param warn.if.no.match Logical; If TRUE, a warning is shown if any arugments are not matched.
 #' @param append.data Logical; If TRUE, extra information is appended to the chart object which is used for exporting. These are appended as attributes
@@ -16,14 +17,14 @@
 #' \item{ChartType}{This attribute is actually always set, even if \code{append.data} if not true. It is the name of the chart type as used in PowerPoint and can vary depending on the visualization settings used.}}
 #' @details Parameters passed to the charting functions are listed below:
 #' \describe{
-#'     \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{"Stacked"} to show cumulative values.}
+#'     \itemize{\code{type} }{ For chart types \code{Area}, \code{Bar} and \code{Column}, this can be set to \code{Stacked} to show cumulative values.}
 #'     \itemize{\code{grid.show} }{ Logical; whether to show grid lines.}
 #'     \itemize{\code{opacity} }{ Opacity of bars as an alpha value (0 to 1).}
 #'     \itemize{\code{colors} }{ Character; a vector containing one or more colors specified as hex codes.}
 #'     \itemize{\code{fit.type} }{ Character; type of line of best fit. Can be one of "None", "Linear", "LOESS",
 #'          "Friedman's super smoother" or "Cubic spline". This option is only valid for charts Area, Bar, Column, Line, Scatter, Pyramid.}
 #'     \itemize{\code{fit.ignore.last} }{ Logical; whether to ignore the last data point in the fit.}
-#'     \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash, "dotdash", or length of dash "2px", "5px".}
+#'     \itemize{\code{fit.line.type} }{ Character; One of "solid", "dot", "dash", "dotdash", or length of dash "2px", "5px".}
 #'     \itemize{\code{fit.line.colors} }{ Character; a vector containing one or more colors specified as hex codes.}
 #'     \itemize{\code{fit.line.width} }{ Numeric; Line width of line of best fit.}
 #'     \itemize{\code{fit.line.name} }{ Character; Name of the line of best fit, which will appear in the hovertext.}
@@ -266,6 +267,7 @@
 CChart <- function(chart.type, x, small.multiples = FALSE,
                    multi.color.series = FALSE, font.units = "px",
                    annotation.list = NULL, signif.show = FALSE,
+                   signif.column.comparisons = FALSE,
                    ..., warn.if.no.match = TRUE, append.data = FALSE)
 {
     if (chart.type %in% c("Venn"))
@@ -279,16 +281,13 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (chart.type == "CombinedScatter" && !small.multiples)
         user.args$scatter.groups.column <- NULL
 
-    if (signif.show && length(dim(x)) == 3 && "Column Comparisons" %in% dimnames(x)[[3]])
-        warning("These tests do not compare columns. Try Stacked Column with Custom Tests ",
-        "or Column with Tests instead.")
-
     # Extract info about signif data so we can remove it later
     signif.data.names <- NULL
     if (!is.null(attr(x, "signif.annotations")))
         signif.data.names <- unique(sapply(attr(x, "signif.annotations"), function(x) x$data))
 
-    if (signif.show && !is.null(attr(x, "signif.annotations")))
+
+    if (signif.show)
     {
         if (!isTRUE(user.args$data.label.show))
         {
@@ -306,13 +305,39 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 )
         }
         annot.len <- length(annotation.list)
-        new.len <- length(attr(x, "signif.annotations"))
-        for (j in 1:new.len)
-            annotation.list[[annot.len + j]] <- attr(x, "signif.annotations")[[j]]
-        attr(x, "signif.annotations") <- NULL
+        if (signif.column.comparisons)
+        {
+            x.ndim <- length(dim(x))
+            x.data.names <- dimnames(x)[[x.ndim]]
+            if ("Column Comparisons" %in% x.data.names)
+            {
+                # Note that even if data labels are not shown, default font settings
+                # are passed to CChart, i.e. https://github.com/Displayr/Plugins/blob/master/src/Standard%20R/Visualization/Area/Area.R#L400
+                annotation.list[[annot.len + 1]] <- list(
+                        type = "Text - after data label",
+                        data = "Column Comparisons",
+                        threstype = "above threshold",
+                        threshold = "",
+                        format = "",
+                        prefix = "&nbsp;",
+                        suffix = "",
+                        color = user.args$data.label.color,
+                        size = user.args$data.label.color,
+                        font.family = user.args$data.label.font.family
+                )
+            }
+        } else if (!is.null(attr(x, "signif.annotations")))
+        {
+            # Add arrow annotations which have been attached as an
+            # attribute to x in PrepareData
+            # Only show arrows if not showing column comparisons
+            new.len <- length(attr(x, "signif.annotations"))
+            for (j in 1:new.len)
+                annotation.list[[annot.len + j]] <- attr(x, "signif.annotations")[[j]]
+            attr(x, "signif.annotations") <- NULL
+        }
     }
     user.args$annotation.list <- annotation.list
-
     chart.function <- gsub(" ", "", chart.type)             # spaces always removed
     fun.and.pars <- getFunctionAndParameters(chart.function, small.multiples)
     if (tolower(font.units) %in% c("pt", "points"))

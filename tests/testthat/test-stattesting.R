@@ -807,11 +807,10 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
 
 test_that("Handle Column Comparisons correctly",
 {
-    expect_warning(viz <- CChart("Line", tb.2d.colcmp,
+    expect_error(viz <- CChart("Line", tb.2d.colcmp,
               legend.orientation = "Horizontal", legend.x.position = 0.5,
               legend.y.position = 1.2, data.label.show = FALSE,
-              signif.show = TRUE, append.data = TRUE),
-              "These tests do not compare columns")
+              signif.show = TRUE, append.data = TRUE), NA)
     chart.data <- attr(viz, "ChartData")
     expect_true(is.numeric(chart.data))
     expect_equal(dimnames(chart.data), list(c("January 2019", "February 2019",
@@ -845,4 +844,10 @@ test_that("Handle Column Comparisons correctly",
     expect_true(is.numeric(chart.data))
     expect_equal(dimnames(chart.data)[1:2], dimnames(tb.multstats.colcmp)[1:2])
     expect_equal(dimnames(chart.data)[[3]], dimnames(tb.multstats.colcmp)[[3]][-4])
+
+    expect_error(viz <- CChart("Bar", tb.2d.colcmp, data.label.show = FALSE,
+            signif.show = TRUE, signif.column.comparisons = TRUE), NA)
+    expect_error((viz <- CChart("Column", tb.2d.colcmp[,,1,drop=FALSE],
+            signif.show = TRUE, signif.column.comparisons = TRUE,
+            data.label.show = TRUE)), NA)
 })

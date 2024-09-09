@@ -247,7 +247,7 @@ dat.with.factors <- structure(list(Income = structure(c(7L, 4L, 7L, 2L, NA, 3L, 
     class = "data.frame")
 test_that("Exporting scatter with factor data",
 {
-    expect_error(CChart("CombinedScatter", dat.with.factors, colors = ChartColors(10),
-           scatter.colors.column = 2, append.data = TRUE), NA)
+    expect_warning(CChart("CombinedScatter", dat.with.factors, colors = ChartColors(10),
+           scatter.colors.column = 2, append.data = TRUE), "missing values")
 })
 
