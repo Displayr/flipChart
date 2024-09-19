@@ -291,13 +291,13 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         colcmp.font <- list(
             family = user.args$data.label.font.family,
             color = user.args$data.label.font.color,
-            size = user.args$data.label.font.size * 1.3333)
+            size = pt2px(user.args$data.label.font.size))
         if (!isTRUE(user.args$data.label.show))
         {
             colcmp.font <- list(
                 family = user.args$global.font.family,
                 color = user.args$global.font.color,
-                size = 8 * 1.3333)
+                size = pt2px(user.args$global.font.size))
 
             # If data label show is false, then other annotations are not shown
             user.args$data.label.show <- TRUE
@@ -969,6 +969,11 @@ setScatterAxesBounds <- function(settings, data)
 px2pt <- function(x)
 {
     return(x/1.3333)
+}
+
+pt2px <- function(x)
+{
+    return(x * 1.3333)
 }
 
 getHexCode <- function(color, opacity)
