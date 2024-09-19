@@ -286,11 +286,19 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (!is.null(attr(x, "signif.annotations")))
         signif.data.names <- unique(sapply(attr(x, "signif.annotations"), function(x) x$data))
 
-
     if (signif.show)
     {
+        colcmp.font <- list(
+            family = user.args$data.label.font.family,
+            color = user.args$data.label.font.color,
+            size = pt2px(user.args$data.label.font.size))
         if (!isTRUE(user.args$data.label.show))
         {
+            colcmp.font <- list(
+                family = user.args$global.font.family,
+                color = user.args$global.font.color,
+                size = pt2px(user.args$global.font.size))
+
             # If data label show is false, then other annotations are not shown
             user.args$data.label.show <- TRUE
             annotation.list <- list(
@@ -321,9 +329,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                         format = "",
                         prefix = "&nbsp;",
                         suffix = "",
-                        color = user.args$data.label.color,
-                        size = user.args$data.label.color,
-                        font.family = user.args$data.label.font.family
+                        color = colcmp.font$color,
+                        size = colcmp.font$size,
+                        font.family = colcmp.font$family
                 )
             }
         } else if (!is.null(attr(x, "signif.annotations")))
@@ -366,7 +374,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (isScatter(chart.type))
     {
         # Convert data after the charting function has been applied
-        chart.warning <- paste(chart.warning, 
+        chart.warning <- paste(chart.warning,
             scatterAxisWarning(x, user.args)) # set warning before data conversion
         x <- convertChartDataToNumeric(x)
         chart.settings <- setScatterAxesBounds(chart.settings, x)
@@ -376,7 +384,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         custom.points <- chart.settings$TemplateSeries[[1]]$CustomPoints
         if (#isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
             !isFALSE(user.args$data.label.font.autocolor) &&
-            !isTRUE(user.args$scatter.colors.as.categorical) && 
+            !isTRUE(user.args$scatter.colors.as.categorical) &&
             !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundColor))
         {
             annot.pts <- attr(result, "ChartLabels")$SeriesLabels[[1]]
@@ -402,7 +410,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- addChartWarning(result, chart.warning, chart.type, small.multiples, user.args)
     # Remove null elements that causes PPT errors
     for (i in 1:length(chart.settings$TemplateSeries))
-        chart.settings$TemplateSeries[[i]] <- Filter(Negate(is.null), chart.settings$TemplateSeries[[i]])    
+        chart.settings$TemplateSeries[[i]] <- Filter(Negate(is.null), chart.settings$TemplateSeries[[i]])
     # Append data used for exporting to PPT/Excel
     # Exception is for StackedColumnWithAnnot that handles this itself
     if (is.null(attr(result, "ChartData")))
@@ -518,13 +526,13 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
         {
             if (length(custom.points[[i]]) == 0)
                 next
-            
+
             k <- 1
             for (j in 1:length(custom.points[[i]]))
             {
                 if (is.null(custom.points[[i]][[j]]))
                     next
-                
+
                 tmp.index <- custom.points[[i]][[j]]$Index
                 while (k <= length(chart.settings$TemplateSeries[[i]]$CustomPoints) &&
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Index != tmp.index)
@@ -536,7 +544,7 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker, custom.points[[i]][[j]][-1])
                     has.dup <- duplicated(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker)
                     if (any(has.dup))
-                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <- 
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker <-
                         chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker[-which(has.dup)]
                     # Make sure marker color is defined otherwise opacity tends to be lost
                     if (is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor))
@@ -547,7 +555,7 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                     k <- k + 1
                     next
                 }
-                
+
                 # If no match then append to end
                 k <- length(chart.settings$TemplateSeries[[i]]$CustomPoints) + 1
                 chart.settings$TemplateSeries[[i]]$CustomPoints[[k]] <- list(
@@ -600,7 +608,7 @@ addChartWarning <- function(x, warnings, chart.type, small.multiples, user.args)
         warnings <- paste0(warnings, paste(more.unsupported, collapse = ", "),
         " are not supported by PowerPoint.")
 
-    # Only add once 
+    # Only add once
     if (nzchar(msg) || any(nzchar(warnings)))
         attr(x, "ChartWarning") <- paste(msg, warnings,
             "It will be exported to PowerPoint as an image.",
@@ -615,7 +623,7 @@ scatterAxisWarning <- function(data, user.args)
     msg <- NULL
     if (!is.matrix(data) || !is.data.frame(data))
         return (msg)
-    
+
     .isValidIndex <- function(i) {return (!is.null(i) && !is.na(i) && i > 0 &&
                         i <= NCOL(data))}
     ind.x <- user.args$scatter.x.column
@@ -885,7 +893,7 @@ getPPTSettings <- function(chart.type, args, data)
             res$Overlap = tmp.gap * -100
             res$GapWidth = min(5.0, (NCOL(data) - 1) * (args$bar.gap / (1 - args$bar.gap) + tmp.gap)) * 100
         } else
-            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100 
+            res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100
     }
     if (chart.type == "Line")
         res$Smooth = isTRUE(args$shape == "Curved")
@@ -961,6 +969,11 @@ setScatterAxesBounds <- function(settings, data)
 px2pt <- function(x)
 {
     return(x/1.3333)
+}
+
+pt2px <- function(x)
+{
+    return(x * 1.3333)
 }
 
 getHexCode <- function(color, opacity)
