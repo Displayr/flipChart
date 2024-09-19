@@ -297,7 +297,7 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
             colcmp.font <- list(
                 family = user.args$global.font.family,
                 color = user.args$global.font.color,
-                size = user.args$global.font.size)
+                size = 8)
 
             # If data label show is false, then other annotations are not shown
             user.args$data.label.show <- TRUE
