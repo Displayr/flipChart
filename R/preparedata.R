@@ -784,7 +784,7 @@ aggregateDataForCharting <- function(data, weights, chart.type, crosstab,
 #' @importFrom stats sd
 #' @importFrom flipChartBasics MatchTable
 #' @importFrom flipFormat TidyLabels
-#' @importFrom flipU MakeUniqueNames
+#' @importFrom flipU MakeUniqueNames StopForUserError
 coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
 {
     if (is.null(x))
@@ -987,10 +987,10 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
     {
         x.names <- paste0(sQuote(names(x[[1]])), collapse = ", ")
         y.names <- paste0(sQuote(rownames(x[[2]])), collapse = ", ")
-        stop("The X coordinate and Y coordinate inputs don't have any variables with matching names. ",
-             "Please ensure that there is matching input for both the X and Y coordinate input. ",
-             "The X coordinate input has names: ", x.names, ". ",
-             "The Y coordinate input has names: ", y.names, ".")
+        StopForUserError("The X coordinate and Y coordinate inputs don't have any variables with matching names. ",
+                         "Please ensure that there is matching input for both the X and Y coordinate input. ",
+                         "The X coordinate input has names: ", x.names, ". ",
+                         "The Y coordinate input has names: ", y.names, ".")
     }
 
     num.obs <- sapply(x, NROW)
@@ -1001,9 +1001,9 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
         # the length can differ
         names(num.obs) <- sapply(names(num.obs), tidyScatterDefaultNames)
         ind.diff <- which(num.obs > 0 & num.obs != num.obs[1])
-        stop("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
-            "' differ in length from variables for '", names(num.obs)[1], "'. ",
-            "Check that all variables are from the same data set.")
+        StopForUserError("Variables for '", paste(names(num.obs)[ind.diff], collapse = "', '"),
+                         "' differ in length from variables for '", names(num.obs)[1], "'. ",
+                         "Check that all variables are from the same data set.")
     }
 
     # Splicing together elements of the input list if lengths vary
@@ -1120,19 +1120,20 @@ processPastedData <- function(input.data.pasted, warn, date.format, subset, weig
 }
 
 #' @importFrom verbs Sum
+#' @importFrom flipU StopForUserError
 checkNumberOfDataInputs <- function(data.source.index, table, tables, raw, pasted, other)
 {
     data.provided <- !vapply(list(table, tables, raw, pasted, other), is.null, logical(1L))
     n.data <- sum(data.provided)
     if (n.data == 0)
-        stop("No data has been provided.")
+        StopForUserError("No data has been provided.")
     else if (is.null(data.source.index))
     {
         if (n.data > 1)
-            stop("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
+            StopForUserError("There are ", n.data, " data inputs. One and only one data argument may be supplied.")
 
     } else if (!data.provided[data.source.index])
-        stop("The data provided does not match the 'data.source.index'.")
+        StopForUserError("The data provided does not match the 'data.source.index'.")
 }
 
 # For error messages, etc
@@ -1275,6 +1276,7 @@ asPercentages <- function(data)
     data
 }
 
+#' @importFrom flipU StopForUserError
 RearrangeRowsColumns <- function(data,
                                  multiple.tables,
                                  select.rows, first.k.rows, last.k.rows,
@@ -1309,7 +1311,7 @@ RearrangeRowsColumns <- function(data,
     {
         data <- try(AutoOrderRows(data))
         if (inherits(data, "try-error"))
-            stop("Could not perform correspondence analysis on table. Try hiding empty rows.")
+            StopForUserError("Could not perform correspondence analysis on table. Try hiding empty rows.")
     }
     else if (sort.rows)
         data <- SortRows(data, sort.rows.decreasing, sort.rows.column, sort.rows.exclude)
@@ -1320,7 +1322,7 @@ RearrangeRowsColumns <- function(data,
     {
         data <- try(AutoOrderColumns(data))
         if (inherits(data, "try-error"))
-            stop("Could not perform correspondence analysis on table. Try hiding empty columns.")
+            StopForUserError("Could not perform correspondence analysis on table. Try hiding empty columns.")
     }
     else if (sort.columns)
         data <- SortColumns(data, sort.columns.decreasing, sort.columns.row, sort.columns.exclude)
@@ -1603,7 +1605,7 @@ prepareForSpecificCharts <- function(data,
         if (len > 1L)  # variables from multiple GUI controls
         {
             if (NCOL(input.data.raw[[1]]) > 1 && (NCOL(input.data.raw[[2]]) == 1 || len > 2))
-                stop("If using a grouping variable, you may only have one additional variable.")
+                StopForUserError("If using a grouping variable, you may only have one additional variable.")
             # Splitting the first variable by the second
             else if (#!is.null(input.data.raw[[2]]) &&
                 NCOL(input.data.raw[[1]]) == 1 && NCOL(input.data.raw[[2]]) == 1)
@@ -1844,15 +1846,16 @@ getFullRowNames <- function(x)
 #'   be given by PrepareData.
 #'
 #' @export
+#' @importFrom flipU StopForUserError
 PrepareForCbind <- function(x, use.span = FALSE, show.labels = TRUE,
                         is.scatter.annot.data = FALSE)
 {
     if (is.null(x))
         return(x)
     if (is.scatter.annot.data && NCOL(x) > 1)
-        stop("Annotation data for Scatterplots should be a single-column table ",
-             "or variable with the same number of values as the number of ",
-             "points in the chart")
+        StopForUserError("Annotation data for Scatterplots should be a single-column table ",
+                         "or variable with the same number of values as the number of ",
+                         "points in the chart")
 
     allow.qtables <- get0("ALLOW.QTABLE.CLASS", ifnotfound = FALSE, envir = .GlobalEnv)
 
