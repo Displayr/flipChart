@@ -823,6 +823,15 @@ getPPTSettings <- function(chart.type, args, data)
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
+        # Most of the plotly-based charts in Displayr allow both and axis and a zero line
+        # However PPT only allows one axis line. When the axis line has width = 0, we use the zero-line
+        # properties instead. Note that for Area, Bar, Column, Line the zero line of the
+        # values axis is shown by default
+        values.axis.line <- if (isTRUE(args$values.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
+                            else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
+        categories.axis.line <- if (isTRUE(args$categories.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
+                            else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
+
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
             size = px2pt(args$categories.tick.font.size)),
@@ -831,9 +840,10 @@ getPPTSettings <- function(chart.type, args, data)
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
             NumberFormat = convertToPPTNumFormat(args$categories.tick.format),
-            AxisLine = list(Color = args$categories.line.color,
-            Width = px2pt(args$categories.line.width),
-            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
+            AxisLine = list(Color = categories.axis.line$color,
+            Width = px2pt(categories.axis.line$width),
+            Style = getLineStlye(values.axis.line)),
+            Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
@@ -851,9 +861,10 @@ getPPTSettings <- function(chart.type, args, data)
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
             NumberFormat = convertToPPTNumFormat(args$values.tick.format),
-            AxisLine = list(Color = args$values.line.color,
-            Width = px2pt(args$values.line.width),
-            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
+            AxisLine = list(Color = values.axis.line$color,
+            Width = px2pt(values.axis.line$width),
+            Style = getLineStyle(values.axis.line)),
+            Crosses = values.axis.line$crosses,
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
@@ -919,6 +930,15 @@ getPPTSettings <- function(chart.type, args, data)
         res$BubbleScale = args$marker.size * 10
     }
     return(res)
+}
+
+
+getLineStyle <- function (line) {
+    if (is.null(line$width) || line$width <= 0)
+        return ("None")
+    if (is.null(line$dash))
+        return ("Solid")
+    return (line$dash)
 }
 
 
