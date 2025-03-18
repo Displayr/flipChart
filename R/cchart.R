@@ -842,7 +842,7 @@ getPPTSettings <- function(chart.type, args, data)
             NumberFormat = convertToPPTNumFormat(args$categories.tick.format),
             AxisLine = list(Color = categories.axis.line$color,
             Width = px2pt(categories.axis.line$width),
-            Style = getLineStlye(values.axis.line)),
+            Style = getLineStyle(values.axis.line)),
             Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
