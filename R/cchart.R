@@ -824,13 +824,13 @@ getPPTSettings <- function(chart.type, args, data)
     if (!chart.type %in% c("Pie", "Donut"))
     {
         # Most of the plotly-based charts in Displayr allow both and axis and a zero line
-        # However PPT only allows one axis line. When the axis line has width = 0, we use the zero-line
-        # properties instead. Note that for Area, Bar, Column, Line the zero line of the
-        # values axis is shown by default
-        values.axis.line <- if (isTRUE(args$values.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
+        # However PPT only allows one axis line. When the zero line is present, we show
+        # it by default and the axis line only if the zero line has width 0.
+        # Note that for Area, Bar, Column, Line the zero line of the values axis is shown by default
+        values.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
                             else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
-        categories.axis.line <- if (isTRUE(args$categories.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
-                            else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
+        categories.axis.line <- if (!isTRUE(args$categories.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
+                                else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
 
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
