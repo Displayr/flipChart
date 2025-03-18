@@ -159,10 +159,16 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[5]]$BackgroundColor, "#EC83BAFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineColor, "#333333")
-    #expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowCategoryNames, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$DataLabelsPosition, "OutsideEnd")
     expect_equal(attr(res, "ChartSettings")$FirstSliceAngle, 270)
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$ShowValue, TRUE)
+
+    res <- CChart("Pie", dat.1d[5:9]/100, append.data = TRUE, pie.border.color = "#333333",
+            colors = col.1d.multicolor[5:9], data.label.format = "%")
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]],
+        list(CustomPoints = list(list(Index = 0, Segments = list(list(
+        Field = "CategoryName"), list(Text = ": "), list(Field = "Value")))),
+        NumberingFormat = "0.#%"))
 
     res <- CChart("Pie", abs(dat.2d), append.data = TRUE)
     expect_equal(attr(res, "ChartType"), "Sunburst")
