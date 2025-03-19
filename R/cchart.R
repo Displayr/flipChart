@@ -885,15 +885,6 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     # Chart-specfic parameters
-    #if (grepl("StackedColumn", chart.type) && isTRUE(args$values.zero))
-    #{
-    #    # PPT doesn't have a concept of the zero line so use a workaround
-    #    res$ValueAxis$Crosses <- "AutoZero"
-    #    res$PrimaryAxis$AxisLine$Style <- "Solid"
-    #    res$PrimaryAxis$AxisLine$Width <- px2pt(args$values.zero.line.width)
-    #    res$PrimaryAxis$AxisLine$Color <- args$values.zero.line.color
-    #}
-
     if (chart.type %in% "Donut")
         res$HoleSize = args$pie.inner.radius
     if (chart.type %in% c("Donut", "Pie"))
@@ -928,7 +919,6 @@ getPPTSettings <- function(chart.type, args, data)
     # See RS-7154 - try master.displayr.com
     if (isScatter(chart.type))
     {
-        #res$ValueAxis$Crosses <- "Minimum"
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size * 10
     }
