@@ -841,7 +841,7 @@ getPPTSettings <- function(chart.type, args, data)
             NumberFormat = convertToPPTNumFormat(args$categories.tick.format),
             AxisLine = list(Color = categories.axis.line$color,
             Width = px2pt(categories.axis.line$width),
-            Style = getLineStyle(values.axis.line)),
+            Style = getLineStyle(categories.axis.line)),
             Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
@@ -871,6 +871,9 @@ getPPTSettings <- function(chart.type, args, data)
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))
             res$ValueAxis$Minimum <- args$values.bounds.minimum
+
+        # This needs to be NULL because powerpoint reverses the bar chart y-axis
+        res$ValueAxis$Crosses <- NULL
 
         # We don't want to manually set axis label position
         # if they are not shown
