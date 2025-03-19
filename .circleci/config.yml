@@ -7,7 +7,7 @@ parameters:
     default: ""
   remote-deps:
     type: string
-    default: Displayr/rhtmlCombinedScatter@1.0.14,Displayr/flipStandardCharts@1.31.6
+    default: Displayr/rhtmlCombinedScatter@1.0.14,Displayr/flipStandardCharts@1.32.4
   plugins-branch:
     type: string
     default: ""
