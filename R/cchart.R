@@ -82,7 +82,6 @@
 #'     \itemize{\code{values.bounds.maximum} }{ Maximum of range for plotting; NULL = no manual range set.}
 #'     \itemize{\code{values.tick.distance} }{ Distance between tick marks. Requires that \code{values.bounds.minimum} and \code{values.bounds.maximum} have been set.}
 #'     \itemize{\code{values.number.ticks} }{ Only used in Stream. The total number of ticks on the y-axis.}
-
 #'     \itemize{\code{values.zero} }{ Whether the values-axis should include zero. If false, the range will be determined from the input data.}
 #'     \itemize{\code{values.zero.line.width} }{ Width in pixels of zero line;.}
 #'     \itemize{\code{values.zero.line.color} }{ Color of horizontal zero line as a named.
@@ -827,10 +826,10 @@ getPPTSettings <- function(chart.type, args, data)
         # However PPT only allows one axis line. When the zero line is present, we show
         # it by default and the axis line only if the zero line has width 0.
         # Note that for Area, Bar, Column, Line the zero line of the values axis is shown by default
-        values.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
-                            else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
-        categories.axis.line <- if (!isTRUE(args$categories.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
-                                else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
+        values.axis.line <- if (!isTRUE(args$categories.zero.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
+                            else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
+        categories.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
+                                else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
 
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
