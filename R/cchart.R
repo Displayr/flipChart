@@ -82,7 +82,6 @@
 #'     \itemize{\code{values.bounds.maximum} }{ Maximum of range for plotting; NULL = no manual range set.}
 #'     \itemize{\code{values.tick.distance} }{ Distance between tick marks. Requires that \code{values.bounds.minimum} and \code{values.bounds.maximum} have been set.}
 #'     \itemize{\code{values.number.ticks} }{ Only used in Stream. The total number of ticks on the y-axis.}
-
 #'     \itemize{\code{values.zero} }{ Whether the values-axis should include zero. If false, the range will be determined from the input data.}
 #'     \itemize{\code{values.zero.line.width} }{ Width in pixels of zero line;.}
 #'     \itemize{\code{values.zero.line.color} }{ Color of horizontal zero line as a named.
@@ -823,6 +822,15 @@ getPPTSettings <- function(chart.type, args, data)
 
     if (!chart.type %in% c("Pie", "Donut"))
     {
+        # Most of the plotly-based charts in Displayr allow both and axis and a zero line
+        # However PPT only allows one axis line. When the zero line is present, we show
+        # it by default and the axis line only if the zero line has width 0.
+        # Note that for Area, Bar, Column, Line the zero line of the values axis is shown by default
+        values.axis.line <- if (!isTRUE(args$categories.zero.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
+                            else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
+        categories.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
+                                else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
+
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
             size = px2pt(args$categories.tick.font.size)),
@@ -831,9 +839,10 @@ getPPTSettings <- function(chart.type, args, data)
             family = args$categories.title.font.family,
             size = px2pt(args$categories.title.font.size)),
             NumberFormat = convertToPPTNumFormat(args$categories.tick.format),
-            AxisLine = list(Color = args$categories.line.color,
-            Width = px2pt(args$categories.line.width),
-            Style = if (isTRUE(args$categories.line.width == 0)) "None" else "Solid"),
+            AxisLine = list(Color = categories.axis.line$color,
+            Width = px2pt(categories.axis.line$width),
+            Style = getLineStyle(categories.axis.line)),
+            Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
@@ -851,9 +860,10 @@ getPPTSettings <- function(chart.type, args, data)
 
             family = args$values.title.font.family, size = px2pt(args$values.title.font.size)),
             NumberFormat = convertToPPTNumFormat(args$values.tick.format),
-            AxisLine = list(Color = args$values.line.color,
-            Width = px2pt(args$values.line.width),
-            Style = if (isTRUE(args$values.line.width == 0)) "None" else "Solid"),
+            AxisLine = list(Color = values.axis.line$color,
+            Width = px2pt(values.axis.line$width),
+            Style = getLineStyle(values.axis.line)),
+            Crosses = values.axis.line$crosses,
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
             Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
@@ -861,6 +871,10 @@ getPPTSettings <- function(chart.type, args, data)
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))
             res$ValueAxis$Minimum <- args$values.bounds.minimum
+
+        # This needs to be NULL because powerpoint reverses the bar chart y-axis
+        if (chart.type == "Bar")
+            res$ValueAxis$Crosses <- NULL
 
         # We don't want to manually set axis label position
         # if they are not shown
@@ -871,15 +885,6 @@ getPPTSettings <- function(chart.type, args, data)
     }
 
     # Chart-specfic parameters
-    if (grepl("StackedColumn", chart.type) && isTRUE(args$values.zero))
-    {
-        # PPT doesn't have a concept of the zero line so use a workaround
-        res$ValueAxis$Crosses <- "AutoZero"
-        res$PrimaryAxis$AxisLine$Style <- "Solid"
-        res$PrimaryAxis$AxisLine$Width <- px2pt(args$values.zero.line.width)
-        res$PrimaryAxis$AxisLine$Color <- args$values.zero.line.color
-    }
-
     if (chart.type %in% "Donut")
         res$HoleSize = args$pie.inner.radius
     if (chart.type %in% c("Donut", "Pie"))
@@ -914,11 +919,19 @@ getPPTSettings <- function(chart.type, args, data)
     # See RS-7154 - try master.displayr.com
     if (isScatter(chart.type))
     {
-        res$ValueAxis$Crosses <- "Minimum"
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size * 10
     }
     return(res)
+}
+
+
+getLineStyle <- function (line) {
+    if (is.null(line$width) || line$width <= 0)
+        return ("None")
+    if (is.null(line$dash))
+        return ("Solid")
+    return (line$dash)
 }
 
 

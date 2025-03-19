@@ -50,6 +50,7 @@ test_that("Chart settings",
             values.grid.color = "#CCCCCC", categories.grid.color = "#BBBBBB",
             values.line.color = "#000000", categories.line.color = "#222222",
             values.line.width = 2, categories.line.width = 2,
+            values.zero.line.width = 2, values.zero.line.color = "#0000FF",
             data.label.show = TRUE, bar.gap = 0.0,
             marker.border.color = "#000000", marker.border.width = 2)
     expect_equal(length(attr(res, "ChartSettings")$TemplateSeries), 1)
@@ -58,8 +59,8 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#222222", Width = 1.50003750093752,
-            Style = "Solid"), MajorGridLine = list(Color = "#BBBBBB",
+            AxisLine = list(Color = "#0000FF", Width = 1.50003750093752,
+            Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = FALSE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
@@ -92,7 +93,7 @@ test_that("Chart settings",
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
             AxisLine = list(Color = "#222222", Width = 1.50003750093752,
-            Style = "Solid"), MajorGridLine = list(Color = "#BBBBBB",
+            Style = "Solid"), Crosses = "Minimum", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = TRUE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
@@ -100,7 +101,7 @@ test_that("Chart settings",
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
             AxisLine = list(Color = "#000000", Width = 1.50003750093752,
-            Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
+            Style = "Solid"), Crosses = "Minimum", MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 42.85714, tolerance = 1e-3)
 
@@ -158,10 +159,16 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[5]]$BackgroundColor, "#EC83BAFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$OutlineColor, "#333333")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$ShowCategoryNames, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[4]]$DataLabelsPosition, "OutsideEnd")
     expect_equal(attr(res, "ChartSettings")$FirstSliceAngle, 270)
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]]$ShowValue, TRUE)
+
+    res <- CChart("Pie", dat.1d[5:9]/100, append.data = TRUE, pie.border.color = "#333333",
+            colors = col.1d.multicolor[5:9], data.label.format = "%")
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels[[1]],
+        list(CustomPoints = list(list(Index = 0, Segments = list(list(
+        Field = "CategoryName"), list(Text = ": "), list(Field = "Value")))),
+        NumberingFormat = "0.#%"))
 
     res <- CChart("Pie", abs(dat.2d), append.data = TRUE)
     expect_equal(attr(res, "ChartType"), "Sunburst")
@@ -224,6 +231,13 @@ test_that("Chart settings",
     expect_true(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth < 1)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_true(!is.null(attr(res, "ChartWarning")))
+
+    res <- CChart("CombinedScatter", dat.2d, values.zero.line.width = 2,
+        values.zero.line.color = "#FF0000", values.zero.line.dash = "dot",
+        categories.zero.line.width = 1.5, categories.zero.line.color = "#008000",
+        append.data = TRUE)
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$Crosses, "AutoZero")
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "AutoZero")
 })
 
 test_that("Scatter axes bounds",
