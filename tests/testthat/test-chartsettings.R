@@ -59,16 +59,16 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#222222", Width = 1.50003750093752,
-            Style = "Solid"), Crosses = "Minimum", MajorGridLine = list(Color = "#BBBBBB",
+            AxisLine = list(Color = "#0000FF", Width = 1.50003750093752,
+            Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = FALSE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#0000FF", Width = 1.50003750093752,
-            Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#CCCCCC",
+            AxisLine = list(Color = "#000000", Width = 1.50003750093752,
+            Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 0)
 
@@ -231,6 +231,13 @@ test_that("Chart settings",
     expect_true(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth < 1)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "None")
     expect_true(!is.null(attr(res, "ChartWarning")))
+
+    res <- CChart("CombinedScatter", dat.2d, values.zero.line.width = 2,
+        values.zero.line.color = "#FF0000", values.zero.line.dash = "dot",
+        categories.zero.line.width = 1.5, categories.zero.line.color = "#008000",
+        append.data = TRUE)
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$Crosses, "AutoZero")
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "AutoZero")
 })
 
 test_that("Scatter axes bounds",
