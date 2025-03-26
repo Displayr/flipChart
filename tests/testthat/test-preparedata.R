@@ -35,6 +35,9 @@ test_that("PrepareData: number multi",
     res <- PrepareData("Column", input.data.table = tab)
     expect_equal(res$categories.title, "Q25. Respondent image (number multi)")
     expect_equal(res$values.title, "Average")
+
+    expect_error(res <- PrepareData("Column", input.data.table = tab, row.names.to.remove = ""), NA)
+    expect_equal(length(res$data), 10)
 })
 
 

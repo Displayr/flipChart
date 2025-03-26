@@ -1332,8 +1332,8 @@ RearrangeRowsColumns <- function(data,
     # Keep hidden rows/columns until after sorting
     # Sort is often performed on the NET values
     data <- RemoveRowsAndOrColumns(data,
-                row.names.to.remove = row.names.to.remove,
-                column.names.to.remove = column.names.to.remove, split = split)
+                row.names.to.remove = if (isTRUE(row.names.to.remove == "")) NULL else row.names.to.remove,
+                column.names.to.remove = if (isTRUE(column.names.to.remove == "")) NULL else column.names.to.remove, split = split)
 
     # Keep last to retain order from sorting
     data <- SelectRows(data, first.k = first.k.rows, last.k = last.k.rows)
@@ -2048,6 +2048,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
 {
     data.row.labels <- rownames(data)
     n <- nrow(data)
+    y.names <- NULL
     if (any(reg.outputs <- sapply(input.data.raw$Y, function(e) inherits(e, "Regression"))))
     {
         extracted.data.raw.Y <- input.data.raw$Y
@@ -2057,7 +2058,7 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         for(i in seq_along(idx))
             attr(extracted.data.raw.Y[[idx[i]]], "label") <- regression.names[idx[i]]
         y.names <- if (show.labels) Labels(extracted.data.raw.Y) else Names(extracted.data.raw.Y)
-    } else
+    } else if (!is.null(input.data.raw))
         y.names <- if (show.labels) Labels(input.data.raw$Y) else Names(input.data.raw$Y)
 
     # Figure out which columns to use as the X and Y coordinates
