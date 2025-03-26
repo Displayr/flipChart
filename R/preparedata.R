@@ -1332,8 +1332,8 @@ RearrangeRowsColumns <- function(data,
     # Keep hidden rows/columns until after sorting
     # Sort is often performed on the NET values
     data <- RemoveRowsAndOrColumns(data,
-                row.names.to.remove = if (!any(nzchar(row.names.to.remove))) NULL else row.names.to.remove,
-                column.names.to.remove = if (!any(nzchar(column.names.to.remove))) NULL else column.names.to.remove, split = split)
+                row.names.to.remove = if (isTRUE(row.names.to.remove == "")) NULL else row.names.to.remove,
+                column.names.to.remove = if (isTRUE(column.names.to.remove == "")) NULL else column.names.to.remove, split = split)
 
     # Keep last to retain order from sorting
     data <- SelectRows(data, first.k = first.k.rows, last.k = last.k.rows)
