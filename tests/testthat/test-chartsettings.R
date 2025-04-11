@@ -71,6 +71,10 @@ test_that("Chart settings",
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
             Width = 0.750018750468762, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 0)
+    expect_true(is.null(attr(res, "ChartSettings")$ValueAxis$Crosses))
+
+    res <- CChart("BarMultiColor", dat.1d, append.data = TRUE, colors = col.1d.multicolor)
+    expect_true(is.null(attr(res, "ChartSettings")$ValueAxis$Crosses))
 
     res <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             values.grid.width = 1, categories.grid.width = 0,
