@@ -873,7 +873,7 @@ getPPTSettings <- function(chart.type, args, data)
             res$ValueAxis$Minimum <- args$values.bounds.minimum
 
         # This needs to be NULL because powerpoint reverses the bar chart y-axis
-        if (chart.type == "Bar")
+        if (chart.type %in% c("Bar", "BarMultiColor"))
             res$ValueAxis$Crosses <- NULL
 
         # We don't want to manually set axis label position
