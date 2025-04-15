@@ -1,0 +1,14 @@
+name: Build flipChart
+
+on:
+  push:
+  workflow_call: {}
+
+jobs:
+  build:
+    name: Build flipChart
+    uses: Displayr/nixr-public/.github/workflows/build-flake-installable.yaml@DPI-2964-add-package-ci
+    with:
+      installable-path: pkgs.\${currentSystem}.rPackages.flipChart
+      build-args: --override-input displayr-flipChart .
+    secrets: inherit
