@@ -10,5 +10,5 @@ jobs:
     uses: Displayr/nixr-public/.github/workflows/build-flake-installable.yaml@DPI-2964-add-package-ci
     with:
       installable-path: pkgs.${currentSystem}.rPackages.flipChart
-      build-args: --override-input displayr-flipChart .; ls
+      build-args: "--override-input displayr-flipChart .'; ls"
     secrets: inherit
