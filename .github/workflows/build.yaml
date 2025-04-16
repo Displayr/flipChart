@@ -1,12 +1,16 @@
 name: Build flipChart
 
 on:
+  workflow_dispatch:
   push:
   workflow_call: {}
 
 jobs:
   build:
     name: Build flipChart
+    permissions:
+      checks: write
+      contents: read
     uses: Displayr/nixr-public/.github/workflows/build-flake-installable.yaml@DPI-2964-add-package-ci
     with:
       installable-path: pkgs.${currentSystem}.rPackages.flipChart
