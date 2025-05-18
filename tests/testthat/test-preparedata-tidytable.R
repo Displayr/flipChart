@@ -448,6 +448,7 @@ tb1d.spans <- structure(c(Male = 49.375, Female = 50.625, NET = 100, `18 to 24` 
     0), dim = 13L)), class = "data.frame", row.names = c(NA,
 13L)), questiontypes = "PickAny", footerhtml = "BANNER SUMMARY&lt;br /&gt;sample size = 800; 95% confidence level", name = "BANNER", questions = c("BANNER",
 "SUMMARY"))
+
 tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.6060606060606,
 10.6060606060606, 10.6060606060606, 4.54545454545455, 13.6363636363636,
 15.1515151515152, 10.6060606060606, 15.1515151515152, 9.09090909090909,
@@ -541,19 +542,121 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
     0.46888998201993, 0.581610850537185, NaN, 0.889176145632785,
     0.292155530369392, 0.319971732404236, NaN, 0.487026434606843,
     0.000226846995657892, 0.0000341515402061399, NaN, NaN, NaN,
-    NaN, NaN, NaN, NaN, NaN, NaN), dim = 56L)), class = "data.frame", row.names = c(NA,
-56L)), questiontypes = c("PickAny", "PickOne"), footerhtml = "BANNER by Weight-consciousness&lt;br /&gt;sample size = 800; 95% confidence level", name = "BANNER by Weight-consciousness", questions = c("BANNER",
-"Weight-consciousness"))
-    test_that("Table with Spans", {
-        assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
-        res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
-                    row.names.to.remove = "", column.names.to.remove = "")
-        expect_equal(attr(res$data, "span"),
-            list(rows = structure(list(c("Gender", "Gender", "Gender", "Age",
-                "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"
-                ), c("Male", "Female", "NET", "18 to 24", "25 to 29", "30 to 34",
-                "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
-                "NET")), names = c("", ""), row.names = c(NA, 13L), class = "data.frame")))
+    NaN, NaN, NaN, NaN, NaN, NaN), dim = 56L)), class = "data.frame",
+    row.names = c(NA, 56L)), questiontypes = c("PickAny", "PickOne"),
+    footerhtml = "BANNER by Weight-consciousness&lt;br /&gt;sample size = 800; 95% confidence level",
+    name = "BANNER by Weight-consciousness", questions = c("BANNER","Weight-consciousness"))
+
+tb2d.multi.with.spans <- structure(c(7.07070707070707, 48.4848484848485, 44.4444444444444,
+     100, 46.4646464646465, 7.4468085106383, 48.936170212766, 43.6170212765958,
+     100, 48.936170212766, 8.43373493975904, 43.3734939759036, 48.1927710843374,
+     100, 51.8072289156626, 3.2967032967033, 40.6593406593407, 56.043956043956,
+     100, 40.6593406593407, 9.67741935483871, 44.0860215053763, 46.2365591397849,
+     100, 54.8387096774194, 15.8730158730159, 60.3174603174603, 23.8095238095238,
+     100, 50.7936507936508, 7.36842105263158, 54.7368421052632, 37.8947368421053,
+     100, 43.1578947368421, 7.93650793650794, 55.5555555555556, 36.5079365079365,
+     100, 50.7936507936508, 10.7142857142857, 75, 14.2857142857143,
+     100, 62.5, 8.25, 51.25, 40.5, 100, 49.375, 7, 48, 44, 99, 46,
+     7, 46, 41, 94, 46, 7, 36, 40, 83, 43, 3, 37, 51, 91, 37, 9, 41,
+     43, 93, 51, 10, 38, 15, 63, 32, 7, 52, 36, 95, 41, 10, 70, 46,
+     126, 64, 6, 42, 8, 56, 35, 66, 410, 324, 800, 395), dim = c(5L,
+     10L, 2L), dimnames = list(c("I am on a diet, so I tend to watch what I eat and drink",
+     "I tend watch what I eat and drink, but don’t consider myself",
+     "I typically eat and drink whatever I feel like", "NET", "Male"),
+     c("18 to 24", "25 to 29", "30 to 34", "35 to 39", "40 to 44",
+     "45 to 49", "50 to 54", "55 to 64", "65 or more", "NET"), c("Column %",
+     "Count")), class = c("array", "QTable"), dimnets = list(integer(0),
+     10L), dimduplicates = list(integer(0), 10L), span = list(
+     rows = structure(list(c("Weight-consciousness", "Weight-consciousness",
+     "Weight-consciousness", "Weight-consciousness", "Gender"),
+     c("I am on a diet, so I tend to watch what I eat and drink",
+     "I tend watch what I eat and drink, but don’t consider myself",
+     "I typically eat and drink whatever I feel like", "NET",
+     "Male")), class = "data.frame", names = c("", ""), row.names = c(NA,
+     5L)), columns = structure(list(c("Young", "Young", "Young",
+     "Young", "Old", "Old", "Old", "Old", "Old", NA), c("Younger",
+     "Younger", "Younger", NA, NA, NA, NA, NA, NA, NA), c("Youngest",
+     "Youngest", NA, NA, NA, NA, NA, NA, NA, NA), c("18 to 24",
+     "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
+     "50 to 54", "55 to 64", "65 or more", "NET")), class = "data.frame",
+     names = c("","", "", ""), row.names = c(NA, 10L))),
+     basedescriptiontext = "sample size = 800", basedescription = list(
+     Minimum = 800L, Maximum = 800L, Range = FALSE, Total = 800L,
+     Missing = 0L, EffectiveSampleSize = 800L, EffectiveSampleSizeProportion = 100,
+     FilteredProportion = 0), QStatisticsTestingInfo = structure(list(
+     significancearrowratio = structure(c(0, 0, 0, 0, 0, 0.246786632390746,
+     0, 0, 0, 0, 0, 0, 0, 0.246786632390746, 0, 0, 0, 0, 0.588688946015424,
+     0, 0, 0, 0, 0.465295629820051, 0, 0.465295629820051, 0, 0,
+     0.74293059125964, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     0, 0, 0, 0, 0, 0, 0.246786632390746, 0), dim = 50L), significancedirection = structure(c("None",
+     "None", "None", "None", "None", "Up", "None", "None", "None",
+     "None", "None", "None", "None", "Down", "None", "None", "None",
+     "None", "Up", "None", "None", "None", "None", "Up", "None",
+     "Down", "None", "None", "Down", "None", "None", "None", "None",
+     "None", "None", "None", "None", "None", "None", "None", "None",
+     "None", "None", "None", "None", "None", "None", "None", "Up",
+     "None"), dim = 50L), significancefontsizemultiplier = structure(c(1,
+     1, 1, 1, 1, 1.96, 1, 1, 1, 1, 1, 1, 1, 0.510204081632653,
+     1, 1, 1, 1, 3.29, 1, 1, 1, 1, 2.81, 1, 0.355871886120996,
+     1, 1, 0.25706940874036, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+     1, 1, 1, 1, 1, 1, 1, 1, 1.96, 1), dim = 50L), significanceissignificant = structure(c(FALSE,
+     FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE,
+     FALSE, FALSE, FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE,
+     FALSE, FALSE, FALSE, FALSE, TRUE, FALSE, TRUE, FALSE, FALSE,
+     TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+     FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+     FALSE, FALSE, TRUE, FALSE), dim = 50L), significanceargbcolor = structure(c(-8355712L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -16776961L, -8355712L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -8355712L, -8355712L,
+     -65536L, -8355712L, -8355712L, -8355712L, -8355712L, -16776961L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -16776961L, -8355712L,
+     -65536L, -8355712L, -8355712L, -65536L, -8355712L, -8355712L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -8355712L, -8355712L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -8355712L, -8355712L,
+     -8355712L, -8355712L, -8355712L, -8355712L, -8355712L, -16776961L,
+     -8355712L), dim = 50L), backgroundargbcolor = structure(c(0L,
+     0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+     0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+     0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L,
+     0L, 0L, 0L, 0L), dim = 50L), zstatistic = structure(c(-0.455612117101389,
+     -0.301297589432649, 0.0642667299386742, -1.82434472132931,
+     0.532228750874652, 2.29128091462373, -0.332692826948818,
+     -0.139346754328631, 0.695046063335142, NaN, -0.588014817629355,
+     -0.477753340731895, -1.51643509388075, -2.14699644791851,
+     -1.4702689629657, 1.50014397827836, 0.724286306497465, 1.05340474507031,
+     3.68707446075828, NaN, 0.854089594757057, 0.655330441078807,
+     1.5080692220922, 3.20861889801731, 1.19878759878797, -2.81166941935835,
+     -0.551033295254478, -0.994515974143204, -4.14385521918865,
+     NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, -0.618747215492375,
+     -0.090587150057158, 0.46815841782747, -1.76647195462751,
+     1.12105856951696, 0.234650215403031, -1.29111339181446, 0.347008210529188,
+     2.03711608927757, NaN), dim = 50L), pcorrected = structure(c(0.648668928213484,
+     0.763187578923791, 0.948757844333437, 0.0680999734029903,
+     0.594567572401358, 0.0219471717154441, 0.739366164674592,
+     0.889176145632785, 0.487026434606843, NaN, 0.556522347028733,
+     0.632825774278165, 0.129409370852577, 0.0317935644032437,
+     0.141488923495995, 0.133577111123972, 0.46888998201993, 0.292155530369392,
+     0.000226846995657892, NaN, 0.39305534877777, 0.512255025650413,
+     0.131536811435796, 0.00133374150303678, 0.230610545835739,
+     0.00492851278988693, 0.581610850537185, 0.319971732404236,
+     0.0000341515402061399, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+     NaN, NaN, NaN, NaN, 0.536082900256765, 0.927820642717582,
+     0.639671305972622, 0.0773167026691277, 0.262262932466245,
+     0.81448023121581, 0.196664361018653, 0.728585150490917, 0.0416384099417911,
+     NaN), dim = 50L)), class = "data.frame", row.names = c(NA,
+    50L)), questiontypes = c("PickAny", "PickOne"),
+    footerhtml = "BANNER by Age&lt;br /&gt;sample size = 800; 95% confidence level",
+    name = "BANNER by Age", questions = c("BANNER", "Age"))
+
+test_that("Table with Spans", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
+        row.names.to.remove = "", column.names.to.remove = "")
+    expect_equal(attr(res$data, "span"), list(rows = structure(list(c("Gender", "Gender",
+         "Gender", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"),
+          c("Male", "Female", "NET", "18 to 24", "25 to 29", "30 to 34",
+         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
+         "NET")), names = c("", ""), row.names = c(NA, 13L), class = "data.frame")))
 
         res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
                     sort.rows = TRUE)
@@ -565,10 +668,10 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
                 9L, 6L, 7L, 8L, 5L, 10L, 4L, 11L, 1L, 2L), class = "data.frame"))
 
         res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
-                    transpose = TRUE, row.names.to.remove = NULL,
-                    column.names.to.remove = NULL)
-        expect_equal(attr(res$data, "span"),
-            list(rows = structure(list(), names = character(0), row.names = integer(0), class = "data.frame"),
+                transpose = TRUE, row.names.to.remove = NULL,
+                column.names.to.remove = NULL)
+        expect_equal(attr(res$data, "span"), list(rows = structure(list(),
+                names = character(0), row.names = integer(0), class = "data.frame"),
                 columns = structure(list(c("Gender", "Gender",
                 "Gender", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age",
                 "Age", "Age"), c("Male", "Female", "NET", "18 to 24", "25 to 29",
@@ -577,7 +680,7 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
                 ), class = "data.frame")))
 
         res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
-                    transpose = TRUE)
+                transpose = TRUE)
         expect_equal(colnames(res$data), c("Male", "Female", "18 to 24",
                 "25 to 29", "30 to 34", "35 to 39", "40 to 44", "45 to 49",
                 "50 to 54", "55 to 64", "65 or more"))
@@ -610,9 +713,8 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
                 3L), class = "data.frame"), columns = structure(list(c("Gender",
                 "Gender", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"
                 ), c("Male", "Female", "18 to 24", "25 to 29", "30 to 34", "35 to 39",
-            "40 to 44", "45 to 49", "50 to 54", "55 to 64")), names = c("",
-            ""), row.names = c(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L), class = "data.frame")))
-
+                "40 to 44", "45 to 49", "50 to 54", "55 to 64")), names = c("",
+                ""), row.names = c(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L), class = "data.frame")))
 
         res <- PrepareData("Table", input.data.table = tb2d.with.rowspan, tidy = FALSE,
                            first.k.rows = 5)
@@ -629,5 +731,31 @@ tb2d.with.rowspan <- structure(c(34.8484848484849, 65.1515151515152, 100, 10.606
                  "50 to 54", "40 to 44", "45 to 49", "55 to 64", "Male", "Female")),
                 names = c("", ""), row.names = c(7L, 12L, 4L, 5L, 6L, 10L, 8L, 9L, 11L, 1L, 2L),
                 class = "data.frame"))
-    remove(ALLOW.QTABLE.CLASS, envir = .GlobalEnv)
+
+        res <- PrepareData("Table", input.data.table = tb2d.multi.with.spans,
+                tidy = FALSE, transpose = TRUE, row.names.to.remove = "NET",
+                column.names.to.remove = "NET")
+        expect_equal(attr(res$data, "span"), list(rows = structure(list(c("Young", "Young", "Young", "Young",
+              "Old", "Old", "Old", "Old", "Old"), c("Younger", "Younger", "Younger",
+               NA, NA, NA, NA, NA, NA), c("Youngest", "Youngest", NA, NA, NA,
+               NA, NA, NA, NA), c("18 to 24", "25 to 29", "30 to 34", "35 to 39",
+              "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more")), names = c("",
+              "", "", ""), row.names = c(NA, 9L), class = "data.frame"), columns = structure(list(
+              c("Weight-consciousness", "Weight-consciousness", "Weight-consciousness",
+              "Gender"), c("I am on a diet, so I tend to watch what I eat and drink",
+              "I tend watch what I eat and drink, but don’t consider myself",
+              "I typically eat and drink whatever I feel like", "Male")), names = c("",
+              ""), row.names = c(1L, 2L, 3L, 5L), class = "data.frame")))
+
+        res <- PrepareData("Table", input.data.table = tb2d.multi.with.spans,
+                tidy = FALSE, transpose = TRUE, select.rows = "65 or more")
+        expect_equal(attr(res$data, "span"), list(rows = structure(list("Old", NA_character_, NA_character_,
+               "65 or more"), names = c("", "", "", ""), row.names = 9L, class = "data.frame"),
+                columns = structure(list(c("Weight-consciousness", "Weight-consciousness",
+               "Weight-consciousness", "Gender"), c("I am on a diet, so I tend to watch what I eat and drink",
+               "I tend watch what I eat and drink, but don’t consider myself",
+               "I typically eat and drink whatever I feel like", "Male")), names = c("",
+               ""), row.names = c(1L, 2L, 3L, 5L), class = "data.frame")))
+
+        remove(ALLOW.QTABLE.CLASS, envir = .GlobalEnv)
 })

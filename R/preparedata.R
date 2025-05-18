@@ -1395,9 +1395,12 @@ transformTable <- function(data,
         {
             # Need to manually handle attributes for 3-dimensional array
             # Otherwise for handled by verbs (for QTables)
+            is.qtable <- inherits(data, "QTable")
             old.span <- attr(data, "span", exact = TRUE)
             new.data <- aperm(data, c(2, 1, 3))
             data <- CopyAttributes(new.data, data)
+            if (is.qtable)
+                class(data) <- c(class(data), "QTable")
             attr(data, "questions") <- rev(attr(data, "questions"))
             if (!is.null(old.span))
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
