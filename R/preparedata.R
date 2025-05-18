@@ -1391,10 +1391,21 @@ transformTable <- function(data,
     # hide.rows.threshold and row.names.to.remove refer to rows AFTER tranposing
     if (isTRUE(transpose))
     {
-        if (length(dim(data)) > 2)
+        if (!is.null(attr(data, "questions")) && length(dim(data)) == 2 && is.null(attr(data, "statistic")))
         {
-            # Need to manually handle attributes for 3-dimensional array
-            # Otherwise for handled by verbs (for QTables)
+            # 1-dimensional table with multiple statistics
+            is.qtable <- inherits(data, "QTable")
+            old.span <- attr(data, "span", exact = TRUE)
+            new.data <- array(data, dim = c(1, nrow(data), ncol(data)), dimnames = list("", rownames(data), colnames(data)))
+            data <- CopyAttributes(new.data, data)
+            if (is.qtable)
+                class(data) <- c(class(data), "QTable")
+            if (!is.null(old.span))
+                attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
+
+        } else if (length(dim(data)) > 2)
+        {
+            # 2-dimensional table with multiple statistics
             is.qtable <- inherits(data, "QTable")
             old.span <- attr(data, "span", exact = TRUE)
             new.data <- aperm(data, c(2, 1, 3))
@@ -1404,8 +1415,8 @@ transformTable <- function(data,
             attr(data, "questions") <- rev(attr(data, "questions"))
             if (!is.null(old.span))
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
-        }
-        else {
+        } else {
+            # Attributes handled by verbs (for QTables)
             data <- t(data)
             if (!inherits(data, "QTable")) 
                 attr(data, "questions") <- rev(attr(data, "questions"))
