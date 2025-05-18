@@ -505,6 +505,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
 
 
+    if (!inherits(data, "QTable") && !is.null(attr(data, "span")))
+        attr(data, "span") <- NULL
     if (tidy.labels)
         data <- tidyLabels(data, chart.type)
     if (isScatter(chart.type)) # to remove span NETS

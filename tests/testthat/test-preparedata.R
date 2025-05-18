@@ -2785,7 +2785,6 @@ test_that("DS-3891 Ensure subscripted tables lose attributes in PrepareData", {
         data = structure(
             array(values[1:3], dim = c(3L, 1L), dimnames = list(qtable.names[1:3], NULL)),
             statistic = "z-Statistic",
-            span = original.attr[["span"]],
             basedescriptiontext = "sample size = 327",
             basedescription = original.attr[["basedescription"]],
             QStatisticsTestingInfo = q.stat.info,
