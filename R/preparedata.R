@@ -1402,8 +1402,11 @@ transformTable <- function(data,
             if (!is.null(old.span))
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
         }
-        else
+        else {
             data <- t(data)
+            if (!inherits(data, "QTable")) 
+                attr(data, "questions") <- rev(attr(data, "questions"))
+        }
     }
 
     # Checking sample sizes (if available)
