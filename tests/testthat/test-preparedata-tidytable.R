@@ -636,12 +636,13 @@ tb2d.multi.with.spans <- structure(c(7.07070707070707, 48.4848484848485, 44.4444
 test_that("Table with Spans", {
     assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
     res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
-        row.names.to.remove = "", column.names.to.remove = "")
+        row.names.to.remove = "NET", column.names.to.remove = "")
     expect_equal(attr(res$data, "span"), list(rows = structure(list(c("Gender", "Gender",
-         "Gender", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"),
-          c("Male", "Female", "NET", "18 to 24", "25 to 29", "30 to 34",
-         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more",
-         "NET")), names = c("", ""), row.names = c(NA, 13L), class = "data.frame")))
+         "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age", "Age"),
+          c("Male", "Female", "18 to 24", "25 to 29", "30 to 34",
+         "35 to 39", "40 to 44", "45 to 49", "50 to 54", "55 to 64", "65 or more")),
+         names = c("", ""), row.names = c(1L, 2L, 4L, 5L, 6L, 7L, 8L, 9L, 10L, 11L, 12L),
+         class = "data.frame")))
 
         res <- PrepareData("Table", input.data.table = tb1d.spans, tidy = FALSE,
                     sort.rows = TRUE)

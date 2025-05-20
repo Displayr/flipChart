@@ -554,7 +554,12 @@ PrepareData <- function(chart.type,
     # by converting to a matrix if necessary
     if (chart.type == "Table" && !is.null(attr(data, "statistic")) &&
         (is.null(dim(data)) || length(dim(data)) == 1))
+    {
+        is.qtable <- inherits(data, "QTable")
         data <- CopyAttributes(as.matrix(data), data)
+        if (is.qtable)
+            class(data) <- c(class(data), "QTable")
+    }
 
     # Modify multi-stat QTables so they are 3 dimensional arrays
     # and statistic attribute from the primary statistic
