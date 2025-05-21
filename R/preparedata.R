@@ -1419,9 +1419,13 @@ transformTable <- function(data,
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
         } else {
             # Attributes handled by verbs (for QTables)
+            stat.attr <- attr(dat, "statistic")
             data <- t(data)
-            if (!inherits(data, "QTable")) 
+            if (!inherits(data, "QTable"))
+            {
                 attr(data, "questions") <- rev(attr(data, "questions"))
+                attr(data, "statistic") <- stat.attr
+            }
         }
     }
 
