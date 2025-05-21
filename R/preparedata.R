@@ -503,8 +503,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
-
-
+    if (chart.type == "Heat" && inherits(data, "QTable"))
+    {
+        # Remove QTable class for heatmap to avoid problems with column binding
+        data.class <- class(data)
+        class(data) <- setdiff(data.class, "QTable")
+    }
     if (!inherits(data, "QTable") && !is.null(attr(data, "span")))
         attr(data, "span") <- NULL
     if (tidy.labels)
