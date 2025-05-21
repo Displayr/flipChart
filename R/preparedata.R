@@ -1426,15 +1426,17 @@ transformTable <- function(data,
             attr(data, "questions") <- rev(attr(data, "questions"))
             if (!is.null(old.span))
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
-        } else {
+        } else if (inherits(data, "QTable"))
+        {
             # Attributes handled by verbs (for QTables)
-            stat.attr <- attr(data, "statistic")
             data <- t(data)
-            if (!inherits(data, "QTable"))
-            {
-                attr(data, "questions") <- rev(attr(data, "questions"))
-                attr(data, "statistic") <- stat.attr
-            }
+
+        } else
+        {
+            # Handle attributes ourself
+            new.data <- t(data)
+            data <- CopyAttributes(new.data, data)
+            attr(data, "questions") <- rev(attr(data, "questions"))
         }
     }
 
