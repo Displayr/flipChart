@@ -503,8 +503,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # Finalizing the result.
     ###########################################################################
-
-
+    if (chart.type == "Heat" && inherits(data, "QTable"))
+    {
+        # Remove QTable class for heatmap to avoid problems with column binding
+        data.class <- class(data)
+        class(data) <- setdiff(data.class, "QTable")
+    }
     if (!inherits(data, "QTable") && !is.null(attr(data, "span")))
         attr(data, "span") <- NULL
     if (tidy.labels)
@@ -1422,11 +1426,17 @@ transformTable <- function(data,
             attr(data, "questions") <- rev(attr(data, "questions"))
             if (!is.null(old.span))
                 attr(data, "span") <- list(rows = old.span$columns, columns = old.span$rows)
-        } else {
+        } else if (inherits(data, "QTable"))
+        {
             # Attributes handled by verbs (for QTables)
             data <- t(data)
-            if (!inherits(data, "QTable")) 
-                attr(data, "questions") <- rev(attr(data, "questions"))
+
+        } else
+        {
+            # Handle attributes ourself
+            new.data <- t(data)
+            data <- CopyAttributes(new.data, data)
+            attr(data, "questions") <- rev(attr(data, "questions"))
         }
     }
 

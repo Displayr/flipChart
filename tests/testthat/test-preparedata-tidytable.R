@@ -743,5 +743,8 @@ test_that("Table with Spans", {
                "I typically eat and drink whatever I feel like", "Male")), names = c("",
                ""), row.names = c(1L, 2L, 3L, 5L), class = "data.frame")))
 
+        expect_error(res <- PrepareData("Heat", input.data.table = tb2d.with.rowspan), NA)
+        expect_equal(class(res$data), c("matrix", "array"))
+
         remove(ALLOW.QTABLE.CLASS, envir = .GlobalEnv)
 })
