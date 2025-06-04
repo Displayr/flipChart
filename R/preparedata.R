@@ -1083,7 +1083,7 @@ processInputData <- function(x, subset, weights)
     # Try to use S3 method to extract data
     x <- ExtractChartData(x)
     n.dim <- length(dim(x)) - isQTableWithMultStatistic(x)
-    if (n.dim > 2)
+    if (n.dim >= 2)
         x <- FlattenQTable(x)
 
     if (hasUserSuppliedRownames(x))
