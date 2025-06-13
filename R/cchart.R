@@ -828,7 +828,7 @@ getPPTSettings <- function(chart.type, args, data)
         # Note that for Area, Bar, Column, Line the zero line of the values axis is shown by default
         values.axis.line <- if (!isTRUE(args$categories.zero.line.width > 0)) list(width = args$values.line.width, color = args$values.line.color, crosses = "Minimum")
                             else list(width = args$categories.zero.line.width, color = args$categories.zero.line.color, dash = args$categories.zero.line.dash, crosses = "AutoZero")
-        categories.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "Minimum")
+        categories.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = "AutoZero")
                                 else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
 
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
