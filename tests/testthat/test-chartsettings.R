@@ -97,7 +97,7 @@ test_that("Chart settings",
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
             AxisLine = list(Color = "#222222", Width = 1.50003750093752,
-            Style = "Solid"), Crosses = "Minimum", MajorGridLine = list(Color = "#BBBBBB",
+            Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = TRUE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
@@ -242,6 +242,12 @@ test_that("Chart settings",
         append.data = TRUE)
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis$Crosses, "AutoZero")
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "AutoZero")
+
+    res <- CChart("CombinedScatter", abs(dat.2d) + 10,
+        values.line.width = 2, categories.line.width = 2,
+        append.data = TRUE)
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$Crosses, "Minimum")
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "Minimum")
 })
 
 test_that("Scatter axes bounds",
