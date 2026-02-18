@@ -1053,26 +1053,6 @@ processInputData <- function(x, subset, weights)
     if (is.null(x))
         return(x)
 
-    if (length(subset) > 1)
-    {
-        msg <- paste("Filters have been applied to this visualization. They have been ignored.",
-                "To apply filters you need to instead filter the source data that is being visualized.")
-        tb.desc <- attr(x, "basedescription")
-        if (is.null(tb.desc) || tb.desc$FilteredProportion == 0)
-            warning(msg)
-        else if ((mean(subset) * 100) + tb.desc$FilteredProportion != 100)
-            warning(msg)
-    }
-    if (length(weights) > 0)
-    {
-        msg <- paste("Weights have been applied to this visualization. They have been ignored.",
-                "To apply weights you need to instead weight the source data that is being visualized.")
-        if (is.null(attr(x, "basedescription")) || is.null(attr(x, "weight.name")))
-            warning(msg)
-        else if (!isTRUE(attr(weights, "name") == attr(x, "weight.name")))
-            warning(msg)
-    }
-
     # Simplify input if only a single table has been specified
     if ("list" %in% class(x) && is.list(x) && !is.data.frame(x))
     {
@@ -1100,13 +1080,6 @@ isQTableWithMultStatistic <- function(x)
 
 processPastedData <- function(input.data.pasted, warn, date.format, subset, weights)
 {
-    if (length(subset) > 1)
-        warning("Filters have been applied to this visualization. They have been ignored. ",
-            "To apply filters you need to instead filter the source data that is being visualized.")
-    if (length(weights) > 0)
-        warning("Weights have been applied to this visualization. They have been ignored. ",
-            "To apply weights you need to instead weight the source data that is being visualized.")
-
     us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
     processed <- tryCatch(ParseUserEnteredTable(input.data.pasted[[1]],
