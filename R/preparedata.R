@@ -17,7 +17,7 @@
 #'     In the case of multiple Regression outputs, the labels default to the R name of the Regression output.
 #' @param input.data.pasted List of length six; the first component of
 #'     which is assumed to be from a user-entered/pasted table; will
-#'     be processed by \code{\link{ParseUserEnteredTable}}.
+#'     be processed by \code{\link[flipTransformations]{ParseUserEnteredTable}}.
 #' @param input.data.other A PickAny Multi Q variable.
 #' @param data.source Where multiple data inputs are provided, a text
 #'     string can be provided to disambiguate. Refer to the source
