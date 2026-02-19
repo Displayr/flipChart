@@ -367,10 +367,10 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # Ignore filter if the scatterplot input is not raw variables.
     # The input can be a Q summary table or some other type of calculation
-    use_filter <- length(subset) > 1 && NROW(subset) == NROW(data)
-    if (!use_filter && isScatter(chart.type))
+    use.filter <- length(subset) > 1 && NROW(subset) == NROW(data)
+    if (!use.filter && isScatter(chart.type))
         subset <- TRUE
-    if (!is.null(input.data.raw) || use_filter || NROW(weights) == NROW(data))
+    if (!is.null(input.data.raw) || use.filter || NROW(weights) == NROW(data))
     {
         missing <- if (chart.type %in% c("Venn", "Sankey") && !any(checkRegressionOutput(input.data.raw)))
             "Exclude cases with missing data" else "Use partial data"
@@ -403,7 +403,7 @@ PrepareData <- function(chart.type,
                     " observations remain.")
         weights <- setWeight(data, weights)
     }
-    if (use_filter)
+    if (use.filter)
         attr(data, "assigned.rownames") <- FALSE
 
 
@@ -519,7 +519,7 @@ PrepareData <- function(chart.type,
         data <- RemoveRowsAndOrColumns(data,
                 row.names.to.remove = row.names.to.remove,
                 column.names.to.remove = column.names.to.remove, split = split)
-    if (use_filter && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
+    if (use.filter && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
         # Do not drop 1-column table (from aggregated data) to keep name for legend
