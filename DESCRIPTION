@@ -1,7 +1,7 @@
 Package: flipChart
 Type: Package
 Title: Single function for calling charts - CChart
-Version: 1.12.8
+Version: 1.12.9
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
 Description: Wrapper for other chart functions, such that they can be access via a
@@ -44,4 +44,4 @@ Remotes:
     Displayr/flipTime,
     Displayr/flipU,
     Displayr/verbs
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

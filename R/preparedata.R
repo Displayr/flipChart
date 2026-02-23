@@ -17,7 +17,7 @@
 #'     In the case of multiple Regression outputs, the labels default to the R name of the Regression output.
 #' @param input.data.pasted List of length six; the first component of
 #'     which is assumed to be from a user-entered/pasted table; will
-#'     be processed by \code{\link{ParseUserEnteredTable}}.
+#'     be processed by \code{\link[flipTransformations]{ParseUserEnteredTable}}.
 #' @param input.data.other A PickAny Multi Q variable.
 #' @param data.source Where multiple data inputs are provided, a text
 #'     string can be provided to disambiguate. Refer to the source
@@ -365,10 +365,12 @@ PrepareData <- function(chart.type,
     ###########################################################################
     # 2. Filters the data and/or removes missing values
     ###########################################################################
-    if (isScatter(chart.type) && !is.null(input.data.raw) && containsQTable(input.data.raw))
+    # Ignore filter if the scatterplot input is not raw variables.
+    # The input can be a Q summary table or some other type of calculation
+    use.filter <- length(subset) > 1 && NROW(subset) == NROW(data)
+    if (!use.filter && isScatter(chart.type))
         subset <- TRUE
-    filt <- length(subset) > 1 && NROW(subset) == NROW(data)
-    if (!is.null(input.data.raw) || filt || NROW(weights) == NROW(data))
+    if (!is.null(input.data.raw) || use.filter || NROW(weights) == NROW(data))
     {
         missing <- if (chart.type %in% c("Venn", "Sankey") && !any(checkRegressionOutput(input.data.raw)))
             "Exclude cases with missing data" else "Use partial data"
@@ -401,7 +403,7 @@ PrepareData <- function(chart.type,
                     " observations remain.")
         weights <- setWeight(data, weights)
     }
-    if (filt)
+    if (use.filter)
         attr(data, "assigned.rownames") <- FALSE
 
 
@@ -517,7 +519,7 @@ PrepareData <- function(chart.type,
         data <- RemoveRowsAndOrColumns(data,
                 row.names.to.remove = row.names.to.remove,
                 column.names.to.remove = column.names.to.remove, split = split)
-    if (filt && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
+    if (use.filter && !is.null(attr(subset, "label")) && !is.null(input.data.raw) && NCOL(data) == 1 &&
         chart.type %in% c("Table", "Area", "Bar", "Column", "Line", "Radar", "Palm", "Time Series"))
     {
         # Do not drop 1-column table (from aggregated data) to keep name for legend
@@ -1056,9 +1058,9 @@ processInputData <- function(x, subset, weights)
     if (length(subset) > 1)
     {
         msg <- paste("Filters have been applied to this visualization. They have been ignored.",
-                "To apply filters you need to instead filter the source data that is being visualized.")
+                     "To apply filters you need to instead filter the source data that is being visualized.")
         tb.desc <- attr(x, "basedescription")
-        if (is.null(tb.desc) || tb.desc$FilteredProportion == 0)
+        if (is.null(tb.desc))
             warning(msg)
         else if ((mean(subset) * 100) + tb.desc$FilteredProportion != 100)
             warning(msg)
@@ -1066,7 +1068,7 @@ processInputData <- function(x, subset, weights)
     if (length(weights) > 0)
     {
         msg <- paste("Weights have been applied to this visualization. They have been ignored.",
-                "To apply weights you need to instead weight the source data that is being visualized.")
+                     "To apply weights you need to instead weight the source data that is being visualized.")
         if (is.null(attr(x, "basedescription")) || is.null(attr(x, "weight.name")))
             warning(msg)
         else if (!isTRUE(attr(weights, "name") == attr(x, "weight.name")))
@@ -1105,7 +1107,7 @@ processPastedData <- function(input.data.pasted, warn, date.format, subset, weig
             "To apply filters you need to instead filter the source data that is being visualized.")
     if (length(weights) > 0)
         warning("Weights have been applied to this visualization. They have been ignored. ",
-            "To apply weights you need to instead weight the source data that is being visualized.")
+                "To apply weights you need to instead weight the source data that is being visualized.")
 
     us.format <- switch(date.format, US = TRUE, International = FALSE, Automatic = NULL, "No date formatting")
     want.data.frame <- length(input.data.pasted) > 1L && isTRUE(input.data.pasted[[2]])
@@ -2204,14 +2206,6 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
     data <- newdata
     attr(data, "scatter.variable.indices") <- c(x = 1, y = 2, sizes = 0, colors = 3, groups = 3)
     return(data)
-}
-
-#' @importFrom flipU IsQTable
-containsQTable <- function(x)
-{
-    if (is.data.frame(x)) return(FALSE)
-    if (!is.list(x)) return(IsQTable(x))
-    any(vapply(x, containsQTable, logical(1L)))
 }
 
 #' @importFrom abind abind

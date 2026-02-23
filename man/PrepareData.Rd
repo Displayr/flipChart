@@ -89,7 +89,7 @@ In the case of multiple Regression outputs, the labels default to the R name of 
 
 \item{input.data.pasted}{List of length six; the first component of
 which is assumed to be from a user-entered/pasted table; will
-be processed by \code{\link{ParseUserEnteredTable}}.}
+be processed by \code{\link[flipTransformations]{ParseUserEnteredTable}}.}
 
 \item{input.data.other}{A PickAny Multi Q variable.}
 
