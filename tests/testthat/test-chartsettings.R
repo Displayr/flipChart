@@ -26,8 +26,9 @@ test_that("Chart settings",
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
-            categories.title = "Letters",
+            categories.title = "Letters", categories.title.font.size = 11,
             values.bounds.maximum = 6, values.bounds.minimum = -3,
+            values.tick.font.size = 9,
             data.label.font.family = "Arial", data.label.font.size = 10,
             data.label.show = TRUE, data.label.font.autocolor = TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#BAE4B3FF")
@@ -37,13 +38,15 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsFont,
-            list(family = "Arial", size = 9.7502437560939, color = "#2C2C2C"))
+            list(family = "Arial", size = 10, color = "#2C2C2C"))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color,"#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color,"#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
     expect_equal(attr(res, "ChartLabels")$PrimaryAxisTitle, "Letters")
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$TitleFont$size, 11)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, 6)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Minimum, -3)
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$LabelsFont$size, 9)
 
     res <- CChart("Bar", dat.1d, append.data = TRUE, colors = "#FF0000",
             values.grid.width = 1, categories.grid.width = 0,
@@ -59,7 +62,7 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#0000FF", Width = 1.50003750093752,
+            AxisLine = list(Color = "#0000FF", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = FALSE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
@@ -67,9 +70,9 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#000000", Width = 1.50003750093752,
+            AxisLine = list(Color = "#000000", Width = 1.5,
             Style = "Solid"), MajorGridLine = list(Color = "#CCCCCC",
-            Width = 0.750018750468762, Style = "Solid")))
+            Width = 0.75, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 0)
     expect_true(is.null(attr(res, "ChartSettings")$ValueAxis$Crosses))
 
@@ -96,7 +99,7 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#222222", Width = 1.50003750093752,
+            AxisLine = list(Color = "#222222", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
             Width = 0, Style = "None"), RotateLabels = TRUE, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
@@ -104,9 +107,9 @@ test_that("Chart settings",
             ShowTitle = FALSE,
             TitleFont = list(color = NULL, family = NULL, size = numeric(0)),
             NumberFormat = "General",
-            AxisLine = list(Color = "#000000", Width = 1.50003750093752,
+            AxisLine = list(Color = "#000000", Width = 1.5,
             Style = "Solid"), Crosses = "Minimum", MajorGridLine = list(Color = "#CCCCCC",
-            Width = 0.750018750468762, Style = "Solid")))
+            Width = 0.75, Style = "Solid")))
     expect_equal(attr(res, "ChartSettings")$GapWidth, 42.85714, tolerance = 1e-3)
 
     res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
@@ -123,9 +126,9 @@ test_that("Chart settings",
     #expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineStyle, "Dot")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineColor, "#A5A5A5")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.750018750468762)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineWidth, 1.50003750093752)
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 2.25005625140629)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.75)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineWidth, 1.5)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 2.25)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$Marker,
            list(Size = 10, OutlineStyle = "None", BackgroundColor = "#ED7D31FF"))
 
@@ -136,7 +139,7 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor, "#5C9AD3")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineColor, "#ED7D31")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 1.50003750093752)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 1.5)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowCategoryNames, FALSE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
 
@@ -199,7 +202,7 @@ test_that("Chart settings",
             list(BackgroundColor = "#999999B2", Index = 9)))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineStyle, "Solid")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineColor, "#FF0000FF")
-    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.750018750468762)
+    expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 0.75)
     expect_equal(attr(res, "ChartSettings")$GapWidth, 66.66667, tolerance = 1e-3)
     expect_equal(attr(res, "ChartSettings")$ShowLegend, FALSE)
 

@@ -981,12 +981,12 @@ setScatterAxesBounds <- function(settings, data)
 # into points (which is used in Displayr and PPT exporting)
 px2pt <- function(x)
 {
-    return(x/1.3333)
+    return(x / (4/3))
 }
 
 pt2px <- function(x)
 {
-    return(x * 1.3333)
+    return(x * (4/3))
 }
 
 getHexCode <- function(color, opacity)
@@ -1086,10 +1086,10 @@ substituteAxisNames <- function(chart.function, arguments)
 scaleFontSizes <- function(arguments)
 {
     ind <- which(grepl("font.size$", names(arguments)))
-    f.scale <- 1.3333
+    f.scale <- 4/3
     for (i in ind)
     {
-        arguments[[i]] <- round(f.scale * arguments[[i]], 0)
+        arguments[[i]] <- f.scale * arguments[[i]]
     }
     return(arguments)
 }

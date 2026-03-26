@@ -19,9 +19,9 @@ test_that("ChartSettings - CombinedScatter",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$Marker,
             list(Size = 6, OutlineStyle = "None", BackgroundColor = "#0000FF4C"))
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis$MajorGridLine,
-            list(Color = "#FF000080", Width = 0.375009375234381, Style = "Solid"))
+            list(Color = "#FF000080", Width = 0.375, Style = "Solid"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis$MajorGridLine,
-            list(Color = "#FF000080", Width = 0.375009375234381, Style = "Solid"))
+            list(Color = "#FF000080", Width = 0.375, Style = "Solid"))
     #expect_equal(attr(res, "ChartLabels"), list(PrimaryAxisTitle = "sr", ValueAxisTitle = "pop15"))
     expect_true(attr(res, "ChartSettings")$PrimaryAxis$ShowTitle)
     expect_true(attr(res, "ChartSettings")$ValueAxis$ShowTitle)
