@@ -1089,7 +1089,7 @@ scaleFontSizes <- function(arguments)
     f.scale <- 1.3333
     for (i in ind)
     {
-        arguments[[i]] <- round(f.scale * arguments[[i]], 0)
+        arguments[[i]] <- f.scale * arguments[[i]]
     }
     return(arguments)
 }
