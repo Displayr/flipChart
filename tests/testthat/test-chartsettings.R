@@ -26,8 +26,9 @@ test_that("Chart settings",
 
     res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d.gradient,
             type = "Stacked", font.units = "pt", global.font.color = "#2C2C2C",
-            categories.title = "Letters",
+            categories.title = "Letters", categories.title.font.size = 11,
             values.bounds.maximum = 6, values.bounds.minimum = -3,
+            values.tick.font.size = 9,
             data.label.font.family = "Arial", data.label.font.size = 10,
             data.label.show = TRUE, data.label.font.autocolor = TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#BAE4B3FF")
@@ -37,13 +38,15 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$ShowDataLabels, TRUE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineStyle, "None")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$DataLabelsFont,
-            list(family = "Arial", size = 9.7502437560939, color = "#2C2C2C"))
+            list(family = "Arial", size = 10, color = "#2C2C2C"))
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$DataLabelsFont$color,"#FFFFFF")
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$DataLabelsFont$color,"#2C2C2C")
     expect_equal(attr(res, "ChartSettings")$ShowChartTitle, FALSE)
     expect_equal(attr(res, "ChartLabels")$PrimaryAxisTitle, "Letters")
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$TitleFont$size, 11)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Maximum, 6)
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Minimum, -3)
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$LabelsFont$size, 9)
 
     res <- CChart("Bar", dat.1d, append.data = TRUE, colors = "#FF0000",
             values.grid.width = 1, categories.grid.width = 0,
