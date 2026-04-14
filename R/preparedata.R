@@ -2316,7 +2316,7 @@ updateQStatisticsInfo <- function(x, original.dim.names, original.is.multistat, 
         any(dimnames(x)[[1]] != original.dim.names[[1]])
     cols.changed <- length(dimnames(x)[[2]]) != length(original.dim.names[[2]]) ||
         any(dimnames(x)[[2]] != original.dim.names[[2]])
-    if (!rows.changed && !cols.changed)
+    if (!rows.changed && !cols.changed && !transpose)
         return(x)
 
     x.siginfo <- attr(x, "QStatisticsTestingInfo")
