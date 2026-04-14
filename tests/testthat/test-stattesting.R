@@ -767,6 +767,14 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
         names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
     expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
 
+    res <- PrepareData("Column", input.data.table = tb.2d, tidy = FALSE,
+        hide.empty.rows.and.columns = FALSE, transpose = TRUE,
+        row.names.to.remove = NULL, column.names.to.remove = NULL, signif.append = TRUE)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each = ncol(res$data)), "-",
+                      rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
     expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, signif.symbol = "Caret",
         tidy = FALSE, sort.rows = TRUE, sort.rows.decreasing = TRUE, transpose = TRUE,
         signif.append = TRUE), NA)
