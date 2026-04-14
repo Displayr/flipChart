@@ -2303,9 +2303,11 @@ updateQStatisticsInfo <- function(x, original.dim.names, original.is.multistat, 
         original.ncol <- 1
     else
         original.ncol <- length(original.dim.names[[2]])
-    if ((length(dim(x)) < 2 || NCOL(x) == 1) && original.ncol == 1)
+    if ((length(dim(x)) < 2 || NCOL(x) == 1 || isTRUE(transpose)) && original.ncol == 1)
     {
-        curr.names <- if (length(dim(x)) == 0) names(x) else rownames(x)
+        curr.names <- if (length(dim(x)) == 0) names(x)
+                      else if (isTRUE(transpose) && NCOL(x) > 1) colnames(x)
+                      else rownames(x)
         ind <- match(curr.names, original.dim.names[[1]])
         attr(x, "QStatisticsTestingInfo") <- x.siginfo[ind,]
         return(x)
@@ -2316,7 +2318,7 @@ updateQStatisticsInfo <- function(x, original.dim.names, original.is.multistat, 
         any(dimnames(x)[[1]] != original.dim.names[[1]])
     cols.changed <- length(dimnames(x)[[2]]) != length(original.dim.names[[2]]) ||
         any(dimnames(x)[[2]] != original.dim.names[[2]])
-    if (!rows.changed && !cols.changed)
+    if (!rows.changed && !cols.changed && !transpose)
         return(x)
 
     x.siginfo <- attr(x, "QStatisticsTestingInfo")

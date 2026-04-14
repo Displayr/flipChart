@@ -746,6 +746,11 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
     expect_equal(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
                  attr(tb.1d, "QStatisticsTestingInfo")$pcorrected[order(tb.1d)[-10]])
 
+    expect_error(res <- PrepareData("Column", input.data.table = tb.1d.multstats,
+        tidy = FALSE, signif.append = TRUE, transpose = TRUE), NA)
+    expect_equal(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+                 attr(tb.1d, "QStatisticsTestingInfo")$pcorrected[-10])
+
     orig.pcorr <- structure(attr(tb.2d, "QStatisticsTestingInfo")$pcorrected,
         names = paste(rep(colnames(tb.2d), nrow(tb.2d)), "-", rep(rownames(tb.2d), each=ncol(tb.2d))))
     expect_warning(res <- PrepareData("Column", input.data.table = tb.2d, signif.symbol = "Caret",
@@ -760,6 +765,14 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
         signif.append = TRUE), "Table has been sorted")
     new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
         names = paste(rep(rownames(res$data), each=ncol(res$data)), "-", rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
+    res <- PrepareData("Column", input.data.table = tb.2d, tidy = FALSE,
+        hide.empty.rows.and.columns = FALSE, transpose = TRUE,
+        row.names.to.remove = NULL, column.names.to.remove = NULL, signif.append = TRUE)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each = ncol(res$data)), "-",
+                      rep(colnames(res$data), nrow(res$data))))
     expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
 
     expect_error(res <- PrepareData("Column", input.data.table = tb.2d.multstats, signif.symbol = "Caret",
@@ -803,6 +816,17 @@ test_that("QStatisticsTestingInfo rearranges with data manipulations",
     expect_equal(attr(res$data, "QStatisticsTestingInfo")$significancedirection,
         structure(c("Down", "None", "None", "None", "Up", "None", "None",
         "None", "None"), dim = 9L))
+
+    # 2d multi-stat with only tranpose, no row/column manipulations
+    res <- PrepareData("Column", input.data.table = tb.2d.multstats, tidy = FALSE,
+        hide.empty.rows.and.columns = FALSE, transpose = TRUE,
+        row.names.to.remove = NULL, column.names.to.remove = NULL,
+        signif.append = TRUE)
+    new.pcorr <- structure(attr(res$data, "QStatisticsTestingInfo")$pcorrected,
+        names = paste(rep(rownames(res$data), each = ncol(res$data)), "-",
+                      rep(colnames(res$data), nrow(res$data))))
+    expect_equal(orig.pcorr[names(new.pcorr)], new.pcorr)
+
 })
 
 test_that("Handle Column Comparisons correctly",
