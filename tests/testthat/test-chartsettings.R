@@ -341,3 +341,22 @@ test_that("Color opacity",
     expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineColor, "#22222280")
     expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 1.500, tol = 1e-3)
 })
+
+test_that("Grid line type is exported to PowerPoint settings (RS-22447)",
+{
+    res <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 1, values.grid.dash = "Dot",
+            categories.grid.width = 1, categories.grid.dash = "Dash"))
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Dot")
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$MajorGridLine$Style, "Dash")
+
+    # A zero-width grid is still "None" regardless of the dash setting.
+    res0 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 0, values.grid.dash = "Dot"))
+    expect_equal(attr(res0, "ChartSettings")$ValueAxis$MajorGridLine$Style, "None")
+
+    # Backwards compatible: no dash supplied still exports as "Solid".
+    res1 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 1))
+    expect_equal(attr(res1, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Solid")
+})

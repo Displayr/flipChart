@@ -845,7 +845,7 @@ getPPTSettings <- function(chart.type, args, data)
             Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
-            Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
+            Style = getLineStyle(list(width = args$categories.grid.width, dash = args$categories.grid.dash))),
             RotateLabels = isTRUE(args$categories.tick.angle == 90),
             LabelPosition = "Low")
         if (any(nzchar(args$categories.bounds.maximum)))
@@ -866,7 +866,7 @@ getPPTSettings <- function(chart.type, args, data)
             Crosses = values.axis.line$crosses,
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
-            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+            Style = getLineStyle(list(width = args$values.grid.width, dash = args$values.grid.dash))))
         if (any(nzchar(args$values.bounds.maximum)))
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))
