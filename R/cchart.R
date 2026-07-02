@@ -845,7 +845,7 @@ getPPTSettings <- function(chart.type, args, data)
             Crosses = categories.axis.line$crosses,
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
-            Style = if (isTRUE(args$categories.grid.width == 0)) "None" else "Solid"),
+            Style = getGridLineStyle(args$categories.grid.width, args$categories.grid.dash)),
             RotateLabels = isTRUE(args$categories.tick.angle == 90),
             LabelPosition = "Low")
         if (any(nzchar(args$categories.bounds.maximum)))
@@ -866,7 +866,7 @@ getPPTSettings <- function(chart.type, args, data)
             Crosses = values.axis.line$crosses,
             MajorGridLine = list(Color = args$values.grid.color,
             Width = px2pt(args$values.grid.width),
-            Style = if (isTRUE(args$values.grid.width == 0)) "None" else "Solid"))
+            Style = getGridLineStyle(args$values.grid.width, args$values.grid.dash)))
         if (any(nzchar(args$values.bounds.maximum)))
             res$ValueAxis$Maximum <- args$values.bounds.maximum
         if (any(nzchar(args$values.bounds.minimum)))
@@ -932,6 +932,19 @@ getLineStyle <- function (line) {
     if (is.null(line$dash))
         return ("Solid")
     return (line$dash)
+}
+
+# Grid line style for PPT/Excel export. Unlike getLineStyle(), a missing width
+# does NOT mean "no line" here: getPPTSettings() sees the raw user args before
+# the chart-function defaults are applied, so an omitted grid.width just means
+# "use the chart default" (the grid is typically shown). Only an explicit width
+# of 0 hides the grid. isTRUE() keeps this NA-safe.
+getGridLineStyle <- function (width, dash) {
+    if (isTRUE(width == 0))
+        return ("None")
+    if (is.null(dash))
+        return ("Solid")
+    return (dash)
 }
 
 

@@ -341,3 +341,43 @@ test_that("Color opacity",
     expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineColor, "#22222280")
     expect_equal(attr(viz, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 1.500, tol = 1e-3)
 })
+
+test_that("Grid line type is exported to PowerPoint settings (RS-22447)",
+{
+    res <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 1, values.grid.dash = "Dot",
+            categories.grid.width = 1, categories.grid.dash = "Dash"))
+    expect_equal(attr(res, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Dot")
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$MajorGridLine$Style, "Dash")
+
+    # A zero-width grid is still "None" regardless of the dash setting.
+    res0 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 0, values.grid.dash = "Dot"))
+    expect_equal(attr(res0, "ChartSettings")$ValueAxis$MajorGridLine$Style, "None")
+
+    # Backwards compatible: no dash supplied still exports as "Solid".
+    res1 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
+            values.grid.width = 1))
+    expect_equal(attr(res1, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Solid")
+
+    # Backwards compatible: grid.width omitted entirely (NULL in the raw user
+    # args seen by getPPTSettings) must keep the previous "Solid" default, not
+    # collapse to "None".
+    res2 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE))
+    expect_equal(attr(res2, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Solid")
+})
+
+test_that("getGridLineStyle handles missing/NA widths (RS-22447)",
+{
+    # Only an explicit width of 0 hides the grid.
+    expect_equal(getGridLineStyle(0, "Dot"), "None")
+    expect_equal(getGridLineStyle(0, NULL), "None")
+    # A visible grid uses the dash if given, otherwise "Solid".
+    expect_equal(getGridLineStyle(1, "Dash"), "Dash")
+    expect_equal(getGridLineStyle(1, NULL), "Solid")
+    # Missing/NA width must not hide the grid or error - it keeps "Solid"
+    # (the previous default) unless an explicit dash is supplied.
+    expect_equal(getGridLineStyle(NULL, NULL), "Solid")
+    expect_equal(getGridLineStyle(NA, NULL), "Solid")
+    expect_equal(getGridLineStyle(NULL, "Dot"), "Dot")
+})
