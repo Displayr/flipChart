@@ -359,4 +359,10 @@ test_that("Grid line type is exported to PowerPoint settings (RS-22447)",
     res1 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE,
             values.grid.width = 1))
     expect_equal(attr(res1, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Solid")
+
+    # Backwards compatible: grid.width omitted entirely (NULL in the raw user
+    # args seen by getPPTSettings) must keep the previous "Solid" default, not
+    # collapse to "None".
+    res2 <- suppressWarnings(CChart("Column", dat.1d, append.data = TRUE))
+    expect_equal(attr(res2, "ChartSettings")$ValueAxis$MajorGridLine$Style, "Solid")
 })
