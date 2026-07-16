@@ -280,6 +280,17 @@ test_that("FS2-4532: scalar inputs still broadcast (old Plugins back-compat)", {
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "Minimum")
 })
 
+test_that("FS2-4532: line type is only split per-series for Line charts", {
+    # Only Line supports per-series line type; a comma-separated line.type on any other
+    # chart must be treated as a single style for every series, not split across them.
+    # Radar has no line.type parameter, so CChart warns it does not match - expected here.
+    res <- suppressWarnings(CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
+                                   line.type = "Solid,Dot"))
+    styles <- vapply(attr(res, "ChartSettings")$TemplateSeries,
+                     function(s) s$OutlineStyle, character(1))
+    expect_equal(length(unique(styles)), 1L) # all series share one style, not Solid/Dot/...
+})
+
 test_that("Scatter axes bounds",
 {
     dat1 <- structure(list(` ` = c(16.5292618516667, 0.479370604963302, 19.8251578509455,

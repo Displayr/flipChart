@@ -634,7 +634,8 @@ scatterAxisWarning <- function(data, user.args)
 }
 
 
-# FS2-4532: map plotly marker symbol names to PowerPoint marker styles.
+# Map plotly marker symbol names to PowerPoint marker styles
+# https://wiki.q-researchsoftware.com/wiki/PptMarkerSettings#Style
 markerSymbolToPPTStyle <- function(symbols)
 {
     base <- sub("-open$", "", tolower(symbols))
@@ -674,9 +675,11 @@ getPPTSettings <- function(chart.type, args, data)
     else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
-    # FS2-4532: line type can be a per-series comma-separated string
-    tmp.line.style <- rep(ConvertCommaSeparatedStringToVector(tmp.line.style),
-                          length = tmp.n)
+    # FS2-4532: line type is per-series (comma-separated) for Line charts only; every
+    # other chart type uses a single style for all series.
+    if (chart.type == "Line")
+        tmp.line.style <- ConvertCommaSeparatedStringToVector(tmp.line.style)
+    tmp.line.style <- rep(tmp.line.style, length = tmp.n)
 
     tmp.line.thickness <- 1
     if (chart.type %in% c("Line", "Radar", "Time Series"))
