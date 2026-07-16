@@ -634,6 +634,16 @@ scatterAxisWarning <- function(data, user.args)
 }
 
 
+# FS2-4532: map plotly marker symbol names to PowerPoint marker styles.
+markerSymbolToPPTStyle <- function(symbols)
+{
+    base <- sub("-open$", "", tolower(symbols))
+    lookup <- c(circle = "Circle", square = "Square", diamond = "Diamond")
+    out <- unname(lookup[base])
+    out[is.na(out)] <- "Circle"
+    out
+}
+
 getPPTSettings <- function(chart.type, args, data)
 {
     # Opacity is by default set to NULL in the javascript code
@@ -664,6 +674,10 @@ getPPTSettings <- function(chart.type, args, data)
     else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
+    # FS2-4532: line type can be a per-series comma-separated string
+    tmp.line.style <- rep(ConvertCommaSeparatedStringToVector(tmp.line.style),
+                          length = tmp.n)
+
     tmp.line.thickness <- 1
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.thickness <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
@@ -681,6 +695,15 @@ getPPTSettings <- function(chart.type, args, data)
     if (is.null(tmp.line.color) || all(is.na(tmp.line.color)))
         tmp.line.color <- "#FFFFFF"
     tmp.line.color <- rep(tmp.line.color, length = tmp.n)
+
+    # FS2-4532: marker size / symbol can be per-series
+    tmp.marker.size <- if (is.null(args$marker.size)) 6
+                       else as.numeric(ConvertCommaSeparatedStringToVector(args$marker.size))
+    tmp.marker.size <- rep(tmp.marker.size, length = tmp.n)
+    tmp.marker.symbols <- if (is.null(args$marker.symbols)) "Circle"
+                          else markerSymbolToPPTStyle(
+                              ConvertCommaSeparatedStringToVector(args$marker.symbols))
+    tmp.marker.symbols <- rep(tmp.marker.symbols, length = tmp.n)
 
     tmp.data.label.show <- isTRUE(args$data.label.show)
     tmp.data.label.show.category.labels <- FALSE
@@ -734,8 +757,8 @@ getPPTSettings <- function(chart.type, args, data)
         # When scatterplots use colors as a numerical scale
         # we can assume a single template series
         series.settings <- list(list(
-            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity, args$marker.size),
-            Marker = list(Size = args$marker.size, OutlineStyle = "None"),
+            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity, tmp.marker.size[1]),
+            Marker = list(Size = tmp.marker.size[1], OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsPosition = "Center",
             DataLabelsFont = list(family = args$data.label.font.family,
@@ -761,7 +784,7 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
             OutlineWidth = tmp.line.thickness[1],
-            OutlineStyle = tmp.line.style))
+            OutlineStyle = tmp.line.style[1]))
 
     } else
         series.settings <- lapply(1:length(args$colors),
@@ -775,15 +798,20 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[i],
             OutlineWidth = tmp.line.thickness[i],
-            OutlineStyle = tmp.line.style)})
+            OutlineStyle = tmp.line.style[i])})
     tmp.n <- length(series.settings)
 
 
     if ((isScatter(chart.type) && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
         for (i in 1:tmp.n)
-            series.settings[[i]]$Marker = list(Size = args$marker.size,
+        {
+            marker.i <- list(Size = tmp.marker.size[i],
                 OutlineStyle = "None",
                 BackgroundColor = getHexCode(args$colors[i], tmp.opacity))
+            if (chart.type == "Line")   # FS2-4532: per-series marker symbol (Line only)
+                marker.i$Style <- tmp.marker.symbols[i]
+            series.settings[[i]]$Marker <- marker.i
+        }
 
     # Initialise return output
     res <- list()

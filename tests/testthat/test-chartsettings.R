@@ -130,7 +130,8 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineWidth, 1.5)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 2.25)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$Marker,
-           list(Size = 10, OutlineStyle = "None", BackgroundColor = "#ED7D31FF"))
+           list(Size = 10, OutlineStyle = "None", BackgroundColor = "#ED7D31FF",
+                Style = "Circle"))
 
     res <- CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d, line.thickness = 2)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#5C9AD366")
@@ -142,6 +143,32 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$OutlineWidth, 1.5)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowCategoryNames, FALSE)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels, FALSE)
+
+test_that("FS2-4532: Line PPT settings are per-series", {
+    res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
+            line.type = "Solid,Dot", marker.show = TRUE,
+            marker.symbols = "circle,square", marker.size = "6,10,14")
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Solid")
+    expect_equal(ts[[2]]$OutlineStyle, "Dot")
+    expect_equal(ts[[3]]$OutlineStyle, "Solid")   # recycled
+    expect_equal(ts[[1]]$Marker$Style, "Circle")
+    expect_equal(ts[[2]]$Marker$Style, "Square")
+    expect_equal(ts[[3]]$Marker$Style, "Circle")  # recycled
+    expect_equal(ts[[1]]$Marker$Size, 6)
+    expect_equal(ts[[2]]$Marker$Size, 10)
+    expect_equal(ts[[3]]$Marker$Size, 14)
+})
+
+test_that("FS2-4532: scalar inputs still broadcast (old Plugins back-compat)", {
+    res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
+            line.type = "Dash", marker.show = TRUE, marker.size = 8)
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Dash")
+    expect_equal(ts[[3]]$OutlineStyle, "Dash")
+    expect_equal(ts[[1]]$Marker$Size, 8)
+    expect_equal(ts[[3]]$Marker$Size, 8)
+})
 
     res <- CChart("Palm", abs(dat.2d), append.data = TRUE, colors = col.2d)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#5C9AD366")
