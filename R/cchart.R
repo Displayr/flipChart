@@ -675,8 +675,8 @@ getPPTSettings <- function(chart.type, args, data)
     else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
-    # FS2-4532: line type is per-series (comma-separated) for Line charts only; every
-    # other chart type uses a single style for all series.
+    # Line type is per-series (comma-separated) for Line charts only
+    # Handle this separately in case args$line.type is null (from old gui controls)
     if (chart.type == "Line")
         tmp.line.style <- ConvertCommaSeparatedStringToVector(tmp.line.style)
     tmp.line.style <- rep(tmp.line.style, length = tmp.n)
@@ -699,10 +699,10 @@ getPPTSettings <- function(chart.type, args, data)
         tmp.line.color <- "#FFFFFF"
     tmp.line.color <- rep(tmp.line.color, length = tmp.n)
 
-    # FS2-4532: marker size / symbol can be per-series
     tmp.marker.size <- if (is.null(args$marker.size)) 6
                        else as.numeric(ConvertCommaSeparatedStringToVector(args$marker.size))
     tmp.marker.size <- rep(tmp.marker.size, length = tmp.n)
+
     tmp.marker.symbols <- if (is.null(args$marker.symbols)) "Circle"
                           else markerSymbolToPPTStyle(
                               ConvertCommaSeparatedStringToVector(args$marker.symbols))
