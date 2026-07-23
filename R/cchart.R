@@ -852,6 +852,14 @@ getPPTSettings <- function(chart.type, args, data)
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
         if (any(nzchar(args$categories.bounds.minimum)))
             res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
+        # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable).
+        # The serials themselves ride on ChartData's "category.dates" attr and are read by Q.
+        if (!is.null(attr(data, "category.dates")) && !isScatter(chart.type))
+        {
+            res$PrimaryAxis$AxisType <- "Date"
+            if (!is.null(attr(data, "category.date.format")))
+                res$PrimaryAxis$NumberFormat <- attr(data, "category.date.format")
+        }
 
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),

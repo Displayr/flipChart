@@ -1475,23 +1475,38 @@ transformTable <- function(data,
             data <- tryCatch(TidyTabularData(data), error = function(e) { data })
 
 
-    if (!grepl("^No date", date.format) && date.format != "Automatic")
+    # "No date" means the user opted out of date handling. Otherwise, if the labels are dates we keep the
+    # underlying values so PowerPoint can export a native date axis (the labels themselves stay strings,
+    # consumed via ChartData's "category.dates" attr in Q). "Automatic" (the common case) auto-detects the
+    # parse and leaves the display labels as-is; explicit US/International also reformats the labels.
+    if (!grepl("^No date", date.format))
     {
+        is.automatic <- date.format == "Automatic"
         input.us.format <- !grepl("International", date.format)
-        output.format.str <- if (!grepl("International", date.format)) "%b %d %Y" else "%d %b %Y"
-        if (!is.null(rownames(data)) && IsDateTime(rownames(data)))
+        output.format.str <- if (input.us.format) "%b %d %Y" else "%d %b %Y"
+        ppt.date.format <- if (input.us.format) "mmm dd yyyy" else "dd mmm yyyy"
+
+        date.labels <- if (!is.null(rownames(data)) && IsDateTime(rownames(data))) "row"
+                       else if (IsDateTime(names(data))) "name"
+                       else NULL
+        if (!is.null(date.labels))
         {
-            tmp.dates <- try(suppressWarnings(AsDate(rownames(data), us.format = input.us.format)), silent = TRUE)
-            if (inherits(tmp.dates, "try-error"))
-                tmp.dates <- suppressWarnings(AsDate(rownames(data)))
-            rownames(data) <- format(tmp.dates, output.format.str)
-        }
-        else if (IsDateTime(names(data)))
-        {
-            tmp.dates <- try(suppressWarnings(AsDate(names(data), us.format = input.us.format)), silent = TRUE)
-            if (inherits(tmp.dates, "try-error"))
-                tmp.dates <- suppressWarnings(AsDate(names(data)))
-            names(data) <- format(tmp.dates, output.format.str)
+            labels <- if (date.labels == "row") rownames(data) else names(data)
+            # Under Automatic, let AsDate infer US/International rather than forcing input.us.format.
+            tmp.dates <- if (is.automatic) suppressWarnings(AsDate(labels))
+                         else {
+                             parsed <- try(suppressWarnings(AsDate(labels, us.format = input.us.format)), silent = TRUE)
+                             if (inherits(parsed, "try-error")) suppressWarnings(AsDate(labels)) else parsed
+                         }
+            attr(data, "category.dates") <- as.numeric(tmp.dates)
+            attr(data, "category.date.format") <- ppt.date.format
+            if (!is.automatic)
+            {
+                if (date.labels == "row")
+                    rownames(data) <- format(tmp.dates, output.format.str)
+                else
+                    names(data) <- format(tmp.dates, output.format.str)
+            }
         }
     }
     return(data)
