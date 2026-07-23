@@ -49,6 +49,19 @@ test_that("Date row labels flow through PrepareData to a native date axis (end t
     expect_equal(attr(attr(res, "ChartData"), "category.dates"), serials)
 })
 
+test_that("Date variable (raw data) flows through to a native date axis (end to end)",
+{
+    serials <- as.numeric(as.Date("2020-01-01") + 0:4)
+    input <- list(X = list(Date = as.Date("2020-01-01") + 0:4, Score = 1:5))
+
+    pd <- suppressWarnings(PrepareData("Column", input.data.raw = input))
+    expect_equal(attr(pd$data, "category.dates"), serials)
+
+    res <- suppressWarnings(CChart("Column", pd$data, append.data = TRUE))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$AxisType, "Date")
+    expect_equal(attr(attr(res, "ChartData"), "category.dates"), serials)
+})
+
 test_that("Non-date row labels do not trigger a date axis",
 {
     tbl <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
