@@ -846,7 +846,7 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = getGridLineStyle(args$categories.grid.width, args$categories.grid.dash)),
-            RotateLabels = isTRUE(args$categories.tick.angle == 90),
+            LabelsRotation = if (isTRUE(args$categories.tick.angle != 0)) -as.integer(args$categories.tick.angle) else 0L,
             LabelPosition = "Low")
         if (any(nzchar(args$categories.bounds.maximum)))
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum

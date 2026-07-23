@@ -64,7 +64,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#0000FF", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
-            Width = 0, Style = "None"), RotateLabels = FALSE, LabelPosition = "Low"))
+            Width = 0, Style = "None"), LabelsRotation = 0L, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
@@ -101,7 +101,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#222222", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
-            Width = 0, Style = "None"), RotateLabels = TRUE, LabelPosition = "Low"))
+            Width = 0, Style = "None"), LabelsRotation = -90L, LabelPosition = "Low"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
