@@ -853,12 +853,15 @@ getPPTSettings <- function(chart.type, args, data)
         if (any(nzchar(args$categories.bounds.minimum)))
             res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
         # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable).
-        # The serials themselves ride on ChartData's "category.dates" attr and are read by Q.
+        # The serials themselves ride on ChartData's "category.dates" attr and are read by Q. Prefer the
+        # user's categories.tick.format (a d3 date format) when they set one, converting it to a PowerPoint
+        # date code; otherwise fall back to the format PrepareData chose from the date labels.
         if (!is.null(attr(data, "category.dates")) && !isScatter(chart.type))
         {
             res$PrimaryAxis$AxisType <- "Date"
-            if (!is.null(attr(data, "category.date.format")))
-                res$PrimaryAxis$NumberFormat <- attr(data, "category.date.format")
+            ppt.date.format <- convertToPPTDateFormat(args$categories.tick.format)
+            res$PrimaryAxis$NumberFormat <- if (!is.null(ppt.date.format)) ppt.date.format
+                                            else attr(data, "category.date.format")
         }
 
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
@@ -1353,5 +1356,24 @@ convertToPPTNumFormat <- function(d3format)
 
     } else
         return("General")
+}
+
+# Convert a d3/strftime date format (as produced by flipChartBasics::ChartNumberFormat for "Date/Time"
+# types, e.g. "%d %b %Y", "%Y", "%H:%M") to a PowerPoint/Excel date format code. Returns NULL when the
+# input is not a date format (empty, or a numeric/percentage d3 format), so callers can fall back.
+convertToPPTDateFormat <- function(d3format)
+{
+    # strftime tokens are "%" followed by a letter; a percentage d3 format ("%", ".0%") never is.
+    if (length(d3format) != 1 || is.na(d3format) || !grepl("%[A-Za-z]", d3format))
+        return(NULL)
+    # Excel disambiguates "mm" (month vs minute) and "hh" (12/24 hr, via AM/PM) by context, which matches
+    # how the strftime tokens are ordered, so a direct token substitution is sufficient.
+    tokens <- c("%Y" = "yyyy", "%y" = "yy", "%B" = "mmmm", "%b" = "mmm", "%m" = "mm", "%d" = "dd",
+                "%A" = "dddd", "%a" = "ddd", "%H" = "hh", "%I" = "hh", "%M" = "mm", "%S" = "ss",
+                "%p" = "AM/PM")
+    result <- d3format
+    for (token in names(tokens))
+        result <- gsub(token, tokens[[token]], result, fixed = TRUE)
+    result
 }
 

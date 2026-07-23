@@ -68,3 +68,32 @@ test_that("Non-date row labels do not trigger a date axis",
     pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
     expect_null(attr(pd$data, "category.dates"))
 })
+
+test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date formats",
+{
+    expect_equal(convertToPPTDateFormat("%Y"), "yyyy")
+    expect_equal(convertToPPTDateFormat("%d %b %Y"), "dd mmm yyyy")
+    expect_equal(convertToPPTDateFormat("%m %d %y"), "mm dd yy")
+    expect_equal(convertToPPTDateFormat("%B %d %Y"), "mmmm dd yyyy")
+    expect_equal(convertToPPTDateFormat("%H:%M"), "hh:mm")
+    expect_null(convertToPPTDateFormat(""))      # Automatic / no format
+    expect_null(convertToPPTDateFormat(".0%"))   # percentage, not a date
+    expect_null(convertToPPTDateFormat(",.0f"))  # number, not a date
+})
+
+test_that("A user-set date categories.tick.format is preserved on the date axis, else falls back",
+{
+    dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
+    attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
+    attr(dat, "category.date.format") <- "mmm dd yyyy" # PrepareData's fallback
+
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.format = "%Y"))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$NumberFormat, "yyyy")
+
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.format = "%d %b %Y"))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$NumberFormat, "dd mmm yyyy")
+
+    # No user-set format -> the fallback PrepareData chose from the labels.
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$NumberFormat, "mmm dd yyyy")
+})
