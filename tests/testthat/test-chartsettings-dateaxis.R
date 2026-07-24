@@ -123,3 +123,22 @@ test_that("LabelsRotation is only sent to Q versions that can parse it (28.08+)"
     res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 90))
     expect_null(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation)
 })
+
+test_that("categories.axis.number.type = 'Category' exports date labels as plain categories",
+{
+    dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
+    attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
+    attr(dat, "category.date.format") <- "mmm dd yyyy"
+
+    # Default -> date axis.
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$AxisType, "Date")
+
+    # Explicit "Automatic" -> date axis.
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.axis.number.type = "Automatic"))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$AxisType, "Date")
+
+    # "Category" -> no date axis (plain string categories).
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.axis.number.type = "Category"))
+    expect_null(attr(res, "ChartSettings")$PrimaryAxis$AxisType)
+})

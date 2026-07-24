@@ -126,6 +126,7 @@
 #'     \item{\code{categories.tick.format}}{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
 #'     \item{\code{categories.hovertext.format}}{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
 #'     \item{\code{categories.tick.angle}}{ categories-axis tick label angle in degrees. 90 = vertical; 0 = horizontal.}
+#'     \item{\code{categories.axis.number.type}}{ Only used for PowerPoint exporting. The categories-axis number type, e.g. \code{"Automatic"} (default) or \code{"Category"}. When \code{"Category"}, date row labels are exported as plain string categories rather than a native PowerPoint date axis.}
 #'     \item{\code{categories.tick.font.color}}{ categories-axis tick label font color as a named color in character format (e.g. "black") or hex code.}
 #'     \item{\code{categories.tick.font.family}}{ Character; categories-axis tick label font family.}
 #'     \item{\code{categories.tick.font.size}}{ Integer; categories-axis tick label font size.}
@@ -856,11 +857,16 @@ getPPTSettings <- function(chart.type, args, data)
         q.file.format.version <- suppressWarnings(as.numeric(get0("QFileFormatVersion", envir = .GlobalEnv, ifnotfound = NA)))
         if (isTRUE(q.file.format.version > 28.06) && isTRUE(args$categories.tick.angle != 0))
             res$PrimaryAxis$LabelsRotation <- as.integer(args$categories.tick.angle)
-        # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable).
+        # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable),
+        # unless the user set the categories axis number type to "Category" (i.e. treat the date labels as
+        # plain categories). Defaults to "Automatic", so date labels still get a date axis.
         # The serials themselves ride on ChartData's "category.dates" attr and are read by Q. Prefer the
         # user's categories.tick.format (a d3 date format) when they set one, converting it to a PowerPoint
         # date code; otherwise fall back to the format PrepareData chose from the date labels.
-        if (!is.null(attr(data, "category.dates")) && !isScatter(chart.type))
+        categories.axis.number.type <- if (is.null(args$categories.axis.number.type)) "Automatic"
+                                        else args$categories.axis.number.type
+        if (!is.null(attr(data, "category.dates")) && !isScatter(chart.type)
+            && !identical(categories.axis.number.type, "Category"))
         {
             res$PrimaryAxis$AxisType <- "Date"
             ppt.date.format <- convertToPPTDateFormat(args$categories.tick.format)
