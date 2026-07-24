@@ -88,6 +88,10 @@ test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date form
     expect_null(convertToPPTDateFormat(""))      # Automatic / no format
     expect_null(convertToPPTDateFormat(".0%"))   # percentage, not a date
     expect_null(convertToPPTDateFormat(",.0f"))  # number, not a date
+    # Unmapped strftime tokens leave a stray "%" (which Excel reads as x100), so bail out to the fallback.
+    expect_null(convertToPPTDateFormat("%e %b %Y"))  # %e (space-padded day) not mapped
+    expect_null(convertToPPTDateFormat("%-d %b %Y")) # %-d (no-pad day) not mapped
+    expect_null(convertToPPTDateFormat("%j"))        # %j (day of year) not mapped
 })
 
 test_that("A user-set date categories.tick.format is preserved on the date axis, else falls back",

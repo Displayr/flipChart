@@ -1390,6 +1390,11 @@ convertToPPTDateFormat <- function(d3format)
     result <- d3format
     for (token in names(tokens))
         result <- gsub(token, tokens[[token]], result, fixed = TRUE)
+    # A leftover "%" means an unmapped strftime token (e.g. %e, %j, %-d, or a user-typed custom format). In
+    # an Excel number-format code "%" multiplies the value by 100, which would corrupt the axis (OADate x
+    # 100), so treat any incomplete conversion as not-a-date and let the caller fall back to a safe format.
+    if (grepl("%", result, fixed = TRUE))
+        return(NULL)
     result
 }
 
