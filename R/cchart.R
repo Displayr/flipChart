@@ -852,11 +852,17 @@ getPPTSettings <- function(chart.type, args, data)
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
         if (any(nzchar(args$categories.bounds.minimum)))
             res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
-        # Only send LabelsRotation to versions of Q that can parse it (file format 28.08+); older versions
-        # error the whole export. Also skip the horizontal/Automatic default (0), which needs no rotation.
-        q.file.format.version <- suppressWarnings(as.numeric(get0("QFileFormatVersion", envir = .GlobalEnv, ifnotfound = NA)))
-        if (isTRUE(q.file.format.version > 28.06) && isTRUE(args$categories.tick.angle != 0))
+        # AxisType = "Date" and LabelsRotation are only parseable by Q from file format 28.08 (Displayr/q#26940);
+        # older versions throw and fail the whole export (AxisType via Enum.Parse, LabelsRotation as an int).
+        # So only send them to 28.08+. (category.dates itself is safe on any Q - unknown ChartData attributes
+        # are ignored.) Q bumps the format version by 0.02, so internal builds that predate the change report
+        # 28.07; use >= 28.08 to exclude them.
+        q.can.parse.date.axis <- isTRUE(suppressWarnings(as.numeric(get0("QFileFormatVersion", envir = .GlobalEnv, ifnotfound = NA))) >= 28.08)
+
+        # Also skip the horizontal/Automatic default angle (0), which needs no rotation.
+        if (q.can.parse.date.axis && isTRUE(args$categories.tick.angle != 0))
             res$PrimaryAxis$LabelsRotation <- as.integer(args$categories.tick.angle)
+
         # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable),
         # unless the user set the categories axis number type to "Category" (i.e. treat the date labels as
         # plain categories). Defaults to "Automatic", so date labels still get a date axis.
@@ -865,7 +871,7 @@ getPPTSettings <- function(chart.type, args, data)
         # date code; otherwise fall back to the format PrepareData chose from the date labels.
         categories.axis.number.type <- if (is.null(args$categories.axis.number.type)) "Automatic"
                                         else args$categories.axis.number.type
-        if (!is.null(attr(data, "category.dates")) && !isScatter(chart.type)
+        if (q.can.parse.date.axis && !is.null(attr(data, "category.dates")) && !isScatter(chart.type)
             && !identical(categories.axis.number.type, "Category"))
         {
             res$PrimaryAxis$AxisType <- "Date"

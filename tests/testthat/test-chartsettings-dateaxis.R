@@ -7,6 +7,9 @@ context("ChartSettings date axis")
 
 test_that("category.dates makes PrimaryAxis a date axis for categorical charts",
 {
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    on.exit(suppressWarnings(rm("QFileFormatVersion", envir = .GlobalEnv)))
+
     dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
     attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
     attr(dat, "category.date.format") <- "mmm dd yyyy"
@@ -37,6 +40,9 @@ test_that("Pie charts never get a category date axis",
 
 test_that("Date row labels flow through PrepareData to a native date axis (end to end)",
 {
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    on.exit(suppressWarnings(rm("QFileFormatVersion", envir = .GlobalEnv)))
+
     serials <- as.numeric(as.Date("2020-01-01") + 0:4)
     tbl <- matrix(1:10, ncol = 2,
                   dimnames = list(as.character(as.Date("2020-01-01") + 0:4), c("A", "B")))
@@ -51,6 +57,9 @@ test_that("Date row labels flow through PrepareData to a native date axis (end t
 
 test_that("Date variable (raw data) flows through to a native date axis (end to end)",
 {
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    on.exit(suppressWarnings(rm("QFileFormatVersion", envir = .GlobalEnv)))
+
     serials <- as.numeric(as.Date("2020-01-01") + 0:4)
     input <- list(X = list(Date = as.Date("2020-01-01") + 0:4, Score = 1:5))
 
@@ -83,6 +92,9 @@ test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date form
 
 test_that("A user-set date categories.tick.format is preserved on the date axis, else falls back",
 {
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    on.exit(suppressWarnings(rm("QFileFormatVersion", envir = .GlobalEnv)))
+
     dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
     attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
     attr(dat, "category.date.format") <- "mmm dd yyyy" # PrepareData's fallback
@@ -126,6 +138,9 @@ test_that("LabelsRotation is only sent to Q versions that can parse it (28.08+)"
 
 test_that("categories.axis.number.type = 'Category' exports date labels as plain categories",
 {
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    on.exit(suppressWarnings(rm("QFileFormatVersion", envir = .GlobalEnv)))
+
     dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
     attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
     attr(dat, "category.date.format") <- "mmm dd yyyy"
@@ -140,5 +155,26 @@ test_that("categories.axis.number.type = 'Category' exports date labels as plain
 
     # "Category" -> no date axis (plain string categories).
     res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.axis.number.type = "Category"))
+    expect_null(attr(res, "ChartSettings")$PrimaryAxis$AxisType)
+})
+
+test_that("Date-axis ChartSettings are withheld from Q versions that cannot parse them",
+{
+    dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
+    attr(dat, "category.dates") <- as.numeric(as.Date("2020-01-01") + 0:4)
+    attr(dat, "category.date.format") <- "mmm dd yyyy"
+    on.exit(if (exists("QFileFormatVersion", envir = .GlobalEnv)) rm("QFileFormatVersion", envir = .GlobalEnv))
+
+    # Old Q, and internal builds that predate the change and report 28.07 (28.06 + 0.01), can't parse
+    # AxisType = "Date" and would error the whole export - so it must not be sent.
+    for (v in c(28.06, 28.07)) {
+        assign("QFileFormatVersion", v, envir = .GlobalEnv)
+        res <- suppressWarnings(CChart("Column", dat, append.data = TRUE))
+        expect_null(attr(res, "ChartSettings")$PrimaryAxis$AxisType, info = v)
+    }
+
+    # No version info at all -> also withheld.
+    rm("QFileFormatVersion", envir = .GlobalEnv)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE))
     expect_null(attr(res, "ChartSettings")$PrimaryAxis$AxisType)
 })
