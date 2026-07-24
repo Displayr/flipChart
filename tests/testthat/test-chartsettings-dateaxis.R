@@ -97,3 +97,29 @@ test_that("A user-set date categories.tick.format is preserved on the date axis,
     res <- suppressWarnings(CChart("Column", dat, append.data = TRUE))
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis$NumberFormat, "mmm dd yyyy")
 })
+
+test_that("LabelsRotation is only sent to Q versions that can parse it (28.08+)",
+{
+    dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
+    on.exit(if (exists("QFileFormatVersion", envir = .GlobalEnv)) rm("QFileFormatVersion", envir = .GlobalEnv))
+
+    # New enough Q + a non-horizontal angle -> sent.
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 90))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation, 90L)
+
+    # Older Q -> not sent, so it can't error the export.
+    assign("QFileFormatVersion", 28.06, envir = .GlobalEnv)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 90))
+    expect_null(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation)
+
+    # New Q but horizontal/default angle -> not sent (nothing to rotate).
+    assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 0))
+    expect_null(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation)
+
+    # No version info at all -> not sent.
+    rm("QFileFormatVersion", envir = .GlobalEnv)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 90))
+    expect_null(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation)
+})

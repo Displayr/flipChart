@@ -846,12 +846,16 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = getGridLineStyle(args$categories.grid.width, args$categories.grid.dash)),
-            LabelsRotation = if (isTRUE(args$categories.tick.angle != 0)) as.integer(args$categories.tick.angle) else 0L,
             LabelPosition = "Low")
         if (any(nzchar(args$categories.bounds.maximum)))
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
         if (any(nzchar(args$categories.bounds.minimum)))
             res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
+        # Only send LabelsRotation to versions of Q that can parse it (file format 28.08+); older versions
+        # error the whole export. Also skip the horizontal/Automatic default (0), which needs no rotation.
+        q.file.format.version <- suppressWarnings(as.numeric(get0("QFileFormatVersion", envir = .GlobalEnv, ifnotfound = NA)))
+        if (isTRUE(q.file.format.version > 28.06) && isTRUE(args$categories.tick.angle != 0))
+            res$PrimaryAxis$LabelsRotation <- as.integer(args$categories.tick.angle)
         # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable).
         # The serials themselves ride on ChartData's "category.dates" attr and are read by Q. Prefer the
         # user's categories.tick.format (a d3 date format) when they set one, converting it to a PowerPoint
