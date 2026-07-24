@@ -119,10 +119,12 @@ test_that("LabelsRotation is only sent to Q versions that can parse it (28.08+)"
     dat <- matrix(1:10, ncol = 2, dimnames = list(LETTERS[1:5], c("A", "B")))
     on.exit(if (exists("QFileFormatVersion", envir = .GlobalEnv)) rm("QFileFormatVersion", envir = .GlobalEnv))
 
-    # New enough Q + a non-horizontal angle -> sent.
+    # New enough Q + a non-horizontal angle -> sent as a double, so fractional angles survive.
     assign("QFileFormatVersion", 28.08, envir = .GlobalEnv)
     res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 90))
-    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation, 90L)
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation, 90)
+    res <- suppressWarnings(CChart("Column", dat, append.data = TRUE, categories.tick.angle = 45.5))
+    expect_equal(attr(res, "ChartSettings")$PrimaryAxis$LabelsRotation, 45.5)
 
     # Older Q -> not sent, so it can't error the export.
     assign("QFileFormatVersion", 28.06, envir = .GlobalEnv)

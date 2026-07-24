@@ -861,7 +861,7 @@ getPPTSettings <- function(chart.type, args, data)
 
         # Also skip the horizontal/Automatic default angle (0), which needs no rotation.
         if (q.can.parse.date.axis && isTRUE(args$categories.tick.angle != 0))
-            res$PrimaryAxis$LabelsRotation <- as.integer(args$categories.tick.angle)
+            res$PrimaryAxis$LabelsRotation <- as.numeric(args$categories.tick.angle)
 
         # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable),
         # unless the user set the categories axis number type to "Category" (i.e. treat the date labels as
