@@ -583,6 +583,10 @@ PrepareData <- function(chart.type,
     if (!is.null(input.data.table))
         attr(data, "footerhtml") <- attr(input.data.table, "footerhtml", exact = TRUE)
 
+    # Runs on the final labels, so it covers every input path (tables, raw variables, pasted).
+    if (!multiple.tables)
+        data <- addCategoryDateAxisAttributes(data, date.format)
+
     list(data = data,
          weights = weights,
          values.title = values.title,
@@ -1495,6 +1499,35 @@ transformTable <- function(data,
         }
     }
     return(data)
+}
+
+# Retain the underlying category dates so PowerPoint can export a native date axis. The category labels
+# themselves stay as strings (R always renders them as strings); the numeric date serials are attached as
+# the "category.dates" attribute (with "category.date.format") and read by Q. Called on the final prepared
+# data so it covers every input path (tables, raw variables, pasted), and handles the common "Automatic"
+# case by auto-detecting the label format. See getPPTSettings.
+addCategoryDateAxisAttributes <- function(data, date.format)
+{
+    if (grepl("^No date", date.format) || !is.null(attr(data, "category.dates")))
+        return(data)
+
+    labels <- if (!is.null(rownames(data)) && IsDateTime(rownames(data))) rownames(data)
+              else if (IsDateTime(names(data))) names(data)
+              else return(data)
+
+    # Under Automatic let AsDate infer US/International; otherwise honour the user's choice.
+    dates <- if (date.format == "Automatic") suppressWarnings(AsDate(labels))
+             else {
+                 us.format <- !grepl("International", date.format)
+                 parsed <- try(suppressWarnings(AsDate(labels, us.format = us.format)), silent = TRUE)
+                 if (inherits(parsed, "try-error")) suppressWarnings(AsDate(labels)) else parsed
+             }
+    if (all(is.na(dates)))
+        return(data)
+
+    attr(data, "category.dates") <- as.numeric(dates)
+    attr(data, "category.date.format") <- if (grepl("International", date.format)) "dd mmm yyyy" else "mmm dd yyyy"
+    data
 }
 
 convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type,

@@ -126,6 +126,7 @@
 #'     \item{\code{categories.tick.format}}{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
 #'     \item{\code{categories.hovertext.format}}{ A string representing a d3 formatting code. See \url{https://github.com/mbostock/d3/wiki/Formatting#numbers}.}
 #'     \item{\code{categories.tick.angle}}{ categories-axis tick label angle in degrees. 90 = vertical; 0 = horizontal.}
+#'     \item{\code{categories.axis.number.type}}{ Only used for PowerPoint exporting. The categories-axis number type, e.g. \code{"Automatic"} (default) or \code{"Category"}. When \code{"Category"}, date row labels are exported as plain string categories rather than a native PowerPoint date axis.}
 #'     \item{\code{categories.tick.font.color}}{ categories-axis tick label font color as a named color in character format (e.g. "black") or hex code.}
 #'     \item{\code{categories.tick.font.family}}{ Character; categories-axis tick label font family.}
 #'     \item{\code{categories.tick.font.size}}{ Integer; categories-axis tick label font size.}
@@ -846,12 +847,38 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = getGridLineStyle(args$categories.grid.width, args$categories.grid.dash)),
-            RotateLabels = isTRUE(args$categories.tick.angle == 90),
             LabelPosition = "Low")
         if (any(nzchar(args$categories.bounds.maximum)))
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
         if (any(nzchar(args$categories.bounds.minimum)))
             res$PrimaryAxis$Minimum <- args$categories.bounds.minimum
+        # AxisType = "Date" and LabelsRotation are only parseable by Q from file format 28.08 (Displayr/q#26940);
+        # older versions throw and fail the whole export (AxisType via Enum.Parse, LabelsRotation as an int).
+        # So only send them to 28.08+. (category.dates itself is safe on any Q - unknown ChartData attributes
+        # are ignored.) Q bumps the format version by 0.02, so internal builds that predate the change report
+        # 28.07; use >= 28.08 to exclude them.
+        q.can.parse.date.axis <- isTRUE(suppressWarnings(as.numeric(get0("QFileFormatVersion", envir = .GlobalEnv, ifnotfound = NA))) >= 28.08)
+
+        # Also skip the horizontal/Automatic default angle (0), which needs no rotation.
+        if (q.can.parse.date.axis && isTRUE(args$categories.tick.angle != 0))
+            res$PrimaryAxis$LabelsRotation <- as.numeric(args$categories.tick.angle)
+
+        # Export a native PowerPoint date axis when PrepareData captured the underlying dates (transformTable),
+        # unless the user set the categories axis number type to "Category" (i.e. treat the date labels as
+        # plain categories). Defaults to "Automatic", so date labels still get a date axis.
+        # The serials themselves ride on ChartData's "category.dates" attr and are read by Q. Prefer the
+        # user's categories.tick.format (a d3 date format) when they set one, converting it to a PowerPoint
+        # date code; otherwise fall back to the format PrepareData chose from the date labels.
+        categories.axis.number.type <- if (is.null(args$categories.axis.number.type)) "Automatic"
+                                        else args$categories.axis.number.type
+        if (q.can.parse.date.axis && !is.null(attr(data, "category.dates")) && !isScatter(chart.type)
+            && !identical(categories.axis.number.type, "Category"))
+        {
+            res$PrimaryAxis$AxisType <- "Date"
+            ppt.date.format <- convertToPPTDateFormat(args$categories.tick.format)
+            res$PrimaryAxis$NumberFormat <- if (!is.null(ppt.date.format)) ppt.date.format
+                                            else attr(data, "category.date.format")
+        }
 
         res$ValueAxis = list(LabelsFont = list(color = args$values.tick.font.color,
             family = args$values.tick.font.family, size = px2pt(args$values.tick.font.size)),
@@ -1345,5 +1372,29 @@ convertToPPTNumFormat <- function(d3format)
 
     } else
         return("General")
+}
+
+# Convert a d3/strftime date format (as produced by flipChartBasics::ChartNumberFormat for "Date/Time"
+# types, e.g. "%d %b %Y", "%Y", "%H:%M") to a PowerPoint/Excel date format code. Returns NULL when the
+# input is not a date format (empty, or a numeric/percentage d3 format), so callers can fall back.
+convertToPPTDateFormat <- function(d3format)
+{
+    # strftime tokens are "%" followed by a letter; a percentage d3 format ("%", ".0%") never is.
+    if (length(d3format) != 1 || is.na(d3format) || !grepl("%[A-Za-z]", d3format))
+        return(NULL)
+    # Excel disambiguates "mm" (month vs minute) and "hh" (12/24 hr, via AM/PM) by context, which matches
+    # how the strftime tokens are ordered, so a direct token substitution is sufficient.
+    tokens <- c("%Y" = "yyyy", "%y" = "yy", "%B" = "mmmm", "%b" = "mmm", "%m" = "mm", "%d" = "dd",
+                "%A" = "dddd", "%a" = "ddd", "%H" = "hh", "%I" = "hh", "%M" = "mm", "%S" = "ss",
+                "%p" = "AM/PM")
+    result <- d3format
+    for (token in names(tokens))
+        result <- gsub(token, tokens[[token]], result, fixed = TRUE)
+    # A leftover "%" means an unmapped strftime token (e.g. %e, %j, %-d, or a user-typed custom format). In
+    # an Excel number-format code "%" multiplies the value by 100, which would corrupt the axis (OADate x
+    # 100), so treat any incomplete conversion as not-a-date and let the caller fall back to a safe format.
+    if (grepl("%", result, fixed = TRUE))
+        return(NULL)
+    result
 }
 
