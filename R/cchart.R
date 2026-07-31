@@ -367,7 +367,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     chart.warning <- attr(result, "ChartWarning")
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
-    chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
+    chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"),
+        attr(result, "CustomPoints"),
+        markers.at.every.point = identical(attr(result, "ChartType"), "Line Markers"))
 
     if (isScatter(chart.type))
     {
@@ -495,7 +497,8 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
     return(x)
 }
 
-updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.points)
+updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.points,
+                                          markers.at.every.point = FALSE)
 {
     if (!is.null(chart.labels))
     {
@@ -514,9 +517,29 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
             chart.settings$TemplateSeries[[i]]$ShowDataLabels <- FALSE
     }
 
+    # Points numbered within their own series carry per-point marker visibility: the series
+    # turns its marker off and the points below switch it back on again. A globally numbered
+    # list is CombinedScatter's annotation borders, which say nothing about visibility, so it
+    # is left alone. A chart whose every point has a marker says so at series level instead,
+    # rather than repeating itself once per point.
+    # The absence of the attribute is how a flipStandardCharts without this feature presents,
+    # and it has to keep the old behaviour of a marker on every point.
+    per.series.markers <- identical(attr(custom.points, "IndexBase"), "series") &&
+                          !markers.at.every.point
+    series.marker.style <- list()
+    if (per.series.markers)
+        for (i in seq_along(chart.settings$TemplateSeries))
+        {
+            style.i <- chart.settings$TemplateSeries[[i]]$Marker$Style
+            series.marker.style[[i]] <- if (is.null(style.i)) NA_character_ else style.i
+            if (!is.null(chart.settings$TemplateSeries[[i]]$Marker))
+                chart.settings$TemplateSeries[[i]]$Marker$Style <- "None"
+        }
+
     # Update ChartSettings to incorporate annotation info from flipStandardCharts
     # that is stored in the CustomPoints attribute
-    # Currently this is only used to add annotation marker borders in CombinedScatter
+    # Used for annotation marker borders in CombinedScatter, and for per-point marker
+    # visibility in Line charts
     if (!is.null(custom.points) && any(sapply(custom.points, Negate(is.null))))
     {
         n.series <- min(length(chart.settings$TemplateSeries), length(custom.points))
@@ -550,6 +573,14 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                         chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
                         chart.settings$TemplateSeries[[i]]$BackgroundColor
                     }
+                    # The series' own symbol, which was replaced by "None" above so that only
+                    # the points listed here show a marker
+                    if (per.series.markers && !is.na(series.marker.style[[i]]) &&
+                        is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style))
+                    {
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style <-
+                        series.marker.style[[i]]
+                    }
                     k <- k + 1
                     next
                 }
@@ -563,6 +594,14 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                 {
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
                     chart.settings$TemplateSeries[[i]]$Marker$BackgroundColor
+                }
+                # The series' own symbol, which was replaced by "None" above so that only
+                # the points listed here show a marker
+                if (per.series.markers && !is.na(series.marker.style[[i]]) &&
+                    is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style))
+                {
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style <-
+                    series.marker.style[[i]]
                 }
                 k <- k + 1
             }
