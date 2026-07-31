@@ -714,9 +714,11 @@ getPPTSettings <- function(chart.type, args, data)
     else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
-    # Line type is per-series (comma-separated) for Line charts only
+    # Line type is per-series (comma-separated) for the charts whose line type is per series.
+    # Time Series takes one line type for the whole chart, so splitting it there would turn a
+    # single setting into a per-series one.
     # Handle this separately in case args$line.type is null (from old gui controls)
-    if (chart.type == "Line")
+    if (chart.type %in% c("Line", "Radar"))
         tmp.line.style <- ConvertCommaSeparatedStringToVector(tmp.line.style)
     tmp.line.style <- rep(tmp.line.style, length = tmp.n)
 

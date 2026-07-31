@@ -160,6 +160,24 @@ test_that("FS2-4532: Line PPT settings are per-series", {
     expect_equal(ts[[3]]$Marker$Size, 14)
 })
 
+test_that("Radar PPT settings take a line type per series", {
+    # Radar reaches the OutlineStyle loop the same way Line does, so a comma-separated
+    # line type has to be split for it too rather than reaching PowerPoint as one string
+    res <- CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
+                  line.type = "Solid,Dot")
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Solid")
+    expect_equal(ts[[2]]$OutlineStyle, "Dot")
+    expect_equal(ts[[3]]$OutlineStyle, "Solid")   # recycled
+})
+
+test_that("Radar line type reaches the chart as well as the export", {
+    # It used to be read for PowerPoint but dropped on the way to the chart, so a dotted
+    # radar exported dotted and rendered solid
+    expect_warning(CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
+                          line.type = "Dot"), NA)
+})
+
 test_that("FS2-4532: scalar inputs still broadcast (old Plugins back-compat)", {
     res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
             line.type = "Dash", marker.show = TRUE, marker.size = 8)
@@ -280,15 +298,19 @@ test_that("FS2-4532: scalar inputs still broadcast (old Plugins back-compat)", {
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "Minimum")
 })
 
-test_that("FS2-4532: line type is only split per-series for Line charts", {
-    # Only Line supports per-series line type; a comma-separated line.type on any other
-    # chart must be treated as a single style for every series, not split across them.
-    # Radar has no line.type parameter, so CChart warns it does not match - expected here.
-    res <- suppressWarnings(CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
-                                   line.type = "Solid,Dot"))
-    styles <- vapply(attr(res, "ChartSettings")$TemplateSeries,
-                     function(s) s$OutlineStyle, character(1))
-    expect_equal(length(unique(styles)), 1L) # all series share one style, not Solid/Dot/...
+test_that("FS2-4532: line type is only split per-series for the charts that support it", {
+    # Line and Radar both take a line type per series, so a comma-separated value is split
+    # across them. Time Series takes one line type for the whole chart, and splitting it
+    # there would turn a single setting into a per-series one.
+    dat <- matrix(1:6, 3, 2, dimnames = list(letters[1:3], c("A", "B")))
+    args <- list(colors = c("#FF0000", "#00AA00"), line.type = "Solid,Dot")
+    stylesFor <- function(chart.type)
+        vapply(getPPTSettings(chart.type, args, dat)$TemplateSeries,
+               function(s) s$OutlineStyle, character(1))
+
+    expect_equal(stylesFor("Line"), c("Solid", "Dot"))
+    expect_equal(stylesFor("Radar"), c("Solid", "Dot"))
+    expect_equal(stylesFor("Time Series"), c("Solid,Dot", "Solid,Dot"))
 })
 
 test_that("Scatter axes bounds",
