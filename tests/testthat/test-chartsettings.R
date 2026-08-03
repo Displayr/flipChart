@@ -441,3 +441,51 @@ test_that("getGridLineStyle handles missing/NA widths (RS-22447)",
     expect_equal(getGridLineStyle(NA, NULL), "Solid")
     expect_equal(getGridLineStyle(NULL, "Dot"), "Dot")
 })
+
+test_that("Smooth follows the first series' shape, whatever form the shape arrives in", {
+    dat <- matrix(1:6, 3, 2, dimnames = list(letters[1:3], c("A", "B")))
+    smoothFor <- function(shape) {
+        args <- list(colors = c("#FF0000", "#00AA00"))
+        if (!is.null(shape)) args$shape <- shape
+        getPPTSettings("Line", args, dat)$Smooth
+    }
+
+    # PowerPoint takes one setting for the whole chart, so a per-series shape has to pick
+    # one; the first series is the same series other chart-wide settings are taken from.
+    expect_true(smoothFor("Curved"))
+    expect_false(smoothFor("Straight"))
+
+    # The per-series forms: comma-separated as the Plugins send it, or a vector
+    expect_true(smoothFor("Curved,Curved"))
+    expect_true(smoothFor("Curved, Straight"))
+    expect_false(smoothFor("Straight,Curved"))
+    expect_true(smoothFor(c("Curved", "Straight")))
+    expect_false(smoothFor(c("Straight", "Curved")))
+
+    # Unset stays unsmoothed, and case does not matter
+    expect_false(smoothFor(NULL))
+    expect_true(smoothFor("curved"))
+
+    # Curved and Straight are what the controls send, but the chart also takes plotly's own
+    # names, and a chart drawn curved has to export curved whichever name asked for it
+    expect_true(smoothFor("spline"))
+    expect_true(smoothFor("Spline"))
+    expect_false(smoothFor("linear"))
+    expect_true(smoothFor("spline,linear"))
+    expect_false(smoothFor("linear,spline"))
+})
+
+test_that("Numeric series settings export from every form a chart may have been saved with", {
+    # The controls used to be a text box taking "6, 10, 14", and are now numeric ones, so a
+    # deck exported today may come from either. Both have to keep working.
+    dat <- matrix(1:9, 3, 3, dimnames = list(letters[1:3], c("A", "B", "C")))
+    sizesFor <- function(v)
+        vapply(getPPTSettings("Line", list(colors = c("#F00", "#0A0", "#00F"),
+                                           marker.size = v), dat)$TemplateSeries,
+               function(s) s$Marker$Size, numeric(1))
+
+    expect_equal(sizesFor("6,10,14"), c(6, 10, 14))       # old text box, per series
+    expect_equal(sizesFor(c(6, 10, 14)), c(6, 10, 14))    # new numeric controls, per series
+    expect_equal(sizesFor(10), c(10, 10, 10))             # new numeric control, chart wide
+    expect_equal(sizesFor("10"), c(10, 10, 10))           # old text box, chart wide
+})

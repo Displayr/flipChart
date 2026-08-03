@@ -973,7 +973,15 @@ getPPTSettings <- function(chart.type, args, data)
             res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100
     }
     if (chart.type == "Line")
-        res$Smooth = isTRUE(args$shape == "Curved")
+    {
+        # The shape can name one per series, so the whole-chart setting PowerPoint takes is
+        # decided by the first series, as the other collapsed settings here are. Comparing
+        # the argument as it arrived would read "Curved,Curved" as no series curved at all.
+        # Curved is what the controls send and spline is plotly's own name for it; the chart
+        # draws either as a curve, so the export has to treat them the same way.
+        tmp.shape <- ConvertCommaSeparatedStringToVector(args$shape)
+        res$Smooth = isTRUE(tolower(tmp.shape[1]) %in% c("curved", "spline"))
+    }
     if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
         (isScatter(chart.type) && !isTRUE(args$scatter.colors.as.categorical)))
         res$ShowLegend <- FALSE
