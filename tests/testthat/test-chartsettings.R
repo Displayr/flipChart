@@ -130,7 +130,8 @@ test_that("Chart settings",
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$OutlineWidth, 1.5)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[3]]$OutlineWidth, 2.25)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[2]]$Marker,
-           list(Size = 10, OutlineStyle = "None", BackgroundColor = "#ED7D31FF"))
+           list(Size = 10, OutlineStyle = "None", BackgroundColor = "#ED7D31FF",
+                Style = "Circle"))
 
     res <- CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d, line.thickness = 2)
     expect_equal(attr(res, "ChartSettings")$TemplateSeries[[1]]$BackgroundColor, "#5C9AD366")
@@ -251,6 +252,65 @@ test_that("Chart settings",
         append.data = TRUE)
     expect_equal(attr(res, "ChartSettings")$PrimaryAxis$Crosses, "Minimum")
     expect_equal(attr(res, "ChartSettings")$ValueAxis$Crosses, "Minimum")
+})
+
+test_that("FS2-4532: Line PPT settings are per-series", {
+    res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
+            line.type = "Solid,Dot", marker.show = TRUE,
+            marker.symbols = "circle,square", marker.size = "6,10,14")
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Solid")
+    expect_equal(ts[[2]]$OutlineStyle, "Dot")
+    expect_equal(ts[[3]]$OutlineStyle, "Solid")   # recycled
+    expect_equal(ts[[1]]$Marker$Style, "Circle")
+    expect_equal(ts[[2]]$Marker$Style, "Square")
+    expect_equal(ts[[3]]$Marker$Style, "Circle")  # recycled
+    expect_equal(ts[[1]]$Marker$Size, 6)
+    expect_equal(ts[[2]]$Marker$Size, 10)
+    expect_equal(ts[[3]]$Marker$Size, 14)
+})
+
+test_that("Radar PPT settings take a line type per series", {
+    # Radar reaches the OutlineStyle loop the same way Line does, so a comma-separated
+    # line type has to be split for it too rather than reaching PowerPoint as one string
+    res <- CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
+                  line.type = "Solid,Dot")
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Solid")
+    expect_equal(ts[[2]]$OutlineStyle, "Dot")
+    expect_equal(ts[[3]]$OutlineStyle, "Solid")   # recycled
+})
+
+test_that("Radar line type reaches the chart as well as the export", {
+    # It used to be read for PowerPoint but dropped on the way to the chart, so a dotted
+    # radar exported dotted and rendered solid
+    expect_warning(CChart("Radar", dat.2d, append.data = TRUE, colors = col.2d,
+                          line.type = "Dot"), NA)
+})
+
+test_that("FS2-4532: scalar inputs still broadcast (old Plugins back-compat)", {
+    res <- CChart("Line", dat.2d, append.data = TRUE, colors = col.2d,
+            line.type = "Dash", marker.show = TRUE, marker.size = 8)
+    ts <- attr(res, "ChartSettings")$TemplateSeries
+    expect_equal(ts[[1]]$OutlineStyle, "Dash")
+    expect_equal(ts[[3]]$OutlineStyle, "Dash")
+    expect_equal(ts[[1]]$Marker$Size, 8)
+    expect_equal(ts[[3]]$Marker$Size, 8)
+})
+
+test_that("FS2-4532: line type is only split per-series for the charts that support it", {
+    # Line and Radar both take a line type per series, so a comma-separated value is split
+    # across them. Time Series takes one line type for the whole chart, and splitting it
+    # there would turn a single setting into a per-series one.
+    dat <- matrix(1:6, 3, 2, dimnames = list(letters[1:3], c("A", "B")))
+    args <- list(colors = c("#FF0000", "#00AA00"), line.type = "Solid,Dot")
+    stylesFor <- function(chart.type)
+        vapply(getPPTSettings(chart.type, args, dat)$TemplateSeries,
+               function(s) s$OutlineStyle, character(1))
+
+    expect_equal(stylesFor("Line"), c("Solid", "Dot"))
+    expect_equal(stylesFor("Radar"), c("Solid", "Dot"))
+    expect_equal(stylesFor("Time Series"), c("Solid,Dot", "Solid,Dot"))
 })
 
 test_that("Scatter axes bounds",
@@ -380,4 +440,92 @@ test_that("getGridLineStyle handles missing/NA widths (RS-22447)",
     expect_equal(getGridLineStyle(NULL, NULL), "Solid")
     expect_equal(getGridLineStyle(NA, NULL), "Solid")
     expect_equal(getGridLineStyle(NULL, "Dot"), "Dot")
+})
+
+test_that("Smooth follows the first series' shape, whatever form the shape arrives in", {
+    dat <- matrix(1:6, 3, 2, dimnames = list(letters[1:3], c("A", "B")))
+    smoothFor <- function(shape) {
+        args <- list(colors = c("#FF0000", "#00AA00"))
+        if (!is.null(shape)) args$shape <- shape
+        getPPTSettings("Line", args, dat)$Smooth
+    }
+
+    # PowerPoint takes one setting for the whole chart, so a per-series shape has to pick
+    # one; the first series is the same series other chart-wide settings are taken from.
+    expect_true(smoothFor("Curved"))
+    expect_false(smoothFor("Straight"))
+
+    # The per-series forms: comma-separated as the Plugins send it, or a vector
+    expect_true(smoothFor("Curved,Curved"))
+    expect_true(smoothFor("Curved, Straight"))
+    expect_false(smoothFor("Straight,Curved"))
+    expect_true(smoothFor(c("Curved", "Straight")))
+    expect_false(smoothFor(c("Straight", "Curved")))
+
+    # Unset stays unsmoothed, and case does not matter
+    expect_false(smoothFor(NULL))
+    expect_true(smoothFor("curved"))
+
+    # Curved and Straight are what the controls send, but the chart also takes plotly's own
+    # names, and a chart drawn curved has to export curved whichever name asked for it
+    expect_true(smoothFor("spline"))
+    expect_true(smoothFor("Spline"))
+    expect_false(smoothFor("linear"))
+    expect_true(smoothFor("spline,linear"))
+    expect_false(smoothFor("linear,spline"))
+})
+
+test_that("Numeric series settings export from every form a chart may have been saved with", {
+    # The controls used to be a text box taking "6, 10, 14", and are now numeric ones, so a
+    # deck exported today may come from either. Both have to keep working.
+    dat <- matrix(1:9, 3, 3, dimnames = list(letters[1:3], c("A", "B", "C")))
+    sizesFor <- function(v)
+        vapply(getPPTSettings("Line", list(colors = c("#F00", "#0A0", "#00F"),
+                                           marker.size = v), dat)$TemplateSeries,
+               function(s) s$Marker$Size, numeric(1))
+
+    expect_equal(sizesFor("6,10,14"), c(6, 10, 14))       # old text box, per series
+    expect_equal(sizesFor(c(6, 10, 14)), c(6, 10, 14))    # new numeric controls, per series
+    expect_equal(sizesFor(10), c(10, 10, 10))             # new numeric control, chart wide
+    expect_equal(sizesFor("10"), c(10, 10, 10))           # old text box, chart wide
+})
+
+test_that("Marker symbols map to PowerPoint styles through their plotly variants", {
+    expect_equal(markerSymbolToPPTStyle(c("circle", "square", "diamond")),
+                 c("Circle", "Square", "Diamond"))
+
+    # The six the control offers
+    expect_equal(markerSymbolToPPTStyle(c("circle-open", "square-open", "diamond-open")),
+                 c("Circle", "Square", "Diamond"))
+
+    # Plotly appends -open and -dot to the family name, in either combination, and a caller
+    # reaching past the control can send any of them
+    expect_equal(markerSymbolToPPTStyle(c("square-open-dot", "diamond-open-dot", "circle-dot")),
+                 c("Square", "Diamond", "Circle"))
+
+    # Anything the lookup does not name falls back to a circle rather than an invalid style
+    expect_equal(markerSymbolToPPTStyle(c("hexagram", "", NA)), rep("Circle", 3))
+})
+
+test_that("Every plotly family PowerPoint has a style for is mapped", {
+    expect_equal(markerSymbolToPPTStyle(c("triangle-up", "triangle-down", "triangle-left")),
+                 rep("Triangle", 3))
+    expect_equal(markerSymbolToPPTStyle(c("x", "x-thin")), c("X", "X"))
+    # plotly's cross is the upright +, which PowerPoint calls Plus; its x is the diagonal one
+    expect_equal(markerSymbolToPPTStyle(c("cross", "cross-thin")), c("Plus", "Plus"))
+    expect_equal(markerSymbolToPPTStyle(c("star", "star-triangle-up", "star-square")),
+                 rep("Star", 3))
+
+    # The variants of the new families go through the family rule like the rest
+    expect_equal(markerSymbolToPPTStyle(c("triangle-up-open-dot", "x-thin-open", "star-open")),
+                 c("Triangle", "X", "Star"))
+
+    # A shape overlaid with a cross or an x is still that shape
+    expect_equal(markerSymbolToPPTStyle(c("circle-cross", "square-x", "diamond-tall")),
+                 c("Circle", "Square", "Diamond"))
+
+    # The families PowerPoint has nothing for still fall back
+    expect_equal(markerSymbolToPPTStyle(c("pentagon", "hexagon", "hexagram", "bowtie",
+                                          "y-up", "line-ew", "arrow-up")),
+                 rep("Circle", 7))
 })

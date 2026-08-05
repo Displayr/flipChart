@@ -368,7 +368,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     chart.warning <- attr(result, "ChartWarning")
     result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
-    chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"), attr(result, "CustomPoints"))
+    chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"),
+        attr(result, "CustomPoints"),
+        markers.at.every.point = identical(attr(result, "ChartType"), "Line Markers"))
 
     if (isScatter(chart.type))
     {
@@ -496,7 +498,8 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
     return(x)
 }
 
-updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.points)
+updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.points,
+                                          markers.at.every.point = FALSE)
 {
     if (!is.null(chart.labels))
     {
@@ -515,9 +518,29 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
             chart.settings$TemplateSeries[[i]]$ShowDataLabels <- FALSE
     }
 
+    # Points numbered within their own series carry per-point marker visibility: the series
+    # turns its marker off and the points below switch it back on again. A globally numbered
+    # list is CombinedScatter's annotation borders, which say nothing about visibility, so it
+    # is left alone. A chart whose every point has a marker says so at series level instead,
+    # rather than repeating itself once per point.
+    # The absence of the attribute is how a flipStandardCharts without this feature presents,
+    # and it has to keep the old behaviour of a marker on every point.
+    per.series.markers <- identical(attr(custom.points, "IndexBase"), "series") &&
+                          !markers.at.every.point
+    series.marker.style <- list()
+    if (per.series.markers)
+        for (i in seq_along(chart.settings$TemplateSeries))
+        {
+            style.i <- chart.settings$TemplateSeries[[i]]$Marker$Style
+            series.marker.style[[i]] <- if (is.null(style.i)) NA_character_ else style.i
+            if (!is.null(chart.settings$TemplateSeries[[i]]$Marker))
+                chart.settings$TemplateSeries[[i]]$Marker$Style <- "None"
+        }
+
     # Update ChartSettings to incorporate annotation info from flipStandardCharts
     # that is stored in the CustomPoints attribute
-    # Currently this is only used to add annotation marker borders in CombinedScatter
+    # Used for annotation marker borders in CombinedScatter, and for per-point marker
+    # visibility in Line charts
     if (!is.null(custom.points) && any(sapply(custom.points, Negate(is.null))))
     {
         n.series <- min(length(chart.settings$TemplateSeries), length(custom.points))
@@ -551,6 +574,14 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                         chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
                         chart.settings$TemplateSeries[[i]]$BackgroundColor
                     }
+                    # The series' own symbol, which was replaced by "None" above so that only
+                    # the points listed here show a marker
+                    if (per.series.markers && !is.na(series.marker.style[[i]]) &&
+                        is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style))
+                    {
+                        chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style <-
+                        series.marker.style[[i]]
+                    }
                     k <- k + 1
                     next
                 }
@@ -564,6 +595,14 @@ updateChartSettingsWithLabels <- function(chart.settings, chart.labels, custom.p
                 {
                     chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$BackgroundColor <-
                     chart.settings$TemplateSeries[[i]]$Marker$BackgroundColor
+                }
+                # The series' own symbol, which was replaced by "None" above so that only
+                # the points listed here show a marker
+                if (per.series.markers && !is.na(series.marker.style[[i]]) &&
+                    is.null(chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style))
+                {
+                    chart.settings$TemplateSeries[[i]]$CustomPoints[[k]]$Marker$Style <-
+                    series.marker.style[[i]]
                 }
                 k <- k + 1
             }
@@ -635,6 +674,28 @@ scatterAxisWarning <- function(data, user.args)
 }
 
 
+# Map plotly marker symbol names to PowerPoint marker styles
+# https://wiki.q-researchsoftware.com/wiki/PptMarkerSettings#Style
+# A plotly name is a family followed by variants such as -open, -dot, -open-dot or a
+# direction, and PowerPoint has one style per family, so everything after the first hyphen is
+# dropped. These seven are every plotly family PowerPoint has a style for; the other twelve
+# (pentagon, hexagon, hexagram, bowtie, y, line, arrow and so on) fall back to a circle rather
+# than to a style PowerPoint would reject. The control currently offers only circle, square
+# and diamond, each open or closed, so the rest are reached by callers passing a plotly name
+# directly, and by the control if it ever grows.
+# plotly's cross is the upright + and its x is the diagonal one, hence cross mapping to Plus.
+# A family is all PowerPoint can express, so a triangle loses its direction: triangle-down
+# exports pointing up.
+markerSymbolToPPTStyle <- function(symbols)
+{
+    family <- sub("-.*$", "", tolower(symbols))
+    lookup <- c(circle = "Circle", square = "Square", diamond = "Diamond",
+                triangle = "Triangle", x = "X", cross = "Plus", star = "Star")
+    out <- unname(lookup[family])
+    out[is.na(out)] <- "Circle"
+    out
+}
+
 getPPTSettings <- function(chart.type, args, data)
 {
     # Opacity is by default set to NULL in the javascript code
@@ -665,6 +726,14 @@ getPPTSettings <- function(chart.type, args, data)
     else if (!is.null(args$marker.border.opacity))
         tmp.line.style <- "Solid"
 
+    # Line type is per-series (comma-separated) for the charts whose line type is per series.
+    # Time Series takes one line type for the whole chart, so splitting it there would turn a
+    # single setting into a per-series one.
+    # Handle this separately in case args$line.type is null (from old gui controls)
+    if (chart.type %in% c("Line", "Radar"))
+        tmp.line.style <- ConvertCommaSeparatedStringToVector(tmp.line.style)
+    tmp.line.style <- rep(tmp.line.style, length = tmp.n)
+
     tmp.line.thickness <- 1
     if (chart.type %in% c("Line", "Radar", "Time Series"))
         tmp.line.thickness <- as.numeric(ConvertCommaSeparatedStringToVector(args$line.thickness))
@@ -682,6 +751,15 @@ getPPTSettings <- function(chart.type, args, data)
     if (is.null(tmp.line.color) || all(is.na(tmp.line.color)))
         tmp.line.color <- "#FFFFFF"
     tmp.line.color <- rep(tmp.line.color, length = tmp.n)
+
+    tmp.marker.size <- if (is.null(args$marker.size)) 6
+                       else as.numeric(ConvertCommaSeparatedStringToVector(args$marker.size))
+    tmp.marker.size <- rep(tmp.marker.size, length = tmp.n)
+
+    tmp.marker.symbols <- if (is.null(args$marker.symbols)) "Circle"
+                          else markerSymbolToPPTStyle(
+                              ConvertCommaSeparatedStringToVector(args$marker.symbols))
+    tmp.marker.symbols <- rep(tmp.marker.symbols, length = tmp.n)
 
     tmp.data.label.show <- isTRUE(args$data.label.show)
     tmp.data.label.show.category.labels <- FALSE
@@ -735,8 +813,8 @@ getPPTSettings <- function(chart.type, args, data)
         # When scatterplots use colors as a numerical scale
         # we can assume a single template series
         series.settings <- list(list(
-            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity, args$marker.size),
-            Marker = list(Size = args$marker.size, OutlineStyle = "None"),
+            CustomPoints = getColorsAsNumericScale(data, args$colors, tmp.opacity, tmp.marker.size[1]),
+            Marker = list(Size = tmp.marker.size[1], OutlineStyle = "None"),
             ShowDataLabels = tmp.data.label.show,
             DataLabelsPosition = "Center",
             DataLabelsFont = list(family = args$data.label.font.family,
@@ -762,7 +840,7 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[1], # style is none if no border color defined
             OutlineWidth = tmp.line.thickness[1],
-            OutlineStyle = tmp.line.style))
+            OutlineStyle = tmp.line.style[1]))
 
     } else
         series.settings <- lapply(1:length(args$colors),
@@ -776,15 +854,20 @@ getPPTSettings <- function(chart.type, args, data)
             DataLabelsPosition = tmp.data.label.position,
             OutlineColor = tmp.line.color[i],
             OutlineWidth = tmp.line.thickness[i],
-            OutlineStyle = tmp.line.style)})
+            OutlineStyle = tmp.line.style[i])})
     tmp.n <- length(series.settings)
 
 
     if ((isScatter(chart.type) && isTRUE(args$scatter.colors.as.categorical)) || chart.type == "Line")
         for (i in 1:tmp.n)
-            series.settings[[i]]$Marker = list(Size = args$marker.size,
+        {
+            marker.i <- list(Size = tmp.marker.size[i],
                 OutlineStyle = "None",
                 BackgroundColor = getHexCode(args$colors[i], tmp.opacity))
+            if (chart.type == "Line")   # FS2-4532: per-series marker symbol (Line only)
+                marker.i$Style <- tmp.marker.symbols[i]
+            series.settings[[i]]$Marker <- marker.i
+        }
 
     # Initialise return output
     res <- list()
@@ -928,7 +1011,15 @@ getPPTSettings <- function(chart.type, args, data)
             res$GapWidth = min(5.0, args$bar.gap / (1 - args$bar.gap)) * 100
     }
     if (chart.type == "Line")
-        res$Smooth = isTRUE(args$shape == "Curved")
+    {
+        # The shape can name one per series, so the whole-chart setting PowerPoint takes is
+        # decided by the first series, as the other collapsed settings here are. Comparing
+        # the argument as it arrived would read "Curved,Curved" as no series curved at all.
+        # Curved is what the controls send and spline is plotly's own name for it; the chart
+        # draws either as a curve, so the export has to treat them the same way.
+        tmp.shape <- ConvertCommaSeparatedStringToVector(args$shape)
+        res$Smooth = isTRUE(tolower(tmp.shape[1]) %in% c("curved", "spline"))
+    }
     if (chart.type %in% c("BarMultiColor", "ColumnMultiColor", "Pyramid", "Bar Pictograph") ||
         (isScatter(chart.type) && !isTRUE(args$scatter.colors.as.categorical)))
         res$ShowLegend <- FALSE
