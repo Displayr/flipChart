@@ -675,11 +675,22 @@ scatterAxisWarning <- function(data, user.args)
 
 # Map plotly marker symbol names to PowerPoint marker styles
 # https://wiki.q-researchsoftware.com/wiki/PptMarkerSettings#Style
+# A plotly name is a family followed by variants such as -open, -dot, -open-dot or a
+# direction, and PowerPoint has one style per family, so everything after the first hyphen is
+# dropped. These seven are every plotly family PowerPoint has a style for; the other twelve
+# (pentagon, hexagon, hexagram, bowtie, y, line, arrow and so on) fall back to a circle rather
+# than to a style PowerPoint would reject. The control currently offers only circle, square
+# and diamond, each open or closed, so the rest are reached by callers passing a plotly name
+# directly, and by the control if it ever grows.
+# plotly's cross is the upright + and its x is the diagonal one, hence cross mapping to Plus.
+# A family is all PowerPoint can express, so a triangle loses its direction: triangle-down
+# exports pointing up.
 markerSymbolToPPTStyle <- function(symbols)
 {
-    base <- sub("-open$", "", tolower(symbols))
-    lookup <- c(circle = "Circle", square = "Square", diamond = "Diamond")
-    out <- unname(lookup[base])
+    family <- sub("-.*$", "", tolower(symbols))
+    lookup <- c(circle = "Circle", square = "Square", diamond = "Diamond",
+                triangle = "Triangle", x = "X", cross = "Plus", star = "Star")
+    out <- unname(lookup[family])
     out[is.na(out)] <- "Circle"
     out
 }

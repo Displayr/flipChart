@@ -489,3 +489,43 @@ test_that("Numeric series settings export from every form a chart may have been 
     expect_equal(sizesFor(10), c(10, 10, 10))             # new numeric control, chart wide
     expect_equal(sizesFor("10"), c(10, 10, 10))           # old text box, chart wide
 })
+
+test_that("Marker symbols map to PowerPoint styles through their plotly variants", {
+    expect_equal(markerSymbolToPPTStyle(c("circle", "square", "diamond")),
+                 c("Circle", "Square", "Diamond"))
+
+    # The six the control offers
+    expect_equal(markerSymbolToPPTStyle(c("circle-open", "square-open", "diamond-open")),
+                 c("Circle", "Square", "Diamond"))
+
+    # Plotly appends -open and -dot to the family name, in either combination, and a caller
+    # reaching past the control can send any of them
+    expect_equal(markerSymbolToPPTStyle(c("square-open-dot", "diamond-open-dot", "circle-dot")),
+                 c("Square", "Diamond", "Circle"))
+
+    # Anything the lookup does not name falls back to a circle rather than an invalid style
+    expect_equal(markerSymbolToPPTStyle(c("hexagram", "", NA)), rep("Circle", 3))
+})
+
+test_that("Every plotly family PowerPoint has a style for is mapped", {
+    expect_equal(markerSymbolToPPTStyle(c("triangle-up", "triangle-down", "triangle-left")),
+                 rep("Triangle", 3))
+    expect_equal(markerSymbolToPPTStyle(c("x", "x-thin")), c("X", "X"))
+    # plotly's cross is the upright +, which PowerPoint calls Plus; its x is the diagonal one
+    expect_equal(markerSymbolToPPTStyle(c("cross", "cross-thin")), c("Plus", "Plus"))
+    expect_equal(markerSymbolToPPTStyle(c("star", "star-triangle-up", "star-square")),
+                 rep("Star", 3))
+
+    # The variants of the new families go through the family rule like the rest
+    expect_equal(markerSymbolToPPTStyle(c("triangle-up-open-dot", "x-thin-open", "star-open")),
+                 c("Triangle", "X", "Star"))
+
+    # A shape overlaid with a cross or an x is still that shape
+    expect_equal(markerSymbolToPPTStyle(c("circle-cross", "square-x", "diamond-tall")),
+                 c("Circle", "Square", "Diamond"))
+
+    # The families PowerPoint has nothing for still fall back
+    expect_equal(markerSymbolToPPTStyle(c("pentagon", "hexagon", "hexagram", "bowtie",
+                                          "y-up", "line-ew", "arrow-up")),
+                 rep("Circle", 7))
+})
