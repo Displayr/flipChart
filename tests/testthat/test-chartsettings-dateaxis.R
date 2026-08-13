@@ -98,38 +98,24 @@ test_that("A sample size too large to be a day is still not treated as a date",
     expect_null(attr(pd$data, "category.dates"))
 })
 
-test_that("Labels carrying any text beyond the date are not treated as dates",
+test_that("The week labels from the bug report are not treated as dates",
 {
-    # The week labels are from the bug report and reach the same fault by a different route: no month
-    # name, just digits the parser reads across the whole label ("W1'19 n-1212 W1" -> 2012-01-19).
-    # The bracketed and dash-separated sample sizes carry no letters at all, and the parser discards
-    # the month name to read them as month and day ("Jan 2025 (1212)" -> 2025-12-12).
-    for (labels in list(c("Jan 2025 (1212)", "Feb 2025 (1007)"),
-                        c("Jan 2025 - 1212", "Feb 2025 - 1007"),
-                        c("Feb 25 2025\nn = 10", "Mar 25 2025\nn = 12"),
-                        c("Feb 25 2025 (n = 10)", "Mar 25 2025 (n = 12)"),
-                        c("Jan 2025 respondents", "Feb 2025 respondents"),
-                        c("W1'19 n-1212 W1", "W2'19 n-1105 W2"),
-                        c("W1'19\nn-1212", "W2'19\nn-1105"),
-                        c("W1 2019 n = 1212", "W2 2019 n = 1105")))
-    {
-        tbl <- matrix(1:4, ncol = 2, dimnames = list(labels, c("A", "B")))
-        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
-        expect_null(attr(pd$data, "category.dates"), info = labels[1])
-    }
+    # Reaches the same fault by a different route: no month name, just digits the parser reads across
+    # the whole label ("W1'19 n-1212 W1" -> 2012-01-19). The repeated trailing token is what let it
+    # parse at all, so the same label without it was unaffected.
+    labels <- c("W1'19 n-1212 W1", "W2'19 n-1105 W2", "W3'19 n-1103 W3")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
 })
 
-test_that("Date range labels keep their date axis",
+# Which text counts as a date and nothing else is flipTime's to decide and to test exhaustively
+# (IsDateTime's date.only argument). These two only check that the decision is wired in here, one
+# case each way, including a period label because quarterly aggregation depends on it.
+test_that("Labels that are only a date, including ranges, keep their date axis",
 {
-    # Q writes period labels for quarterly and weekly aggregation. Every separator flipTime parses a
-    # period with is punctuation - comma, slash, or any Unicode dash - and it returns the start of the
-    # range, so these are real dates and must keep their native date axis.
-    for (labels in list(c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08"),
-                        c("Jan-Mar 2025", "Apr-Jun 2025", "Jul-Sep 2025"),
-                        c("jun/sep 10", "oct/dec 10", "jan/mar 11"),
-                        paste0(c("Jan", "Apr", "Jul"), " 2025 ", intToUtf8(8211), " ",
-                               c("Mar", "Jun", "Sep"), " 2025"), # en dash
-                        c("10/16/2016-2/10/2017", "2/11/2017-5/10/2017", "5/11/2017-8/10/2017")))
+    for (labels in list(c("Jan 2025", "Feb 2025", "Mar 2025"),
+                        c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08")))
     {
         tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
         pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
@@ -137,58 +123,12 @@ test_that("Date range labels keep their date axis",
     }
 })
 
-test_that("Ranges separated by a word stay on a category axis",
+test_that("Labels carrying anything beyond the date do not get a date axis",
 {
-    # flipTime has no word separator, so "Jan 2025 to Mar 2025" is not recognised as a period at all. It
-    # falls through to the same lenient token matching behind this bug and yields 2025-01-20 - "20" read
-    # as the day and "25" as the year - so exporting it would put a wrong date on the axis.
-    for (labels in list(c("Jan 2025 to Mar 2025", "Apr 2025 to Jun 2025"),
-                        c("Jan 2025 and Mar 2025", "Apr 2025 and Jun 2025"),
-                        c("Jan 2025 through Mar 2025", "Apr 2025 through Jun 2025")))
-    {
-        tbl <- matrix(1:4, ncol = 2, dimnames = list(labels, c("A", "B")))
-        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
-        expect_null(attr(pd$data, "category.dates"), info = labels[1])
-    }
-})
-
-test_that("Date-only labels in the other formats the parser accepts keep their date axis",
-{
-    # Ordinal suffixes, CJK year/month/day markers and a timezone name qualifying a time all parse and
-    # carry no content beyond the date, so the strictness above must not reject them. Built with
-    # intToUtf8 to keep this file ASCII.
-    jp <- function(m) paste0("2016", intToUtf8(0x5E74), m, intToUtf8(0x6708), "2", intToUtf8(0x65E5))
-    kr <- function(m) paste0("2016", intToUtf8(0xB144), " ", m, intToUtf8(0xC6D4), " 2", intToUtf8(0xC77C))
-    for (labels in list(c("Wednesday, 3rd February, 2010", "Thursday, 4th March, 2010",
-                          "Friday, 5th April, 2010"),
-                        c("1st Feb 2010", "2nd Mar 2010", "3rd Apr 2010"),
-                        c("Feb 1st, 2010", "Mar 2nd, 2010", "Apr 3rd, 2010"),
-                        vapply(1:3, jp, character(1)),
-                        vapply(1:3, kr, character(1)),
-                        c("2020-01-01 10:00:00 UTC", "2020-01-02 10:00:00 UTC",
-                          "2020-01-03 10:00:00 UTC"),
-                        c("2020-01-01 10:00:00 AEST", "2020-01-02 10:00:00 AEST",
-                          "2020-01-03 10:00:00 AEST")))
-    {
-        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
-        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
-        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
-    }
-})
-
-test_that("Labels that are dates and nothing else still get a date axis",
-{
-    # Guards the strictness above against over-rejecting: every single-date format PrepareData or Q can
-    # put on a category label.
-    for (labels in list(c("2020-01-01", "2020-01-02", "2020-01-03"),
-                        c("Feb 25 2025", "Mar 25 2025", "Apr 25 2025"),
-                        c("25 Feb 2025", "25 Mar 2025", "25 Apr 2025"),
-                        c("Jan 2025", "Feb 2025", "Mar 2025")))
-    {
-        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
-        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
-        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
-    }
+    labels <- c("Jan 2025 respondents", "Feb 2025 respondents", "Mar 2025 respondents")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
 })
 
 test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date formats",
