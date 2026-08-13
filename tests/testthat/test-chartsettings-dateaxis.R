@@ -110,15 +110,47 @@ test_that("Labels carrying any text beyond the date are not treated as dates",
     }
 })
 
+test_that("Date range labels keep their date axis",
+{
+    # Q writes period labels for quarterly and weekly aggregation. Every separator flipTime parses a
+    # period with is punctuation - comma, slash, or any Unicode dash - and it returns the start of the
+    # range, so these are real dates and must keep their native date axis.
+    for (labels in list(c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08"),
+                        c("Jan-Mar 2025", "Apr-Jun 2025", "Jul-Sep 2025"),
+                        c("jun/sep 10", "oct/dec 10", "jan/mar 11"),
+                        paste0(c("Jan", "Apr", "Jul"), " 2025 ", intToUtf8(8211), " ",
+                               c("Mar", "Jun", "Sep"), " 2025"), # en dash
+                        c("10/16/2016-2/10/2017", "2/11/2017-5/10/2017", "5/11/2017-8/10/2017")))
+    {
+        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
+    }
+})
+
+test_that("Ranges separated by a word stay on a category axis",
+{
+    # flipTime has no word separator, so "Jan 2025 to Mar 2025" is not recognised as a period at all. It
+    # falls through to the same lenient token matching behind this bug and yields 2025-01-20 - "20" read
+    # as the day and "25" as the year - so exporting it would put a wrong date on the axis.
+    for (labels in list(c("Jan 2025 to Mar 2025", "Apr 2025 to Jun 2025"),
+                        c("Jan 2025 and Mar 2025", "Apr 2025 and Jun 2025"),
+                        c("Jan 2025 through Mar 2025", "Apr 2025 through Jun 2025")))
+    {
+        tbl <- matrix(1:4, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_null(attr(pd$data, "category.dates"), info = labels[1])
+    }
+})
+
 test_that("Labels that are dates and nothing else still get a date axis",
 {
-    # Guards the strictness above against over-rejecting: every format PrepareData or Q can put on a
-    # category label, including the "Apr-Jun 08" period labels used for quarterly aggregation.
+    # Guards the strictness above against over-rejecting: every single-date format PrepareData or Q can
+    # put on a category label.
     for (labels in list(c("2020-01-01", "2020-01-02", "2020-01-03"),
                         c("Feb 25 2025", "Mar 25 2025", "Apr 25 2025"),
                         c("25 Feb 2025", "25 Mar 2025", "25 Apr 2025"),
-                        c("Jan 2025", "Feb 2025", "Mar 2025"),
-                        c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08")))
+                        c("Jan 2025", "Feb 2025", "Mar 2025")))
     {
         tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
         pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
