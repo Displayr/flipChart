@@ -100,9 +100,14 @@ test_that("A sample size too large to be a day is still not treated as a date",
 
 test_that("Labels carrying any text beyond the date are not treated as dates",
 {
+    # The week labels are from the bug report and reach the same fault by a different route: no month
+    # name, just digits the parser reads across the whole label ("W1'19 n-1212 W1" -> 2012-01-19).
     for (labels in list(c("Feb 25 2025\nn = 10", "Mar 25 2025\nn = 12"),
                         c("Feb 25 2025 (n = 10)", "Mar 25 2025 (n = 12)"),
-                        c("Jan 2025 respondents", "Feb 2025 respondents")))
+                        c("Jan 2025 respondents", "Feb 2025 respondents"),
+                        c("W1'19 n-1212 W1", "W2'19 n-1105 W2"),
+                        c("W1'19\nn-1212", "W2'19\nn-1105"),
+                        c("W1 2019 n = 1212", "W2 2019 n = 1105")))
     {
         tbl <- matrix(1:4, ncol = 2, dimnames = list(labels, c("A", "B")))
         pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
