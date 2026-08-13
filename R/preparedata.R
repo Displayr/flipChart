@@ -1511,10 +1511,10 @@ addCategoryDateAxisAttributes <- function(data, date.format)
     if (grepl("^No date", date.format) || !is.null(attr(data, "category.dates")))
         return(data)
 
-    # date.only because the labels are shown as they are: a date parsed out of an annotation (a sample
-    # size, say) would put dates on the axis that appear nowhere in the table. See RS-23170.
-    labels <- if (IsDateTime(rownames(data), date.only = TRUE)) rownames(data)
-              else if (IsDateTime(names(data), date.only = TRUE)) names(data)
+    # No extra text tolerated, because the labels are shown as they are: a date parsed out of an
+    # annotation (a sample size, say) would put dates on the axis that appear nowhere in the table.
+    labels <- if (IsDateTime(rownames(data), allow.extra.text = FALSE)) rownames(data)
+              else if (IsDateTime(names(data), allow.extra.text = FALSE)) names(data)
               else return(data)
 
     # Under Automatic let AsDate infer US/International; otherwise honour the user's choice.

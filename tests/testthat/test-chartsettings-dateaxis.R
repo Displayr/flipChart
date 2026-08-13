@@ -110,7 +110,7 @@ test_that("The week labels from the bug report are not treated as dates",
 })
 
 # Which text counts as a date and nothing else is flipTime's to decide and to test exhaustively
-# (IsDateTime's date.only argument). These two only check that the decision is wired in here, one
+# (IsDateTime's allow.extra.text argument). These two only check it is wired in here, one
 # case each way, including a period label because quarterly aggregation depends on it.
 test_that("Labels that are only a date, including ranges, keep their date axis",
 {
