@@ -1549,8 +1549,15 @@ labelsAreDatesOnly <- function(labels)
     residue <- labels
     for (word in date.words[order(-nchar(date.words))])
         residue <- gsub(word, "", residue, ignore.case = TRUE)
+    # Ordinal suffixes and the "3rd of February" connective, both parsed by lubridate. The suffix must
+    # follow a digit, so only a day number can shed one and annotation text keeps its letters.
+    residue <- gsub("(?<=[0-9])(st|nd|rd|th)\\b", "", residue, ignore.case = TRUE, perl = TRUE)
+    residue <- gsub("\\bof\\b", "", residue, ignore.case = TRUE)
+    # CJK year/month/day markers, also parsed: "2016<U+5E74>1<U+6708>2<U+65E5>" and the Korean
+    # equivalent. Only the markers themselves, so a label annotated in those scripts is still rejected.
+    cjk.date.markers <- intToUtf8(c(0x5E74, 0x6708, 0x65E5, 0xB144, 0xC6D4, 0xC77C))
     # T and Z appear in ISO timestamps; everything else a date needs is a digit or a separator.
-    residue <- gsub("[[:digit:][:space:][:punct:]TZ]", "", residue)
+    residue <- gsub(paste0("[[:digit:][:space:][:punct:]TZ", cjk.date.markers, "]"), "", residue)
     !any(nzchar(residue))
 }
 

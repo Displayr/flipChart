@@ -148,6 +148,27 @@ test_that("Ranges separated by a word stay on a category axis",
     }
 })
 
+test_that("Date-only labels in the other formats the parser accepts keep their date axis",
+{
+    # flipTime hands these to lubridate, which parses ordinal suffixes, the "3rd of February"
+    # connective, and CJK year/month/day markers. They carry no content beyond the date, so the
+    # strictness above must not reject them. Built with intToUtf8 to keep this file ASCII.
+    jp <- function(m) paste0("2016", intToUtf8(0x5E74), m, intToUtf8(0x6708), "2", intToUtf8(0x65E5))
+    kr <- function(m) paste0("2016", intToUtf8(0xB144), " ", m, intToUtf8(0xC6D4), " 2", intToUtf8(0xC77C))
+    for (labels in list(c("Wednesday, 3rd February, 2010", "Thursday, 4th March, 2010",
+                          "Friday, 5th April, 2010"),
+                        c("1st Feb 2010", "2nd Mar 2010", "3rd Apr 2010"),
+                        c("Feb 1st, 2010", "Mar 2nd, 2010", "Apr 3rd, 2010"),
+                        c("3rd of February 2010", "4th of March 2010", "5th of April 2010"),
+                        vapply(1:3, jp, character(1)),
+                        vapply(1:3, kr, character(1))))
+    {
+        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
+    }
+})
+
 test_that("Labels that are dates and nothing else still get a date axis",
 {
     # Guards the strictness above against over-rejecting: every single-date format PrepareData or Q can
