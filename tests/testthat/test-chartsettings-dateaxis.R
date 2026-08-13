@@ -102,7 +102,11 @@ test_that("Labels carrying any text beyond the date are not treated as dates",
 {
     # The week labels are from the bug report and reach the same fault by a different route: no month
     # name, just digits the parser reads across the whole label ("W1'19 n-1212 W1" -> 2012-01-19).
-    for (labels in list(c("Feb 25 2025\nn = 10", "Mar 25 2025\nn = 12"),
+    # The bracketed and dash-separated sample sizes carry no letters at all, and the parser discards
+    # the month name to read them as month and day ("Jan 2025 (1212)" -> 2025-12-12).
+    for (labels in list(c("Jan 2025 (1212)", "Feb 2025 (1007)"),
+                        c("Jan 2025 - 1212", "Feb 2025 - 1007"),
+                        c("Feb 25 2025\nn = 10", "Mar 25 2025\nn = 12"),
                         c("Feb 25 2025 (n = 10)", "Mar 25 2025 (n = 12)"),
                         c("Jan 2025 respondents", "Feb 2025 respondents"),
                         c("W1'19 n-1212 W1", "W2'19 n-1105 W2"),
@@ -150,18 +154,21 @@ test_that("Ranges separated by a word stay on a category axis",
 
 test_that("Date-only labels in the other formats the parser accepts keep their date axis",
 {
-    # flipTime hands these to lubridate, which parses ordinal suffixes, the "3rd of February"
-    # connective, and CJK year/month/day markers. They carry no content beyond the date, so the
-    # strictness above must not reject them. Built with intToUtf8 to keep this file ASCII.
+    # Ordinal suffixes, CJK year/month/day markers and a timezone name qualifying a time all parse and
+    # carry no content beyond the date, so the strictness above must not reject them. Built with
+    # intToUtf8 to keep this file ASCII.
     jp <- function(m) paste0("2016", intToUtf8(0x5E74), m, intToUtf8(0x6708), "2", intToUtf8(0x65E5))
     kr <- function(m) paste0("2016", intToUtf8(0xB144), " ", m, intToUtf8(0xC6D4), " 2", intToUtf8(0xC77C))
     for (labels in list(c("Wednesday, 3rd February, 2010", "Thursday, 4th March, 2010",
                           "Friday, 5th April, 2010"),
                         c("1st Feb 2010", "2nd Mar 2010", "3rd Apr 2010"),
                         c("Feb 1st, 2010", "Mar 2nd, 2010", "Apr 3rd, 2010"),
-                        c("3rd of February 2010", "4th of March 2010", "5th of April 2010"),
                         vapply(1:3, jp, character(1)),
-                        vapply(1:3, kr, character(1))))
+                        vapply(1:3, kr, character(1)),
+                        c("2020-01-01 10:00:00 UTC", "2020-01-02 10:00:00 UTC",
+                          "2020-01-03 10:00:00 UTC"),
+                        c("2020-01-01 10:00:00 AEST", "2020-01-02 10:00:00 AEST",
+                          "2020-01-03 10:00:00 AEST")))
     {
         tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
         pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))

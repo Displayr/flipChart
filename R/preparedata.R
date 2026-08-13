@@ -1511,8 +1511,10 @@ addCategoryDateAxisAttributes <- function(data, date.format)
     if (grepl("^No date", date.format) || !is.null(attr(data, "category.dates")))
         return(data)
 
-    labels <- if (labelsAreDatesOnly(rownames(data)) && IsDateTime(rownames(data))) rownames(data)
-              else if (labelsAreDatesOnly(names(data)) && IsDateTime(names(data))) names(data)
+    # date.only because the labels are shown as they are: a date parsed out of an annotation (a sample
+    # size, say) would put dates on the axis that appear nowhere in the table. See RS-23170.
+    labels <- if (IsDateTime(rownames(data), date.only = TRUE)) rownames(data)
+              else if (IsDateTime(names(data), date.only = TRUE)) names(data)
               else return(data)
 
     # Under Automatic let AsDate infer US/International; otherwise honour the user's choice.
@@ -1528,37 +1530,6 @@ addCategoryDateAxisAttributes <- function(data, date.format)
     attr(data, "category.dates") <- as.numeric(dates)
     attr(data, "category.date.format") <- if (grepl("International", date.format)) "dd mmm yyyy" else "mmm dd yyyy"
     data
-}
-
-# TRUE when every label is built only from date content: month and weekday names, digits and separators.
-# AsDate is deliberately lenient because its main job is salvaging a date out of messy user text, so it
-# happily reads "2025 Q2 n = 11" as 2025-02-11 (quarter digit as the month, appended sample size as the
-# day) and "Jan 2025 n = 1212" as 2025-12-12 (month name ignored, sample size as mmdd). Asking the
-# stricter question - is this label nothing but a date? - keeps annotated labels on a category axis.
-# Deliberately permissive about which date format, so period labels ("Apr-Jun 08") still qualify.
-labelsAreDatesOnly <- function(labels)
-{
-    if (length(labels) == 0)
-        return(FALSE)
-    reference.months <- ISOdate(2000, 1:12, 1)
-    reference.days <- as.Date("2024-01-01") + 0:6
-    # Locale-dependent, so this follows whatever language AsDate itself is parsing in. Longest first so
-    # that removing "Jan" cannot leave "uary" behind.
-    date.words <- c(format(reference.months, "%B"), format(reference.months, "%b"),
-                    format(reference.days, "%A"), format(reference.days, "%a"), "AM", "PM")
-    residue <- labels
-    for (word in date.words[order(-nchar(date.words))])
-        residue <- gsub(word, "", residue, ignore.case = TRUE)
-    # Ordinal suffixes and the "3rd of February" connective, both parsed by lubridate. The suffix must
-    # follow a digit, so only a day number can shed one and annotation text keeps its letters.
-    residue <- gsub("(?<=[0-9])(st|nd|rd|th)\\b", "", residue, ignore.case = TRUE, perl = TRUE)
-    residue <- gsub("\\bof\\b", "", residue, ignore.case = TRUE)
-    # CJK year/month/day markers, also parsed: "2016<U+5E74>1<U+6708>2<U+65E5>" and the Korean
-    # equivalent. Only the markers themselves, so a label annotated in those scripts is still rejected.
-    cjk.date.markers <- intToUtf8(c(0x5E74, 0x6708, 0x65E5, 0xB144, 0xC6D4, 0xC77C))
-    # T and Z appear in ISO timestamps; everything else a date needs is a digit or a separator.
-    residue <- gsub(paste0("[[:digit:][:space:][:punct:]TZ", cjk.date.markers, "]"), "", residue)
-    !any(nzchar(residue))
 }
 
 convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type,
