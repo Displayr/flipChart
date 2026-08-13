@@ -78,6 +78,54 @@ test_that("Non-date row labels do not trigger a date axis",
     expect_null(attr(pd$data, "category.dates"))
 })
 
+test_that("Date labels with an appended sample size are not treated as dates",
+{
+    # A sample-size rule appends "n = ..." to each label. AsDate is lenient enough to read the quarter
+    # digit as a month and the sample size as a day ("2025 Q2 n = 11" -> 2025-02-11), which exported a
+    # native date axis and replaced the labels with dates. Sample sizes above 31 only escaped by accident.
+    labels <- c("2025 Q2 n = 11", "2025 Q3 n = 16", "2025 Q4 n = 18", "2026 Q1 n = 13")
+    tbl <- matrix(1:8, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
+test_that("A sample size too large to be a day is still not treated as a date",
+{
+    # "Jan 2025 n = 1212" parses as 2025-12-12: the month name is ignored and the sample size read as mmdd.
+    labels <- c("Jan 2025 n = 1212", "Feb 2025 n = 1007", "Mar 2025 n = 1103")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
+test_that("Labels carrying any text beyond the date are not treated as dates",
+{
+    for (labels in list(c("Feb 25 2025\nn = 10", "Mar 25 2025\nn = 12"),
+                        c("Feb 25 2025 (n = 10)", "Mar 25 2025 (n = 12)"),
+                        c("Jan 2025 respondents", "Feb 2025 respondents")))
+    {
+        tbl <- matrix(1:4, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_null(attr(pd$data, "category.dates"), info = labels[1])
+    }
+})
+
+test_that("Labels that are dates and nothing else still get a date axis",
+{
+    # Guards the strictness above against over-rejecting: every format PrepareData or Q can put on a
+    # category label, including the "Apr-Jun 08" period labels used for quarterly aggregation.
+    for (labels in list(c("2020-01-01", "2020-01-02", "2020-01-03"),
+                        c("Feb 25 2025", "Mar 25 2025", "Apr 25 2025"),
+                        c("25 Feb 2025", "25 Mar 2025", "25 Apr 2025"),
+                        c("Jan 2025", "Feb 2025", "Mar 2025"),
+                        c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08")))
+    {
+        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
+    }
+})
+
 test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date formats",
 {
     expect_equal(convertToPPTDateFormat("%Y"), "yyyy")

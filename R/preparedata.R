@@ -1511,8 +1511,8 @@ addCategoryDateAxisAttributes <- function(data, date.format)
     if (grepl("^No date", date.format) || !is.null(attr(data, "category.dates")))
         return(data)
 
-    labels <- if (!is.null(rownames(data)) && IsDateTime(rownames(data))) rownames(data)
-              else if (IsDateTime(names(data))) names(data)
+    labels <- if (labelsAreDatesOnly(rownames(data)) && IsDateTime(rownames(data))) rownames(data)
+              else if (labelsAreDatesOnly(names(data)) && IsDateTime(names(data))) names(data)
               else return(data)
 
     # Under Automatic let AsDate infer US/International; otherwise honour the user's choice.
@@ -1528,6 +1528,30 @@ addCategoryDateAxisAttributes <- function(data, date.format)
     attr(data, "category.dates") <- as.numeric(dates)
     attr(data, "category.date.format") <- if (grepl("International", date.format)) "dd mmm yyyy" else "mmm dd yyyy"
     data
+}
+
+# TRUE when every label is built only from date content: month and weekday names, digits and separators.
+# AsDate is deliberately lenient because its main job is salvaging a date out of messy user text, so it
+# happily reads "2025 Q2 n = 11" as 2025-02-11 (quarter digit as the month, appended sample size as the
+# day) and "Jan 2025 n = 1212" as 2025-12-12 (month name ignored, sample size as mmdd). Asking the
+# stricter question - is this label nothing but a date? - keeps annotated labels on a category axis.
+# Deliberately permissive about which date format, so period labels ("Apr-Jun 08") still qualify.
+labelsAreDatesOnly <- function(labels)
+{
+    if (length(labels) == 0)
+        return(FALSE)
+    reference.months <- ISOdate(2000, 1:12, 1)
+    reference.days <- as.Date("2024-01-01") + 0:6
+    # Locale-dependent, so this follows whatever language AsDate itself is parsing in. Longest first so
+    # that removing "Jan" cannot leave "uary" behind.
+    date.words <- c(format(reference.months, "%B"), format(reference.months, "%b"),
+                    format(reference.days, "%A"), format(reference.days, "%a"), "AM", "PM")
+    residue <- labels
+    for (word in date.words[order(-nchar(date.words))])
+        residue <- gsub(word, "", residue, ignore.case = TRUE)
+    # T and Z appear in ISO timestamps; everything else a date needs is a digit or a separator.
+    residue <- gsub("[[:digit:][:space:][:punct:]TZ]", "", residue)
+    !any(nzchar(residue))
 }
 
 convertPercentages <- function(data, as.percentages, hide.percent.symbol, chart.type,
