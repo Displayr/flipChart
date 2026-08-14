@@ -1,7 +1,7 @@
 Package: flipChart
 Type: Package
 Title: Single function for calling charts - CChart
-Version: 1.12.13
+Version: 1.12.14
 Author: Displayr <opensource@displayr.com>
 Maintainer: Displayr <opensource@displayr.com>
 Description: Wrapper for other chart functions, such that they can be access via a
@@ -26,7 +26,7 @@ Imports:
     flipStandardCharts (>= 1.32.15),
     flipStatistics,
     flipTables (>= 2.8.8),
-    flipTime,
+    flipTime (>= 2.10.4),
     flipTransformations (>= 1.10.0),
     flipU (>= 1.6.2),
     verbs (>= 0.15.9)

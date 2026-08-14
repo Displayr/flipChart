@@ -78,6 +78,59 @@ test_that("Non-date row labels do not trigger a date axis",
     expect_null(attr(pd$data, "category.dates"))
 })
 
+test_that("Date labels with an appended sample size are not treated as dates",
+{
+    # A sample-size rule appends "n = ..." to each label. AsDate is lenient enough to read the quarter
+    # digit as a month and the sample size as a day ("2025 Q2 n = 11" -> 2025-02-11), which exported a
+    # native date axis and replaced the labels with dates. Sample sizes above 31 only escaped by accident.
+    labels <- c("2025 Q2 n = 11", "2025 Q3 n = 16", "2025 Q4 n = 18", "2026 Q1 n = 13")
+    tbl <- matrix(1:8, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
+test_that("A sample size too large to be a day is still not treated as a date",
+{
+    # "Jan 2025 n = 1212" parses as 2025-12-12: the month name is ignored and the sample size read as mmdd.
+    labels <- c("Jan 2025 n = 1212", "Feb 2025 n = 1007", "Mar 2025 n = 1103")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
+test_that("The week labels from the bug report are not treated as dates",
+{
+    # Reaches the same fault by a different route: no month name, just digits the parser reads across
+    # the whole label ("W1'19 n-1212 W1" -> 2012-01-19). The repeated trailing token is what let it
+    # parse at all, so the same label without it was unaffected.
+    labels <- c("W1'19 n-1212 W1", "W2'19 n-1105 W2", "W3'19 n-1103 W3")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
+# Which text counts as a date and nothing else is flipTime's to decide and to test exhaustively
+# (IsDateTime's allow.extra.text argument). These two only check it is wired in here, one
+# case each way, including a period label because quarterly aggregation depends on it.
+test_that("Labels that are only a date, including ranges, keep their date axis",
+{
+    for (labels in list(c("Jan 2025", "Feb 2025", "Mar 2025"),
+                        c("Apr-Jun 08", "Jul-Sep 08", "Oct-Dec 08")))
+    {
+        tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+        pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+        expect_equal(length(attr(pd$data, "category.dates")), 3L, info = labels[1])
+    }
+})
+
+test_that("Labels carrying anything beyond the date do not get a date axis",
+{
+    labels <- c("Jan 2025 respondents", "Feb 2025 respondents", "Mar 2025 respondents")
+    tbl <- matrix(1:6, ncol = 2, dimnames = list(labels, c("A", "B")))
+    pd <- suppressWarnings(PrepareData("Column", input.data.table = tbl))
+    expect_null(attr(pd$data, "category.dates"))
+})
+
 test_that("convertToPPTDateFormat maps d3 date formats and rejects non-date formats",
 {
     expect_equal(convertToPPTDateFormat("%Y"), "yyyy")
