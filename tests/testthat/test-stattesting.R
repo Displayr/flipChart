@@ -986,7 +986,19 @@ test_that("ChartData keeps row and column names for every table shape",
     expect_null(dim(dat))
     expect_equal(names(dat), rows)
 
-    # No statistics dimension to remove, so the table is passed through untouched
-    tb <- makeTable(c(3L, 1L), list(rows, columns[1]))
+    # A single statistic, still 3-dimensional: the same rebuild has to happen
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 1L), list(rows, columns[1], "Column %")), NULL)
+    expect_equal(dimnames(dat), list(rows, columns[1]))
+    expect_equal(attr(dat, "statistic"), "Column %")
+
+    # Numeric data with nothing to remove is returned as it stands, names and all
+    numeric.table <- structure(as.numeric(1:6), dim = c(3L, 2L, 1L),
+        dimnames = list(rows, columns, "Column %"), class = c("QTable", "array"))
+    expect_equal(removeSignifAndCharData(numeric.table, NULL), numeric.table)
+
+    # A single statistic on a 2-dimensional table, which is where one lives once there is
+    # nothing to append: no statistics dimension to remove, so nothing is touched
+    tb <- structure(makeTable(c(3L, 1L), list(rows, columns[1])), statistic = "Column %")
     expect_equal(removeSignifAndCharData(tb, NULL), tb)
 })
