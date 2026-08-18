@@ -878,6 +878,30 @@ test_that("Handle Column Comparisons correctly",
             data.label.show = TRUE)), NA)
 })
 
+test_that("Selecting a single column keeps its name in ChartData",
+{
+    # RS-23524: the reported document selects one banner column out of a 2-d table that
+    # shows column comparisons. Dropping the statistic dimension dropped the lone column
+    # with it, so the exported chart named its series after the statistic ("Column %")
+    # instead of the column. Driven through PrepareData because that is how the column
+    # gets reduced to one in the first place.
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.columns = "Coca-Cola", tidy = FALSE)
+    expect_equal(dim(pd$data), c(9L, 1L, 3L))
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data), list(rownames(pd$data), "Coca-Cola"))
+    expect_equal(attr(chart.data, "statistic"), "Column %")
+
+    # With significance appended, two numeric statistics survive removal, so the data
+    # stays 3-dimensional and keeps its column name that way instead
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.columns = "Coca-Cola", tidy = FALSE, signif.append = TRUE)
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE, signif.show = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data)[1:2], list(rownames(pd$data), "Coca-Cola"))
+})
+
 test_that("ChartData keeps row and column names for every table shape",
 {
     # The exported PowerPoint/Excel chart takes its series (legend) names from the
