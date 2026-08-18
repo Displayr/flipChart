@@ -893,6 +893,14 @@ test_that("Selecting a single column keeps its name in ChartData",
     expect_equal(dimnames(chart.data), list(rownames(pd$data), "Coca-Cola"))
     expect_equal(attr(chart.data, "statistic"), "Column %")
 
+    # Selecting a single row instead: transposing keeps the column names, and the row
+    # name has to be restored or Q labels the series "[1,]"
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.rows = "February 2019", tidy = FALSE)
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data), list("February 2019", colnames(pd$data)))
+
     # With significance appended, two numeric statistics survive removal, so the data
     # stays 3-dimensional and keeps its column name that way instead
     pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
@@ -930,10 +938,18 @@ test_that("ChartData keeps row and column names for every table shape",
     expect_equal(dimnames(dat), list(rows, columns[1]))
     expect_equal(attr(dat, "statistic"), "Column %")
 
-    # One row: the mirror case, kept two-dimensional by transposing (RS-14165)
+    # One row: kept two-dimensional by transposing (RS-14165). That names the columns
+    # but not the row, which Q needs when it plots series in rows
     dat <- removeSignifAndCharData(
         makeTable(c(1L, 2L, 2L), list("NET", columns, c("Column %", "Column Comparisons"))),
         NULL)
+    expect_equal(dimnames(dat), list("NET", columns))
+
+    # One row with no row name to keep
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 2L, 2L), list(NULL, columns, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(rownames(dat))
     expect_equal(colnames(dat), columns)
 
     # One row and one column

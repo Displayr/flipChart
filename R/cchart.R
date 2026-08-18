@@ -445,11 +445,17 @@ removeSignifAndCharData <- function(x, rm.stats)
         new.dat <- x[,,keep.stats, drop = FALSE]
     } else {
         primary.stat <- all.stats[1]
+        row.name <- dimnames(x)[[1]]
         column.name <- dimnames(x)[[2]]
         new.dat <- x[,,1, drop = TRUE]
-        if (NCOL(x) > 1 && NCOL(new.dat) == 1)
+        if (NCOL(x) > 1 && NCOL(new.dat) == 1) {
             new.dat <- t(new.dat)
-        else if (NCOL(x) == 1 && is.null(dim(new.dat))
+            # t() names the columns from the vector names but leaves the single row
+            # unnamed, and Q then labels the series "[1,]" whenever it plots series in
+            # rows - the mirror of the column case below (RS-23524).
+            if (isTRUE(nzchar(row.name, keepNA = TRUE)))
+                rownames(new.dat) <- row.name
+        } else if (NCOL(x) == 1 && is.null(dim(new.dat))
                  && isTRUE(nzchar(column.name, keepNA = TRUE)))
             # A single column is dropped along with the statistic dimension, taking
             # the column name with it. Q names an exported chart's series after the
@@ -457,7 +463,7 @@ removeSignifAndCharData <- function(x, rm.stats)
             # A table that never had column names is left alone: it is genuinely
             # 1-dimensional and Q shows the statistic as its column header (RS-3402).
             new.dat <- matrix(new.dat, ncol = 1,
-                dimnames = list(dimnames(x)[[1]], column.name))
+                dimnames = list(row.name, column.name))
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {
