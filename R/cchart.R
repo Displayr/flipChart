@@ -455,11 +455,17 @@ removeSignifAndCharData <- function(x, rm.stats)
         # the statistic (RS-23524) or "[1,]" (RS-14165). A single unnamed column stays a
         # vector, whose own names still carry the rows, and where showing the statistic is
         # what Q should do (RS-3402) - unless there are no names to carry at all.
-        if (is.null(dim(new.dat))
-            && (NCOL(x) > 1 || !is.null(column.name)
-                || (is.null(names(new.dat)) && !is.null(row.name))))
-            new.dat <- matrix(new.dat, nrow = dim(x)[1], ncol = dim(x)[2],
-                              dimnames = list(row.name, column.name))
+        if (is.null(dim(new.dat))) {
+            if (NCOL(x) > 1 || !is.null(column.name)
+                || (is.null(names(new.dat)) && !is.null(row.name)))
+                new.dat <- matrix(new.dat, nrow = dim(x)[1], ncol = dim(x)[2],
+                                  dimnames = list(row.name, column.name))
+            else
+                # drop names the vector after whichever dimnames component was the only
+                # non-NULL one, which can be the statistic's. A vector stands for the
+                # table's rows, so those are the only names it may carry.
+                names(new.dat) <- row.name
+        }
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {

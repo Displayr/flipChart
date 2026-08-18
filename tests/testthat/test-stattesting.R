@@ -968,11 +968,13 @@ test_that("ChartData keeps row and column names for every table shape",
         expect_null(colnames(dat))
     }
 
-    # Nothing named at all, so nothing to preserve
+    # Nothing named at all. drop = TRUE names the vector after the statistic dimension,
+    # being the only non-NULL one, and that name must not pass as a row label
     dat <- removeSignifAndCharData(
         makeTable(c(1L, 1L, 2L), list(NULL, NULL, c("Column %", "Column Comparisons"))),
         NULL)
     expect_null(dim(dat))
+    expect_null(names(dat))
 
     # Blank and NA labels are not names: they must not be written through where a name
     # would be, on either dimension
