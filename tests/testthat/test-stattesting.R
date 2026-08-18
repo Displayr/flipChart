@@ -958,6 +958,38 @@ test_that("ChartData keeps row and column names for every table shape",
         NULL)
     expect_equal(dimnames(dat), list("NET", columns[1]))
 
+    # One row and one unnamed column: the dropped vector cannot carry the row name the
+    # way a single column of many rows can, so the 2-d shape is still needed
+    for (no.name in list(NULL, "", NA_character_)) {
+        dat <- removeSignifAndCharData(
+            makeTable(c(1L, 1L, 2L), list("NET", no.name, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_equal(rownames(dat), "NET")
+        expect_null(colnames(dat))
+    }
+
+    # Nothing named at all, so nothing to preserve
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 1L, 2L), list(NULL, NULL, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(dim(dat))
+
+    # Blank and NA labels are not names: they must not be written through where a name
+    # would be, on either dimension
+    for (no.name in list("", NA_character_)) {
+        dat <- removeSignifAndCharData(
+            makeTable(c(1L, 2L, 2L), list(no.name, columns, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_null(rownames(dat))
+        expect_equal(colnames(dat), columns)
+
+        dat <- removeSignifAndCharData(
+            makeTable(c(3L, 1L, 2L), list(rows, no.name, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_null(dim(dat))
+        expect_equal(names(dat), rows)
+    }
+
     # More than one column is unaffected
     dat <- removeSignifAndCharData(
         makeTable(c(3L, 2L, 2L), list(rows, columns, c("Column %", "Column Comparisons"))),

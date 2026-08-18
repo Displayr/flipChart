@@ -445,15 +445,21 @@ removeSignifAndCharData <- function(x, rm.stats)
         new.dat <- x[,,keep.stats, drop = FALSE]
     } else {
         primary.stat <- all.stats[1]
-        column.name <- dimnames(x)[[2]]
+        # A blank or NA label is no more use to the export than no label at all
+        keep <- function(labels)
+            if (length(labels) > 1 || isTRUE(nzchar(labels, keepNA = TRUE))) labels
+        row.name <- keep(dimnames(x)[[1]])
+        column.name <- keep(dimnames(x)[[2]])
         new.dat <- x[,,1, drop = TRUE]
         # Keep the dropped dimension's name: Q otherwise names the exported series after
-        # the statistic (RS-23524) or "[1,]" (RS-14165). An unnamed single column stays a
-        # vector, where showing the statistic is what Q should do (RS-3402).
+        # the statistic (RS-23524) or "[1,]" (RS-14165). A single unnamed column stays a
+        # vector, whose own names still carry the rows, and where showing the statistic is
+        # what Q should do (RS-3402) - unless there are no names to carry at all.
         if (is.null(dim(new.dat))
-            && (NCOL(x) > 1 || isTRUE(nzchar(column.name, keepNA = TRUE))))
+            && (NCOL(x) > 1 || !is.null(column.name)
+                || (is.null(names(new.dat)) && !is.null(row.name))))
             new.dat <- matrix(new.dat, nrow = dim(x)[1], ncol = dim(x)[2],
-                              dimnames = dimnames(x)[1:2])
+                              dimnames = list(row.name, column.name))
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {
