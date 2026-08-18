@@ -445,11 +445,17 @@ removeSignifAndCharData <- function(x, rm.stats)
         new.dat <- x[,,keep.stats, drop = FALSE]
     } else {
         primary.stat <- all.stats[1]
-        # A blank or NA label is no more use to the export than no label at all
-        keep <- function(labels)
+        # Q treats the two dimensions differently when a label is missing, so we do too. An
+        # unlabelled column falls back to the statistic name, which is what it should show
+        # (RS-3402), so a blank or NA column label is worth no more than none. An unlabelled
+        # row falls back to the placeholder "[1,]", which is worth less than a blank, so row
+        # labels are passed through - with NA emptied rather than exported as the text "NA".
+        keepColumnName <- function(labels)
             if (length(labels) > 1 || isTRUE(nzchar(labels, keepNA = TRUE))) labels
-        row.name <- keep(dimnames(x)[[1]])
-        column.name <- keep(dimnames(x)[[2]])
+        keepRowName <- function(labels)
+            if (!is.null(labels)) replace(labels, is.na(labels), "")
+        row.name <- keepRowName(dimnames(x)[[1]])
+        column.name <- keepColumnName(dimnames(x)[[2]])
         new.dat <- x[,,1, drop = TRUE]
         # Keep the dropped dimension's name: Q otherwise names the exported series after
         # the statistic (RS-23524) or "[1,]" (RS-14165). A single unnamed column stays a

@@ -976,13 +976,14 @@ test_that("ChartData keeps row and column names for every table shape",
     expect_null(dim(dat))
     expect_null(names(dat))
 
-    # Blank and NA labels are not names: they must not be written through where a name
-    # would be, on either dimension
+    # A blank row label is kept and NA is emptied, because Q fills an absent row label with
+    # the placeholder "[1,]" - worse in a legend than an empty entry. A blank column label
+    # is dropped instead, since Q falls back to the statistic name there (RS-3402)
     for (no.name in list("", NA_character_)) {
         dat <- removeSignifAndCharData(
             makeTable(c(1L, 2L, 2L), list(no.name, columns, c("Column %", "Column Comparisons"))),
             NULL)
-        expect_null(rownames(dat))
+        expect_equal(rownames(dat), "")
         expect_equal(colnames(dat), columns)
 
         dat <- removeSignifAndCharData(
