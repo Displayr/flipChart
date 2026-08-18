@@ -445,9 +445,33 @@ removeSignifAndCharData <- function(x, rm.stats)
         new.dat <- x[,,keep.stats, drop = FALSE]
     } else {
         primary.stat <- all.stats[1]
+        # Q treats the two dimensions differently when a label is missing, so we do too. An
+        # unlabelled column falls back to the statistic name, which is what it should show
+        # (RS-3402), so a blank or NA column label is worth no more than none. An unlabelled
+        # row falls back to the placeholder "[1,]", which is worth less than a blank, so row
+        # labels are passed through - with NA emptied rather than exported as the text "NA".
+        keepColumnName <- function(labels)
+            if (length(labels) > 1 || isTRUE(nzchar(labels, keepNA = TRUE))) labels
+        keepRowName <- function(labels)
+            if (!is.null(labels)) replace(labels, is.na(labels), "")
+        row.name <- keepRowName(dimnames(x)[[1]])
+        column.name <- keepColumnName(dimnames(x)[[2]])
         new.dat <- x[,,1, drop = TRUE]
-        if (NCOL(x) > 1 && NCOL(new.dat) == 1)
-            new.dat <- t(new.dat)
+        # Keep the dropped dimension's name: Q otherwise names the exported series after
+        # the statistic (RS-23524) or "[1,]" (RS-14165). A single unnamed column stays a
+        # vector, whose own names still carry the rows, and where showing the statistic is
+        # what Q should do (RS-3402) - unless there are no names to carry at all.
+        if (is.null(dim(new.dat))) {
+            if (NCOL(x) > 1 || !is.null(column.name)
+                || (is.null(names(new.dat)) && !is.null(row.name)))
+                new.dat <- matrix(new.dat, nrow = dim(x)[1], ncol = dim(x)[2],
+                                  dimnames = list(row.name, column.name))
+            else
+                # drop names the vector after whichever dimnames component was the only
+                # non-NULL one, which can be the statistic's. A vector stands for the
+                # table's rows, so those are the only names it may carry.
+                names(new.dat) <- row.name
+        }
         attr(new.dat, "statistic") <- primary.stat
     }
     if (is.character(new.dat)) {

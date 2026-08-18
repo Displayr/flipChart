@@ -856,11 +856,13 @@ test_that("Handle Column Comparisons correctly",
     expect_equal(colnames(chart.data), colnames(tb.1row.colcmp))
     expect_equal(attr(chart.data, "statistic"), "Average")
 
+    # RS-23524: a single-column table must keep its column name, which the exported
+    # chart uses as its series (legend) name.
     expect_warning(viz <- CChart("Column", tb.1col.colcmp, append.data = TRUE),
         "Missing values have been set to zero")
     chart.data <- attr(viz, "ChartData")
     expect_true(is.numeric(chart.data))
-    expect_equal(names(chart.data), rownames(tb.1col.colcmp))
+    expect_equal(dimnames(chart.data), dimnames(tb.1col.colcmp)[1:2])
     expect_equal(attr(chart.data, "statistic"), "Column %")
 
     expect_error(viz <- CChart("Column", tb.multstats.colcmp, append.data = TRUE), NA)
@@ -874,4 +876,164 @@ test_that("Handle Column Comparisons correctly",
     expect_error((viz <- CChart("Column", tb.2d.colcmp[,,1,drop=FALSE],
             signif.show = TRUE, signif.column.comparisons = TRUE,
             data.label.show = TRUE)), NA)
+})
+
+test_that("Selecting a single column keeps its name in ChartData",
+{
+    # RS-23524: the reported document selects one banner column out of a 2-d table that
+    # shows column comparisons. Dropping the statistic dimension dropped the lone column
+    # with it, so the exported chart named its series after the statistic ("Column %")
+    # instead of the column. Driven through PrepareData because that is how the column
+    # gets reduced to one in the first place.
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.columns = "Coca-Cola", tidy = FALSE)
+    expect_equal(dim(pd$data), c(9L, 1L, 3L))
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data), list(rownames(pd$data), "Coca-Cola"))
+    expect_equal(attr(chart.data, "statistic"), "Column %")
+
+    # Selecting a single row instead: transposing keeps the column names, and the row
+    # name has to be restored or Q labels the series "[1,]"
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.rows = "February 2019", tidy = FALSE)
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data), list("February 2019", colnames(pd$data)))
+
+    # With significance appended, two numeric statistics survive removal, so the data
+    # stays 3-dimensional and keeps its column name that way instead
+    pd <- PrepareData("Column", input.data.table = tb.2d.colcmp,
+                      select.columns = "Coca-Cola", tidy = FALSE, signif.append = TRUE)
+    expect_error(viz <- CChart("Column", pd$data, append.data = TRUE, signif.show = TRUE), NA)
+    chart.data <- attr(viz, "ChartData")
+    expect_equal(dimnames(chart.data)[1:2], list(rownames(pd$data), "Coca-Cola"))
+})
+
+test_that("ChartData keeps row and column names for every table shape",
+{
+    # The exported PowerPoint/Excel chart takes its series (legend) names from the
+    # column names of ChartData. Dropping a length-1 dimension loses them and Q then
+    # falls back to naming the single series after the statistic, e.g. "Column %"
+    # (RS-23524). Q applies the mirror fallback to rows, so both length-1 dimensions
+    # need to survive here, whatever shape the user's table takes.
+    rows <- c("Under 30", "30 to 49", "50 or more")
+    columns <- c("Male", "Female")
+    signif.stats <- c("signifUp#0000FF", "signifDown#FF0000")
+    makeTable <- function(dim, dimnames)
+        structure(as.character(seq_len(prod(dim))), dim = dim, dimnames = dimnames,
+                  class = c("QTable", "array"))
+
+    # One column, column comparisons appended: the RS-23524 case
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 2L), list(rows, columns[1], c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_equal(dimnames(dat), list(rows, columns[1]))
+    expect_equal(attr(dat, "statistic"), "Column %")
+
+    # One column, significance arrows appended: same shape via a different route
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 3L), list(rows, columns[1], c("Column %", signif.stats))),
+        signif.stats)
+    expect_equal(dimnames(dat), list(rows, columns[1]))
+    expect_equal(attr(dat, "statistic"), "Column %")
+
+    # One row: kept two-dimensional by transposing (RS-14165). That names the columns
+    # but not the row, which Q needs when it plots series in rows
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 2L, 2L), list("NET", columns, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_equal(dimnames(dat), list("NET", columns))
+
+    # One row with no row name to keep
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 2L, 2L), list(NULL, columns, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(rownames(dat))
+    expect_equal(colnames(dat), columns)
+
+    # One row and one column
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 1L, 2L), list("NET", columns[1], c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_equal(dimnames(dat), list("NET", columns[1]))
+
+    # One row and one unnamed column: the dropped vector cannot carry the row name the
+    # way a single column of many rows can, so the 2-d shape is still needed
+    for (no.name in list(NULL, "", NA_character_)) {
+        dat <- removeSignifAndCharData(
+            makeTable(c(1L, 1L, 2L), list("NET", no.name, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_equal(rownames(dat), "NET")
+        expect_null(colnames(dat))
+    }
+
+    # Nothing named at all. drop = TRUE names the vector after the statistic dimension,
+    # being the only non-NULL one, and that name must not pass as a row label
+    dat <- removeSignifAndCharData(
+        makeTable(c(1L, 1L, 2L), list(NULL, NULL, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(dim(dat))
+    expect_null(names(dat))
+
+    # A blank row label is kept and NA is emptied, because Q fills an absent row label with
+    # the placeholder "[1,]" - worse in a legend than an empty entry. A blank column label
+    # is dropped instead, since Q falls back to the statistic name there (RS-3402)
+    for (no.name in list("", NA_character_)) {
+        dat <- removeSignifAndCharData(
+            makeTable(c(1L, 2L, 2L), list(no.name, columns, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_equal(rownames(dat), "")
+        expect_equal(colnames(dat), columns)
+
+        dat <- removeSignifAndCharData(
+            makeTable(c(3L, 1L, 2L), list(rows, no.name, c("Column %", "Column Comparisons"))),
+            NULL)
+        expect_null(dim(dat))
+        expect_equal(names(dat), rows)
+    }
+
+    # More than one column is unaffected
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 2L, 2L), list(rows, columns, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_equal(dimnames(dat), list(rows, columns))
+
+    # More than one numeric statistic remains, so the data stays three-dimensional
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 3L),
+                  list(rows, columns[1], c("Column %", "Standard Error", "Column Comparisons"))),
+        NULL)
+    expect_equal(dimnames(dat), list(rows, columns[1], c("Column %", "Standard Error")))
+
+    # A genuinely 1-dimensional table has no column name to keep, so it stays a
+    # vector and Q shows the statistic as its column header instead (RS-3402)
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 2L), list(rows, NULL, c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(dim(dat))
+    expect_equal(names(dat), rows)
+
+    # Likewise when the single column is present but unnamed
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 2L), list(rows, "", c("Column %", "Column Comparisons"))),
+        NULL)
+    expect_null(dim(dat))
+    expect_equal(names(dat), rows)
+
+    # A single statistic, still 3-dimensional: the same rebuild has to happen
+    dat <- removeSignifAndCharData(
+        makeTable(c(3L, 1L, 1L), list(rows, columns[1], "Column %")), NULL)
+    expect_equal(dimnames(dat), list(rows, columns[1]))
+    expect_equal(attr(dat, "statistic"), "Column %")
+
+    # Numeric data with nothing to remove is returned as it stands, names and all
+    numeric.table <- structure(as.numeric(1:6), dim = c(3L, 2L, 1L),
+        dimnames = list(rows, columns, "Column %"), class = c("QTable", "array"))
+    expect_equal(removeSignifAndCharData(numeric.table, NULL), numeric.table)
+
+    # A single statistic on a 2-dimensional table, which is where one lives once there is
+    # nothing to append: no statistics dimension to remove, so nothing is touched
+    tb <- structure(makeTable(c(3L, 1L), list(rows, columns[1])), statistic = "Column %")
+    expect_equal(removeSignifAndCharData(tb, NULL), tb)
 })
