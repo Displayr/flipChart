@@ -610,8 +610,6 @@ test_that("Category axis label position handles the shapes data arrives in",
     stats <- array(c(10, 20, 30, 40, -1.5, 2, -0.3, 1.1), dim = c(2, 2, 2),
             dimnames = list(c("r1", "r2"), c("c1", "c2"), c("Column %", "z-Statistic")))
     expect_equal(position(stats), "NextTo")
-    expect_equal(position(structure(stats, statistic = "z-Statistic")), "Low")
-    expect_equal(position(structure(stats, statistic = c("two", "names"))), "NextTo")
 
     # The bound is read as the chart reads it, and anything it cannot read counts as unset.
     expect_equal(position(matrix(1:6, 2), "-5,000"), "Low")

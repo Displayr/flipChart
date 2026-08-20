@@ -1089,15 +1089,13 @@ categoryAxisLabelPosition <- function(chart.type, args, data, crosses)
     plotted <- if (inherits(data, c("Date", "POSIXt"))) NULL
                 else if (is.data.frame(data)) data[!vapply(data, inherits, logical(1), what = c("Date", "POSIXt"))]
                 else data
-    # A multi-statistic QTable is one plane per statistic and only the first is plotted, so
-    # significance planes must not decide this. removeSignifAndCharData picks the same plane, but
-    # not until well after this, and only it sets the statistic attribute.
+    # Only the primary (first) plane is drawn as bars/markers - flipStandardCharts uses the later
+    # planes for annotations - so nothing outside plane 1 can reach below the axis. The later
+    # planes are still exported (removeSignifAndCharData keeps them for those annotations), so
+    # read plane 1 rather than the whole array.
     if (length(dim(plotted)) == 3)
     {
-        primary.statistic <- attr(plotted, "statistic")
-        plotted <- if (length(primary.statistic) == 1 && primary.statistic %in% dimnames(plotted)[[3]])
-                        plotted[, , primary.statistic]
-                    else plotted[, , 1]
+        plotted <- plotted[, , 1]
     }
     plotted.values <- suppressWarnings(as.numeric(unlist(plotted, use.names = FALSE)))
 
@@ -1105,7 +1103,7 @@ categoryAxisLabelPosition <- function(chart.type, args, data, crosses)
     # treats NA, "" and unparseable text as unset. Test the parsed number, never the text: a blank
     # box arrives as NA, and nzchar(NA) is TRUE, so text would read as a floor. The arg is a single
     # text box (NULL or length 1), so isTRUE() on the parsed number is enough - the any(nzchar())
-    # reads in getPPTSettings() guard length 0, not longer vectors.
+    # calls in getPPTSettings() are there to survive length 0, not to handle longer vectors.
     values.minimum <- suppressWarnings(as.numeric(gsub("[ ,]", "", as.character(args$values.bounds.minimum))))
     # setScatterAxesBounds runs after this and pads the floor below zero for plenty of positive Y
     # ranges - [5, 95] gives -10 - so an unpinned scatter floor could be anywhere.
