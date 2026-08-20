@@ -64,7 +64,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#0000FF", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
-            Width = 0, Style = "None"), LabelPosition = "Low"))
+            Width = 0, Style = "None"), LabelPosition = "NextTo"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
@@ -101,7 +101,7 @@ test_that("Chart settings",
             NumberFormat = "General",
             AxisLine = list(Color = "#222222", Width = 1.5,
             Style = "Solid"), Crosses = "AutoZero", MajorGridLine = list(Color = "#BBBBBB",
-            Width = 0, Style = "None"), LabelPosition = "Low"))
+            Width = 0, Style = "None"), LabelPosition = "NextTo"))
     expect_equal(attr(res, "ChartSettings")$ValueAxis, list(
             LabelsFont = list(color = NULL, family = NULL, size = numeric(0)),
             ShowTitle = FALSE,
@@ -528,4 +528,100 @@ test_that("Every plotly family PowerPoint has a style for is mapped", {
     expect_equal(markerSymbolToPPTStyle(c("pentagon", "hexagon", "hexagram", "bowtie",
                                           "y-up", "line-ew", "arrow-up")),
                  rep("Circle", 7))
+})
+
+test_that("Category axis labels drop to the low end when the plot goes below the axis",
+{
+    # The category axis crosses at zero, so "NextTo" labels would sit on top of anything
+    # drawn below it. dat.2d is rnorm and straddles zero; abs() of it does not.
+    negative <- CChart("Column", dat.2d, append.data = TRUE, colors = col.2d)
+    expect_equal(attr(negative, "ChartSettings")$PrimaryAxis$Crosses, "AutoZero")
+    expect_equal(attr(negative, "ChartSettings")$PrimaryAxis$LabelPosition, "Low")
+
+    positive <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d)
+    expect_equal(attr(positive, "ChartSettings")$PrimaryAxis$LabelPosition, "NextTo")
+
+    # A user-set minimum below zero drops the plot below the axis even when the data doesn't.
+    stretched <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d,
+            values.bounds.minimum = -3)
+    expect_equal(attr(stretched, "ChartSettings")$PrimaryAxis$LabelPosition, "Low")
+
+    # ... and a minimum at or above zero clips the plot there, so negatives never reach below it.
+    clipped <- CChart("Column", dat.2d, append.data = TRUE, colors = col.2d,
+            values.bounds.minimum = 0)
+    expect_equal(attr(clipped, "ChartSettings")$PrimaryAxis$LabelPosition, "NextTo")
+
+    # Distribution charts split by a group hand getPPTSettings a list of unequal-length vectors,
+    # which as.matrix turns into a list-matrix that as.numeric cannot coerce - an error, not a
+    # warning, so it would take CChart down with it rather than just the export settings.
+    grouped <- CChart("Histogram", list(x = 1:10, y = c(-1, 2, 3)), append.data = TRUE)
+    expect_equal(attr(grouped, "ChartSettings")$PrimaryAxis$LabelPosition, "Low")
+
+    # The bound is read the way the chart reads it, so a thousands separator still counts as a
+    # floor below the axis. Plain as.numeric would give NA here and leave the labels in the plot.
+    separated <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d,
+            values.bounds.minimum = "-5,000")
+    expect_equal(attr(separated, "ChartSettings")$PrimaryAxis$LabelPosition, "Low")
+
+    # A blank bound box arrives as NA, and nzchar(NA) is TRUE, so testing the text rather than the
+    # parsed number would treat every blank bound as a floor and leave the labels at the low end.
+    blank <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d,
+            values.bounds.minimum = NA)
+    expect_equal(attr(blank, "ChartSettings")$PrimaryAxis$LabelPosition, "NextTo")
+
+    # The chart discards a bound it cannot parse and ranges from the data, so treat it as not set.
+    unreadable <- CChart("Column", abs(dat.2d), append.data = TRUE, colors = col.2d,
+            values.bounds.minimum = "not a number")
+    expect_equal(attr(unreadable, "ChartSettings")$PrimaryAxis$LabelPosition, "NextTo")
+
+
+    # StackedColumnWithStatisticalSignificance requires all-positive input and negates the first n
+    # columns itself, so the values that end up below the axis are never visible in the data the
+    # axis guard inspects - only in the ChartData the chart function exports. Asserting on that
+    # ChartData is what ties the two together: if the argument stopped reaching the chart, the
+    # negatives would disappear and this would fail rather than quietly still passing.
+    below.axis <- CChart("StackedColumnWithStatisticalSignificance", abs(dat.2d),
+            append.data = TRUE, num.categories.below.axis = 2)
+    expect_true(any(attr(below.axis, "ChartData") < 0, na.rm = TRUE))
+    expect_equal(attr(below.axis, "ChartSettings")$PrimaryAxis$LabelPosition, "Low")
+
+    none.below.axis <- CChart("StackedColumnWithStatisticalSignificance", abs(dat.2d),
+            append.data = TRUE, num.categories.below.axis = 0)
+    expect_false(any(attr(none.below.axis, "ChartData") < 0, na.rm = TRUE))
+    expect_equal(attr(none.below.axis, "ChartSettings")$PrimaryAxis$LabelPosition, "NextTo")
+})
+
+test_that("Category axis label position handles the shapes data arrives in",
+{
+    position <- function(data, minimum = NULL, chart.type = "Column", below = NULL)
+        flipChart:::categoryAxisLabelPosition(chart.type,
+                list(values.bounds.minimum = minimum, num.categories.below.axis = below),
+                data, "AutoZero")
+
+    # A list of unequal-length vectors, as grouped distribution charts supply.
+    expect_equal(position(list(x = 1:10, y = c(-1, 2, 3))), "Low")
+    expect_equal(position(list(x = 1:10, y = c(1, 2, 3))), "NextTo")
+
+    # Dates unlist to day counts, negative before 1970, and say nothing about the value axis.
+    expect_equal(position(data.frame(d = as.Date(c("1960-01-01", "1985-06-01")), v = c(1, 2))), "NextTo")
+    expect_equal(position(as.Date("1960-01-01")), "NextTo")
+
+    # Only the first plane of a multi-statistic table is plotted; z-Statistic is not.
+    stats <- array(c(10, 20, 30, 40, -1.5, 2, -0.3, 1.1), dim = c(2, 2, 2),
+            dimnames = list(c("r1", "r2"), c("c1", "c2"), c("Column %", "z-Statistic")))
+    expect_equal(position(stats), "NextTo")
+
+    # The bound is read as the chart reads it, and anything it cannot read counts as unset.
+    expect_equal(position(matrix(1:6, 2), "-5,000"), "Low")
+    expect_equal(position(matrix(1:6, 2), "5 000"), "NextTo")
+    expect_equal(position(matrix(1:6, 2), NA), "NextTo")
+    expect_equal(position(matrix(1:6, 2), "abc"), "NextTo")
+    expect_equal(position(matrix(c(1, -2, 3, 4, 5, 6), 2), 0), "NextTo")
+
+    # An unpinned scatter floor is padded below zero later, so it cannot be ruled out.
+    expect_equal(position(data.frame(x = c(1, 2), y = c(5, 95)), NA, "Scatter"), "Low")
+    expect_equal(position(data.frame(x = c(1, 2), y = c(5, 95)), 0, "Scatter"), "NextTo")
+
+    # An axis the chart draws elsewhere is already at the low end, so the two agree.
+    expect_equal(flipChart:::categoryAxisLabelPosition("Column", list(), matrix(c(-1, 2), 1), "Minimum"), "NextTo")
 })

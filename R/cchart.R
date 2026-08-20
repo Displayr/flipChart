@@ -939,6 +939,9 @@ getPPTSettings <- function(chart.type, args, data)
         categories.axis.line <- if (!isTRUE(args$values.zero.line.width > 0)) list(width = args$categories.line.width, color = args$categories.line.color, crosses = default.cross)
                                 else list(width = args$values.zero.line.width, color = args$values.zero.line.color, dash = args$values.zero.line.dash, crosses = "AutoZero")
 
+        category.label.position <- categoryAxisLabelPosition(chart.type, args, data,
+                                                             categories.axis.line$crosses)
+
         res$PrimaryAxis = list(LabelsFont = list(color = args$categories.tick.font.color,
             family = args$categories.tick.font.family,
             size = px2pt(args$categories.tick.font.size)),
@@ -954,7 +957,7 @@ getPPTSettings <- function(chart.type, args, data)
             MajorGridLine = list(Color = args$categories.grid.color,
             Width = px2pt(args$categories.grid.width),
             Style = getGridLineStyle(args$categories.grid.width, args$categories.grid.dash)),
-            LabelPosition = "Low")
+            LabelPosition = category.label.position)
         if (any(nzchar(args$categories.bounds.maximum)))
             res$PrimaryAxis$Maximum <- args$categories.bounds.maximum
         if (any(nzchar(args$categories.bounds.minimum)))
@@ -1067,6 +1070,52 @@ getPPTSettings <- function(chart.type, args, data)
     return(res)
 }
 
+
+# Where the category axis tick labels go in a PowerPoint export.
+#
+# PowerPoint draws "NextTo" labels against the axis line, which sits at value 0 whenever the axis
+# crosses AutoZero, so anything reaching below zero runs over them. "Low" pins them to the low end
+# instead, as Q does for its negative stacked plots (PptChartSettingsAndLabels). Values can reach
+# below the axis without appearing in the data, so each test below errs towards "Low" when it
+# cannot tell: that is the behaviour this replaced, and it cannot cause the overlap.
+categoryAxisLabelPosition <- function(chart.type, args, data, crosses)
+{
+    # Anywhere else the axis line is already at the low end, so the two agree.
+    if (!identical(crosses, "AutoZero"))
+        return("NextTo")
+
+    # data can be a list - grouped distribution charts, link-to-multiple-tables inputs - so
+    # flatten it rather than coerce. Dates go first; they unlist to day counts.
+    plotted <- if (inherits(data, c("Date", "POSIXt"))) NULL
+                else if (is.data.frame(data)) data[!vapply(data, inherits, logical(1), what = c("Date", "POSIXt"))]
+                else data
+    # Only the primary (first) plane is drawn as bars/markers - flipStandardCharts uses the later
+    # planes for annotations - so nothing outside plane 1 can reach below the axis. The later
+    # planes are still exported (removeSignifAndCharData keeps them for those annotations), so
+    # read plane 1 rather than the whole array.
+    if (length(dim(plotted)) == 3)
+    {
+        plotted <- plotted[, , 1]
+    }
+    plotted.values <- suppressWarnings(as.numeric(unlist(plotted, use.names = FALSE)))
+
+    # Read the bound as the chart does - charToNumeric strips spaces and thousands separators, and
+    # treats NA, "" and unparseable text as unset. Test the parsed number, never the text: a blank
+    # box arrives as NA, and nzchar(NA) is TRUE, so text would read as a floor. The arg is a single
+    # text box (NULL or length 1), so isTRUE() on the parsed number is enough - the any(nzchar())
+    # calls in getPPTSettings() are there to survive length 0, not to handle longer vectors.
+    values.minimum <- suppressWarnings(as.numeric(gsub("[ ,]", "", as.character(args$values.bounds.minimum))))
+    # setScatterAxesBounds runs after this and pads the floor below zero for plenty of positive Y
+    # ranges - [5, 95] gives -10 - so an unpinned scatter floor could be anywhere.
+    scatter.floor.unknown <- isScatter(chart.type) && !isTRUE(values.minimum >= 0)
+    # StackedColumnWithStatisticalSignificance negates the first n columns itself, so those values
+    # sit below the axis without ever appearing in the data seen here.
+    categories.below.axis <- isTRUE(args$num.categories.below.axis > 0)
+
+    plots.below.axis <- isTRUE(values.minimum < 0) || scatter.floor.unknown || categories.below.axis ||
+        (any(plotted.values < 0, na.rm = TRUE) && !isTRUE(values.minimum >= 0))
+    if (plots.below.axis) "Low" else "NextTo"
+}
 
 getLineStyle <- function (line) {
     if (is.null(line$width) || line$width <= 0)
