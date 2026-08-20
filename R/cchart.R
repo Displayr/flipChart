@@ -1103,7 +1103,9 @@ categoryAxisLabelPosition <- function(chart.type, args, data, crosses)
 
     # Read the bound as the chart does - charToNumeric strips spaces and thousands separators, and
     # treats NA, "" and unparseable text as unset. Test the parsed number, never the text: a blank
-    # box arrives as NA, and nzchar(NA) is TRUE, so text would read as a floor.
+    # box arrives as NA, and nzchar(NA) is TRUE, so text would read as a floor. The arg is a single
+    # text box (NULL or length 1), so isTRUE() on the parsed number is enough - the any(nzchar())
+    # reads in getPPTSettings() guard length 0, not longer vectors.
     values.minimum <- suppressWarnings(as.numeric(gsub("[ ,]", "", as.character(args$values.bounds.minimum))))
     # setScatterAxesBounds runs after this and pads the floor below zero for plenty of positive Y
     # ranges - [5, 95] gives -10 - so an unpinned scatter floor could be anywhere.
