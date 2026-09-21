@@ -1064,8 +1064,34 @@ getPPTSettings <- function(chart.type, args, data)
         res$BubbleSizeType = if (isTRUE(args$scatter.sizes.as.diameter)) "Width" else "Area"
         res$BubbleScale = args$marker.size * 10
     }
+
+    res$PlotAreaMargins <- getPlotAreaMargins(args)
     return(res)
 }
+
+# The margins (in pixels) Q should place the PowerPoint plot area at, or NULL to let PowerPoint
+# lay the plot area out itself. PowerPoint sizes the plot area around whatever text it has to
+# fit, so an exported chart does not match the HTML chart when the user chose their own
+# margins (RS-23684).
+# The margins are only sent when the user asked for exactly those margins: "Customize margins"
+# ticked, which is the only way any margin.* argument reaches the chart, and "Automatically
+# expand margins" unticked. While margins are auto-expanded there is no fixed plot area to
+# reproduce, so PowerPoint's own layout is the closer match.
+# margin.autoexpand must be explicitly FALSE: charts from plugins that predate the control do
+# not send it at all, and their margins are auto-expanded.
+getPlotAreaMargins <- function(args)
+{
+    if (!isFALSE(args$margin.autoexpand))
+        return(NULL)
+    margins <- args[c("margin.top", "margin.left", "margin.bottom", "margin.right")]
+    if (!all(vapply(margins, isSingleFiniteNumber, logical(1L))))
+        return(NULL)
+    list(Top = as.numeric(margins[[1L]]), Left = as.numeric(margins[[2L]]),
+         Bottom = as.numeric(margins[[3L]]), Right = as.numeric(margins[[4L]]))
+}
+
+isSingleFiniteNumber <- function(x)
+    is.numeric(x) && length(x) == 1L && is.finite(x)
 
 
 getLineStyle <- function (line) {
