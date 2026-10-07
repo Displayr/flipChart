@@ -392,6 +392,10 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 #' @export
 AppendExportAttributes <- function(result, chart.type, args, data, signif.data.names = NULL)
 {
+    # `$` partially matches list names, so a missing title would otherwise read e.g. title.font.size
+    for (nm in c("title", "categories.title", "values.title", "data.label.format"))
+        if (is.null(args[[nm]]))
+            args[[nm]] <- ""
     chart.settings <- getPPTSettings(chart.type, args, data)
     result <- addLabels(result, chart.type, args$title, args$categories.title, args$values.title, args$data.label.format)
     chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"),

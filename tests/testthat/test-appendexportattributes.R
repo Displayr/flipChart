@@ -19,6 +19,19 @@ test_that("A chart drawn without CChart gets the same export attributes as CChar
     expect_false(inherits(direct, "visualization-selector"))
 })
 
+test_that("Font sizes are not read as titles when the titles are left out",
+{
+    drawn <- flipStandardCharts::Line(dat, colors = colors)
+    result <- AppendExportAttributes(drawn, "Line",
+        list(colors = colors, title.font.size = 16, categories.title.font.size = 12, values.title.font.size = 12), dat)
+
+    expect_null(attr(result, "ChartLabels")$ChartTitle)
+    expect_null(attr(result, "ChartLabels")$PrimaryAxisTitle)
+    expect_null(attr(result, "ChartLabels")$ValueAxisTitle)
+    expect_false(attr(result, "ChartSettings")$ShowChartTitle)
+    expect_false(attr(result, "ChartSettings")$PrimaryAxis$ShowTitle)
+})
+
 test_that("Existing ChartData is kept and existing series labels are added to",
 {
     drawn <- flipStandardCharts::Line(dat, colors = colors)
