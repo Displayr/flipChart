@@ -9,7 +9,10 @@ AppendExportAttributes(result, chart.type, args, data, signif.data.names = NULL)
 \arguments{
 \item{result}{The chart object returned by the charting function.}
 
-\item{chart.type}{The name of the chart type, as used by \code{\link{CChart}}.}
+\item{chart.type}{The name of the chart type, as used by \code{\link{CChart}}.
+It controls how the export settings are built. It does not set the exported
+chart type: the charting function sets the \code{ChartType} attribute, and a
+caller can replace that attribute after this call.}
 
 \item{args}{A list of the arguments used to draw the chart, using the
 \code{categories} and \code{values} argument names of \code{\link{CChart}}

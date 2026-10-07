@@ -380,6 +380,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 #' functions that draw a chart without \code{CChart} can call it directly.
 #' @param result The chart object returned by the charting function.
 #' @param chart.type The name of the chart type, as used by \code{\link{CChart}}.
+#'   It controls how the export settings are built. It does not set the exported
+#'   chart type: the charting function sets the \code{ChartType} attribute, and a
+#'   caller can replace that attribute after this call.
 #' @param args A list of the arguments used to draw the chart, using the
 #'   \code{categories} and \code{values} argument names of \code{\link{CChart}}
 #'   and font sizes in pixels.
