@@ -350,14 +350,9 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (tolower(font.units) %in% c("pt", "points"))
         user.args <- scaleFontSizes(user.args)
 
-    # This needs to be called before categories/values is converted
-    # into x/y axis but after font sizes have been converted to pixels
-    if (append.data)
-    {
-        chart.settings <- getPPTSettings(chart.type, user.args, x)
-        categories.title <- user.args$categories.title
-        values.title <- user.args$values.title
-    }
+    # The export attributes read the categories/values argument names,
+    # so keep a copy from before they are converted into x/y axis names
+    export.args <- user.args
 
     user.args <- substituteAxisNames(chart.function, user.args)
     arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
@@ -367,7 +362,54 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
         return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
     result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
     chart.warning <- attr(result, "ChartWarning")
-    result <- addLabels(result, chart.type, user.args$title, categories.title, values.title, user.args$data.label.format)
+    if (isScatter(chart.type))
+        chart.warning <- paste(chart.warning,
+            scatterAxisWarning(x, user.args)) # set warning before data conversion
+    result <- AppendExportAttributes(result, chart.type, export.args, x, signif.data.names)
+    result <- addChartWarning(result, chart.warning, chart.type, small.multiples, user.args)
+    class(result) <- c(class(result), "visualization-selector")
+    attr(result, "footerhtml") <- attr(x, "footerhtml", exact = TRUE)
+    result
+}
+
+#' Attach the attributes used to export a chart to PowerPoint and Excel
+#'
+#' Adds the \code{ChartData}, \code{ChartSettings} and \code{ChartLabels}
+#' attributes that Displayr reads when exporting a chart as an editable
+#' Microsoft chart. \code{\link{CChart}} calls this when \code{append.data = TRUE};
+#' functions that draw a chart without \code{CChart} can call it directly.
+#'
+#' @details The \code{Index} of a point in \code{ChartSettings} and
+#'   \code{ChartLabels} starts at 0. For most chart types, it is the position of
+#'   the point in its series. Scatter charts are different. Their \code{ChartData}
+#'   has one row for each point, and the \code{colors} entry of its
+#'   \code{scatter.variable.indices} attribute gives the column that sets the series.
+#'   Displayr gives each series all the rows, with blank cells for the points of
+#'   the other series. Thus, for a scatter chart, \code{Index} is the row of the
+#'   point in \code{ChartData}, starting at 0.
+#' @param result The chart object returned by the charting function.
+#' @param chart.type The name of the chart type, as used by \code{\link{CChart}}.
+#'   It controls how the export settings are built. It does not set the exported
+#'   chart type: the charting function sets the \code{ChartType} attribute, and a
+#'   caller can replace that attribute after this call.
+#' @param args A list of the arguments used to draw the chart, using the
+#'   \code{categories} and \code{values} argument names of \code{\link{CChart}}
+#'   and font sizes in pixels.
+#' @param data The data used to draw the chart.
+#' @param signif.data.names Names of statistics in \code{data} that are only used
+#'   for significance annotations and are left out of \code{ChartData}.
+#' @return \code{result} with the export attributes added. An existing
+#'   \code{ChartData} attribute is kept, and an existing \code{ChartLabels}
+#'   attribute is added to.
+#' @export
+AppendExportAttributes <- function(result, chart.type, args, data, signif.data.names = NULL)
+{
+    # `$` partially matches list names, so a missing title would otherwise read e.g. title.font.size
+    for (nm in c("title", "categories.title", "values.title", "data.label.format"))
+        if (is.null(args[[nm]]))
+            args[[nm]] <- ""
+    chart.settings <- getPPTSettings(chart.type, args, data)
+    result <- addLabels(result, chart.type, args$title, args$categories.title, args$values.title, args$data.label.format)
     chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"),
         attr(result, "CustomPoints"),
         markers.at.every.point = identical(attr(result, "ChartType"), "Line Markers"))
@@ -375,17 +417,15 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     if (isScatter(chart.type))
     {
         # Convert data after the charting function has been applied
-        chart.warning <- paste(chart.warning,
-            scatterAxisWarning(x, user.args)) # set warning before data conversion
-        x <- convertChartDataToNumeric(x)
-        chart.settings <- setScatterAxesBounds(chart.settings, x)
+        data <- convertChartDataToNumeric(data)
+        chart.settings <- setScatterAxesBounds(chart.settings, data)
 
         # Specify data label font color for labeledscatter + numeric scale colors + default font color
         # In all other cases, ChartLabels from flipStandardCharts does not need modification
         custom.points <- chart.settings$TemplateSeries[[1]]$CustomPoints
         if (#isTRUE(chart.settings$TemplateSeries[[1]]$ShowDataLabels) &&
-            !isFALSE(user.args$data.label.font.autocolor) &&
-            !isTRUE(user.args$scatter.colors.as.categorical) &&
+            !isFALSE(args$data.label.font.autocolor) &&
+            !isTRUE(args$scatter.colors.as.categorical) &&
             !is.null(custom.points) && !is.null(custom.points[[1]]$Marker$BackgroundColor))
         {
             annot.pts <- attr(result, "ChartLabels")$SeriesLabels[[1]]
@@ -408,17 +448,14 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
                 attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints <- tmp.lbs
         }
     }
-    result <- addChartWarning(result, chart.warning, chart.type, small.multiples, user.args)
     # Remove null elements that causes PPT errors
     for (i in 1:length(chart.settings$TemplateSeries))
         chart.settings$TemplateSeries[[i]] <- Filter(Negate(is.null), chart.settings$TemplateSeries[[i]])
     # Append data used for exporting to PPT/Excel
     # Exception is for StackedColumnWithAnnot that handles this itself
     if (is.null(attr(result, "ChartData")))
-        attr(result,  "ChartData") <- removeSignifAndCharData(x, signif.data.names)
-    class(result) <- c(class(result), "visualization-selector")
+        attr(result,  "ChartData") <- removeSignifAndCharData(data, signif.data.names)
     attr(result,  "ChartSettings") <- chart.settings
-    attr(result, "footerhtml") <- attr(x, "footerhtml", exact = TRUE)
     result
 }
 
@@ -902,16 +939,24 @@ getPPTSettings <- function(chart.type, args, data)
     if (isTRUE(args$legend.show == "Show"))
         res$ShowLegend <- TRUE
 
+    # CChart documents legend.position.x/y, but older callers pass legend.x.position/y
+    legend.x <- args[["legend.x.position"]]
+    if (is.null(legend.x))
+        legend.x <- args[["legend.position.x"]]
+    legend.y <- args[["legend.y.position"]]
+    if (is.null(legend.y))
+        legend.y <- args[["legend.position.y"]]
+
     legend.position <- "Right"
     if (isTRUE(args$legend.orientation == "Horizontal"))
         legend.position <- "Bottom"
-    if (isTRUE(args$legend.y.position < 0.1))
+    if (isTRUE(legend.y < 0.1))
         legend.position <- "Bottom"
-    if (isTRUE(args$legend.y.position > 0.9))
+    if (isTRUE(legend.y > 0.9))
         legend.position <- "Top"
-    if (isTRUE(args$legend.x.position < 0.1))
+    if (isTRUE(legend.x < 0.1))
         legend.position <- "Left"
-    if (isTRUE(args$legend.x.position > 0.9))
+    if (isTRUE(legend.x > 0.9))
         legend.position <- "Right"
 
     res$Legend = list(Font = list(color = args$legend.font.color,

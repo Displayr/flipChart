@@ -1,0 +1,58 @@
+context("AppendExportAttributes")
+
+dat <- matrix(c(1:5, 5:1), 5, 2, dimnames = list(letters[1:5], c("A", "B")))
+colors <- c("#FF0000", "#008000")
+
+test_that("A chart drawn without CChart gets the same export attributes as CChart gives it",
+{
+    via.cchart <- CChart("Line", dat, append.data = TRUE, colors = colors, line.type = "Dot, Solid",
+                         values.title = "Proportion", categories.title = "Price")
+    drawn <- flipStandardCharts::Line(dat, colors = colors, line.type = "Dot, Solid",
+                                      y.title = "Proportion", x.title = "Price")
+    direct <- AppendExportAttributes(drawn, "Line",
+        list(colors = colors, line.type = "Dot, Solid", values.title = "Proportion", categories.title = "Price"),
+        dat)
+
+    expect_equal(attr(direct, "ChartLabels")$ValueAxisTitle, "Proportion")
+    for (attribute in c("ChartData", "ChartSettings", "ChartLabels"))
+        expect_equal(attr(direct, attribute), attr(via.cchart, attribute), info = attribute)
+    expect_false(inherits(direct, "visualization-selector"))
+})
+
+test_that("Font sizes are not read as titles when the titles are left out",
+{
+    drawn <- flipStandardCharts::Line(dat, colors = colors)
+    result <- AppendExportAttributes(drawn, "Line",
+        list(colors = colors, title.font.size = 16, categories.title.font.size = 12, values.title.font.size = 12), dat)
+
+    expect_null(attr(result, "ChartLabels")$ChartTitle)
+    expect_null(attr(result, "ChartLabels")$PrimaryAxisTitle)
+    expect_null(attr(result, "ChartLabels")$ValueAxisTitle)
+    expect_false(attr(result, "ChartSettings")$ShowChartTitle)
+    expect_false(attr(result, "ChartSettings")$PrimaryAxis$ShowTitle)
+})
+
+test_that("Existing ChartData is kept and existing series labels are added to",
+{
+    drawn <- flipStandardCharts::Line(dat, colors = colors)
+    attr(drawn, "ChartData") <- dat[, 1, drop = FALSE]
+    attr(drawn, "ChartLabels") <- list(SeriesLabels = list(
+        list(CustomPoints = list(list(Index = 2, Segments = list(list(Text = "Peak")))))))
+    result <- AppendExportAttributes(drawn, "Line", list(colors = colors, categories.title = "Price"), dat)
+
+    expect_equal(attr(result, "ChartData"), dat[, 1, drop = FALSE])
+    expect_equal(attr(result, "ChartLabels")$SeriesLabels[[1]]$CustomPoints[[1]]$Segments[[1]]$Text, "Peak")
+    expect_equal(attr(result, "ChartLabels")$PrimaryAxisTitle, "Price")
+    expect_false(attr(result, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels)
+})
+
+test_that("The legend position is read from both spellings of the coordinates",
+{
+    drawn <- flipStandardCharts::Line(dat, colors = colors)
+    for (args in list(list(legend.position.x = 0.5, legend.position.y = -0.2),
+                      list(legend.x.position = 0.5, legend.y.position = -0.2)))
+    {
+        result <- AppendExportAttributes(drawn, "Line", c(list(colors = colors), args), dat)
+        expect_equal(attr(result, "ChartSettings")$Legend$Position, "Bottom", info = names(args)[1])
+    }
+})
