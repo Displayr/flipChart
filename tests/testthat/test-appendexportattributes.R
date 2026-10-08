@@ -45,3 +45,14 @@ test_that("Existing ChartData is kept and existing series labels are added to",
     expect_equal(attr(result, "ChartLabels")$PrimaryAxisTitle, "Price")
     expect_false(attr(result, "ChartSettings")$TemplateSeries[[1]]$ShowDataLabels)
 })
+
+test_that("The legend position is read from both spellings of the coordinates",
+{
+    drawn <- flipStandardCharts::Line(dat, colors = colors)
+    for (args in list(list(legend.position.x = 0.5, legend.position.y = -0.2),
+                      list(legend.x.position = 0.5, legend.y.position = -0.2)))
+    {
+        result <- AppendExportAttributes(drawn, "Line", c(list(colors = colors), args), dat)
+        expect_equal(attr(result, "ChartSettings")$Legend$Position, "Bottom", info = names(args)[1])
+    }
+})

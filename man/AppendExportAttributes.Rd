@@ -34,3 +34,13 @@ attributes that Displayr reads when exporting a chart as an editable
 Microsoft chart. \code{\link{CChart}} calls this when \code{append.data = TRUE};
 functions that draw a chart without \code{CChart} can call it directly.
 }
+\details{
+The \code{Index} of a point in \code{ChartSettings} and
+  \code{ChartLabels} starts at 0. For most chart types, it is the position of
+  the point in its series. Scatter charts are different. Their \code{ChartData}
+  has one row for each point, and the \code{colors} entry of its
+  \code{scatter.variable.indices} attribute gives the column that sets the series.
+  Displayr gives each series all the rows, with blank cells for the points of
+  the other series. Thus, for a scatter chart, \code{Index} is the row of the
+  point in \code{ChartData}, starting at 0.
+}

@@ -378,6 +378,15 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
 #' attributes that Displayr reads when exporting a chart as an editable
 #' Microsoft chart. \code{\link{CChart}} calls this when \code{append.data = TRUE};
 #' functions that draw a chart without \code{CChart} can call it directly.
+#'
+#' @details The \code{Index} of a point in \code{ChartSettings} and
+#'   \code{ChartLabels} starts at 0. For most chart types, it is the position of
+#'   the point in its series. Scatter charts are different. Their \code{ChartData}
+#'   has one row for each point, and the \code{colors} entry of its
+#'   \code{scatter.variable.indices} attribute gives the column that sets the series.
+#'   Displayr gives each series all the rows, with blank cells for the points of
+#'   the other series. Thus, for a scatter chart, \code{Index} is the row of the
+#'   point in \code{ChartData}, starting at 0.
 #' @param result The chart object returned by the charting function.
 #' @param chart.type The name of the chart type, as used by \code{\link{CChart}}.
 #'   It controls how the export settings are built. It does not set the exported
@@ -930,16 +939,24 @@ getPPTSettings <- function(chart.type, args, data)
     if (isTRUE(args$legend.show == "Show"))
         res$ShowLegend <- TRUE
 
+    # CChart documents legend.position.x/y, but older callers pass legend.x.position/y
+    legend.x <- args[["legend.x.position"]]
+    if (is.null(legend.x))
+        legend.x <- args[["legend.position.x"]]
+    legend.y <- args[["legend.y.position"]]
+    if (is.null(legend.y))
+        legend.y <- args[["legend.position.y"]]
+
     legend.position <- "Right"
     if (isTRUE(args$legend.orientation == "Horizontal"))
         legend.position <- "Bottom"
-    if (isTRUE(args$legend.y.position < 0.1))
+    if (isTRUE(legend.y < 0.1))
         legend.position <- "Bottom"
-    if (isTRUE(args$legend.y.position > 0.9))
+    if (isTRUE(legend.y > 0.9))
         legend.position <- "Top"
-    if (isTRUE(args$legend.x.position < 0.1))
+    if (isTRUE(legend.x < 0.1))
         legend.position <- "Left"
-    if (isTRUE(args$legend.x.position > 0.9))
+    if (isTRUE(legend.x > 0.9))
         legend.position <- "Right"
 
     res$Legend = list(Font = list(color = args$legend.font.color,
