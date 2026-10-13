@@ -961,8 +961,8 @@ getPPTSettings <- function(chart.type, args, data)
     if (is.null(legend.y))
         legend.y <- args[["legend.position.y"]]
 
-    # Unset coordinates take the defaults flipStandardCharts draws the legend at
-    is.horizontal <- isTRUE(args$legend.orientation == "Horizontal")
+    # Unset coordinates take the defaults flipStandardCharts' setLegend() draws the legend at
+    is.horizontal <- isTRUE(tolower(substr(args$legend.orientation, 1, 1)) == "h")
     if (!isTRUE(is.finite(legend.x)))
         legend.x <- if (is.horizontal) 0.5 else 1.02
     if (!isTRUE(is.finite(legend.y)))
@@ -980,6 +980,9 @@ getPPTSettings <- function(chart.type, args, data)
         "Left"
     else
         "Right"
+    # Time Series draws its legend at the top right whatever the arguments, and its x is a width, so it keeps the side
+    if (chart.type == "Time Series")
+        legend.position <- "Right"
 
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = px2pt(args$legend.font.size)),

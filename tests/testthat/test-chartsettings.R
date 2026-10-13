@@ -396,6 +396,7 @@ test_that("Legend position",
     expect_equal(legendPosition(), "Right")
     expect_equal(legendPosition(legend.orientation = "Vertical"), "Right")
     expect_equal(legendPosition(legend.orientation = "Horizontal"), "Bottom")
+    expect_equal(legendPosition(legend.orientation = "horizontal"), "Bottom")
 
     # Below or above the plot wins over being aligned to one side
     expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 0,
@@ -420,6 +421,11 @@ test_that("Legend position",
                                 legend.y.position = 0.2), "Bottom")
     expect_equal(legendPosition(legend.orientation = "Horizontal", legend.x.position = 1.02,
                                 legend.y.position = 0.8), "Top")
+
+    # Time Series only takes an orientation and a legend width, and draws its legend at the top right
+    ts <- PrepareData("Time Series", input.data.raw = list(X = list(Date = Sys.Date() + 1:10, A = 1:10, B = 2:11)))$data
+    expect_equal(attr(CChart("Time Series", ts, append.data = TRUE, legend.orientation = "Horizontal",
+                             legend.position.x = 1.0), "ChartSettings")$Legend$Position, "Right")
 
     viz <- CChart("Column", dat.2d, legend.show = FALSE, append.data = TRUE)
     expect_false(attr(viz, "ChartSettings")$ShowLegend)
