@@ -980,7 +980,7 @@ getPPTSettings <- function(chart.type, args, data)
         "Left"
     else
         "Right"
-    # Time Series draws its legend at the top right whatever the arguments, and its x is a width, so it keeps the side
+    # Time Series draws its legend at the top right whatever the arguments, and its x is a width, so it always exports as Right
     if (chart.type == "Time Series")
         legend.position <- "Right"
 

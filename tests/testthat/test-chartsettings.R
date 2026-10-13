@@ -409,8 +409,12 @@ test_that("Legend position",
                                 legend.y.position = 1.2), "Top")
     expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 1.0,
                                 legend.y.position = 1.2), "TopRight")
+    expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 1.02,
+                                legend.y.position = -0.2), "Bottom")
 
     # Beside the plot, a vertical legend docks to that side and a horizontal one stays top or bottom
+    expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 0.5,
+                                legend.y.position = 1.0), "Right")
     expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 1.02,
                                 legend.y.position = 1.0), "Right")
     expect_equal(legendPosition(legend.orientation = "Vertical", legend.x.position = 1.02,
@@ -422,10 +426,13 @@ test_that("Legend position",
     expect_equal(legendPosition(legend.orientation = "Horizontal", legend.x.position = 1.02,
                                 legend.y.position = 0.8), "Top")
 
-    # Time Series only takes an orientation and a legend width, and draws its legend at the top right
-    ts <- PrepareData("Time Series", input.data.raw = list(X = list(Date = Sys.Date() + 1:10, A = 1:10, B = 2:11)))$data
-    expect_equal(attr(CChart("Time Series", ts, append.data = TRUE, legend.orientation = "Horizontal",
-                             legend.position.x = 1.0), "ChartSettings")$Legend$Position, "Right")
+    # Time Series only takes an orientation and a legend width, and draws its legend at the top right whatever the width
+    ts <- PrepareData("Time Series", input.data.raw = list(X = list(Date = as.Date("2026-01-01") + 1:10, A = 1:10, B = 2:11)))$data
+    tsLegendPosition <- function(width)
+        attr(CChart("Time Series", ts, append.data = TRUE, legend.orientation = "Horizontal",
+                    legend.position.x = width), "ChartSettings")$Legend$Position
+    expect_equal(tsLegendPosition(1.0), "Right")
+    expect_equal(tsLegendPosition(0.5), "Right")
 
     viz <- CChart("Column", dat.2d, legend.show = FALSE, append.data = TRUE)
     expect_false(attr(viz, "ChartSettings")$ShowLegend)
