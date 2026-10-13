@@ -947,17 +947,25 @@ getPPTSettings <- function(chart.type, args, data)
     if (is.null(legend.y))
         legend.y <- args[["legend.position.y"]]
 
-    legend.position <- "Right"
-    if (isTRUE(args$legend.orientation == "Horizontal"))
-        legend.position <- "Bottom"
-    if (isTRUE(legend.y < 0.1))
-        legend.position <- "Bottom"
-    if (isTRUE(legend.y > 0.9))
-        legend.position <- "Top"
-    if (isTRUE(legend.x < 0.1))
-        legend.position <- "Left"
-    if (isTRUE(legend.x > 0.9))
-        legend.position <- "Right"
+    # Unset coordinates take the defaults flipStandardCharts draws the legend at
+    is.horizontal <- isTRUE(args$legend.orientation == "Horizontal")
+    if (!isTRUE(is.finite(legend.x)))
+        legend.x <- if (is.horizontal) 0.5 else 1.02
+    if (!isTRUE(is.finite(legend.y)))
+        legend.y <- if (is.horizontal) -0.2 else 1.0
+
+    # Pick the closest of PowerPoint's automatic legend positions. TopRight reserves a band above the plot,
+    # so it is only used for a legend above the plot and a legend beside it stays Right
+    legend.position <- if (legend.y < 0)
+        "Bottom"
+    else if (legend.y > 1)
+        (if (!is.horizontal && legend.x > 0.9) "TopRight" else "Top")
+    else if (is.horizontal)
+        (if (legend.y < 0.5) "Bottom" else "Top")
+    else if (legend.x < 0.1)
+        "Left"
+    else
+        "Right"
 
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = px2pt(args$legend.font.size)),
