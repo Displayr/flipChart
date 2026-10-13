@@ -313,6 +313,19 @@ test_that("FS2-4532: line type is only split per-series for the charts that supp
     expect_equal(stylesFor("Time Series"), c("Solid,Dot", "Solid,Dot"))
 })
 
+test_that("Area data labels reach the export for every series", {
+    # Area sends no series labels of its own, so the labels that show come from the template series.
+    res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d,
+                  data.label.show = TRUE, data.label.format = ".1%")
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels,
+                 rep(list(list(NumberingFormat = "0.0%", ShowValue = TRUE)), 3))
+
+    res <- CChart("Area", abs(dat.2d), append.data = TRUE, colors = col.2d,
+                  data.label.show = FALSE, data.label.format = ".1%")
+    expect_equal(attr(res, "ChartLabels")$SeriesLabels,
+                 rep(list(list(NumberingFormat = "0.0%", ShowValue = FALSE)), 3))
+})
+
 test_that("Scatter axes bounds",
 {
     dat1 <- structure(list(` ` = c(16.5292618516667, 0.479370604963302, 19.8251578509455,
