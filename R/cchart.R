@@ -557,7 +557,7 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
             # which labels show. updateChartSettingsWithLabels turns ShowDataLabels off once
             # series labels exist, and an export reads labels only for the series listed here,
             # so each series gets its own entry with ShowValue.
-            chart.labels$SeriesLabels <- lapply(seq_len(max(1, length(template.series))), function(i)
+            chart.labels$SeriesLabels <- lapply(seq_along(template.series), function(i)
             {
                 series.labels <- list(NumberingFormat = numformat)
                 if (!is.null(template.series[[i]]$ShowDataLabels))
