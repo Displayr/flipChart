@@ -426,13 +426,13 @@ test_that("Legend position",
     expect_equal(legendPosition(legend.orientation = "Horizontal", legend.x.position = 1.02,
                                 legend.y.position = 0.8), "Top")
 
-    # Time Series only takes an orientation and a legend width, and draws a horizontal readout along the top whatever the width
+    # Time Series only takes an orientation and a legend width, so its export stays on the right whatever the width
     ts <- PrepareData("Time Series", input.data.raw = list(X = list(Date = as.Date("2026-01-01") + 1:10, A = 1:10, B = 2:11)))$data
     tsLegendPosition <- function(width)
         attr(CChart("Time Series", ts, append.data = TRUE, legend.orientation = "Horizontal",
                     legend.position.x = width), "ChartSettings")$Legend$Position
-    expect_equal(tsLegendPosition(1.0), "Top")
-    expect_equal(tsLegendPosition(0.5), "Top")
+    expect_equal(tsLegendPosition(1.0), "Right")
+    expect_equal(tsLegendPosition(0.5), "Right")
 
     viz <- CChart("Column", dat.2d, legend.show = FALSE, append.data = TRUE)
     expect_false(attr(viz, "ChartSettings")$ShowLegend)
