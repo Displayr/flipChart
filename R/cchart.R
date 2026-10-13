@@ -409,7 +409,8 @@ AppendExportAttributes <- function(result, chart.type, args, data, signif.data.n
         if (is.null(args[[nm]]))
             args[[nm]] <- ""
     chart.settings <- getPPTSettings(chart.type, args, data)
-    result <- addLabels(result, chart.type, args$title, args$categories.title, args$values.title, args$data.label.format)
+    result <- addLabels(result, chart.type, args$title, args$categories.title, args$values.title, args$data.label.format,
+                        chart.settings$TemplateSeries)
     chart.settings <- updateChartSettingsWithLabels(chart.settings, attr(result, "ChartLabels"),
         attr(result, "CustomPoints"),
         markers.at.every.point = identical(attr(result, "ChartType"), "Line Markers"))
@@ -531,7 +532,8 @@ removeSignifAndCharData <- function(x, rm.stats)
     return(CopyAttributes(new.dat, x))
 }
 
-addLabels <- function(x, chart.type, chart.title, categories.title, values.title, data.label.format)
+addLabels <- function(x, chart.type, chart.title, categories.title, values.title, data.label.format,
+                      template.series = NULL)
 {
     chart.labels <- attr(x, "ChartLabels") # for plotly standard charts this will be a list
     if (is.null(chart.labels))
@@ -550,7 +552,19 @@ addLabels <- function(x, chart.type, chart.title, categories.title, values.title
             for (i in 1:length(chart.labels$SeriesLabels))
                 chart.labels$SeriesLabels[[i]]$NumberingFormat <- numformat
         } else if (!is.null(numformat))
-            chart.labels$SeriesLabels[[1]]$NumberingFormat <- numformat
+        {
+            # The charting function sent no series labels (e.g. Area), so the template series say
+            # which labels show. updateChartSettingsWithLabels turns ShowDataLabels off once
+            # series labels exist, and an export reads labels only for the series listed here,
+            # so each series gets its own entry with ShowValue.
+            chart.labels$SeriesLabels <- lapply(seq_along(template.series), function(i)
+            {
+                series.labels <- list(NumberingFormat = numformat)
+                if (!is.null(template.series[[i]]$ShowDataLabels))
+                    series.labels$ShowValue <- template.series[[i]]$ShowDataLabels
+                series.labels
+            })
+        }
     }
 
     if (length(chart.labels) == 0)
