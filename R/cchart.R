@@ -980,9 +980,9 @@ getPPTSettings <- function(chart.type, args, data)
         "Left"
     else
         "Right"
-    # Time Series draws its legend at the top right whatever the arguments, and its x is a width, so it always exports as Right
+    # Time Series draws a horizontal readout along the top of the plot whatever the arguments, and its x is a width
     if (chart.type == "Time Series")
-        legend.position <- "Right"
+        legend.position <- "Top"
 
     res$Legend = list(Font = list(color = args$legend.font.color,
             family = args$legend.font.family, size = px2pt(args$legend.font.size)),
