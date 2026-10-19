@@ -915,3 +915,25 @@ test_that("RS-23821: Y input is kept when X and Y have the same name", {
     expect_equal(trimws(colnames(pd$data)), rep("Brand associations", 2))
     expect_equal(pd$scatter.variable.indices[c("x", "y")], c(x = 1, y = 2))
 })
+
+test_that("RS-23821: Each Y input is a group when the Y inputs have the same name", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    on.exit(remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv))
+    .column <- function(values, statistic)
+        structure(setNames(values, c("Coke", "Pepsi", "Fanta")), class = c("QTable", "numeric"),
+                  questions = c("Brand associations", "SUMMARY"),
+                  original.questiontypes = "PickAnyGrid", statistic = statistic,
+                  questiontypes = "PickAny", name = "Brand associations",
+                  is.subscripted = TRUE)
+    input.data.raw <- list(X = PrepareForCbind(.column(c(31, 40, 56), "Column %")),
+                           Y = list(.column(c(498, 674, 894), "Count"),
+                                    .column(c(1, 2, 3), "Average")),
+                           Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = input.data.raw)
+    expect_equal(dim(pd$data), c(6, 3))
+    expect_equal(as.numeric(pd$data[[1]]), rep(c(31, 40, 56), 2))
+    expect_equal(as.numeric(pd$data[[2]]), c(498, 674, 894, 1, 2, 3))
+    expect_equal(nlevels(pd$data[[3]]), 2)
+    expect_equal(trimws(levels(pd$data[[3]])), rep("Brand associations", 2))
+    expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
+})

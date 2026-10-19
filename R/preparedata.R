@@ -2228,6 +2228,10 @@ convertScatterMultYvalsToDataFrame <- function(data, input.data.raw, show.labels
         yvar <- as.vector(unlist(data[,y.ind]))
 
 
+    # Y inputs can have the same label (e.g. from two tables of the same question),
+    # but each input must be a different group
+    y.names <- MakeUniqueNames(y.names)
+
     # newdata needs to use data rather than input.data.raw
     # otherwise it will not handle filters etc
     newdata <- data.frame(X = xvar,
