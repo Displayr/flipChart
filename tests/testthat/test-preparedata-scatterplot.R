@@ -891,3 +891,27 @@ test_that("Duplicate rownames retained",
     expect_error(pd <- PrepareData("Scatter", input.data.raw = segment.output), NA)
     expect_equal(dim(pd$data), c(15, 3))
 })
+
+test_that("RS-23821: Y input is kept when X and Y have the same name", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    on.exit(remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv))
+    # Single columns taken from two tables of the same question
+    x <- structure(c(Coke = 31, Pepsi = 40, Fanta = 56), class = c("QTable", "numeric"),
+                   questions = c("Brand associations", "SUMMARY"),
+                   original.questiontypes = "PickAnyGrid", statistic = "Column %",
+                   questiontypes = "PickAny", name = "Brand associations",
+                   is.subscripted = TRUE)
+    y <- structure(c(Coke = 498, Pepsi = 674, Fanta = 894), class = c("QTable", "numeric"),
+                   questions = c("Brand associations", "SUMMARY"),
+                   original.questiontypes = "PickAnyGrid", statistic = "Count",
+                   questiontypes = "PickAny", name = "Brand associations",
+                   is.subscripted = TRUE)
+    input.data.raw <- list(X = PrepareForCbind(x), Y = list(y),
+                           Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = input.data.raw)
+    expect_equal(dim(pd$data), c(3, 2))
+    expect_equal(as.numeric(pd$data[[1]]), c(31, 40, 56))
+    expect_equal(as.numeric(pd$data[[2]]), c(498, 674, 894))
+    expect_equal(trimws(colnames(pd$data)), rep("Brand associations", 2))
+    expect_equal(pd$scatter.variable.indices[c("x", "y")], c(x = 1, y = 2))
+})

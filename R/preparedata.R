@@ -359,7 +359,11 @@ PrepareData <- function(chart.type,
 
     # Replacing variable names with variable/question labels if appropriate
     if (is.data.frame(data))
+    {
         names(data) <- if (show.labels) Labels(data) else Names(data)
+        if (isScatter(chart.type))
+            names(data) <- uniqueNamesForDifferentValues(data)
+    }
     chart.title <- attr(data, "title")
 
     ###########################################################################
@@ -1167,6 +1171,25 @@ tidyScatterDefaultNames <- function(x)
         Y = "Y coordinates",
         Z1 = "Sizes",
         Z2 = "Colors"))
+}
+
+# TidyRawData removes columns with duplicated names. This is correct when the
+# same variable is used twice (e.g. as X and as Colors), but not when different
+# inputs have the same label (e.g. X and Y from two tables of the same question).
+# Give a column a unique name when its values differ from the first column with that name.
+uniqueNamesForDifferentValues <- function(data)
+{
+    nms <- names(data)
+    for (i in which(duplicated(nms)))
+    {
+        first <- match(nms[i], nms)
+        if (isTRUE(all.equal(unclass(data[[first]]), unclass(data[[i]]),
+                             check.attributes = FALSE)))
+            next
+        while (nms[i] %in% nms[-i])
+            nms[i] <- paste0(nms[i], " ")
+    }
+    nms
 }
 
 rmScatterDefaultNames <- function(data)
