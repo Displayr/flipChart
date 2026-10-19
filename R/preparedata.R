@@ -372,6 +372,7 @@ PrepareData <- function(chart.type,
     # Ignore filter if the scatterplot input is not raw variables.
     # The input can be a Q summary table or some other type of calculation
     use.filter <- length(subset) > 1 && NROW(subset) == NROW(data)
+    scatter.column.map <- NULL
     if (!use.filter && isScatter(chart.type))
         subset <- TRUE
     if (!is.null(input.data.raw) || use.filter || NROW(weights) == NROW(data))
@@ -391,6 +392,8 @@ PrepareData <- function(chart.type,
         {
             # Make sure column names are unique otherwise TidyData will remove
             # them WITHOUT warning
+            # The column of each input after TidyRawData removes duplicates
+            scatter.column.map <- match(names(data), unique(names(data)))
             data <- suppressWarnings(TidyRawData(data, subset = subset,
                     weights = weights, missing = missing, error.if.insufficient.obs = FALSE,
                     remove.missing.levels = FALSE))
@@ -441,7 +444,8 @@ PrepareData <- function(chart.type,
     ###########################################################################
     multiple.tables <- isTableList(input.data.table) || isTableList(input.data.tables)
     data <- prepareForSpecificCharts(data, multiple.tables, input.data.raw, chart.type,
-                                     weights, show.labels, scatter.mult.yvals)
+                                     weights, show.labels, scatter.mult.yvals,
+                                     scatter.column.map)
     weights <- setWeight(data, weights)
     scatter.mult.yvals <- isTRUE(attr(data, "scatter.mult.yvals"))
 
@@ -557,7 +561,8 @@ PrepareData <- function(chart.type,
     if (isScatter(chart.type) && !scatter.mult.yvals &&
         (is.null(attr(data, "scatter.variable.indices")) ||
          any(nchar(select.columns), na.rm = TRUE)))
-        attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
+        attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels,
+            if (any(nchar(select.columns), na.rm = TRUE)) NULL else scatter.column.map)
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -1206,7 +1211,7 @@ rmScatterDefaultNames <- function(data)
 }
 
 
-scatterVariableIndices <- function(input.data.raw, data, show.labels)
+scatterVariableIndices <- function(input.data.raw, data, show.labels, column.map = NULL)
 {
     # Use ExtractChartData to convert any raw Regression input
     if (any(reg.outputs <- checkRegressionOutput(input.data.raw)))
@@ -1237,6 +1242,9 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels)
         lst <- input.data.raw[[i]]
         if (is.null(lst))
             return(NA)
+        # Inputs with the same name and values share one column (see uniqueNamesForDifferentValues)
+        if (ind <= length(column.map))
+            return(column.map[ind])
         nms <- names(data)
 
         # If inputs are variables, match on label/variable name to avoid problems with duplicates
@@ -1621,7 +1629,8 @@ prepareForSpecificCharts <- function(data,
                                      chart.type,
                                      weights,
                                      show.labels,
-                                     scatter.mult.yvals)
+                                     scatter.mult.yvals,
+                                     scatter.column.map = NULL)
 {
     if (!isDistribution(chart.type) && chart.type != "Table" && !is.null(input.data.raw) &&
         is.list(input.data.raw$X) && length(input.data.raw$X) > 10 && !inherits(input.data.raw$X, "Regression"))
@@ -1689,7 +1698,8 @@ prepareForSpecificCharts <- function(data,
 
             # flipStandardCharts::Scatterplot takes an array input, with column numbers indicating how to plot.
             if (is.null(attr(data, "scatter.variable.indices")))
-                attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels)
+                attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data,
+                                                                    show.labels, scatter.column.map)
         }
     }
     # Charts that plot the distribution of raw data (e.g., histograms)

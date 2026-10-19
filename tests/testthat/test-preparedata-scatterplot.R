@@ -937,3 +937,29 @@ test_that("RS-23821: Each Y input is a group when the Y inputs have the same nam
     expect_equal(trimws(levels(pd$data[[3]])), rep("Brand associations", 2))
     expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
 })
+
+test_that("RS-23821: Each input uses its own column when variables have the same label", {
+    x <- structure(c(1, 2, 3, 4, 5, 6), label = "Score", name = "score.x")
+    y <- structure(c(10, 20, 30, 40, 50, 60), label = "Score", name = "score.y")
+    colors <- structure(c(6, 5, 4, 3, 2, 1), label = "Score", name = "score.colors")
+
+    # Y is a list because the Y Coordinates input accepts more than one item
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(dim(pd$data), c(6, 3))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 3))
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+    expect_equal(as.numeric(pd$data[[indices[["colors"]]]]), as.numeric(colors))
+
+    # The same variable in two inputs shares one column
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(x)))
+    expect_equal(NCOL(pd$data), 1)
+    expect_equal(pd$scatter.variable.indices[c("x", "y")], c(x = 1, y = 1))
+
+    # A shared column and a different input with the same label
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = x))
+    expect_equal(dim(pd$data), c(6, 2))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 1))
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+})
