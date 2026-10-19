@@ -963,3 +963,41 @@ test_that("RS-23821: Each input uses its own column when variables have the same
     expect_equal(indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 1))
     expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
 })
+
+test_that("RS-23821: Inputs share a column only when their values are identical", {
+    .score <- function(values, name) structure(values, label = "Score", name = name)
+    x <- .score(c(1e9, 2e9, 3e9), "score.x")
+
+    # Values that differ by less than the tolerance of all.equal
+    y <- .score(c(1e9, 2e9, 3e9) + 1, "score.y")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y)))
+    expect_equal(NCOL(pd$data), 2)
+    expect_identical(as.numeric(pd$data[[pd$scatter.variable.indices[["y"]]]]), as.numeric(y))
+
+    # Factor codes that are equal to the values of X
+    x <- .score(c(1, 2, 3), "score.x")
+    y <- .score(c(7, 8, 9), "score.y")
+    colors <- .score(factor(c("a", "b", "c")), "score.colors")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(NCOL(pd$data), 3)
+    expect_true(is.factor(pd$data[[pd$scatter.variable.indices[["colors"]]]]))
+
+    # An input that is identical to an earlier input other than X
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = y))
+    expect_equal(NCOL(pd$data), 2)
+    expect_equal(pd$scatter.variable.indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 2))
+})
+
+test_that("RS-23821: Each Y series keeps its own column when it is identical to X", {
+    for (y.label in c("Score", "Other"))
+    {
+        x <- structure(1:3, label = "Score", name = "score.x")
+        y1 <- structure(1:3, label = "Score", name = "score.x")
+        y2 <- structure(10:12, label = y.label, name = "score.y")
+        pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y1, y2)))
+        expect_equal(dim(pd$data), c(6, 3))
+        expect_equal(as.numeric(pd$data[[1]]), rep(1:3, 2))
+        expect_equal(as.numeric(pd$data[[2]]), c(1:3, 10:12))
+        expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
+    }
+})

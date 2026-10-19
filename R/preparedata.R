@@ -362,7 +362,13 @@ PrepareData <- function(chart.type,
     {
         names(data) <- if (show.labels) Labels(data) else Names(data)
         if (isScatter(chart.type))
-            names(data) <- uniqueNamesForDifferentValues(data)
+        {
+            # Multiple Y series are reshaped by position, so each input keeps its own column
+            y <- input.data.raw$Y
+            n.y.cols <- if (is.list(y) && !is.data.frame(y)) sum(vapply(y, NCOL, 0L)) else NCOL(y)
+            names(data) <- uniqueNamesForDifferentValues(data,
+                share.identical = !isTRUE(scatter.mult.yvals) && n.y.cols <= 1)
+        }
     }
     chart.title <- attr(data, "title")
 
@@ -1181,16 +1187,25 @@ tidyScatterDefaultNames <- function(x)
 # TidyRawData removes columns with duplicated names. This is correct when the
 # same variable is used twice (e.g. as X and as Colors), but not when different
 # inputs have the same label (e.g. X and Y from two tables of the same question).
-# Give a column a unique name when its values differ from the first column with that name.
-uniqueNamesForDifferentValues <- function(data)
+# A column shares the name of an earlier column with the same label only when
+# their values are identical. Otherwise it gets a unique name.
+uniqueNamesForDifferentValues <- function(data, share.identical = TRUE)
 {
-    nms <- names(data)
-    for (i in which(duplicated(nms)))
+    labels <- names(data)
+    nms <- labels
+    # as.vector compares the labels of a factor, not its codes
+    .identicalValues <- function(a, b)
+        is.factor(a) == is.factor(b) && identical(as.vector(a), as.vector(b))
+    for (i in which(duplicated(labels)))
     {
-        first <- match(nms[i], nms)
-        if (isTRUE(all.equal(unclass(data[[first]]), unclass(data[[i]]),
-                             check.attributes = FALSE)))
+        earlier <- which(labels[seq_len(i - 1)] == labels[i])
+        same <- if (share.identical)
+            Find(function(j) .identicalValues(data[[j]], data[[i]]), earlier)
+        if (!is.null(same))
+        {
+            nms[i] <- nms[same]
             next
+        }
         while (nms[i] %in% nms[-i])
             nms[i] <- paste0(nms[i], " ")
     }
