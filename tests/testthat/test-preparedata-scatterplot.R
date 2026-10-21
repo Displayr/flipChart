@@ -1001,3 +1001,33 @@ test_that("RS-23821: Each Y series keeps its own column when it is identical to 
         expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
     }
 })
+
+test_that("RS-23821: Sizes or Colors identical to X share its column with more than one Y", {
+    x <- structure(c(1, 2, 3, 4), label = "Score", name = "x")
+    y1 <- structure(c(5, 6, 7, 8), label = "Y1", name = "y1")
+    y2 <- structure(c(9, 8, 7, 6), label = "Y2", name = "y2")
+    for (z in c("Z1", "Z2"))
+    {
+        input.data.raw <- list(X = x, Y = list(y1, y2), Z1 = NULL, Z2 = NULL)
+        input.data.raw[[z]] <- x
+        pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = input.data.raw))
+        expect_equal(dim(pd$data), c(8, 3))
+        expect_equal(as.numeric(pd$data[[1]]), rep(c(1, 2, 3, 4), 2))
+        expect_equal(as.numeric(pd$data[[2]]), c(5, 6, 7, 8, 9, 8, 7, 6))
+        expect_equal(levels(pd$data[[3]]), c("Y1", "Y2"))
+    }
+})
+
+test_that("RS-23821: Column of each input when Y has more than one column", {
+    x <- structure(c(1, 2, 3, 4), label = "Score", name = "x")
+    y <- cbind(c1 = c(5, 6, 7, 8), c2 = c(9, 8, 7, 6))
+    sizes <- structure(c(4, 3, 2, 1), label = "Score", name = "sizes")
+    # Only the first column of Y is used when Sizes is given
+    pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = sizes)))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "sizes")], c(x = 1, y = 2, sizes = 3))
+    expect_equal(as.numeric(pd$data[[indices[["sizes"]]]]), as.numeric(sizes))
+
+    pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = x)))
+    expect_equal(pd$scatter.variable.indices[c("x", "y", "sizes")], c(x = 1, y = 2, sizes = 1))
+})

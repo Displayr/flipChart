@@ -358,16 +358,18 @@ PrepareData <- function(chart.type,
     }
 
     # Replacing variable names with variable/question labels if appropriate
+    scatter.inputs <- attr(data, "scatter.inputs")
     if (is.data.frame(data))
     {
+        attr(data, "scatter.inputs") <- NULL
         names(data) <- if (show.labels) Labels(data) else Names(data)
         if (isScatter(chart.type))
         {
-            # Multiple Y series are reshaped by position, so each input keeps its own column
-            y <- input.data.raw$Y
-            n.y.cols <- if (is.list(y) && !is.data.frame(y)) sum(vapply(y, NCOL, 0L)) else NCOL(y)
-            names(data) <- uniqueNamesForDifferentValues(data,
-                share.identical = !isTRUE(scatter.mult.yvals) && n.y.cols <= 1)
+            # Multiple Y series are reshaped by position, so each Y column keeps its own
+            # column. Sizes, Colors and Groups can share with an identical earlier column.
+            is.y <- if (length(scatter.inputs) == NCOL(data)) scatter.inputs == "Y"
+                    else                                       rep(FALSE, NCOL(data))
+            names(data) <- uniqueNamesForDifferentValues(data, can.share = !is.y | sum(is.y) <= 1)
         }
     }
     chart.title <- attr(data, "title")
@@ -396,13 +398,15 @@ PrepareData <- function(chart.type,
         # As we can potentially use the variable in two different ways, we suppress the warning
         if (isScatter(chart.type))
         {
-            # Make sure column names are unique otherwise TidyData will remove
-            # them WITHOUT warning
-            # The column of each input after TidyRawData removes duplicates
-            scatter.column.map <- match(names(data), unique(names(data)))
+            # TidyRawData removes columns with duplicated names WITHOUT warning.
+            # Names are shared only by inputs with identical values (see
+            # uniqueNamesForDifferentValues), so each removed column is a copy
+            # of a column that is kept. scatter.column.map gives the column of each input.
+            names.before.tidy <- names(data)
             data <- suppressWarnings(TidyRawData(data, subset = subset,
                     weights = weights, missing = missing, error.if.insufficient.obs = FALSE,
                     remove.missing.levels = FALSE))
+            scatter.column.map <- scatterColumnMap(scatter.inputs, names.before.tidy, names(data))
         }
         if (!isScatter(chart.type))
             data <- TidyRawData(data, subset = subset, weights = weights,
@@ -564,11 +568,11 @@ PrepareData <- function(chart.type,
     # Do not re-assign scatter variable indices if it already
     # exists (this is sometimes set in ExtractChartData
     # for some S3 classes) unless specifically requested
+    columns.selected <- any(nchar(select.columns), na.rm = TRUE)
     if (isScatter(chart.type) && !scatter.mult.yvals &&
-        (is.null(attr(data, "scatter.variable.indices")) ||
-         any(nchar(select.columns), na.rm = TRUE)))
+        (is.null(attr(data, "scatter.variable.indices")) || columns.selected))
         attr(data, "scatter.variable.indices") <- scatterVariableIndices(input.data.raw, data, show.labels,
-            if (any(nchar(select.columns), na.rm = TRUE)) NULL else scatter.column.map)
+            if (columns.selected) NULL else scatter.column.map)
 
     # This is a work around bug RS-3402
     # This is now fixed in Q 5.2.7+, but we retain support for older versions
@@ -1048,10 +1052,15 @@ coerceToDataFrame <- function(x, chart.type = "Column", remove.NULLs = TRUE)
             x <- out
         }
     }
+    # The input (e.g. "X", "Y", "Z2") that each scatterplot column comes from
+    scatter.inputs <- if (isScatter(chart.type))
+        c(rep(names(x), vapply(x, NCOL, 0L)), rep("Y", NCOL(extra.cols)))
     x <- data.frame(x, stringsAsFactors = FALSE, check.names = FALSE)
     names(x) <- MakeUniqueNames(nms)
     if (!is.null(extra.cols))
         x <- data.frame(x, extra.cols, stringsAsFactors = FALSE, check.names = FALSE)
+    if (!is.null(scatter.inputs) && length(scatter.inputs) == NCOL(x))
+        attr(x, "scatter.inputs") <- scatter.inputs
 
     # Set rownames
     if (!is.null(rlabels) && nrow(x) == length(rlabels))
@@ -1188,28 +1197,37 @@ tidyScatterDefaultNames <- function(x)
 # same variable is used twice (e.g. as X and as Colors), but not when different
 # inputs have the same label (e.g. X and Y from two tables of the same question).
 # A column shares the name of an earlier column with the same label only when
-# their values are identical. Otherwise it gets a unique name.
-uniqueNamesForDifferentValues <- function(data, share.identical = TRUE)
+# their values are identical and can.share is TRUE for it. Otherwise it gets a unique name.
+uniqueNamesForDifferentValues <- function(data, can.share = rep(TRUE, length(data)))
 {
     labels <- names(data)
-    nms <- labels
     # as.vector compares the labels of a factor, not its codes
     .identicalValues <- function(a, b)
         is.factor(a) == is.factor(b) && identical(as.vector(a), as.vector(b))
-    for (i in which(duplicated(labels)))
+    # The column that each column shares a name with (itself if it does not share)
+    shared <- seq_along(labels)
+    for (i in which(duplicated(labels) & can.share))
     {
         earlier <- which(labels[seq_len(i - 1)] == labels[i])
-        same <- if (share.identical)
-            Find(function(j) .identicalValues(data[[j]], data[[i]]), earlier)
+        same <- Find(function(j) .identicalValues(data[[j]], data[[i]]), earlier)
         if (!is.null(same))
-        {
-            nms[i] <- nms[same]
-            next
-        }
-        while (nms[i] %in% nms[-i])
-            nms[i] <- paste0(nms[i], " ")
+            shared[i] <- same
     }
-    nms
+    keep <- shared == seq_along(labels)
+    nms <- labels
+    nms[keep] <- MakeUniqueNames(labels[keep])
+    nms[shared]
+}
+
+# The column of each scatterplot input (e.g. c(X = 1, Y = 2, Z2 = 1)) after
+# TidyRawData removes the columns with duplicated names.
+# inputs gives the input of each column before TidyRawData.
+scatterColumnMap <- function(inputs, names.before, names.after)
+{
+    if (length(inputs) != length(names.before))
+        return(NULL)
+    first.column <- !duplicated(inputs)
+    setNames(match(names.before[first.column], names.after), inputs[first.column])
 }
 
 rmScatterDefaultNames <- function(data)
@@ -1258,8 +1276,9 @@ scatterVariableIndices <- function(input.data.raw, data, show.labels, column.map
         if (is.null(lst))
             return(NA)
         # Inputs with the same name and values share one column (see uniqueNamesForDifferentValues)
-        if (ind <= length(column.map))
-            return(column.map[ind])
+        input.name <- names(input.data.raw)[i]
+        if (!is.null(column.map) && !is.null(input.name) && !is.na(column.map[input.name]))
+            return(unname(column.map[input.name]))
         nms <- names(data)
 
         # If inputs are variables, match on label/variable name to avoid problems with duplicates
