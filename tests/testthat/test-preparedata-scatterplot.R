@@ -1031,3 +1031,14 @@ test_that("RS-23821: Column of each input when Y has more than one column", {
     pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = x)))
     expect_equal(pd$scatter.variable.indices[c("x", "y", "sizes")], c(x = 1, y = 2, sizes = 1))
 })
+
+test_that("RS-23821: Each input keeps its column when a label ends with a space", {
+    x <- structure(c(1, 2, 3), label = "Score", name = "x")
+    y <- structure(c(4, 5, 6), label = "Score", name = "y")
+    colors <- structure(c(7, 8, 9), label = "Score ", name = "colors")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(NCOL(pd$data), 3)
+    indices <- pd$scatter.variable.indices
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+    expect_equal(as.numeric(pd$data[[indices[["colors"]]]]), as.numeric(colors))
+})

@@ -28,7 +28,7 @@ Imports:
     flipTables (>= 2.8.8),
     flipTime (>= 2.10.4),
     flipTransformations (>= 1.10.0),
-    flipU (>= 1.6.2),
+    flipU (>= 1.6.3),
     verbs (>= 0.15.9)
 Remotes:
     Displayr/plotly,
