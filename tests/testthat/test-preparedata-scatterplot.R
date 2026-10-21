@@ -891,3 +891,154 @@ test_that("Duplicate rownames retained",
     expect_error(pd <- PrepareData("Scatter", input.data.raw = segment.output), NA)
     expect_equal(dim(pd$data), c(15, 3))
 })
+
+test_that("RS-23821: Y input is kept when X and Y have the same name", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    on.exit(remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv))
+    # Single columns taken from two tables of the same question
+    x <- structure(c(Coke = 31, Pepsi = 40, Fanta = 56), class = c("QTable", "numeric"),
+                   questions = c("Brand associations", "SUMMARY"),
+                   original.questiontypes = "PickAnyGrid", statistic = "Column %",
+                   questiontypes = "PickAny", name = "Brand associations",
+                   is.subscripted = TRUE)
+    y <- structure(c(Coke = 498, Pepsi = 674, Fanta = 894), class = c("QTable", "numeric"),
+                   questions = c("Brand associations", "SUMMARY"),
+                   original.questiontypes = "PickAnyGrid", statistic = "Count",
+                   questiontypes = "PickAny", name = "Brand associations",
+                   is.subscripted = TRUE)
+    input.data.raw <- list(X = PrepareForCbind(x), Y = list(y),
+                           Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = input.data.raw)
+    expect_equal(dim(pd$data), c(3, 2))
+    expect_equal(as.numeric(pd$data[[1]]), c(31, 40, 56))
+    expect_equal(as.numeric(pd$data[[2]]), c(498, 674, 894))
+    expect_equal(trimws(colnames(pd$data)), rep("Brand associations", 2))
+    expect_equal(pd$scatter.variable.indices[c("x", "y")], c(x = 1, y = 2))
+})
+
+test_that("RS-23821: Each Y input is a group when the Y inputs have the same name", {
+    assign("ALLOW.QTABLE.CLASS", TRUE, envir = .GlobalEnv)
+    on.exit(remove("ALLOW.QTABLE.CLASS", envir = .GlobalEnv))
+    .column <- function(values, statistic)
+        structure(setNames(values, c("Coke", "Pepsi", "Fanta")), class = c("QTable", "numeric"),
+                  questions = c("Brand associations", "SUMMARY"),
+                  original.questiontypes = "PickAnyGrid", statistic = statistic,
+                  questiontypes = "PickAny", name = "Brand associations",
+                  is.subscripted = TRUE)
+    input.data.raw <- list(X = PrepareForCbind(.column(c(31, 40, 56), "Column %")),
+                           Y = list(.column(c(498, 674, 894), "Count"),
+                                    .column(c(1, 2, 3), "Average")),
+                           Z1 = NULL, Z2 = NULL, groups = NULL, labels = NULL)
+    pd <- PrepareData("Scatter", input.data.raw = input.data.raw)
+    expect_equal(dim(pd$data), c(6, 3))
+    expect_equal(as.numeric(pd$data[[1]]), rep(c(31, 40, 56), 2))
+    expect_equal(as.numeric(pd$data[[2]]), c(498, 674, 894, 1, 2, 3))
+    expect_equal(nlevels(pd$data[[3]]), 2)
+    expect_equal(trimws(levels(pd$data[[3]])), rep("Brand associations", 2))
+    expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
+})
+
+test_that("RS-23821: Each input uses its own column when variables have the same label", {
+    x <- structure(c(1, 2, 3, 4, 5, 6), label = "Score", name = "score.x")
+    y <- structure(c(10, 20, 30, 40, 50, 60), label = "Score", name = "score.y")
+    colors <- structure(c(6, 5, 4, 3, 2, 1), label = "Score", name = "score.colors")
+
+    # Y is a list because the Y Coordinates input accepts more than one item
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(dim(pd$data), c(6, 3))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 3))
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+    expect_equal(as.numeric(pd$data[[indices[["colors"]]]]), as.numeric(colors))
+
+    # The same variable in two inputs shares one column
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(x)))
+    expect_equal(NCOL(pd$data), 1)
+    expect_equal(pd$scatter.variable.indices[c("x", "y")], c(x = 1, y = 1))
+
+    # A shared column and a different input with the same label
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = x))
+    expect_equal(dim(pd$data), c(6, 2))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 1))
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+})
+
+test_that("RS-23821: Inputs share a column only when their values are identical", {
+    .score <- function(values, name) structure(values, label = "Score", name = name)
+    x <- .score(c(1e9, 2e9, 3e9), "score.x")
+
+    # Values that differ by less than the tolerance of all.equal
+    y <- .score(c(1e9, 2e9, 3e9) + 1, "score.y")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y)))
+    expect_equal(NCOL(pd$data), 2)
+    expect_identical(as.numeric(pd$data[[pd$scatter.variable.indices[["y"]]]]), as.numeric(y))
+
+    # Factor codes that are equal to the values of X
+    x <- .score(c(1, 2, 3), "score.x")
+    y <- .score(c(7, 8, 9), "score.y")
+    colors <- .score(factor(c("a", "b", "c")), "score.colors")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(NCOL(pd$data), 3)
+    expect_true(is.factor(pd$data[[pd$scatter.variable.indices[["colors"]]]]))
+
+    # An input that is identical to an earlier input other than X
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = y))
+    expect_equal(NCOL(pd$data), 2)
+    expect_equal(pd$scatter.variable.indices[c("x", "y", "colors")], c(x = 1, y = 2, colors = 2))
+})
+
+test_that("RS-23821: Each Y series keeps its own column when it is identical to X", {
+    for (y.label in c("Score", "Other"))
+    {
+        x <- structure(1:3, label = "Score", name = "score.x")
+        y1 <- structure(1:3, label = "Score", name = "score.x")
+        y2 <- structure(10:12, label = y.label, name = "score.y")
+        pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y1, y2)))
+        expect_equal(dim(pd$data), c(6, 3))
+        expect_equal(as.numeric(pd$data[[1]]), rep(1:3, 2))
+        expect_equal(as.numeric(pd$data[[2]]), c(1:3, 10:12))
+        expect_equal(as.integer(pd$data[[3]]), rep(1:2, each = 3))
+    }
+})
+
+test_that("RS-23821: Sizes or Colors identical to X share its column with more than one Y", {
+    x <- structure(c(1, 2, 3, 4), label = "Score", name = "x")
+    y1 <- structure(c(5, 6, 7, 8), label = "Y1", name = "y1")
+    y2 <- structure(c(9, 8, 7, 6), label = "Y2", name = "y2")
+    for (z in c("Z1", "Z2"))
+    {
+        input.data.raw <- list(X = x, Y = list(y1, y2), Z1 = NULL, Z2 = NULL)
+        input.data.raw[[z]] <- x
+        pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = input.data.raw))
+        expect_equal(dim(pd$data), c(8, 3))
+        expect_equal(as.numeric(pd$data[[1]]), rep(c(1, 2, 3, 4), 2))
+        expect_equal(as.numeric(pd$data[[2]]), c(5, 6, 7, 8, 9, 8, 7, 6))
+        expect_equal(levels(pd$data[[3]]), c("Y1", "Y2"))
+    }
+})
+
+test_that("RS-23821: Column of each input when Y has more than one column", {
+    x <- structure(c(1, 2, 3, 4), label = "Score", name = "x")
+    y <- cbind(c1 = c(5, 6, 7, 8), c2 = c(9, 8, 7, 6))
+    sizes <- structure(c(4, 3, 2, 1), label = "Score", name = "sizes")
+    # Only the first column of Y is used when Sizes is given
+    pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = sizes)))
+    indices <- pd$scatter.variable.indices
+    expect_equal(indices[c("x", "y", "sizes")], c(x = 1, y = 2, sizes = 3))
+    expect_equal(as.numeric(pd$data[[indices[["sizes"]]]]), as.numeric(sizes))
+
+    pd <- suppressWarnings(PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = x)))
+    expect_equal(pd$scatter.variable.indices[c("x", "y", "sizes")], c(x = 1, y = 2, sizes = 1))
+})
+
+test_that("RS-23821: Each input keeps its column when a label ends with a space", {
+    x <- structure(c(1, 2, 3), label = "Score", name = "x")
+    y <- structure(c(4, 5, 6), label = "Score", name = "y")
+    colors <- structure(c(7, 8, 9), label = "Score ", name = "colors")
+    pd <- PrepareData("Scatter", input.data.raw = list(X = x, Y = list(y), Z1 = NULL, Z2 = colors))
+    expect_equal(NCOL(pd$data), 3)
+    indices <- pd$scatter.variable.indices
+    expect_equal(as.numeric(pd$data[[indices[["y"]]]]), as.numeric(y))
+    expect_equal(as.numeric(pd$data[[indices[["colors"]]]]), as.numeric(colors))
+})
