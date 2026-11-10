@@ -11,6 +11,7 @@ edit history of each.
 - Never identify a customer: no names, company names, email addresses,
   account or document IDs, or anything copied from their data. Say
   "a customer" instead.
-- Use made-up test data. To reproduce a customer's bug, copy the shape
-  of their data with made-up names and values.
-- Read everything through before each push or post.
+- Never push customer data. If a test needs a specific pattern of data,
+  for example to reproduce a bug, write a synthetic case from scratch
+  without using any names or values from customer data, and get
+  explicit approval from a human before pushing it.
