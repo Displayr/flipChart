@@ -1455,12 +1455,12 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
         # Perform matches and update a.names
         .replaceMatches <- function(aa, pp)
         {
-            for (a in aa[a.unmatched])
-                for(p in pp[p.unmatched]){
-                    if (parametersEqual(p, a))
-                        a.names[match(a, aa)] <- p.names[match(p, pp)]
-                }
-            a.names <<- a.names
+            a.keys <- canonicalParameterName(aa[a.unmatched])
+            p.keys <- canonicalParameterName(pp[p.unmatched])
+            # When several parameters match an argument, the last one wins
+            hit <- length(p.keys) + 1L - match(a.keys, rev(p.keys))
+            found <- !is.na(hit)
+            a.names[match(aa[a.unmatched][found], aa)] <<- p.names[match(pp[p.unmatched][hit[found]], pp)]
         }
         ## Permuting order and ignoring case
         a.regularized <- tolower(a.names)
@@ -1513,22 +1513,14 @@ synonyms <- list(c("col", "colours", "colour", "colors", "color"),
                  c("fontsize", "font.size")
 )
 
-#' parametersEqual
+#' canonicalParameterName
 #'
-#' Checks if parameters are equal
-#' @param recipient The name of the parameter in the function.
-#' @param donor The provided name of the parameter.
-parametersEqual <- function(recipient, donor)
+#' Sorts the parts of each name between full stops, so names that differ only in their order are equal.
+#' @param names A character vector of parameter or argument names.
+canonicalParameterName <- function(names)
 {
-    # Exact match
-    if (recipient == donor)
-        return(TRUE)
-    # Matching after re-ordering full stops
-    recipient.split <- sort(strsplit(recipient, ".", fixed = TRUE)[[1]])
-    donor.split <- sort(strsplit(donor, ".", fixed = TRUE)[[1]])
-    if(length(recipient.split) == length(donor.split))
-        return((all(recipient.split == donor.split)))
-    return(FALSE)
+    vapply(strsplit(names, ".", fixed = TRUE),
+           function(parts) paste(sort(parts), collapse = "."), "", USE.NAMES = FALSE)
 }
 
 #' loadPackage
