@@ -1460,12 +1460,13 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
             # When several parameters match an argument, the last one wins
             hit <- length(p.keys) + 1L - match(a.keys, rev(p.keys))
             found <- !is.na(hit)
-            a.names[match(aa[a.unmatched][found], aa)] <<- p.names[match(pp[p.unmatched][hit[found]], pp)]
+            a.names[match(aa[a.unmatched][found], aa)] <- p.names[match(pp[p.unmatched][hit[found]], pp)]
+            a.names
         }
         ## Permuting order and ignoring case
         a.regularized <- tolower(a.names)
         p.regularized <- tolower(p.names)
-        .replaceMatches(a.regularized, p.regularized)
+        a.names <- .replaceMatches(a.regularized, p.regularized)
 
         # Substituting synonyms
         a.unmatched <- !a.names %in% p.names
@@ -1485,7 +1486,7 @@ substituteArgumentNames <- function(parameter.names, arguments, warn.if.no.match
             }
             a.regularized[a.unmatched] <- .replaceSynonyms(tolower(a.names[a.unmatched]))
             p.regularized[p.unmatched] <- .replaceSynonyms(tolower(p.names[p.unmatched]))
-            .replaceMatches(a.regularized, p.regularized)
+            a.names <- .replaceMatches(a.regularized, p.regularized)
         }
     }
     a.unmatched <- !a.names %in% p.names

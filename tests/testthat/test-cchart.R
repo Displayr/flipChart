@@ -51,78 +51,39 @@ test_that("Comparing parameters",{
     expect_equal(flipChart:::canonicalParameterName(c("x.axis.title", "b.a")), c("axis.title.x", "a.b"))
  })
 
-pairwiseSubstituteArgumentNames <- function(parameter.names, arguments)
-{
-    pairwiseEqual <- function(recipient, donor)
+test_that("Substituting argument names", {
+    substituteNames <- function(parameter.names, arguments)
+        flipChart:::substituteArgumentNames(parameter.names, arguments, warn.if.no.match = FALSE)
+    scramble <- function(arguments)
     {
-        if (recipient == donor)
-            return(TRUE)
-        recipient.split <- sort(strsplit(recipient, ".", fixed = TRUE)[[1]])
-        donor.split <- sort(strsplit(donor, ".", fixed = TRUE)[[1]])
-        length(recipient.split) == length(donor.split) && all(recipient.split == donor.split)
+        reorder <- grepl(".", names(arguments), fixed = TRUE) & seq_along(arguments) %% 3 == 0
+        names(arguments)[reorder] <- vapply(strsplit(names(arguments)[reorder], ".", fixed = TRUE),
+                                            function(parts) toupper(paste(rev(parts), collapse = ".")), "")
+        arguments
     }
-    a.names <- names(arguments)
-    p.names <- parameter.names
-    a.unmatched <- !a.names %in% p.names
-    p.unmatched <- !p.names %in% a.names
-    if (any(a.unmatched))
+    for (chart in list(flipStandardCharts::Bar, flipStandardCharts::Pie))
     {
-        .replaceMatches <- function(aa, pp)
-        {
-            for (a in aa[a.unmatched])
-                for (p in pp[p.unmatched])
-                    if (pairwiseEqual(p, a))
-                        a.names[match(a, aa)] <- p.names[match(p, pp)]
-            a.names <<- a.names
-        }
-        a.regularized <- tolower(a.names)
-        p.regularized <- tolower(p.names)
-        .replaceMatches(a.regularized, p.regularized)
-        a.unmatched <- !a.names %in% p.names
-        p.unmatched <- !p.names %in% a.names
-        if (any(a.unmatched))
-        {
-            .replaceSynonyms <- function(names)
-            {
-                for (syns in flipChart:::synonyms)
-                    for (s in syns[-1])
-                        names <- gsub(s, syns[1], names, fixed = TRUE)
-                names
-            }
-            a.regularized[a.unmatched] <- .replaceSynonyms(tolower(a.names[a.unmatched]))
-            p.regularized[p.unmatched] <- .replaceSynonyms(tolower(p.names[p.unmatched]))
-            .replaceMatches(a.regularized, p.regularized)
-        }
+        parameters <- names(formals(chart))
+        arguments <- as.list(seq_along(parameters))
+        names(arguments) <- parameters
+        expect_identical(substituteNames(parameters, arguments), arguments)
+        expect_true(sum(names(scramble(arguments)) != parameters) > 5)
+        expect_identical(substituteNames(parameters, scramble(arguments)), arguments)
     }
-    a.unmatched <- !a.names %in% p.names
-    names(arguments) <- a.names
-    arguments[!a.unmatched]
-}
-
-test_that("Substituting argument names matches the pairwise comparison", {
-    expectSameAsPairwise <- function(parameter.names, arguments)
-        expect_identical(flipChart:::substituteArgumentNames(parameter.names, arguments, warn.if.no.match = FALSE),
-                         pairwiseSubstituteArgumentNames(parameter.names, arguments))
 
     bar.parameters <- names(formals(flipStandardCharts::Bar))
     pie.parameters <- names(formals(flipStandardCharts::Pie))
     arguments <- as.list(seq_along(c(bar.parameters, pie.parameters)))
     names(arguments) <- c(bar.parameters, pie.parameters)
-    scrambled <- arguments
-    reorder <- grepl(".", names(scrambled), fixed = TRUE) & seq_along(scrambled) %% 3 == 0
-    names(scrambled)[reorder] <- vapply(strsplit(names(scrambled)[reorder], ".", fixed = TRUE),
-                                        function(parts) toupper(paste(rev(parts), collapse = ".")), "")
-    expect_true(sum(reorder) > 20)
-    expectSameAsPairwise(bar.parameters, arguments)
-    expectSameAsPairwise(bar.parameters, scrambled)
-    expectSameAsPairwise(pie.parameters, scrambled)
+    expect_identical(substituteNames(bar.parameters, arguments), arguments[names(arguments) %in% bar.parameters])
 
-    expectSameAsPairwise(c("x.title", "title.x"), list(TITLE.X = 1, other = 2))
-    expect_named(flipChart:::substituteArgumentNames(c("x.title", "title.x", "font"), list(X.TITLE = 1), FALSE), "title.x")
-    expectSameAsPairwise(c("x.title", "title.font.color"), list(xlab = 1, color.Font.main = 2, x.Title = 3))
-    expectSameAsPairwise(c("a.b", "c"), list(B.A = 1, b.a = 2, c = 3))
-    expectSameAsPairwise(c("a.b"), list(x = 1))
-    expectSameAsPairwise(character(), list(x = 1))
+    expect_identical(substituteNames(c("x.title", "title.x"), list(TITLE.X = 1, other = 2)), list(title.x = 1))
+    expect_identical(substituteNames(c("x.title", "title.x", "font"), list(X.TITLE = 1)), list(title.x = 1))
+    expect_identical(substituteNames(c("x.title", "title.font.color"), list(xlab = 1, color.Font.main = 2, x.Title = 3)),
+                     list(title.font.color = 2, x.title = 3))
+    expect_identical(substituteNames(c("a.b", "c"), list(B.A = 1, b.a = 2, c = 3)), list(a.b = 1, c = 3))
+    expect_identical(substituteNames("a.b", list(x = 1)), setNames(list(), character()))
+    expect_identical(substituteNames(character(), list(x = 1)), setNames(list(), character()))
 })
 
 test_that("selecting chart functions",{
