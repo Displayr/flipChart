@@ -37,15 +37,54 @@ test_that("flipStandardCharts::Chart chart functions",{
 })
 
 test_that("Comparing parameters",{
-    # Exactly equal (after re-arranging)
-    expect_true(flipChart:::parametersEqual("x.axis.title", "x.axis.title"))
-    expect_true(flipChart:::parametersEqual("x.axis.title", "axis.x.title"))
-    expect_false(flipChart:::parametersEqual("x.axis.title", "xlab"))
-    expect_false(flipChart:::parametersEqual("xlab", "x.axis.title"))
-    expect_false(flipChart:::parametersEqual("x.axis.title", "x.title"))
-    expect_false(flipChart:::parametersEqual("x.axis.title", "axis.title"))
-    expect_false(flipChart:::parametersEqual("colors", "main"))
+    parametersEqual <- function(recipient, donor)
+        flipChart:::canonicalParameterName(recipient) == flipChart:::canonicalParameterName(donor)
+    expect_true(parametersEqual("x.axis.title", "x.axis.title"))
+    expect_true(parametersEqual("x.axis.title", "axis.x.title"))
+    expect_false(parametersEqual("x.axis.title", "xlab"))
+    expect_false(parametersEqual("xlab", "x.axis.title"))
+    expect_false(parametersEqual("x.axis.title", "x.title"))
+    expect_false(parametersEqual("x.axis.title", "axis.title"))
+    expect_false(parametersEqual("colors", "main"))
+    expect_false(parametersEqual("x.x.title", "x.title.title"))
+    expect_true(parametersEqual("title.x", "title.x."))
+    expect_equal(flipChart:::canonicalParameterName(c("x.axis.title", "b.a")), c("axis.title.x", "a.b"))
  })
+
+test_that("Substituting argument names", {
+    substituteNames <- function(parameter.names, arguments)
+        flipChart:::substituteArgumentNames(parameter.names, arguments, warn.if.no.match = FALSE)
+    scramble <- function(arguments)
+    {
+        reorder <- grepl(".", names(arguments), fixed = TRUE) & seq_along(arguments) %% 3 == 0
+        names(arguments)[reorder] <- vapply(strsplit(names(arguments)[reorder], ".", fixed = TRUE),
+                                            function(parts) toupper(paste(rev(parts), collapse = ".")), "")
+        arguments
+    }
+    for (chart in list(flipStandardCharts::Bar, flipStandardCharts::Pie))
+    {
+        parameters <- names(formals(chart))
+        arguments <- as.list(seq_along(parameters))
+        names(arguments) <- parameters
+        expect_identical(substituteNames(parameters, arguments), arguments)
+        expect_true(sum(names(scramble(arguments)) != parameters) > 5)
+        expect_identical(substituteNames(parameters, scramble(arguments)), arguments)
+    }
+
+    bar.parameters <- names(formals(flipStandardCharts::Bar))
+    pie.parameters <- names(formals(flipStandardCharts::Pie))
+    arguments <- as.list(seq_along(c(bar.parameters, pie.parameters)))
+    names(arguments) <- c(bar.parameters, pie.parameters)
+    expect_identical(substituteNames(bar.parameters, arguments), arguments[names(arguments) %in% bar.parameters])
+
+    expect_identical(substituteNames(c("x.title", "title.x"), list(TITLE.X = 1, other = 2)), list(title.x = 1))
+    expect_identical(substituteNames(c("x.title", "title.x", "font"), list(X.TITLE = 1)), list(title.x = 1))
+    expect_identical(substituteNames(c("x.title", "title.font.color"), list(xlab = 1, color.Font.main = 2, x.Title = 3)),
+                     list(title.font.color = 2, x.title = 3))
+    expect_identical(substituteNames(c("a.b", "c"), list(B.A = 1, b.a = 2, c = 3)), list(a.b = 1, c = 3))
+    expect_identical(substituteNames("a.b", list(x = 1)), setNames(list(), character()))
+    expect_identical(substituteNames(character(), list(x = 1)), setNames(list(), character()))
+})
 
 test_that("selecting chart functions",{
 
