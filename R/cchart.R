@@ -355,12 +355,13 @@ CChart <- function(chart.type, x, small.multiples = FALSE,
     export.args <- user.args
 
     user.args <- substituteAxisNames(chart.function, user.args)
-    arguments <- substituteArgumentNames(fun.and.pars$parameters.o, user.args, warn.if.no.match)
-    args <- paste0("c(list(", fun.and.pars$parameter.1, " = x), arguments)")
+    arguments <- substituteArgumentNames(fun.and.pars[["parameters.o"]], user.args, warn.if.no.match)
+    args <- list(x) |> setNames(fun.and.pars[["parameter.1"]]) |> c(arguments)
 
-    if (!append.data)
-        return(do.call(fun.and.pars$chart.function, eval(parse(text = args))))
-    result <- do.call(fun.and.pars$chart.function, eval(parse(text = args)))
+    result <- do.call(fun.and.pars[["chart.function"]], args)
+    if (!append.data) {
+        return(result)
+    }
     chart.warning <- attr(result, "ChartWarning")
     if (isScatter(chart.type))
         chart.warning <- paste(chart.warning,
@@ -1630,4 +1631,3 @@ convertToPPTDateFormat <- function(d3format)
         return(NULL)
     result
 }
-
